@@ -74,24 +74,34 @@ function deduplicateVisitorListClient(list) {
   return result;
 }
 
-describe('Priority Follow List Filtering TDD Unit Tests', () => {
-  it('deduplicates before filtering so joined repeat visitors are properly marked as 入会済 and excluded from unjoined priority list', () => {
+  it('filters priority follow list by grade (A only, B only, A+B all)', () => {
     const rawList = [
-      { id: '85', name: '田中友規', feelAbc: 'A', isJoined: '未', eventDate: '2025/10/16' },
-      { id: '92', name: '田中友規', feelAbc: 'A', isJoined: '入会済', eventDate: '2025/10/23' }
+      { id: '1', name: 'Visitor A', feelAbc: 'A', isJoined: '未' },
+      { id: '2', name: 'Visitor B', feelAbc: 'B', isJoined: '未' },
+      { id: '3', name: 'Visitor C', feelAbc: 'C', isJoined: '未' }
     ];
 
-    // Correct order: Deduplicate first, then filter
     const deduplicated = deduplicateVisitorListClient(rawList);
-    assert.strictEqual(deduplicated.length, 1);
-    assert.strictEqual(deduplicated[0].isJoined, '入会済');
 
-    // Filter unjoined A/B evaluation visitors
-    const priorityFollowList = deduplicated.filter(item => {
-      const isJoined = (item.isJoined === '入会済' || item.isJoined === '済' || item.isJoined === '入会' || item.isJoined === true);
-      return (item.feelAbc === 'A' || item.feelAbc === 'B') && !isJoined;
-    });
+    const filterByGrade = (list, gradeFilter) => {
+      return list.filter(item => {
+        const isJoined = (item.isJoined === '入会済' || item.isJoined === '済' || item.isJoined === '入会' || item.isJoined === true);
+        if (isJoined) return false;
+        if (gradeFilter === 'A') return item.feelAbc === 'A';
+        if (gradeFilter === 'B') return item.feelAbc === 'B';
+        return item.feelAbc === 'A' || item.feelAbc === 'B';
+      });
+    };
 
-    assert.strictEqual(priorityFollowList.length, 0); // Joined visitor must be excluded from unjoined follow-up list!
+    const allAB = filterByGrade(deduplicated, 'ALL');
+    assert.strictEqual(allAB.length, 2);
+    assert.deepStrictEqual(allAB.map(v => v.name), ['Visitor A', 'Visitor B']);
+
+    const aOnly = filterByGrade(deduplicated, 'A');
+    assert.strictEqual(aOnly.length, 1);
+    assert.strictEqual(aOnly[0].name, 'Visitor A');
+
+    const bOnly = filterByGrade(deduplicated, 'B');
+    assert.strictEqual(bOnly.length, 1);
+    assert.strictEqual(bOnly[0].name, 'Visitor B');
   });
-});

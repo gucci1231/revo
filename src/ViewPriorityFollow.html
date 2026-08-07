@@ -6,9 +6,11 @@
         <h2 class="section-title"><i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロービジター一覧</h2>
         <div class="section-sub">ヒアリングシートで感触 《A》または《B》 と評価されたビジター名簿です。</div>
       </div>
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <div style="font-size: 13px; font-weight: 700; background: #fee2e2; color: #991b1b; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
-          <i class="fa-solid fa-fire"></i> 感触 A･B 評価
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="tab-filter-group" style="display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+          <button type="button" class="tab-btn active" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">🔥 A+B評価のみ</button>
+          <button type="button" class="tab-btn" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">🔴 A評価のみ</button>
+          <button type="button" class="tab-btn" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">🟡 B評価のみ</button>
         </div>
         <input type="text" id="search-priority-follow-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterPriorityFollowTable()">
       </div>
@@ -18,6 +20,7 @@
         <thead>
           <tr>
             <th style="width: 95px;">参加日</th>
+            <th style="width: 75px;">評価</th>
             <th>氏名 / 会社名・専門分野</th>
             <th style="width: 120px;">招待者</th>
             <th style="width: 120px;">オリエン担当</th>
