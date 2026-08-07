@@ -141,4 +141,17 @@ if ($action === 'save_memo') {
     sendJsonResponse(['success' => true, 'visitorId' => $vId, 'memo' => $memo]);
 }
 
+if ($action === 'delete') {
+    $vId = $input['id'] ?? $_GET['id'] ?? '';
+    if ($vId) {
+        $stmtV = $pdo->prepare("DELETE FROM visitors WHERE id = ?");
+        $stmtV->execute([$vId]);
+        $stmtS = $pdo->prepare("DELETE FROM visitors_status WHERE visitor_id = ?");
+        $stmtS->execute([$vId]);
+        $stmtH = $pdo->prepare("DELETE FROM hearing_sheets WHERE visitor_id = ?");
+        $stmtH->execute([$vId]);
+    }
+    sendJsonResponse(['success' => true, 'visitorId' => $vId]);
+}
+
 sendJsonResponse(['success' => false, 'message' => 'Invalid action']);
