@@ -7,8 +7,12 @@ $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 if ($action === 'list') {
     $stmt = $pdo->query("
         SELECT 
-            v.id, v.created_at as createdDate, v.inviter, v.event_date as eventDate, 
-            v.visitor_name as name, v.furigana, v.profession, v.company, v.email, 
+            v.id, v.created_at as createdDate, COALESCE(v.inviter, '') as inviter, v.event_date as eventDate, 
+            COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || v.id) as name, 
+            COALESCE(v.furigana, '') as furigana, 
+            COALESCE(v.profession, '') as profession, 
+            COALESCE(v.company, '') as company, 
+            COALESCE(v.email, '') as email, 
             v.attendance_count as attendanceCount, v.remarks,
             COALESCE(s.is_attended, '未') as isAttended,
             COALESCE(s.is_joined, '未') as isJoined,

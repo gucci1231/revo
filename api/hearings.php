@@ -7,13 +7,18 @@ $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 if ($action === 'list') {
     $stmt = $pdo->query("
         SELECT 
-            h.visitor_id as visitorId, v.visitor_name as name, v.company, v.profession, v.inviter, v.event_date as eventDate,
+            h.visitor_id as visitorId, 
+            COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || h.visitor_id) as name, 
+            COALESCE(v.company, '') as company, 
+            COALESCE(v.profession, '') as profession, 
+            COALESCE(v.inviter, '') as inviter, 
+            COALESCE(NULLIF(v.event_date, ''), h.updated_at) as eventDate,
             h.orient_user as orientUser, h.q1, h.q2, h.q3, h.q4, h.q5, h.q6, h.q7, h.feel_abc as feelAbc,
             h.orient_memo as orientMemo, h.follow_memo as followMemo, h.sheet_url as sheetUrl, h.updated_at as updatedAt,
             COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1
         FROM hearing_sheets h
-        JOIN visitors v ON h.visitor_id = v.id
-        LEFT JOIN visitors_status s ON v.id = s.visitor_id
+        LEFT JOIN visitors v ON h.visitor_id = v.id
+        LEFT JOIN visitors_status s ON h.visitor_id = s.visitor_id
         ORDER BY h.updated_at DESC
     ");
     $list = $stmt->fetchAll();

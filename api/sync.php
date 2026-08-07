@@ -57,20 +57,29 @@ function fetchSheetCsv($spreadsheetId, $sheetName) {
         return [];
     }
 
-    $lines = explode("\n", str_replace("\r\n", "\n", $csvData));
+    $stream = fopen('php://temp', 'r+');
+    fwrite($stream, $csvData);
+    rewind($stream);
+
     $header = null;
     $rows = [];
-    foreach ($lines as $line) {
-        if (trim($line) === '') continue;
-        $row = str_getcsv($line);
+    while (($row = fgetcsv($stream)) !== false) {
+        if (empty($row) || (count($row) === 1 && $row[0] === null)) continue;
         if (!$header) {
-            $header = array_map('trim', $row);
+            $header = array_map(function($h) {
+                return preg_replace('/\x{EF}\x{BB}\x{BF}/', '', trim((string)$h));
+            }, $row);
         } else {
-            if (count($row) === count($header)) {
-                $rows[] = array_combine($header, $row);
+            $rowData = [];
+            foreach ($header as $idx => $hName) {
+                if ($hName !== '') {
+                    $rowData[$hName] = isset($row[$idx]) ? trim((string)$row[$idx]) : '';
+                }
             }
+            $rows[] = $rowData;
         }
     }
+    fclose($stream);
     return $rows;
 }
 
