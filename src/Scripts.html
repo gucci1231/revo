@@ -350,36 +350,17 @@
       .catch(handleError);
   }
 
-  function fetchDashboardData(forceRefresh = false) {
-    if (!forceRefresh) {
-      try {
-        const cached = sessionStorage.getItem('VHR_DASHBOARD_CACHE');
-        if (cached) {
-          renderDashboard(JSON.parse(cached));
-        } else {
-          showTableSkeleton('table-priority-follow', 11, 3);
-          showTableSkeleton('table-next-meeting', 9, 3);
-          showTableSkeleton('table-1month-follow', 9, 3);
-        }
-      } catch(e) {}
-    } else {
-      try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
-    }
+  function fetchDashboardData() {
     ApiService.call('getDashboardData')
       .then(data => {
         if (data) {
-          try { sessionStorage.setItem('VHR_DASHBOARD_CACHE', JSON.stringify(data)); } catch(e) {}
           renderDashboard(data);
         }
       })
       .catch(handleError);
   }
 
-  function fetchAllVisitorsData(forceRefresh = false) {
-    if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
-      renderAllVisitorsTable(cachedAllVisitors);
-      return;
-    }
+  function fetchAllVisitorsData() {
     showTableSkeleton('table-all-visitors', 11, 5);
     ApiService.call('getAllVisitorsApi')
       .then(res => {
@@ -396,11 +377,7 @@
       });
   }
 
-  function fetchHearingListData(forceRefresh = false) {
-    if (!forceRefresh && cachedHearingList && cachedHearingList.length > 0) {
-      renderHearingListTable(cachedHearingList);
-      return;
-    }
+  function fetchHearingListData() {
     showTableSkeleton('table-hearing-list', 10, 5);
     ApiService.call('getHearingSheetsListApi')
       .then(res => {
@@ -721,11 +698,7 @@
   let pfGradeFilter = 'ALL';
   let cachedPriorityFollowList = [];
 
-  function fetchPriorityFollowData(forceRefresh = false) {
-    if (!forceRefresh && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
-      filterPriorityFollowTable();
-      return;
-    }
+  function fetchPriorityFollowData() {
     showTableSkeleton('table-priority-follow-page', 10, 5);
     ApiService.call('getAllVisitorsApi')
       .then(res => {
