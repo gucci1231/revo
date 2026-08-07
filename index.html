@@ -1906,7 +1906,7 @@ const ApiService = {
       renderHearingListTable(cachedHearingList);
       return;
     }
-    showTableSkeleton('table-hearings', 8, 5);
+    showTableSkeleton('table-hearing-list', 10, 5);
     ApiService.call('getHearingListDataApi')
       .then(res => {
         if (res && res.success) {
@@ -1938,7 +1938,7 @@ const ApiService = {
       filterPriorityFollowTable();
       return;
     }
-    showTableSkeleton('table-priority-follow', 9, 5);
+    showTableSkeleton('table-priority-follow-page', 7, 5);
     ApiService.call('getPriorityFollowDataApi')
       .then(res => {
         if (res && res.success) {
@@ -2243,15 +2243,18 @@ const ApiService = {
   function setPriorityFollowGradeFilter(grade) {
     currentPfGradeFilter = grade;
 
-    ['ALL', 'A', 'B'].forEach(g => {
-      const btn = document.getElementById('pf-filter-btn-' + g);
+    const btnAll = document.getElementById('pf-tab-all') || document.getElementById('pf-filter-btn-ALL');
+    const btnA = document.getElementById('pf-tab-a') || document.getElementById('pf-filter-btn-A');
+    const btnB = document.getElementById('pf-tab-b') || document.getElementById('pf-filter-btn-B');
+
+    const map = { 'ALL': btnAll, 'A': btnA, 'B': btnB };
+    Object.keys(map).forEach(g => {
+      const btn = map[g];
       if (btn) {
         if (g === grade) {
-          btn.classList.add('active', 'bg-red-600', 'text-white');
-          btn.classList.remove('bg-slate-100', 'text-slate-700');
+          btn.classList.add('active');
         } else {
-          btn.classList.remove('active', 'bg-red-600', 'text-white');
-          btn.classList.add('bg-slate-100', 'text-slate-700');
+          btn.classList.remove('active');
         }
       }
     });
@@ -2260,14 +2263,24 @@ const ApiService = {
   }
 
   function filterPriorityFollowTable() {
+    const search = (document.getElementById('search-priority-follow-input')?.value || '').toLowerCase().trim();
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
     filteredPfVisitors = dedupedList.filter(v => {
       const feel = parseFeelAbc(v.feelAbc);
-      if (currentPfGradeFilter === 'A') return feel === 'A';
-      if (currentPfGradeFilter === 'B') return feel === 'B';
-      return feel === 'A' || feel === 'B';
+      const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
+                         (currentPfGradeFilter === 'B' && feel === 'B') ||
+                         (currentPfGradeFilter === 'ALL' && (feel === 'A' || feel === 'B'));
+
+      if (!matchGrade) return false;
+
+      const name = (v.name || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+
+      return !search || name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search);
     });
 
     pfCurrentPage = 1;
@@ -2284,10 +2297,11 @@ const ApiService = {
   }
 
   function renderPriorityFollowCurrentPage() {
-    const tbody = document.getElementById('table-priority-follow');
+    const tbody = document.getElementById('table-priority-follow-page') || document.getElementById('table-priority-follow');
     const infoEl = document.getElementById('pf-pagination-info');
-    const prevBtn = document.getElementById('pf-btn-prev');
-    const nextBtn = document.getElementById('pf-btn-next');
+    const prevBtn = document.getElementById('btn-pf-prev-page') || document.getElementById('pf-btn-prev');
+    const nextBtn = document.getElementById('btn-pf-next-page') || document.getElementById('pf-btn-next');
+    const pageNumEl = document.getElementById('pf-pagination-page-num');
     if (!tbody) return;
 
     tbody.innerHTML = '';
@@ -2299,27 +2313,38 @@ const ApiService = {
     const startIdx = (pfCurrentPage - 1) * PF_PAGE_SIZE;
     const pageItems = filteredPfVisitors.slice(startIdx, startIdx + PF_PAGE_SIZE);
 
-    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + PF_PAGE_SIZE, total)}件 (${pfCurrentPage}/${totalPages}ページ)`;
+    if (infoEl) infoEl.innerText = `全 ${total} 件中 ${total > 0 ? startIdx + 1 : 0} - ${Math.min(startIdx + PF_PAGE_SIZE, total)} 件を表示`;
+    if (pageNumEl) pageNumEl.innerText = `${pfCurrentPage} / ${totalPages}`;
     if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
     if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
 
     if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 20px;">条件に合致する最優先フォロー対象はいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">条件に合致する最優先フォロー対象はいません</td></tr>';
       return;
     }
 
     pageItems.forEach(v => {
+      const vid = v.id || v.visitorId;
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
-        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
-        <td>${formatTruncatedCell(v.company, 12)}</td>
-        <td>${formatTruncatedCell(v.profession, 12)}</td>
-        <td>${formatTruncatedCell(v.inviter, 10)}</td>
         <td>${renderRankBadgeHtml(v.feelAbc)}</td>
-        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
-        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
-        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+        <td>
+          <div style="font-weight:700;">${renderVisitorNameLinkHtml(vid, v.name)}</div>
+          <div style="font-size:11px; color:#64748b;">${formatTruncatedCell(v.company, 12)} / ${formatTruncatedCell(v.profession, 12)}</div>
+        </td>
+        <td>${formatTruncatedCell(v.inviter, 10)}</td>
+        <td>${formatTruncatedCell(v.orientUser, 10)}</td>
+        <td>
+          <div style="font-size:12px; max-width:260px; white-space:normal;">${formatTruncatedCell(v.q7 || v.orientMemo || v.followMemo, 40)}</div>
+        </td>
+        <td>
+          <div style="display:flex; gap:4px; align-items:center;">
+            ${render1to1ButtonHtml(vid, v.is1to1)}
+            ${renderJoinedButtonHtml(vid, v.isJoined)}
+            <button class="btn-icon-action" onclick="openHearingFormModal('${vid}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
+          </div>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -2455,26 +2480,28 @@ const ApiService = {
 <script>
   /* --- VIEW 4: Hearing Sheets List View Controller --- */
   function renderHearingListTable(records) {
-    const tbody = document.getElementById('table-hearings');
+    const tbody = document.getElementById('table-hearing-list') || document.getElementById('table-hearings');
     if (!tbody) return;
     tbody.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">登録されているヒアリングシートはありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">登録されているヒアリングシートはありません</td></tr>';
       return;
     }
 
-    records.forEach(h => {
+    records.forEach((h, idx) => {
       const vid = h.id || h.visitorId;
       const tr = document.createElement('tr');
       tr.innerHTML = `
+        <td>${idx + 1}</td>
         <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
         <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
-        <td>${formatTruncatedCell(h.company, 12)}</td>
-        <td>${formatTruncatedCell(h.profession, 12)}</td>
+        <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
         <td>${formatTruncatedCell(h.inviter, 10)}</td>
         <td>${formatTruncatedCell(h.orientUser, 10)}</td>
         <td>${renderRankBadgeHtml(h.feelAbc)}</td>
+        <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.q1, 30)}</div></td>
+        <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.orientMemo || h.followMemo, 30)}</div></td>
         <td>
           <button class="btn-icon-action" onclick="openHearingFormModal('${vid}')" title="編集"><i class="fa-solid fa-pen"></i></button>
         </td>

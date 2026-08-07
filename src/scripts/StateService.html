@@ -125,7 +125,7 @@
       renderHearingListTable(cachedHearingList);
       return;
     }
-    showTableSkeleton('table-hearings', 8, 5);
+    showTableSkeleton('table-hearing-list', 10, 5);
     ApiService.call('getHearingListDataApi')
       .then(res => {
         if (res && res.success) {
@@ -157,7 +157,7 @@
       filterPriorityFollowTable();
       return;
     }
-    showTableSkeleton('table-priority-follow', 9, 5);
+    showTableSkeleton('table-priority-follow-page', 7, 5);
     ApiService.call('getPriorityFollowDataApi')
       .then(res => {
         if (res && res.success) {
