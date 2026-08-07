@@ -669,12 +669,11 @@
           renderPriorityFollowCurrentPage();
         }
       })
-      .withFailureHandler(err => {
+      .catch(err => {
         handleError(err);
         cachedPriorityFollowList = [];
         renderPriorityFollowCurrentPage();
-      })
-      .getHearingSheetsListApi();
+      });
   }
 
   function setPriorityFollowGradeFilter(grade) {
@@ -1344,8 +1343,7 @@
 
         document.getElementById('modal-hearing-form').style.display = 'flex';
       })
-      .withFailureHandler(handleError)
-      .getHearingFormDataApi(id);
+      .catch(handleError);
   }
 
   function renderOrientUserOptions(cats, selectedVal) {
@@ -1590,8 +1588,7 @@
         switchVdTab('hearing');
         window.scrollTo(0, 0);
       })
-      .withFailureHandler(handleError)
-      .getVisitorDetailApi(id);
+      .catch(handleError);
   }
 
   function closeVisitorDetailView() {
