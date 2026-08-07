@@ -14,9 +14,6 @@ const LINE_GROUP_ID = 'C8dc2f8c84ba00664735196f78973cf1e';
 // スプレッドシートID設定
 const SPREADSHEET_ID = '1wMXXurT9uWpythSDKSggjJESldIrqc0_5PL22LXDSGQ';
 
-// Bitly API アクセストークン設定 (短縮URL自動生成用)
-const BITLY_ACCESS_TOKEN = 'df38a57f280a7bd74c1fc25f4ca4795804ee27b7';
-
 /**
  * システム利用スプレッドシートの全シート名定義
  */

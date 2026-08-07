@@ -191,40 +191,6 @@ function deleteMemberApi(memberId) {
   return getMemberListApi();
 }
 
-/**
- * 【Web UI API】共有用URLの自動短縮化 (Bitly API v4連動)
- */
-function getShortenedUrlApi(longUrl) {
-  if (!longUrl) return { success: false, shortUrl: "" };
-  try {
-    const payload = {
-      long_url: longUrl,
-      domain: "bit.ly"
-    };
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      headers: {
-        "Authorization": "Bearer " + BITLY_ACCESS_TOKEN
-      },
-      payload: JSON.stringify(payload),
-      muteHttpExceptions: true
-    };
-    const response = UrlFetchApp.fetch("https://api-ssl.bitly.com/v4/shorten", options);
-    const code = response.getResponseCode();
-    if (code === 200 || code === 201) {
-      const data = JSON.parse(response.getContentText());
-      if (data && data.link) {
-        return { success: true, shortUrl: data.link };
-      }
-    } else {
-      Logger.log("Bitly API returned code " + code + ": " + response.getContentText());
-    }
-  } catch (e) {
-    Logger.log("Bitly Shortener Error: " + e);
-  }
-  return { success: false, shortUrl: longUrl };
-}
 
 /**
  * 【Web UI API】ビジター詳細プロファイルの取得 (自由メモ含む)

@@ -65,28 +65,15 @@
       cleanUrl += '#' + hash;
     }
 
-    // Step 1: 0ms で即座にクリーンURLをコピー（待ち時間ゼロ）
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(cleanUrl).then(() => {
-        showToast('🔗 共有URLをコピーしました！(Bitly短縮中...)');
+        showToast('🔗 共有URLをコピーしました！');
       }).catch(() => {
         prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
       });
     } else {
       prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
     }
-
-    // Step 2: バックグラウンドで非同期に Bitly 短縮URLを生成してアップグレード
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res && res.success && res.shortUrl) {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(res.shortUrl).catch(() => {});
-          }
-          showToast('✨ Bitly短縮URL (' + res.shortUrl + ') をコピーしました！');
-        }
-      })
-      .getShortenedUrlApi(cleanUrl);
   }
 
   document.addEventListener('DOMContentLoaded', () => {
