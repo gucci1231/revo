@@ -2200,8 +2200,8 @@ const ApiService = {
             const grade = parseFeelAbc(item.feelAbc || item.feeling);
             const joinedVal = item.isJoined || item.is_joined;
             const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-            return grade === 'A' && !isJoined;
-          }));
+            return (grade === 'A' || grade === 'B') && !isJoined;
+          });
           filterPriorityFollowTable();
         } else {
           cachedPriorityFollowList = [];
