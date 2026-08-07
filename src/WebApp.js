@@ -3,6 +3,21 @@
  * Web App エントリーポイント ＆ メンバーマスター自動シード・CRUD API
  */
 function doGet(e) {
+  if (e && e.parameter && e.parameter.api === 'export') {
+    const allVisitorsRes = getAllVisitorsApi();
+    const hearingsRes = getHearingSheetsListApi();
+    const membersRes = getMemberListApi();
+    const dashboardData = getDashboardData();
+
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      visitors: allVisitorsRes.list || [],
+      hearings: hearingsRes.list || [],
+      members: membersRes.flatMembers || [],
+      dashboardData: dashboardData
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
   const template = HtmlService.createTemplateFromFile('Index');
   template.initialVisitorId = (e && e.parameter && e.parameter.id) ? String(e.parameter.id) : "";
 
