@@ -1,0 +1,30 @@
+<script>
+  /* --- VIEW 4: Hearing Sheets List View Controller --- */
+  function renderHearingListTable(records) {
+    const tbody = document.getElementById('table-hearings');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">登録されているヒアリングシートはありません</td></tr>';
+      return;
+    }
+
+    records.forEach(h => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(h.id, h.name)}</td>
+        <td>${formatTruncatedCell(h.company, 12)}</td>
+        <td>${formatTruncatedCell(h.profession, 12)}</td>
+        <td>${formatTruncatedCell(h.inviter, 10)}</td>
+        <td>${formatTruncatedCell(h.orientUser, 10)}</td>
+        <td>${renderRankBadgeHtml(h.feelAbc)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openHearingFormModal('${h.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>

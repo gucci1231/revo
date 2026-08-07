@@ -1,0 +1,91 @@
+<script>
+  /* --- VIEW 2: Priority Follow View Controller --- */
+  let currentPfGradeFilter = 'ALL';
+  let filteredPfVisitors = [];
+  let pfCurrentPage = 1;
+  const PF_PAGE_SIZE = 50;
+
+  function setPriorityFollowGradeFilter(grade) {
+    currentPfGradeFilter = grade;
+
+    ['ALL', 'A', 'B'].forEach(g => {
+      const btn = document.getElementById('pf-filter-btn-' + g);
+      if (btn) {
+        if (g === grade) {
+          btn.classList.add('active', 'bg-red-600', 'text-white');
+          btn.classList.remove('bg-slate-100', 'text-slate-700');
+        } else {
+          btn.classList.remove('active', 'bg-red-600', 'text-white');
+          btn.classList.add('bg-slate-100', 'text-slate-700');
+        }
+      }
+    });
+
+    filterPriorityFollowTable();
+  }
+
+  function filterPriorityFollowTable() {
+    const rawList = cachedPriorityFollowList || [];
+
+    filteredPfVisitors = rawList.filter(v => {
+      const feel = parseFeelAbc(v.feelAbc);
+      if (currentPfGradeFilter === 'A') return feel === 'A';
+      if (currentPfGradeFilter === 'B') return feel === 'B';
+      return feel === 'A' || feel === 'B';
+    });
+
+    pfCurrentPage = 1;
+    renderPriorityFollowCurrentPage();
+  }
+
+  function changePriorityFollowPage(delta) {
+    const totalPages = Math.ceil(filteredPfVisitors.length / PF_PAGE_SIZE) || 1;
+    const newPage = pfCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      pfCurrentPage = newPage;
+      renderPriorityFollowCurrentPage();
+    }
+  }
+
+  function renderPriorityFollowCurrentPage() {
+    const tbody = document.getElementById('table-priority-follow');
+    const infoEl = document.getElementById('pf-pagination-info');
+    const prevBtn = document.getElementById('pf-btn-prev');
+    const nextBtn = document.getElementById('pf-btn-next');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const total = filteredPfVisitors.length;
+    const totalPages = Math.ceil(total / PF_PAGE_SIZE) || 1;
+    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
+
+    const startIdx = (pfCurrentPage - 1) * PF_PAGE_SIZE;
+    const pageItems = filteredPfVisitors.slice(startIdx, startIdx + PF_PAGE_SIZE);
+
+    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + PF_PAGE_SIZE, total)}件 (${pfCurrentPage}/${totalPages}ページ)`;
+    if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 20px;">条件に合致する最優先フォロー対象はいません</td></tr>';
+      return;
+    }
+
+    pageItems.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+        <td>${formatTruncatedCell(v.company, 12)}</td>
+        <td>${formatTruncatedCell(v.profession, 12)}</td>
+        <td>${formatTruncatedCell(v.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(v.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>

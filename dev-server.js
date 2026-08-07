@@ -203,6 +203,75 @@ function handleApiRequest(req, res, urlObj) {
         const list = runSqlJson(sql);
         return res.end(JSON.stringify({ success: true, list: list }));
       }
+
+      if (action === 'get') {
+        const vId = urlObj.searchParams.get('visitorId') || input.visitorId || '';
+        const vSql = `SELECT visitor_name, inviter, company, profession, event_date FROM visitors WHERE id = '${vId.replace(/'/g, "''")}';`;
+        const hSql = `SELECT * FROM hearing_sheets WHERE visitor_id = '${vId.replace(/'/g, "''")}';`;
+
+        const vInfoRaw = runSqlJson(vSql)[0] || {};
+        const h = runSqlJson(hSql)[0] || {};
+
+        const vInfo = {
+          visitor_name: vInfoRaw.visitor_name || '',
+          inviter: vInfoRaw.inviter || '',
+          company: vInfoRaw.company || '',
+          profession: vInfoRaw.profession || '',
+          event_date: vInfoRaw.event_date || ''
+        };
+
+        const formData = {
+          visitorId: vId,
+          orientUser: h.orient_user || '',
+          q1: h.q1 || '', q2: h.q2 || '', q3: h.q3 || '',
+          q4: h.q4 || '', q5: h.q5 || '', q6: h.q6 || '', q7: h.q7 || '',
+          feelAbc: h.feel_abc || '',
+          orientMemo: h.orient_memo || '',
+          followMemo: h.follow_memo || '',
+          sheetUrl: h.sheet_url || ''
+        };
+
+        const mSql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
+        const members = runSqlJson(mSql);
+        const catMap = {};
+        members.forEach(m => {
+          const cat = m.category || 'その他';
+          if (!catMap[cat]) catMap[cat] = [];
+          catMap[cat].push({ id: m.id, name: m.name, profession: m.profession });
+        });
+        const memberCategories = Object.keys(catMap).map(c => ({ category: c, members: catMap[c] }));
+
+        return res.end(JSON.stringify({
+          success: true,
+          visitorInfo: vInfo,
+          formData: formData,
+          memberCategories: memberCategories
+        }));
+      }
+
+      if (action === 'save') {
+        const vId = (input.visitorId || '').replace(/'/g, "''");
+        if (!vId) return res.end(JSON.stringify({ success: false, message: 'visitorId is required' }));
+
+        const esc = s => (s || '').toString().replace(/'/g, "''");
+        const orientUser = esc(input.orientUser || input.orient_user);
+        const q1 = esc(input.q1); const q2 = esc(input.q2); const q3 = esc(input.q3);
+        const q4 = esc(input.q4); const q5 = esc(input.q5); const q6 = esc(input.q6); const q7 = esc(input.q7);
+        const feelAbc = esc(input.feelAbc || input.feel_abc);
+        const orientMemo = esc(input.orientMemo || input.orient_memo);
+        const followMemo = esc(input.followMemo || input.follow_memo);
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+        const sql = `
+          INSERT INTO hearing_sheets (visitor_id, orient_user, q1, q2, q3, q4, q5, q6, q7, feel_abc, orient_memo, follow_memo, updated_at)
+          VALUES ('${vId}', '${orientUser}', '${q1}', '${q2}', '${q3}', '${q4}', '${q5}', '${q6}', '${q7}', '${feelAbc}', '${orientMemo}', '${followMemo}', '${now}')
+          ON CONFLICT(visitor_id) DO UPDATE SET
+            orient_user = '${orientUser}', q1 = '${q1}', q2 = '${q2}', q3 = '${q3}', q4 = '${q4}', q5 = '${q5}', q6 = '${q6}', q7 = '${q7}',
+            feel_abc = '${feelAbc}', orient_memo = '${orientMemo}', follow_memo = '${followMemo}', updated_at = '${now}';
+        `;
+        runSqlExec(sql);
+        return res.end(JSON.stringify({ success: true, visitorId: input.visitorId }));
+      }
     }
 
     if (pathname === '/api/dashboard.php') {

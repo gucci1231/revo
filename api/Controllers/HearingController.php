@@ -100,7 +100,7 @@ class HearingController extends Controller {
 
         $this->hearingRepo->saveHearingSheet([
             'visitor_id' => $vId,
-            'orient_user' => $this->getParam('orientUser', ''),
+            'orient_user' => $this->getParam('orientUser') ?? $this->getParam('orient_user', ''),
             'q1' => $this->getParam('q1', ''),
             'q2' => $this->getParam('q2', ''),
             'q3' => $this->getParam('q3', ''),
@@ -108,9 +108,9 @@ class HearingController extends Controller {
             'q5' => $this->getParam('q5', ''),
             'q6' => $this->getParam('q6', ''),
             'q7' => $this->getParam('q7', ''),
-            'feel_abc' => $this->getParam('feelAbc', ''),
-            'orient_memo' => $this->getParam('orientMemo', ''),
-            'follow_memo' => $this->getParam('followMemo', ''),
+            'feel_abc' => $this->getParam('feelAbc') ?? $this->getParam('feel_abc', ''),
+            'orient_memo' => $this->getParam('orientMemo') ?? $this->getParam('orient_memo', ''),
+            'follow_memo' => $this->getParam('followMemo') ?? $this->getParam('follow_memo', ''),
             'sheet_url' => $sheetUrl ?? '',
             'updated_at' => $now
         ]);

@@ -1,0 +1,234 @@
+<script>
+  /* --- Client-Side Global State & Data Sync Service --- */
+  let currentDashboardData = null;
+  let cachedAllVisitors = [];
+  let cachedHearingList = [];
+  let cachedScheduledEmails = [];
+  let cachedPriorityFollowList = [];
+  let currentPreviewItem = null;
+
+  const initialVisitorId = "";
+  const rawInitialData = {};
+
+  function normalizeNameKey(str) {
+    if (!str) return '';
+    let s = String(str);
+    s = s.normalize('NFKC');
+    s = s.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
+    s = s.replace(/[・·\.\,\-\_]/g, '');
+    s = s.replace(/[\s\u3000\t\r\n]+/g, '');
+    return s.toLowerCase();
+  }
+
+  function deduplicateVisitorListClient(list) {
+    if (!list || !Array.isArray(list) || list.length === 0) return [];
+
+    const result = [];
+    const nameMap = new Map();
+    const furiganaMap = new Map();
+    const emailMap = new Map();
+
+    list.forEach(r => {
+      const emailKey = r.email ? normalizeNameKey(r.email) : '';
+      const rawName = r.name ? String(r.name).trim() : '';
+      const isGenericName = !rawName || /^ビジター\s*(no\.?\s*\d+)?$/i.test(rawName);
+      const nameKey = !isGenericName ? normalizeNameKey(rawName) : '';
+      const furiganaKey = (r.furigana && !isGenericName) ? normalizeNameKey(r.furigana) : '';
+
+      let existing = null;
+      if (emailKey && emailMap.has(emailKey)) {
+        existing = emailMap.get(emailKey);
+      } else if (nameKey && nameMap.has(nameKey)) {
+        existing = nameMap.get(nameKey);
+      } else if (furiganaKey && furiganaMap.has(furiganaKey)) {
+        existing = furiganaMap.get(furiganaKey);
+      }
+
+      if (existing) {
+        if (!existing.allIds) existing.allIds = [existing.id];
+        if (r.id && !existing.allIds.includes(r.id)) existing.allIds.push(r.id);
+
+        const currentAtt = existing.isAttended || '不参加';
+        const newAtt = r.isAttended || '不参加';
+        if (newAtt === '参加' || currentAtt !== '参加') existing.isAttended = newAtt;
+
+        const current11 = existing.is1to1 || '未';
+        const new11 = r.is1to1 || '未';
+        if (new11 === '済' || current11 !== '済') existing.is1to1 = new11;
+
+        const currentJoined = existing.isJoined || '未';
+        const newJoined = r.isJoined || '未';
+        if (newJoined === '入会済' || currentJoined !== '入会済') existing.isJoined = newJoined;
+
+        const curFeel = parseFeelAbc(existing.feelAbc);
+        const newFeel = parseFeelAbc(r.feelAbc);
+        if (newFeel === 'A' || (newFeel === 'B' && curFeel !== 'A') || (newFeel === 'C' && !curFeel)) {
+          existing.feelAbc = newFeel;
+        }
+
+        ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
+          if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
+            existing[k] = r[k];
+          }
+        });
+
+        if (r.eventDate && r.eventDate > (existing.eventDate || '')) {
+          existing.eventDate = r.eventDate;
+          if (r.inviter) existing.inviter = r.inviter;
+          if (r.profession) existing.profession = r.profession;
+          if (r.company) existing.company = r.company;
+        }
+      } else {
+        const item = Object.assign({}, r);
+        item.allIds = [item.id];
+        item.feelAbc = parseFeelAbc(item.feelAbc);
+        result.push(item);
+        if (emailKey) emailMap.set(emailKey, item);
+        if (nameKey) nameMap.set(nameKey, item);
+        if (furiganaKey) furiganaMap.set(furiganaKey, item);
+      }
+    });
+
+    return result;
+  }
+
+  function fetchDashboardData(forceRefresh = false) {
+    showTableSkeleton('table-hot-visitors', 7, 3);
+    ApiService.call('getDashboardDataApi')
+      .then(res => {
+        if (res && res.success && res.data) {
+          renderDashboard(res.data);
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchAllVisitorsData(forceRefresh = false) {
+    if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      filterAllVisitorsTable();
+      return;
+    }
+    showTableSkeleton('table-all-visitors', 9, 5);
+    ApiService.call('getAllVisitorsDataApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedAllVisitors = res.visitors || [];
+          filterAllVisitorsTable();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchHearingListData(forceRefresh = false) {
+    if (!forceRefresh && cachedHearingList && cachedHearingList.length > 0) {
+      renderHearingListTable(cachedHearingList);
+      return;
+    }
+    showTableSkeleton('table-hearings', 8, 5);
+    ApiService.call('getHearingListDataApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedHearingList = res.hearings || [];
+          renderHearingListTable(cachedHearingList);
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchScheduledEmailsData(forceRefresh = false) {
+    if (!forceRefresh && cachedScheduledEmails && cachedScheduledEmails.length > 0) {
+      filterEmailSchedule();
+      return;
+    }
+    showTableSkeleton('table-email-schedule', 9, 4);
+    ApiService.call('getScheduledEmailsApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedScheduledEmails = res.list || [];
+          filterEmailSchedule();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchPriorityFollowData(forceRefresh = false) {
+    if (!forceRefresh && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      filterPriorityFollowTable();
+      return;
+    }
+    showTableSkeleton('table-priority-follow', 9, 5);
+    ApiService.call('getPriorityFollowDataApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedPriorityFollowList = res.visitors || [];
+          filterPriorityFollowTable();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function syncFormResponsesManual() {
+    showToast(`Googleフォーム新着申込を同期中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    ApiService.call('syncFormResponsesApi')
+      .then(res => {
+        if (loading) loading.style.display = 'none';
+
+        const msg = (res && typeof res === 'object' && res.message)
+          ? res.message
+          : String(res || '同期が完了しました。');
+
+        alert("【Googleフォーム同期結果】\n\n" + msg);
+
+        if (res && res.data) {
+          renderDashboard(res.data);
+        } else {
+          fetchDashboardData(true);
+        }
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
+      })
+      .catch(err => {
+        if (loading) loading.style.display = 'none';
+        alert("❌ フォーム同期中にエラーが発生しました:\n" + (err.message || err));
+      });
+  }
+
+  function forceRefreshAllCacheAndData() {
+    showToast(`🔄 キャッシュをクリアし、最新データを再読み込み中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    try { sessionStorage.clear(); } catch(e) {}
+    cachedAllVisitors = [];
+    cachedHearingList = [];
+    cachedScheduledEmails = [];
+    cachedPriorityFollowList = [];
+
+    ApiService.call('checkAndRepairDataFormatApi')
+      .then(res => {
+        if (loading) loading.style.display = 'none';
+        showToast(`✨ キャッシュをクリアし、最新データをロードしました！`);
+        fetchDashboardData(true);
+        const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
+        if (activeTab) {
+          const tabId = activeTab.id.replace('tab-btn-', '');
+          if (tabId === 'visitors') fetchAllVisitorsData(true);
+          else if (tabId === 'hearings') fetchHearingListData(true);
+          else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
+          else if (tabId === 'priority-follow') fetchPriorityFollowData(true);
+        }
+      })
+      .catch(handleError);
+  }
+
+  function refreshAllActiveViews() {
+    fetchDashboardData(true);
+    if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
+    if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
+    if (currentVdVisitorId) {
+      openVisitorDetailView(currentVdVisitorId, false);
+    }
+  }
+</script>

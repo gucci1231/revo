@@ -614,7 +614,7 @@ tr:last-child td { border-bottom: none; }
       </div>
 
       <div class="form-group">
-        <label class="form-label">フォローアップ感想メモ</label>
+        <label class="form-label">追跡フォローメモ</label>
         <textarea id="hf-follow-memo" class="form-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
       </div>
 
@@ -1411,11 +1411,13 @@ const ApiService = {
     });
   },
 
-  getRestConfig: function(functionName, args) {
+  getRestConfig: function(functionName, args = []) {
     switch (functionName) {
       case 'getDashboardData':
+      case 'getDashboardDataApi':
         return { url: '/api/dashboard.php', method: 'GET' };
       case 'getAllVisitorsApi':
+      case 'getAllVisitorsDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
       case 'getVisitorDetailApi':
         return { url: '/api/visitors.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
@@ -1432,12 +1434,20 @@ const ApiService = {
           body: { visitorId: args[0], memo: args[1] }
         };
       case 'addVisitorApi':
+      case 'updateVisitorApi':
         return {
           url: '/api/visitors.php?action=add',
           method: 'POST',
           body: args[0] || {}
         };
+      case 'deleteVisitorApi':
+        return {
+          url: '/api/visitors.php?action=delete',
+          method: 'POST',
+          body: { id: args[0] }
+        };
       case 'getHearingSheetsListApi':
+      case 'getHearingListDataApi':
         return { url: '/api/hearings.php?action=list', method: 'GET' };
       case 'getHearingSheetFormDataApi':
         return { url: '/api/hearings.php?action=get&visitorId=' + (args[0] || ''), method: 'GET' };
@@ -1468,7 +1478,16 @@ const ApiService = {
           body: { id: args[0] }
         };
       case 'syncFormResponsesApi':
+      case 'checkAndRepairDataFormatApi':
         return { url: '/api/sync.php', method: 'POST' };
+      case 'updateSettingStartDateApi':
+        return {
+          url: '/api/settings.php?action=update',
+          method: 'POST',
+          body: { key: 'startDate', value: args[0] }
+        };
+      case 'getPriorityFollowDataApi':
+        return { url: '/api/visitors.php?action=list', method: 'GET' };
       default:
         return null;
     }
@@ -1491,7 +1510,8 @@ const ApiService = {
 };
 </script>
 
-  <script>
+  <!-- Client-side Modular Scripts Orchestrator -->
+<script>
   function parseFeelAbc(val) {
     if (!val) return '';
     const s = String(val).toUpperCase().trim();
@@ -1502,24 +1522,150 @@ const ApiService = {
     return '';
   }
 
-  let currentDashboardData = null;
-  let cachedAllVisitors = [];
-  let cachedHearingList = [];
-  let cachedScheduledEmails = [];
-  let currentPreviewItem = null;
+  function renderRankBadgeHtml(val) {
+    const feel = parseFeelAbc(val);
+    if (feel === 'A') {
+      return '<span style="background:#ffe3e3; color:#c92a2a; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク A</span>';
+    }
+    if (feel === 'B') {
+      return '<span style="background:#fff3bf; color:#e67700; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク B</span>';
+    }
+    if (feel === 'C') {
+      return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク C</span>';
+    }
+    return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">未評価</span>';
+  }
 
-  const initialVisitorId = "";
-  const rawInitialData = {};
+  function renderAttendButtonHtml(id, rawStatus) {
+    const isAttended = (rawStatus === '参加' || rawStatus === true);
+    const nextStatus = isAttended ? '不参加' : '参加';
+    const label = isAttended ? '参加' : '不参加';
+    const cssClass = isAttended ? 'btn-status-done' : 'btn-status-todo';
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggleAttend('${id}', '${nextStatus}')">${label}</button>`;
+  }
+
+  function render1to1ButtonHtml(id, rawStatus) {
+    const is11Done = (rawStatus === '済' || rawStatus === true);
+    const label = is11Done ? '1to1 済' : '1to1 未';
+    const cssClass = is11Done ? 'btn-status-done' : 'btn-status-todo';
+    const param = escapeJsParam(rawStatus || '未');
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggle1to1('${id}', '${param}')">${label}</button>`;
+  }
+
+  function renderJoinedButtonHtml(id, rawStatus) {
+    const isJoined = (rawStatus === '入会済' || rawStatus === true);
+    const label = isJoined ? '入会済' : '未入会';
+    const cssClass = isJoined ? 'btn-status-joined' : 'btn-status-todo';
+    const param = escapeJsParam(rawStatus || '未');
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggleJoined('${id}', '${param}')">${label}</button>`;
+  }
+
+  function renderVisitorNameLinkHtml(id, name) {
+    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:800; color:#364fc7; text-decoration:underline;">${escapeHtml(name)}</a>`;
+  }
 
   function hideLoading() {
     const el = document.getElementById('loading');
     if (el) el.style.display = 'none';
   }
-  setTimeout(hideLoading, 1500);
 
-  /* --- URL Hash Router & Share Utilities --- */
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeJsParam(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '');
+  }
+
+  function formatTruncatedCell(text, maxLen = 15) {
+    if (!text) return '-';
+    const str = String(text).trim();
+    if (str.length <= maxLen) return escapeHtml(str);
+    return `<span title="${escapeHtml(str)}">${escapeHtml(str.substring(0, maxLen))}...</span>`;
+  }
+
+  function formatDateForInput(str) {
+    if (!str) return '';
+    const clean = String(str).replace(/\//g, '-').trim();
+    const match = clean.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (match) {
+      const m = match[2].padStart(2, '0');
+      const d = match[3].padStart(2, '0');
+      return `${match[1]}-${m}-${d}`;
+    }
+    return clean;
+  }
+
+  function setCrudQuickDate(type) {
+    const input = document.getElementById('crud-v-event-date');
+    if (!input) return;
+
+    const now = new Date();
+    if (type === 'today') {
+      input.value = formatDateForInput(now.toISOString().split('T')[0]);
+    } else if (type === 'next-thu') {
+      const day = now.getDay();
+      const diff = (4 - day + 7) % 7 || 7;
+      const nextThu = new Date(now);
+      nextThu.setDate(now.getDate() + diff);
+      const yyyy = nextThu.getFullYear();
+      const mm = String(nextThu.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextThu.getDate()).padStart(2, '0');
+      input.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function copyCurrentPageUrl() {
+    let cleanUrl = window.location.href.split('?')[0];
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    const hash = rawHash.replace(/^#+/, '');
+    if (hash && hash !== 'dashboard') {
+      cleanUrl += '#' + hash;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cleanUrl).then(() => {
+        showToast('🔗 共有URLをコピーしました！');
+      }).catch(() => {
+        prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+      });
+    } else {
+      prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+    }
+  }
+
+  function showToast(msg) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#51cf66;"></i> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function handleError(err) {
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
+    alert('エラーが発生しました: ' + (err.message || err));
+  }
+</script>
+
+<script>
+  /* --- URL Hash Router & Navigation Utilities --- */
   let isProgrammaticHashChange = false;
-  let currentVdWebAppUrl = "";
 
   function updateUrlHash(hashStr, stateObj = {}) {
     if (!hashStr) return;
@@ -1549,58 +1695,6 @@ const ApiService = {
       switchTab(hash, false);
     }
   }
-
-  function copyCurrentPageUrl() {
-    let cleanUrl = window.location.href.split('?')[0];
-    const rawHash = decodeURIComponent(window.location.hash || '');
-    const hash = rawHash.replace(/^#+/, '');
-    if (hash && hash !== 'dashboard') {
-      cleanUrl += '#' + hash;
-    }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(cleanUrl).then(() => {
-        showToast('🔗 共有URLをコピーしました！');
-      }).catch(() => {
-        prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
-      });
-    } else {
-      prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    hideLoading();
-
-    if (rawInitialData && rawInitialData.dashboardData) {
-      try {
-        renderDashboard(rawInitialData.dashboardData);
-      } catch(e) {
-        console.error('Dashboard render error:', e);
-        fetchDashboardData();
-      }
-    } else {
-      fetchDashboardData();
-    }
-
-    window.addEventListener('hashchange', handleHashRouting);
-    if (typeof google !== 'undefined' && google.script && google.script.history) {
-      google.script.history.setChangeHandler((e) => {
-        handleHashRouting();
-      });
-    }
-
-    const hash = (window.location.hash || '').replace(/^#/, '');
-    if (hash.startsWith('visitor/')) {
-      openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
-      switchTab(hash, false);
-    } else if (initialVisitorId) {
-      openVisitorDetailView(initialVisitorId, true);
-    } else {
-      updateUrlHash('dashboard', { tab: 'dashboard' });
-    }
-  });
 
   /* --- ☰ Left Drawer Controller --- */
   function toggleLeftDrawer() {
@@ -1681,297 +1775,24 @@ const ApiService = {
     }
     tbody.innerHTML = html;
   }
+</script>
 
-  function fetchScheduledEmailsData(forceRefresh = false) {
-    if (!forceRefresh && cachedScheduledEmails && cachedScheduledEmails.length > 0) {
-      filterEmailSchedule();
-      return;
-    }
-    showTableSkeleton('table-email-schedule', 9, 4);
-    ApiService.call('getScheduledEmailsApi')
-      .then(res => {
-        if (res && res.success) {
-          cachedScheduledEmails = res.scheduledList || [];
-          if (document.getElementById('val-es-total-count')) document.getElementById('val-es-total-count').textContent = res.metrics ? res.metrics.totalCount : 0;
-          if (document.getElementById('val-es-today-count')) document.getElementById('val-es-today-count').textContent = res.metrics ? res.metrics.todayCount : 0;
-          if (document.getElementById('val-es-week-count')) document.getElementById('val-es-week-count').textContent = res.metrics ? res.metrics.thisWeekCount : 0;
+<script>
+  /* --- Client-Side Global State & Data Sync Service --- */
+  let currentDashboardData = null;
+  let cachedAllVisitors = [];
+  let cachedHearingList = [];
+  let cachedScheduledEmails = [];
+  let cachedPriorityFollowList = [];
+  let currentPreviewItem = null;
 
-          const testBanner = document.getElementById('es-test-mode-banner');
-          if (testBanner) {
-            if (res.isTestMode) {
-              testBanner.style.display = 'flex';
-              document.getElementById('es-test-email-list').textContent = (res.testEmailList || []).join(', ');
-            } else {
-              testBanner.style.display = 'none';
-            }
-          }
-
-          filterEmailSchedule();
-        }
-      })
-      .catch(handleError);
-  }
-
-  function filterEmailSchedule() {
-    const q = (document.getElementById('es-search-box').value || '').toLowerCase().trim();
-    const typeFilter = document.getElementById('es-type-filter').value;
-    const statusFilter = document.getElementById('es-status-filter').value;
-
-    let filtered = cachedScheduledEmails.filter(item => {
-      const matchesQ = !q || 
-        (item.visitorName && item.visitorName.toLowerCase().includes(q)) ||
-        (item.email && item.email.toLowerCase().includes(q)) ||
-        (item.inviter && item.inviter.toLowerCase().includes(q)) ||
-        (item.company && item.company.toLowerCase().includes(q));
-
-      let matchesType = true;
-      if (typeFilter === 'intro') matchesType = item.templateKey.includes('INTRO');
-      else if (typeFilter === 'remind') matchesType = item.templateKey.includes('REMIND');
-      else if (typeFilter === 'thanks') matchesType = item.templateKey.includes('THANKS');
-      else if (typeFilter === 'follow') matchesType = item.templateKey.includes('FOLLOW');
-
-      let matchesStatus = true;
-      if (statusFilter === 'today') matchesStatus = item.daysRemaining === 0;
-      else if (statusFilter === 'upcoming') matchesStatus = item.daysRemaining > 0;
-      else if (statusFilter === 'urgent') matchesStatus = item.daysRemaining < 0;
-
-      return matchesQ && matchesType && matchesStatus;
-    });
-
-    renderEmailScheduleTable(filtered);
-  }
-
-  /* --- 🛡️ 安全なエスケープヘルパー --- */
-  function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function escapeJsParam(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/\\/g, '\\\\')
-      .replace(/'/g, "\\'")
-      .replace(/"/g, '\\"')
-      .replace(/\r/g, '')
-      .replace(/\n/g, '\\n');
-  }
-
-  /* --- ✂️ テキスト省略＆ポップアップツールチップヘルパー --- */
-  function formatTruncatedCell(text, maxLen = 15) {
-    if (!text && text !== 0) return '-';
-    const str = String(text).trim();
-    if (!str || str === '-') return '-';
-    const safeAttr = escapeHtml(str);
-    if (str.length > maxLen) {
-      const shortText = escapeHtml(str.substring(0, maxLen) + '...');
-      return `<span class="cell-truncate-text" title="${safeAttr}">${shortText}</span>`;
-    }
-    return `<span title="${safeAttr}">${escapeHtml(str)}</span>`;
-  }
-
-  function renderEmailScheduleTable(list) {
-    const tbody = document.getElementById('table-email-schedule');
-    tbody.innerHTML = '';
-
-    if (!list || list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 24px;">送信予定のメールはありません。</td></tr>';
-      return;
-    }
-
-    list.forEach((item, index) => {
-      const tr = document.createElement('tr');
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${item.scheduledDate}</td>
-        <td><span class="badge-status ${item.statusBadgeClass}">${item.status}</span></td>
-        <td><strong>${item.visitorName}</strong><br><span style="font-size: 11px; color: #6c757d;">${item.email}</span></td>
-        <td>${formatTruncatedCell(item.company, 12)}<br><span style="font-size: 11px; color: #6c757d;">${formatTruncatedCell(item.profession, 12)}</span></td>
-        <td>${formatTruncatedCell(item.inviter, 12)}</td>
-        <td>${item.eventDate}</td>
-        <td><span style="font-weight: 600; font-size: 12px;">${item.mailTypeName}</span></td>
-        <td>${formatTruncatedCell(item.subject, 18)}</td>
-        <td style="text-align: center;">
-          <button class="btn-icon-action" title="プレビュー" onclick="openEmailPreviewModal(${index})">
-            <i class="fa-solid fa-eye"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function openEmailPreviewModal(index) {
-    const item = cachedScheduledEmails[index];
-    if (!item) return;
-    currentPreviewItem = item;
-
-    document.getElementById('ep-visitor-name').textContent = item.visitorName;
-    document.getElementById('ep-email').textContent = item.email;
-    document.getElementById('ep-mail-type').textContent = item.mailTypeName;
-    document.getElementById('ep-scheduled-date').textContent = item.scheduledDate;
-    document.getElementById('ep-status-badge').textContent = item.status;
-    document.getElementById('ep-event-date').textContent = item.eventDate;
-    document.getElementById('ep-inviter').textContent = item.inviter || '-';
-    document.getElementById('ep-subject').value = item.subject;
-    document.getElementById('ep-body').value = item.bodyFull;
-
-    document.getElementById('modal-email-preview').style.display = 'flex';
-  }
-
-  function closeEmailPreviewModal() {
-    document.getElementById('modal-email-preview').style.display = 'none';
-    currentPreviewItem = null;
-  }
-
-  function sendSingleTestEmailFromPreview() {
-    if (!currentPreviewItem) return;
-    if (!confirm(`「${currentPreviewItem.visitorName}様」向けのテスト送信を実行しますか？`)) return;
-
-    document.getElementById('loading').style.display = 'flex';
-    ApiService.call('executeSend', currentPreviewItem.email, currentPreviewItem.templateKey, null, null, null, currentPreviewItem.visitorId)
-      .then(() => {
-        document.getElementById('loading').style.display = 'none';
-        showToast('テストメールを送信しました！');
-        closeEmailPreviewModal();
-      })
-      .catch(handleError);
-  }
-
-  function fetchDashboardData() {
-    ApiService.call('getDashboardData')
-      .then(data => {
-        if (data) {
-          renderDashboard(data);
-        }
-      })
-      .catch(handleError);
-  }
-
-  function fetchAllVisitorsData() {
-    showTableSkeleton('table-all-visitors', 11, 5);
-    ApiService.call('getAllVisitorsApi')
-      .then(res => {
-        if (res && res.success) {
-          cachedAllVisitors = deduplicateVisitorListClient(res.list || []);
-          renderAllVisitorsTable(cachedAllVisitors);
-        } else {
-          renderAllVisitorsTable([]);
-        }
-      })
-      .catch(err => {
-        handleError(err);
-        renderAllVisitorsTable([]);
-      });
-  }
-
-  function fetchHearingListData() {
-    showTableSkeleton('table-hearing-list', 10, 5);
-    ApiService.call('getHearingSheetsListApi')
-      .then(res => {
-        if (res && res.success) {
-          cachedHearingList = deduplicateVisitorListClient(res.list || []);
-          cachedHearingList.sort((a, b) => {
-            const dA = a.eventDate || '';
-            const dB = b.eventDate || '';
-            if (dA !== dB) return dB.localeCompare(dA);
-            return (parseInt(b.visitorId, 10) || 0) - (parseInt(a.visitorId, 10) || 0);
-          });
-          renderHearingListTable(cachedHearingList);
-        }
-      })
-      .catch(handleError);
-  }
-
-  let donutChartInstance = null;
-  let lineChartInstance = null;
-
-  function renderBniTermsSelectOptions(termsList, selectedStartDate) {
-    if (!termsList || !Array.isArray(termsList)) return;
-    const activeStartDate = selectedStartDate || "2025/01/01";
-    const selects = [
-      document.getElementById('select-start-date'),
-      document.getElementById('setting-page-period-select')
-    ];
-
-    selects.forEach(selectEl => {
-      if (!selectEl) return;
-      let html = '';
-      termsList.forEach(t => {
-        const isSel = (t.dateStr === activeStartDate) || (!selectedStartDate && t.dateStr === "2025/01/01");
-        html += `<option value="${t.dateStr}" ${isSel ? 'selected' : ''}>${t.label}</option>`;
-      });
-      selectEl.innerHTML = html;
-    });
-  }
-
-  function renderDashboard(data) {
-    if (!data) return;
-    currentDashboardData = data;
-    hideLoading();
-
-    const cleanNum = (val, defaultVal) => {
-      if (typeof val === 'number') return val;
-      const s = String(val || "").replace(/[^0-9.]/g, '');
-      return s !== "" ? s : defaultVal;
-    };
-
-    const setSafeText = (id, text) => {
-      const el = document.getElementById(id);
-      if (el) el.innerText = text;
-    };
-
-    setSafeText('date-next-thu', data.nextThuStr || '');
-    setSafeText('date-after-next-thu', data.afterNextThuStr || '');
-    setSafeText('title-next-meeting-date', data.nextThuStr ? `${data.nextThuStr} ` : '次回');
-    setSafeText('title-last-meeting-date', data.lastThuStr ? `${data.lastThuStr} ` : '先週');
-
-    const m = data.metrics || {};
-    setSafeText('val-apply-count', cleanNum(m.applyCount, 0));
-    setSafeText('val-joined-count', cleanNum(m.joinedCount, 0));
-    setSafeText('val-target-goal', cleanNum(m.targetJoinGoal, 12));
-    setSafeText('val-next-thu-count', cleanNum(m.nextThuCount, 0));
-    setSafeText('val-after-next-thu-count', cleanNum(m.afterNextThuCount, 0));
-
-    setSafeText('val-join-rate', cleanNum(m.joinRate, "0.0") + '%');
-    setSafeText('val-achievement-rate', cleanNum(m.achievementRate, "0.0") + '%');
-    setSafeText('val-avg-visitors', cleanNum(m.avgVisitorCount, "0.0"));
-    setSafeText('val-feedback-rate', cleanNum(m.feedbackRate, "0.0") + '%');
-    setSafeText('val-hearing-rate', cleanNum(m.hearingRate, "0.0") + '%');
-
-    if (data.bniTermsList) {
-      try { renderBniTermsSelectOptions(data.bniTermsList, data.startDateStr); } catch(e) {}
-    }
-
-    try {
-      if (m.joinedCount !== undefined && m.targetJoinGoal !== undefined) {
-        initDonutChart(m.joinedCount, m.targetJoinGoal);
-      }
-    } catch(e) {}
-
-    try {
-      if (data.chart && data.chart.labels && data.chart.data) {
-        initLineChart(data.chart.labels, data.chart.data);
-      }
-    } catch(e) {}
-
-    try { renderHotVisitorsTable(deduplicateVisitorListClient(data.tables ? data.tables.hotVisitors : [])); } catch(e) { console.error(e); }
-    try { renderNextMeetingTable(deduplicateVisitorListClient(data.tables ? data.tables.nextMeeting : [])); } catch(e) { console.error(e); }
-    try { renderLastMeetingTable(deduplicateVisitorListClient(data.tables ? data.tables.lastMeeting : [])); } catch(e) { console.error(e); }
-    try { renderOneMonthTable(deduplicateVisitorListClient(data.tables ? data.tables.oneMonthFollowup : [])); } catch(e) { console.error(e); }
-    try { renderWeeklyStatsTable(data.tables ? data.tables.weeklyStats : []); } catch(e) { console.error(e); }
-    try { renderMonthlyStatsTable(data.tables ? data.tables.monthlyStats : []); } catch(e) { console.error(e); }
-  }
+  const initialVisitorId = "";
+  const rawInitialData = {};
 
   function normalizeNameKey(str) {
     if (!str) return '';
     let s = String(str);
-    try { s = s.normalize('NFKC'); } catch (e) {}
+    s = s.normalize('NFKC');
     s = s.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
     s = s.replace(/[・·\.\,\-\_]/g, '');
     s = s.replace(/[\s\u3000\t\r\n]+/g, '');
@@ -2002,1017 +1823,185 @@ const ApiService = {
         existing = furiganaMap.get(furiganaKey);
       }
 
-      if (!existing) {
-        const entry = { ...r, historyCount: 1 };
-        result.push(entry);
+      if (existing) {
+        if (!existing.allIds) existing.allIds = [existing.id];
+        if (r.id && !existing.allIds.includes(r.id)) existing.allIds.push(r.id);
 
-        if (emailKey) emailMap.set(emailKey, entry);
-        if (nameKey) nameMap.set(nameKey, entry);
-        if (furiganaKey) furiganaMap.set(furiganaKey, entry);
-      } else {
-        existing.historyCount = (existing.historyCount || 1) + 1;
+        const currentAtt = existing.isAttended || '不参加';
+        const newAtt = r.isAttended || '不参加';
+        if (newAtt === '参加' || currentAtt !== '参加') existing.isAttended = newAtt;
 
-        if (emailKey && !emailMap.has(emailKey)) emailMap.set(emailKey, existing);
-        if (nameKey && !nameMap.has(nameKey)) nameMap.set(nameKey, existing);
-        if (furiganaKey && !furiganaMap.has(furiganaKey)) furiganaMap.set(furiganaKey, existing);
+        const current11 = existing.is1to1 || '未';
+        const new11 = r.is1to1 || '未';
+        if (new11 === '済' || current11 !== '済') existing.is1to1 = new11;
 
-        const tExisting = new Date(existing.eventDate || 0).getTime();
-        const tNew = new Date(r.eventDate || 0).getTime();
+        const currentJoined = existing.isJoined || '未';
+        const newJoined = r.isJoined || '未';
+        if (newJoined === '入会済' || currentJoined !== '入会済') existing.isJoined = newJoined;
 
-        const isJoinedBool = (val) => (val === '入会済' || val === '済' || val === '入会' || val === true);
-        const mergedAttended = (existing.isAttended === '参加' || r.isAttended === '参加') ? '参加' : (r.isAttended || existing.isAttended);
-        const mergedJoined = (isJoinedBool(existing.isJoined) || isJoinedBool(r.isJoined)) ? '入会済' : (r.isJoined || existing.isJoined);
-        const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
-        const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
-
-        const mergedQ1 = r.q1 || existing.q1 || '';
-        const mergedQ2 = r.q2 || existing.q2 || '';
-        const mergedQ3 = r.q3 || existing.q3 || '';
-        const mergedQ4 = r.q4 || existing.q4 || '';
-        const mergedQ5 = r.q5 || existing.q5 || '';
-        const mergedQ6 = r.q6 || existing.q6 || '';
-        const mergedQ7 = r.q7 || existing.q7 || '';
-        const mergedOrientUser = r.orientUser || existing.orientUser || '';
-        const mergedOrientMemo = r.orientMemo || existing.orientMemo || '';
-        const mergedFollowMemo = r.followMemo || existing.followMemo || '';
-        const mergedFeelAbc = r.feelAbc || existing.feelAbc || '';
-        const mergedSheetUrl = r.hearingUrl || r.sheetUrl || existing.hearingUrl || existing.sheetUrl || '';
-
-        if (tNew >= tExisting) {
-          Object.assign(existing, r, {
-            historyCount: existing.historyCount,
-            isAttended: mergedAttended,
-            isJoined: mergedJoined,
-            is1to1: merged1to1,
-            hasHearingSheet: mergedHasHearing,
-            q1: mergedQ1,
-            q2: mergedQ2,
-            q3: mergedQ3,
-            q4: mergedQ4,
-            q5: mergedQ5,
-            q6: mergedQ6,
-            q7: mergedQ7,
-            orientUser: mergedOrientUser,
-            orientMemo: mergedOrientMemo,
-            followMemo: mergedFollowMemo,
-            feelAbc: mergedFeelAbc,
-            hearingUrl: mergedSheetUrl,
-            sheetUrl: mergedSheetUrl
-          });
-        } else {
-          existing.isAttended = mergedAttended;
-          existing.isJoined = mergedJoined;
-          existing.is1to1 = merged1to1;
-          existing.hasHearingSheet = mergedHasHearing;
-          existing.q1 = mergedQ1;
-          existing.q2 = mergedQ2;
-          existing.q3 = mergedQ3;
-          existing.q4 = mergedQ4;
-          existing.q5 = mergedQ5;
-          existing.q6 = mergedQ6;
-          existing.q7 = mergedQ7;
-          existing.orientUser = mergedOrientUser;
-          existing.orientMemo = mergedOrientMemo;
-          existing.followMemo = mergedFollowMemo;
-          existing.feelAbc = mergedFeelAbc;
-          existing.hearingUrl = mergedSheetUrl;
-          existing.sheetUrl = mergedSheetUrl;
+        const curFeel = parseFeelAbc(existing.feelAbc);
+        const newFeel = parseFeelAbc(r.feelAbc);
+        if (newFeel === 'A' || (newFeel === 'B' && curFeel !== 'A') || (newFeel === 'C' && !curFeel)) {
+          existing.feelAbc = newFeel;
         }
+
+        ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
+          if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
+            existing[k] = r[k];
+          }
+        });
+
+        if (r.eventDate && r.eventDate > (existing.eventDate || '')) {
+          existing.eventDate = r.eventDate;
+          if (r.inviter) existing.inviter = r.inviter;
+          if (r.profession) existing.profession = r.profession;
+          if (r.company) existing.company = r.company;
+        }
+      } else {
+        const item = Object.assign({}, r);
+        item.allIds = [item.id];
+        item.feelAbc = parseFeelAbc(item.feelAbc);
+        result.push(item);
+        if (emailKey) emailMap.set(emailKey, item);
+        if (nameKey) nameMap.set(nameKey, item);
+        if (furiganaKey) furiganaMap.set(furiganaKey, item);
       }
     });
 
     return result;
   }
 
-  /* --- 🔥 入会温度感の高いビジター(HOT)テーブル描画 (評価 A かつ 未入会 のみ、重複統合) --- */
-  function renderHotVisitorsTable(records) {
-    const tbody = document.getElementById('table-hot-visitors');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    // 評価 A のみ かつ 未入会 のみ表示 (1人1行に統合)
-    const validRecords = deduplicateVisitorListClient((records || []).filter(r => {
-      const g = parseFeelAbc(r.feelAbc);
-      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
-      return g === 'A' && !isJoined;
-    }));
-
-    if (validRecords.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">🔥 現在、感触【A評価】の最優先フォロー対象（未入会）ビジターはいません</td></tr>`;
-      return;
-    }
-
-    validRecords.forEach(r => {
-      const tr = document.createElement('tr');
-      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
-      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート' : '<i class="fa-solid fa-plus"></i> 入力';
-
-      const countBadge = (r.historyCount && r.historyCount > 1)
-        ? `<span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-weight:700; margin-left:4px;">${r.historyCount}回目</span>`
-        : (r.attendanceCount ? `<span style="font-size:10px; background:#f1f5f9; color:#475569; padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${escapeHtml(r.attendanceCount)}</span>` : '');
-
-      tr.innerHTML = `
-        <td style="font-weight: 700; white-space: nowrap; color: #1e293b;">${escapeHtml(r.eventDate)}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline;" title="クリックでプロファイル詳細を表示">${escapeHtml(r.name)}</strong>${countBadge}
-          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${formatTruncatedCell(r.company, 14)} (${formatTruncatedCell(r.profession, 12)})</div>
-        </td>
-        <td style="font-weight: 600; color: #0f172a;">${formatTruncatedCell(r.inviter, 10)}</td>
-        <td style="color: #334155;">${formatTruncatedCell(r.orientUser, 10)}</td>
-        <td><div style="font-size: 12px; line-height: 1.4; color: #334155;">${formatTruncatedCell(r.q7 || r.orientMemo, 25)}</div></td>
-        <td style="white-space: nowrap;">
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
-            <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
-            <span class="badge-toggle none btn-toggle-joined" title="クリックで入会に変更">未</span>
-            <button class="btn-icon-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i></button>
-            <button class="btn-icon-action btn-icon-danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
-      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
-      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
-      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
-      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
-
-      tbody.appendChild(tr);
-    });
+  function fetchDashboardData(forceRefresh = false) {
+    showTableSkeleton('table-hot-visitors', 7, 3);
+    ApiService.call('getDashboardDataApi')
+      .then(res => {
+        if (res && res.success && res.data) {
+          renderDashboard(res.data);
+        }
+      })
+      .catch(handleError);
   }
 
-  /* --- 📊 週別（定例会別）ビジター集計テーブル描画 --- */
-  function renderWeeklyStatsTable(records) {
-    const tbody = document.getElementById('table-weekly-stats');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 16px;">集計データはありません</td></tr>`;
+  function fetchAllVisitorsData(forceRefresh = false) {
+    if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      filterAllVisitorsTable();
       return;
     }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 700; color: #1e293b;">${escapeHtml(r.date)}</td>
-        <td style="text-align: center; font-weight: 700; color: var(--primary-accent);">${r.applyCount || 0}</td>
-        <td style="text-align: center; font-weight: 600; color: #2563eb;">${r.attendedCount || 0}</td>
-        <td style="text-align: center; font-weight: 700; color: #16a34a;">${r.joinedCount || 0}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- 📅 月別ビジター集計テーブル描画 --- */
-  function renderMonthlyStatsTable(records) {
-    const tbody = document.getElementById('table-monthly-stats');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 16px;">集計データはありません</td></tr>`;
-      return;
-    }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 700; color: #1e293b;">${escapeHtml(r.month)}</td>
-        <td style="text-align: center; font-weight: 700; color: var(--primary-accent);">${r.applyCount || 0}</td>
-        <td style="text-align: center; font-weight: 600; color: #2563eb;">${r.attendedCount || 0}</td>
-        <td style="text-align: center; font-weight: 700; color: #16a34a;">${r.joinedCount || 0}</td>
-        <td style="text-align: center; font-weight: 700; color: #0d9488;">${escapeHtml(r.joinRate || '0.0%')}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- 🔥 最優先フォロー専用ページ（感触A評価・未入会一覧 ＆ 50件ページネーション） --- */
-  let pfCurrentPage = 1;
-  const pfPageSize = 50;
-  let pfFilteredList = [];
-  let pfGradeFilter = 'ALL';
-  let cachedPriorityFollowList = [];
-
-  function fetchPriorityFollowData() {
-    showTableSkeleton('table-priority-follow-page', 10, 5);
-    ApiService.call('getAllVisitorsApi')
+    showTableSkeleton('table-all-visitors', 9, 5);
+    ApiService.call('getAllVisitorsDataApi')
       .then(res => {
         if (res && res.success) {
-          const list = res.list || [];
-          // まず全体を重複統合（1人1行）してから A/B評価 かつ 未入会 のみを抽出
-          const deduplicatedList = deduplicateVisitorListClient(list);
-          cachedPriorityFollowList = deduplicatedList.filter(item => {
-            const grade = parseFeelAbc(item.feelAbc || item.feeling);
-            const joinedVal = item.isJoined || item.is_joined;
-            const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-            return (grade === 'A' || grade === 'B') && !isJoined;
-          });
+          cachedAllVisitors = res.visitors || [];
+          filterAllVisitorsTable();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchHearingListData(forceRefresh = false) {
+    if (!forceRefresh && cachedHearingList && cachedHearingList.length > 0) {
+      renderHearingListTable(cachedHearingList);
+      return;
+    }
+    showTableSkeleton('table-hearings', 8, 5);
+    ApiService.call('getHearingListDataApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedHearingList = res.hearings || [];
+          renderHearingListTable(cachedHearingList);
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchScheduledEmailsData(forceRefresh = false) {
+    if (!forceRefresh && cachedScheduledEmails && cachedScheduledEmails.length > 0) {
+      filterEmailSchedule();
+      return;
+    }
+    showTableSkeleton('table-email-schedule', 9, 4);
+    ApiService.call('getScheduledEmailsApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedScheduledEmails = res.list || [];
+          filterEmailSchedule();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function fetchPriorityFollowData(forceRefresh = false) {
+    if (!forceRefresh && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      filterPriorityFollowTable();
+      return;
+    }
+    showTableSkeleton('table-priority-follow', 9, 5);
+    ApiService.call('getPriorityFollowDataApi')
+      .then(res => {
+        if (res && res.success) {
+          cachedPriorityFollowList = res.visitors || [];
           filterPriorityFollowTable();
-        } else {
-          cachedPriorityFollowList = [];
-          renderPriorityFollowCurrentPage();
-        }
-      })
-      .catch(err => {
-        handleError(err);
-        cachedPriorityFollowList = [];
-        renderPriorityFollowCurrentPage();
-      });
-  }
-
-  function setPriorityFollowGradeFilter(grade) {
-    pfGradeFilter = grade;
-    ['all', 'a', 'b', 'c'].forEach(g => {
-      const btn = document.getElementById('pf-tab-' + g);
-      if (btn) btn.classList.remove('active');
-    });
-    const activeBtn = document.getElementById('pf-tab-' + grade.toLowerCase());
-    if (activeBtn) activeBtn.classList.add('active');
-    filterPriorityFollowTable();
-  }
-
-  function filterPriorityFollowTable() {
-    const q = (document.getElementById('search-priority-follow-input')?.value || '').toLowerCase().trim();
-
-    pfFilteredList = cachedPriorityFollowList.filter(r => {
-      const grade = parseFeelAbc(r.feelAbc || r.feeling);
-      const joinedVal = r.isJoined || r.is_joined;
-      const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-
-      let matchesGrade = !isJoined;
-      if (pfGradeFilter === 'A') {
-        matchesGrade = matchesGrade && (grade === 'A');
-      } else if (pfGradeFilter === 'B') {
-        matchesGrade = matchesGrade && (grade === 'B');
-      } else {
-        matchesGrade = matchesGrade && (grade === 'A' || grade === 'B');
-      }
-
-      const matchesQ = !q ||
-        (r.name || '').toLowerCase().includes(q) ||
-        (r.company || '').toLowerCase().includes(q) ||
-        (r.profession || '').toLowerCase().includes(q) ||
-        (r.inviter || '').toLowerCase().includes(q) ||
-        (r.orientUser || '').toLowerCase().includes(q);
-
-      return matchesGrade && matchesQ;
-    });
-
-    pfCurrentPage = 1;
-    renderPriorityFollowCurrentPage();
-  }
-
-  function changePriorityFollowPage(delta) {
-    const totalPages = Math.ceil(pfFilteredList.length / pfPageSize) || 1;
-    pfCurrentPage += delta;
-    if (pfCurrentPage < 1) pfCurrentPage = 1;
-    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
-    renderPriorityFollowCurrentPage();
-  }
-
-  function renderPriorityFollowCurrentPage() {
-    const tbody = document.getElementById('table-priority-follow-page');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const totalRecords = pfFilteredList.length;
-    const totalPages = Math.ceil(totalRecords / pfPageSize) || 1;
-    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
-    if (pfCurrentPage < 1) pfCurrentPage = 1;
-
-    const startIdx = (pfCurrentPage - 1) * pfPageSize;
-    const endIdx = Math.min(startIdx + pfPageSize, totalRecords);
-
-    // ページネーションUI表示の更新
-    const infoEl = document.getElementById('pf-pagination-info');
-    const pageNumEl = document.getElementById('pf-pagination-page-num');
-    const prevBtn = document.getElementById('btn-pf-prev-page');
-    const nextBtn = document.getElementById('btn-pf-next-page');
-
-    if (infoEl) {
-      infoEl.innerText = totalRecords === 0
-        ? '全 0 件中 0 - 0 件を表示'
-        : `全 ${totalRecords} 件中 ${startIdx + 1} - ${endIdx} 件を表示`;
-    }
-    if (pageNumEl) pageNumEl.innerText = `${pfCurrentPage} / ${totalPages}`;
-    if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
-    if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
-
-    if (totalRecords === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">該当する最優先フォロー対象のビジターはいません</td></tr>`;
-      return;
-    }
-
-    const pageRecords = pfFilteredList.slice(startIdx, endIdx);
-
-    pageRecords.forEach(r => {
-      const tr = document.createElement('tr');
-      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const hearingBtnClass = (r.hasHearingSheet || r.sheetUrl) ? 'btn-hearing has-data' : 'btn-hearing';
-      const hearingBtnText = (r.hasHearingSheet || r.sheetUrl) ? '<i class="fa-solid fa-pen-to-square"></i> シート' : '<i class="fa-solid fa-plus"></i> 入力';
-
-      const countBadge = (r.historyCount && r.historyCount > 1)
-        ? `<span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-weight:700; margin-left:4px;">${r.historyCount}回目</span>`
-        : (r.attendanceCount ? `<span style="font-size:10px; background:#f1f5f9; color:#475569; padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${escapeHtml(r.attendanceCount)}</span>` : '');
-
-      const isJoinedVal = r.isJoined || r.is_joined;
-      const isJoined = (isJoinedVal === '入会済' || isJoinedVal === '済' || isJoinedVal === '入会' || isJoinedVal === true);
-      const joinClass = isJoined ? 'done' : 'none';
-      const joinText = isJoined ? '入会済' : '未';
-
-      const grade = parseFeelAbc(r.feelAbc || r.feeling);
-      let gradeBadge = '<span style="font-size: 13px; font-weight: 800; background: #e9ecef; color: #495057; padding: 3px 10px; border-radius: 6px; display: inline-block;">-</span>';
-      if (grade === 'A') {
-        gradeBadge = '<span style="font-size: 15px; font-weight: 900; background: #ffe3e3; color: #c92a2a; padding: 4px 14px; border-radius: 6px; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">A</span>';
-      } else if (grade === 'B') {
-        gradeBadge = '<span style="font-size: 15px; font-weight: 900; background: #fff3bf; color: #d97706; padding: 4px 14px; border-radius: 6px; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">B</span>';
-      } else if (grade === 'C') {
-        gradeBadge = '<span style="font-size: 14px; font-weight: 800; background: #e9ecef; color: #495057; padding: 3px 10px; border-radius: 6px; display: inline-block;">C</span>';
-      }
-
-      tr.innerHTML = `
-        <td style="font-weight: 700; white-space: nowrap; color: #1e293b;">${escapeHtml(r.eventDate || '-')}</td>
-        <td>${gradeBadge}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline;" title="クリックでビジター詳細プロファイルを表示">${escapeHtml(r.name)}</strong>${countBadge}
-          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${formatTruncatedCell(r.company, 14)} (${formatTruncatedCell(r.profession, 12)})</div>
-        </td>
-        <td style="font-weight: 600; color: #0f172a;">${formatTruncatedCell(r.inviter || '-', 10)}</td>
-        <td style="color: #334155;">${formatTruncatedCell(r.orientUser || '-', 10)}</td>
-        <td><div style="font-size: 12px; line-height: 1.4; color: #334155;">${formatTruncatedCell(r.q7 || r.orientMemo || r.followMemo, 25)}</div></td>
-        <td style="white-space: nowrap;">
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
-            <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
-            <span class="badge-toggle ${joinClass} btn-toggle-joined" title="入会トグル">${escapeHtml(joinText)}</span>
-            <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i></button>
-          </div>
-        </td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.visitorId || r.id);
-      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.visitorId || r.id, r.is1to1);
-      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.visitorId || r.id, r.isJoined);
-      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  function initDonutChart(joined, target) {
-    const canvas = document.getElementById('donutChart');
-    if (!canvas || typeof Chart === 'undefined') return;
-    if (donutChartInstance) {
-      try { donutChartInstance.destroy(); } catch(e) {}
-    }
-    const ctx = canvas.getContext('2d');
-    const remain = Math.max(0, target - joined);
-    try {
-      donutChartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [joined, remain],
-            backgroundColor: ['#e63946', '#e9ecef'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          cutout: '72%',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { tooltip: { enabled: false } }
-        }
-      });
-    } catch(e) {
-      console.warn('Donut chart error:', e);
-    }
-  }
-
-  function initLineChart(labels, values) {
-    const canvas = document.getElementById('lineChart');
-    if (!canvas || typeof Chart === 'undefined') return;
-    if (lineChartInstance) {
-      try { lineChartInstance.destroy(); } catch(e) {}
-    }
-    const ctx = canvas.getContext('2d');
-    try {
-      lineChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'ビジター数',
-            data: values,
-            borderColor: '#e63946',
-            backgroundColor: 'rgba(230, 57, 70, 0.1)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 3,
-            pointBackgroundColor: '#e63946'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 9 } } },
-            y: { display: false, beginAtZero: true }
-          }
-        }
-      });
-    } catch(e) {
-      console.warn('Line chart error:', e);
-    }
-  }
-
-  /* --- 📅 Table 1: 次回定例会 (超スッキリ7列) --- */
-  function renderNextMeetingTable(records) {
-    const tbody = document.getElementById('table-next-meeting');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">次回定例会のビジターデータはありません</td></tr>`;
-      return;
-    }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      const attendClass = r.isAttended === '参加' ? 'attended' : 'absent';
-      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
-      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;" title="プロファイルを表示">${escapeHtml(r.name)}</strong>
-          <div style="color: #6c757d; font-size: 11px;">${escapeHtml(r.furigana)}</div>
-        </td>
-        <td>
-          <strong style="font-size: 13px; color: #343a40;">${formatTruncatedCell(r.company, 15)}</strong>
-          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.profession, 15)}</div>
-        </td>
-        <td style="font-weight: 700; color:#d6336c;">${formatTruncatedCell(r.inviter, 12)}</td>
-        <td>
-          <label class="toggle-attend-wrapper">
-            <input type="checkbox" class="toggle-attend ${attendClass}" ${r.isAttended === '参加' ? 'checked' : ''} />
-          </label>
-        </td>
-        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
-        <td style="white-space: nowrap;">
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <button class="btn-icon-action btn-detail-act" style="background:#4c6ef5; color:#fff;" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i></button>
-            <button class="btn-icon-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i></button>
-            <button class="btn-icon-action btn-icon-danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.toggle-attend').onchange = (e) => toggleAttend(r.id, e.target.checked ? '参加' : '不参加');
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
-      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
-      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- 📅 先週定例会のビジター --- */
-  function renderLastMeetingTable(records) {
-    const tbody = document.getElementById('table-last-meeting');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">先週定例会のビジターデータはありません</td></tr>`;
-      return;
-    }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
-      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
-      const attendBadge = r.isAttended === '参加'
-        ? `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700;">参加</span>`
-        : `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700;">不参加</span>`;
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;">${escapeHtml(r.name)}</strong>
-          <div style="color: #6c757d; font-size: 11px;">${escapeHtml(r.furigana)}</div>
-        </td>
-        <td>
-          <strong style="font-size: 13px; color: #343a40;">${formatTruncatedCell(r.company, 15)}</strong>
-          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.profession, 15)}</div>
-        </td>
-        <td style="font-weight: 700; color:#d6336c;">${formatTruncatedCell(r.inviter, 12)}</td>
-        <td>${attendBadge}</td>
-        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderOneMonthTable(records) {
-    const tbody = document.getElementById('table-one-month');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">フォローアップ対象のビジターはありません</td></tr>`;
-      return;
-    }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
-      const joinClass = isJoined ? 'done' : 'none';
-      const joinText = isJoined ? '入会済' : '未';
-
-      const feelTag = r.feelAbc ? `<span class="badge-feel feel-${escapeHtml(r.feelAbc)}">${escapeHtml(r.feelAbc)}評価</span>` : `<span style="color:#adb5bd; font-size:11px;">未入力</span>`;
-      const q7Text = r.q7 || r.orientMemo || 'ヒアリングシート未入力';
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;">${escapeHtml(r.name)}</strong>
-          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.company, 12)} (${formatTruncatedCell(r.profession, 12)})</div>
-        </td>
-        <td>${feelTag}</td>
-        <td style="font-weight: 700; color: #364fc7;">${formatTruncatedCell(r.orientUser, 12)}</td>
-        <td><div style="font-size: 12px; color: #343a40; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; max-width: 280px; line-height: 1.4;">${formatTruncatedCell(q7Text, 20)}</div></td>
-        <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
-        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(joinText)}</span></td>
-        <td style="white-space: nowrap;">
-          <div class="action-btn-group">
-            <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="プロファイル詳細"><i class="fa-solid fa-id-card"></i></button>
-          </div>
-        </td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
-      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
-      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- 50人ずつページネーション変数 ＆ ロジック --- */
-  let visitorsCurrentPage = 1;
-  const visitorsPageSize = 50;
-  let visitorsFilteredList = [];
-
-  function changeVisitorsPage(delta) {
-    const totalPages = Math.ceil(visitorsFilteredList.length / visitorsPageSize) || 1;
-    visitorsCurrentPage += delta;
-    if (visitorsCurrentPage < 1) visitorsCurrentPage = 1;
-    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
-    renderVisitorsCurrentPage();
-  }
-
-  function renderVisitorsCurrentPage() {
-    const tbody = document.getElementById('table-all-visitors');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    const totalRecords = visitorsFilteredList.length;
-    const totalPages = Math.ceil(totalRecords / visitorsPageSize) || 1;
-    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
-    if (visitorsCurrentPage < 1) visitorsCurrentPage = 1;
-
-    const startIdx = (visitorsCurrentPage - 1) * visitorsPageSize;
-    const endIdx = Math.min(startIdx + visitorsPageSize, totalRecords);
-
-    // ページネーションUI表示の更新
-    const infoEl = document.getElementById('visitors-pagination-info');
-    const pageNumEl = document.getElementById('visitors-pagination-page-num');
-    const prevBtn = document.getElementById('btn-visitors-prev-page');
-    const nextBtn = document.getElementById('btn-visitors-next-page');
-
-    if (infoEl) {
-      infoEl.innerText = totalRecords === 0
-        ? '全 0 件中 0 - 0 件を表示'
-        : `全 ${totalRecords} 件中 ${startIdx + 1} - ${endIdx} 件を表示`;
-    }
-    if (pageNumEl) pageNumEl.innerText = `${visitorsCurrentPage} / ${totalPages}`;
-    if (prevBtn) prevBtn.disabled = (visitorsCurrentPage <= 1);
-    if (nextBtn) nextBtn.disabled = (visitorsCurrentPage >= totalPages);
-
-    if (totalRecords === 0) {
-      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #868e96; padding: 20px;">データがありません</td></tr>`;
-      return;
-    }
-
-    const pageRecords = visitorsFilteredList.slice(startIdx, endIdx);
-
-    pageRecords.forEach(r => {
-      const tr = document.createElement('tr');
-      const attendClass = r.isAttended === '参加' ? 'attended' : 'absent';
-      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
-      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
-      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
-      const joinClass = isJoined ? 'done' : 'none';
-      const joinText = isJoined ? '入会済' : '未';
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
-        <td style="font-weight: 700;">${formatTruncatedCell(r.inviter, 12)}</td>
-        <td style="font-weight: 700; white-space: nowrap;">${escapeHtml(r.eventDate)}</td>
-        <td>
-          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;" title="クリックでビジター詳細プロファイルを表示">${escapeHtml(r.name)}</strong>
-          <div style="color: #6c757d; font-size: 11px; margin-top: 2px;">${escapeHtml(r.furigana)}</div>
-        </td>
-        <td>
-          <div style="font-weight: 600; color: #212529; font-size: 13px;">${formatTruncatedCell(r.profession, 15)}</div>
-          <div style="color: #6c757d; font-size: 11px; margin-top: 2px;">${formatTruncatedCell(r.company, 15)}</div>
-        </td>
-        <td><span class="badge-count">${escapeHtml(r.attendanceCount)}</span></td>
-        <td>
-          <label class="toggle-attend-wrapper">
-            <input type="checkbox" class="toggle-attend ${attendClass}" ${r.isAttended === '参加' ? 'checked' : ''} />
-          </label>
-        </td>
-        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
-        <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
-        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(joinText)}</span></td>
-        <td style="white-space: nowrap;">
-          <div class="action-btn-group">
-            <button class="btn-table-action primary btn-detail-act" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i> 詳細</button>
-            <button class="btn-table-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i> 編集</button>
-            <button class="btn-table-action danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i> 削除</button>
-          </div>
-        </td>
-      `;
-
-      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.toggle-attend').onchange = (e) => toggleAttend(r.id, e.target.checked ? '参加' : '不参加');
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
-      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
-      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
-      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
-      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
-      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- ビジター全一覧テーブル描写 (CRUD ＆ 50件ページネーション対応) --- */
-  function renderAllVisitorsTable(records) {
-    if (!records) records = [];
-
-    // 参加日順（最新順）に並び替え
-    visitorsFilteredList = [...records].sort((a, b) => {
-      const ta = a.eventDate ? new Date(a.eventDate).getTime() : 0;
-      const tb = b.eventDate ? new Date(b.eventDate).getTime() : 0;
-      return tb - ta;
-    });
-
-    visitorsCurrentPage = 1;
-    renderVisitorsCurrentPage();
-  }
-
-  function filterAllVisitorsTable() {
-    const q = (document.getElementById('search-visitors-input')?.value || '').toLowerCase().trim();
-    const fromVal = document.getElementById('visitors-date-from')?.value || '';
-    const toVal = document.getElementById('visitors-date-to')?.value || '';
-    const fromDate = fromVal ? new Date(fromVal) : null;
-    const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
-
-    const filtered = cachedAllVisitors.filter(r => {
-      // テキスト検索
-      const matchesQ = !q ||
-        (r.name || '').toLowerCase().includes(q) ||
-        (r.company || '').toLowerCase().includes(q) ||
-        (r.profession || '').toLowerCase().includes(q) ||
-        (r.inviter || '').toLowerCase().includes(q);
-
-      // 日付範囲フィルタ
-      let matchesDate = true;
-      if (fromDate || toDate) {
-        const d = r.eventDate ? new Date(r.eventDate) : null;
-        if (!d) return false;
-        if (fromDate && d < fromDate) matchesDate = false;
-        if (toDate && d > toDate) matchesDate = false;
-      }
-
-      return matchesQ && matchesDate;
-    });
-
-    renderAllVisitorsTable(filtered);
-  }
-
-  function clearVisitorsDateFilter() {
-    const fromEl = document.getElementById('visitors-date-from');
-    const toEl = document.getElementById('visitors-date-to');
-    if (fromEl) fromEl.value = '';
-    if (toEl) toEl.value = '';
-    filterAllVisitorsTable();
-  }
-
-  /* --- ヒアリングシート一覧テーブル描写 --- */
-  function renderHearingListTable(records) {
-    const tbody = document.getElementById('table-hearing-list');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    if (!records || records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">ヒアリングシート回答データがまだありません</td></tr>`;
-      return;
-    }
-
-    records.forEach(r => {
-      const tr = document.createElement('tr');
-      const abcBadge = r.feelAbc ? `<span class="badge-abc ${escapeHtml(r.feelAbc)}">${escapeHtml(r.feelAbc)}</span>` : '<span style="color:#adb5bd;">-</span>';
-
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${escapeHtml(r.visitorId)}</td>
-        <td style="font-weight: 700; white-space: nowrap;">${escapeHtml(r.eventDate)}</td>
-        <td style="font-weight: 800;">${escapeHtml(r.name)}</td>
-        <td>${formatTruncatedCell(r.company, 12)}<br><span style="font-size:11px; color:#6c757d;">${formatTruncatedCell(r.profession, 12)}</span></td>
-        <td style="font-weight: 700;">${formatTruncatedCell(r.inviter, 12)}</td>
-        <td>${formatTruncatedCell(r.orientUser, 12)}</td>
-        <td>${abcBadge}</td>
-        <td>${formatTruncatedCell(r.q1, 15)}</td>
-        <td>${formatTruncatedCell(r.orientMemo, 15)}</td>
-        <td>
-          <button class="btn-hearing has-data btn-hearing-act"><i class="fa-solid fa-pen-to-square"></i> 確認・編集</button>
-        </td>
-      `;
-
-      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.visitorId);
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  /* --- CRUD Modal Controls --- */
-  function formatDateForInput(str) {
-    if (!str) return '';
-    const parts = String(str).replace(/年|月/g, '/').replace(/日/g, '').replace(/\./g, '/').replace(/-/g, '/').split('/');
-    if (parts.length === 3) {
-      const y = parts[0].trim();
-      const m = parts[1].trim().padStart(2, '0');
-      const d = parts[2].trim().padStart(2, '0');
-      return `${y}-${m}-${d}`;
-    }
-    return '';
-  }
-
-  function setCrudQuickDate(type) {
-    if (!currentDashboardData) return;
-    const dateStr = type === 'next' ? currentDashboardData.nextThuStr : currentDashboardData.afterNextThuStr;
-    const formatted = formatDateForInput(dateStr);
-    if (formatted) {
-      document.getElementById('crud-v-event-date').value = formatted;
-    }
-  }
-
-  function openAddVisitorModal() {
-    document.getElementById('crud-modal-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> 新規ビジター登録';
-    document.getElementById('crud-v-id').value = '';
-    document.getElementById('crud-v-name').value = '';
-    document.getElementById('crud-v-furigana').value = '';
-    
-    const defaultDate = currentDashboardData ? currentDashboardData.nextThuStr : '';
-    document.getElementById('crud-v-event-date').value = formatDateForInput(defaultDate);
-
-    document.getElementById('crud-v-inviter').value = '';
-    document.getElementById('crud-v-profession').value = '';
-    document.getElementById('crud-v-company').value = '';
-    document.getElementById('crud-v-email').value = '';
-    document.getElementById('crud-v-attendance-count').value = '初めて';
-
-    document.getElementById('modal-visitor-crud').style.display = 'flex';
-  }
-
-  function openEditVisitorModal(id) {
-    const v = cachedAllVisitors.find(item => String(item.id) === String(id));
-    if (!v) { alert('対象データの取得に失敗しました'); return; }
-
-    document.getElementById('crud-modal-title').innerHTML = '<i class="fa-solid fa-user-pen"></i> ビジター情報の編集';
-    document.getElementById('crud-v-id').value = v.id;
-    document.getElementById('crud-v-name').value = v.name || '';
-    document.getElementById('crud-v-furigana').value = v.furigana || '';
-    document.getElementById('crud-v-event-date').value = formatDateForInput(v.eventDate || '');
-    document.getElementById('crud-v-inviter').value = v.inviter || '';
-    document.getElementById('crud-v-profession').value = v.profession || '';
-    document.getElementById('crud-v-company').value = v.company || '';
-    document.getElementById('crud-v-email').value = v.email || '';
-    document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
-
-    document.getElementById('modal-visitor-crud').style.display = 'flex';
-  }
-
-  function closeCrudModal() {
-    document.getElementById('modal-visitor-crud').style.display = 'none';
-  }
-
-  function submitCrudVisitorForm() {
-    const id = document.getElementById('crud-v-id').value;
-    const rawDate = document.getElementById('crud-v-event-date').value.trim();
-    const formattedDate = rawDate.replace(/-/g, '/');
-
-    const vData = {
-      id: id,
-      name: document.getElementById('crud-v-name').value.trim(),
-      furigana: document.getElementById('crud-v-furigana').value.trim(),
-      eventDate: formattedDate,
-      inviter: document.getElementById('crud-v-inviter').value.trim(),
-      profession: document.getElementById('crud-v-profession').value.trim(),
-      company: document.getElementById('crud-v-company').value.trim(),
-      email: document.getElementById('crud-v-email').value.trim(),
-      attendanceCount: document.getElementById('crud-v-attendance-count').value
-    };
-
-    if (!vData.name || !vData.eventDate) {
-      alert('氏名と参加日は必須入力です');
-      return;
-    }
-
-    closeCrudModal();
-    document.getElementById('loading').style.display = 'flex';
-
-    const isEdit = !!id;
-    const apiName = isEdit ? 'updateVisitorApi' : 'addVisitorApi';
-    const msg = isEdit ? 'ビジター情報を更新しました' : '新規ビジターを登録しました';
-
-    ApiService.call(apiName, vData)
-      .then(res => {
-        document.getElementById('loading').style.display = 'none';
-        if (res.success) {
-          showToast(`✅ ${msg}`);
-          fetchDashboardData();
-          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
         }
       })
       .catch(handleError);
   }
 
-  function deleteVisitor(id, name) {
-    if (!confirm(`【確認】ビジター「${name}」のデータを削除してもよろしいですか？`)) return;
-
-    document.getElementById('loading').style.display = 'flex';
-    ApiService.call('deleteVisitorApi', id)
-      .then(res => {
-        document.getElementById('loading').style.display = 'none';
-        if (res.success) {
-          showToast(`🗑️ ${name}様のデータを削除しました`);
-          fetchDashboardData();
-          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
-        }
-      })
-      .catch(handleError);
-  }
-
-  /* --- Hearing Form Modal Controls --- */
-  function openHearingFormModal(id) {
-    document.getElementById('loading').style.display = 'flex';
-
-    ApiService.call('getHearingSheetFormDataApi', id)
-      .then(res => {
-        document.getElementById('loading').style.display = 'none';
-        if (!res.success) { alert('データ取得失敗'); return; }
-
-        const info = res.visitorInfo || {};
-        const form = res.formData || {};
-
-        document.getElementById('hf-visitor-id').value = id;
-        document.getElementById('hf-event-date').innerText = info.event_date || '-';
-        document.getElementById('hf-name').innerText = info.visitor_name || '-';
-        document.getElementById('hf-furigana').innerText = info.furigana || '';
-        document.getElementById('hf-company').innerText = info.company || '-';
-        document.getElementById('hf-profession').innerText = info.profession || '-';
-        document.getElementById('hf-inviter').innerText = info.inviter || '-';
-
-        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
-        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
-
-        document.getElementById('hf-q1').value = form.q1 || '';
-        document.getElementById('hf-q2').value = form.q2 || '';
-        document.getElementById('hf-q3').value = form.q3 || '';
-        document.getElementById('hf-q4').value = form.q4 || '';
-        document.getElementById('hf-q5').value = form.q5 || '';
-        document.getElementById('hf-q6').value = form.q6 || '';
-        document.getElementById('hf-q7').value = form.q7 || '';
-
-        selectAbc(form.feelAbc || '');
-
-        document.getElementById('hf-orient-memo').value = form.orientMemo || '';
-        document.getElementById('hf-follow-memo').value = form.followMemo || '';
-
-        document.getElementById('modal-hearing-form').style.display = 'flex';
-      })
-      .catch(handleError);
-  }
-
-  function renderOrientUserOptions(cats, selectedVal) {
-    const select = document.getElementById('hf-orient-user');
-    if (!select) return;
-    select.innerHTML = '<option value="">-- DBより選択 (オリエン担当者) --</option>';
-
-    let found = false;
-    if (cats && cats.length > 0) {
-      cats.forEach(catObj => {
-        const grp = document.createElement('optgroup');
-        grp.label = catObj.category;
-        if (catObj.members && catObj.members.length > 0) {
-          catObj.members.forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m.name;
-            opt.textContent = `${m.name} (${m.profession || ''})`;
-            if (m.name === selectedVal) {
-              opt.selected = true;
-              found = true;
-            }
-            grp.appendChild(opt);
-          });
-        }
-        select.appendChild(grp);
-      });
-    }
-
-    if (selectedVal && !found) {
-      const opt = document.createElement('option');
-      opt.value = selectedVal;
-      opt.textContent = `${selectedVal} (登録内容)`;
-      opt.selected = true;
-      select.appendChild(opt);
-    }
-
-    if (selectedVal) select.value = selectedVal;
-  }
-
-  function closeHearingModal() {
-    const el = document.getElementById('modal-hearing-form');
-    if (el) el.style.display = 'none';
+  function syncFormResponsesManual() {
+    showToast(`Googleフォーム新着申込を同期中...`);
     const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
-  }
+    if (loading) loading.style.display = 'flex';
 
-  function selectAbc(val) {
-    document.getElementById('hf-feel-abc').value = val;
-    ['A', 'B', 'C'].forEach(k => {
-      const btn = document.getElementById('abc-' + k);
-      if (btn) {
-        if (k === val) btn.classList.add('selected');
-        else btn.classList.remove('selected');
-      }
-    });
-  }
-
-  function submitHearingForm() {
-    const id = document.getElementById('hf-visitor-id').value;
-    const formData = {
-      visitorId: id,
-      orientUser: document.getElementById('hf-orient-user').value.trim(),
-      q1: document.getElementById('hf-q1').value.trim(),
-      q2: document.getElementById('hf-q2').value.trim(),
-      q3: document.getElementById('hf-q3').value.trim(),
-      q4: document.getElementById('hf-q4').value.trim(),
-      q5: document.getElementById('hf-q5').value.trim(),
-      q6: document.getElementById('hf-q6').value.trim(),
-      q7: document.getElementById('hf-q7').value.trim(),
-      feelAbc: document.getElementById('hf-feel-abc').value,
-      orientMemo: document.getElementById('hf-orient-memo').value.trim(),
-      followMemo: document.getElementById('hf-follow-memo').value.trim()
-    };
-
-    closeHearingModal();
-    showToast(`ヒアリングシートを保存中...`);
-
-    ApiService.call('saveHearingSheetApi', formData)
+    ApiService.call('syncFormResponsesApi')
       .then(res => {
-        showToast(`✅ ヒアリングシートを正常保存しました`);
-        try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
-        if (cachedHearingList.length > 0) fetchHearingListData(true);
-        refreshAllActiveViews();
+        if (loading) loading.style.display = 'none';
+
+        const msg = (res && typeof res === 'object' && res.message)
+          ? res.message
+          : String(res || '同期が完了しました。');
+
+        alert("【Googleフォーム同期結果】\n\n" + msg);
+
+        if (res && res.data) {
+          renderDashboard(res.data);
+        } else {
+          fetchDashboardData(true);
+        }
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
       })
       .catch(err => {
-        closeHearingModal();
-        handleError(err);
+        if (loading) loading.style.display = 'none';
+        alert("❌ フォーム同期中にエラーが発生しました:\n" + (err.message || err));
       });
   }
 
-  /* --- Interactive API Handlers --- */
+  function forceRefreshAllCacheAndData() {
+    showToast(`🔄 キャッシュをクリアし、最新データを再読み込み中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    try { sessionStorage.clear(); } catch(e) {}
+    cachedAllVisitors = [];
+    cachedHearingList = [];
+    cachedScheduledEmails = [];
+    cachedPriorityFollowList = [];
+
+    ApiService.call('checkAndRepairDataFormatApi')
+      .then(res => {
+        if (loading) loading.style.display = 'none';
+        showToast(`✨ キャッシュをクリアし、最新データをロードしました！`);
+        fetchDashboardData(true);
+        const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
+        if (activeTab) {
+          const tabId = activeTab.id.replace('tab-btn-', '');
+          if (tabId === 'visitors') fetchAllVisitorsData(true);
+          else if (tabId === 'hearings') fetchHearingListData(true);
+          else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
+          else if (tabId === 'priority-follow') fetchPriorityFollowData(true);
+        }
+      })
+      .catch(handleError);
+  }
+
   function refreshAllActiveViews() {
     fetchDashboardData(true);
     if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
@@ -3021,39 +2010,530 @@ const ApiService = {
       openVisitorDetailView(currentVdVisitorId, false);
     }
   }
+</script>
 
-  function toggleAttend(id, newStatus) {
-    showToast(`出欠を【${newStatus}】に変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
+<script>
+  /* --- VIEW 1: Dashboard Controller & Chart Renderers --- */
+  let donutChartInstance = null;
+  let lineChartInstance = null;
+
+  function renderDashboard(data) {
+    if (!data) return;
+    currentDashboardData = data;
+
+    // KPI Cards
+    const targetEl = document.getElementById('kpi-target-members');
+    const joinedEl = document.getElementById('kpi-joined-members');
+    const rateEl = document.getElementById('kpi-achievement-rate');
+    const totalVEl = document.getElementById('kpi-total-visitors');
+    const total11El = document.getElementById('kpi-total-1to1');
+
+    if (targetEl) targetEl.innerText = `${data.targetMembers || 0}名`;
+    if (joinedEl) joinedEl.innerText = `${data.joinedMembers || 0}名`;
+    if (rateEl) rateEl.innerText = `${data.achievementRate || 0}%`;
+    if (totalVEl) totalVEl.innerText = `${data.totalVisitors || 0}名`;
+    if (total11El) total11El.innerText = `${data.total1to1 || 0}件`;
+
+    // Charts
+    initDonutChart(data.joinedMembers || 0, data.targetMembers || 15);
+    if (data.chartLabels && data.chartValues) {
+      initLineChart(data.chartLabels, data.chartValues);
+    }
+
+    // Tables
+    renderHotVisitorsTable(data.hotVisitors || []);
+    renderWeeklyStatsTable(data.weeklyStats || []);
+    renderMonthlyStatsTable(data.monthlyStats || []);
+
+    if (data.bniTermsList && data.selectedStartDate) {
+      renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
+    }
+  }
+
+  function renderHotVisitorsTable(records) {
+    const tbody = document.getElementById('table-hot-visitors');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color: #2b8a3e;">${formatTruncatedCell(r.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
+        <td>${render1to1ButtonHtml(r.id, r.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPeriodicStatsTable(tbodyId, records, labelKey) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">データなし</td></tr>';
+      return;
+    }
+
+    records.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${row[labelKey] || '-'}</td>
+        <td style="font-weight: 800; color: #364fc7;">${row.visitorCount || 0}名</td>
+        <td>${row.attCount || 0}名</td>
+        <td>${row.oneToOneCount || 0}件</td>
+        <td style="font-weight: 800; color: #2b8a3e;">${row.joinedCount || 0}名</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderWeeklyStatsTable(records) {
+    renderPeriodicStatsTable('table-weekly-stats', records, 'weekLabel');
+  }
+
+  function renderMonthlyStatsTable(records) {
+    renderPeriodicStatsTable('table-monthly-stats', records, 'monthLabel');
+  }
+
+  function initDonutChart(joined, target) {
+    const ctx = document.getElementById('chart-donut');
+    if (!ctx) return;
+
+    if (donutChartInstance) {
+      donutChartInstance.destroy();
+    }
+
+    const remaining = Math.max(0, target - joined);
+    donutChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['達成入会数', '残り目標数'],
+        datasets: [{
+          data: [joined, remaining],
+          backgroundColor: ['#20c997', '#e9ecef'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+
+  function initLineChart(labels, values) {
+    const ctx = document.getElementById('chart-line');
+    if (!ctx) return;
+
+    if (lineChartInstance) {
+      lineChartInstance.destroy();
+    }
+
+    lineChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'ビジター来訪数',
+          data: values,
+          borderColor: '#4c6ef5',
+          backgroundColor: 'rgba(76, 110, 245, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+
+  function changeStartDate(newVal) {
+    showToast(`集計期間を【${newVal} 〜】に変更中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('updateSettingStartDateApi', newVal)
       .then(res => {
-        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
-        refreshAllActiveViews();
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ 集計期間を【${newVal} 〜】に切り替えました`);
+          renderDashboard(res.data);
+        }
       })
       .catch(handleError);
   }
+</script>
 
-  function toggle1to1(id, current) {
-    const next = (current === '済' || current === true) ? '未' : '済';
-    showToast(`1to1ステータスを変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
+<script>
+  /* --- VIEW 2: Priority Follow View Controller --- */
+  let currentPfGradeFilter = 'ALL';
+  let filteredPfVisitors = [];
+  let pfCurrentPage = 1;
+  const PF_PAGE_SIZE = 50;
+
+  function setPriorityFollowGradeFilter(grade) {
+    currentPfGradeFilter = grade;
+
+    ['ALL', 'A', 'B'].forEach(g => {
+      const btn = document.getElementById('pf-filter-btn-' + g);
+      if (btn) {
+        if (g === grade) {
+          btn.classList.add('active', 'bg-red-600', 'text-white');
+          btn.classList.remove('bg-slate-100', 'text-slate-700');
+        } else {
+          btn.classList.remove('active', 'bg-red-600', 'text-white');
+          btn.classList.add('bg-slate-100', 'text-slate-700');
+        }
+      }
+    });
+
+    filterPriorityFollowTable();
+  }
+
+  function filterPriorityFollowTable() {
+    const rawList = cachedPriorityFollowList || [];
+
+    filteredPfVisitors = rawList.filter(v => {
+      const feel = parseFeelAbc(v.feelAbc);
+      if (currentPfGradeFilter === 'A') return feel === 'A';
+      if (currentPfGradeFilter === 'B') return feel === 'B';
+      return feel === 'A' || feel === 'B';
+    });
+
+    pfCurrentPage = 1;
+    renderPriorityFollowCurrentPage();
+  }
+
+  function changePriorityFollowPage(delta) {
+    const totalPages = Math.ceil(filteredPfVisitors.length / PF_PAGE_SIZE) || 1;
+    const newPage = pfCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      pfCurrentPage = newPage;
+      renderPriorityFollowCurrentPage();
+    }
+  }
+
+  function renderPriorityFollowCurrentPage() {
+    const tbody = document.getElementById('table-priority-follow');
+    const infoEl = document.getElementById('pf-pagination-info');
+    const prevBtn = document.getElementById('pf-btn-prev');
+    const nextBtn = document.getElementById('pf-btn-next');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const total = filteredPfVisitors.length;
+    const totalPages = Math.ceil(total / PF_PAGE_SIZE) || 1;
+    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
+
+    const startIdx = (pfCurrentPage - 1) * PF_PAGE_SIZE;
+    const pageItems = filteredPfVisitors.slice(startIdx, startIdx + PF_PAGE_SIZE);
+
+    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + PF_PAGE_SIZE, total)}件 (${pfCurrentPage}/${totalPages}ページ)`;
+    if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 20px;">条件に合致する最優先フォロー対象はいません</td></tr>';
+      return;
+    }
+
+    pageItems.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+        <td>${formatTruncatedCell(v.company, 12)}</td>
+        <td>${formatTruncatedCell(v.profession, 12)}</td>
+        <td>${formatTruncatedCell(v.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(v.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>
+
+<script>
+  /* --- VIEW 3: Main Visitors List View Controller --- */
+  let filteredVisitors = [];
+  let visitorsCurrentPage = 1;
+  const VISITORS_PAGE_SIZE = 50;
+
+  function changeVisitorsPage(delta) {
+    const totalPages = Math.ceil(filteredVisitors.length / VISITORS_PAGE_SIZE) || 1;
+    const newPage = visitorsCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      visitorsCurrentPage = newPage;
+      renderVisitorsCurrentPage();
+    }
+  }
+
+  function renderVisitorsCurrentPage() {
+    const tbody = document.getElementById('table-all-visitors');
+    const infoEl = document.getElementById('visitors-pagination-info');
+    const prevBtn = document.getElementById('visitors-btn-prev');
+    const nextBtn = document.getElementById('visitors-btn-next');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const total = filteredVisitors.length;
+    const totalPages = Math.ceil(total / VISITORS_PAGE_SIZE) || 1;
+    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
+
+    const startIdx = (visitorsCurrentPage - 1) * VISITORS_PAGE_SIZE;
+    const pageItems = filteredVisitors.slice(startIdx, startIdx + VISITORS_PAGE_SIZE);
+
+    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + VISITORS_PAGE_SIZE, total)}件 (${visitorsCurrentPage}/${totalPages}ページ)`;
+    if (prevBtn) prevBtn.disabled = (visitorsCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (visitorsCurrentPage >= totalPages);
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">条件に合致するビジターはいません</td></tr>';
+      return;
+    }
+
+    pageItems.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+        <td>${formatTruncatedCell(v.company, 12)}</td>
+        <td>${formatTruncatedCell(v.profession, 12)}</td>
+        <td>${formatTruncatedCell(v.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(v.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openEditVisitorModal('${v.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-icon-action btn-icon-danger" onclick="deleteVisitor('${v.id}', '${escapeJsParam(v.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterAllVisitorsTable() {
+    const search = (document.getElementById('search-visitor-input')?.value || '').toLowerCase().trim();
+    const dateVal = (document.getElementById('filter-visitor-date')?.value || '').trim();
+
+    const rawList = cachedAllVisitors || [];
+    const dedupedList = deduplicateVisitorListClient(rawList);
+
+    filteredVisitors = dedupedList.filter(v => {
+      const name = (v.name || '').toLowerCase();
+      const furigana = (v.furigana || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      const eventDate = (v.eventDate || '').replace(/\//g, '-');
+
+      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search);
+      const matchDate = !dateVal || eventDate === dateVal;
+
+      return matchSearch && matchDate;
+    });
+
+    visitorsCurrentPage = 1;
+    renderVisitorsCurrentPage();
+  }
+
+  function clearVisitorsDateFilter() {
+    const input = document.getElementById('filter-visitor-date');
+    if (input) input.value = '';
+    filterAllVisitorsTable();
+  }
+
+  function renderSimpleVisitorSubTable(tbodyId, records) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      return;
+    }
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
+        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+        <td>${formatTruncatedCell(r.company, 12)}</td>
+        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderNextMeetingTable(records) {
+    renderSimpleVisitorSubTable('table-next-meeting', records);
+  }
+
+  function renderLastMeetingTable(records) {
+    renderSimpleVisitorSubTable('table-last-meeting', records);
+  }
+
+  function renderOneMonthTable(records) {
+    renderSimpleVisitorSubTable('table-one-month', records);
+  }
+</script>
+
+<script>
+  /* --- VIEW 4: Hearing Sheets List View Controller --- */
+  function renderHearingListTable(records) {
+    const tbody = document.getElementById('table-hearings');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">登録されているヒアリングシートはありません</td></tr>';
+      return;
+    }
+
+    records.forEach(h => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(h.id, h.name)}</td>
+        <td>${formatTruncatedCell(h.company, 12)}</td>
+        <td>${formatTruncatedCell(h.profession, 12)}</td>
+        <td>${formatTruncatedCell(h.inviter, 10)}</td>
+        <td>${formatTruncatedCell(h.orientUser, 10)}</td>
+        <td>${renderRankBadgeHtml(h.feelAbc)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openHearingFormModal('${h.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+</script>
+
+<script>
+  /* --- VIEW 5: Email Schedule & Email Preview Controller --- */
+  function filterEmailSchedule() {
+    const filter = (document.getElementById('email-schedule-filter')?.value || 'ALL').toUpperCase();
+    const rawList = cachedScheduledEmails || [];
+
+    const filtered = rawList.filter(item => {
+      if (filter === 'PENDING') return item.status === '送信予定';
+      if (filter === 'SENT') return item.status === '送信済';
+      return true;
+    });
+
+    renderEmailScheduleTable(filtered);
+  }
+
+  function renderEmailScheduleTable(list) {
+    const tbody = document.getElementById('table-email-schedule');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 20px;">表示するメール送信予定はありません</td></tr>';
+      return;
+    }
+
+    list.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      const stBadge = item.status === '送信済'
+        ? '<span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:12px; font-weight:800; font-size:12px;">送信済</span>'
+        : '<span style="background:#fef3c7; color:#b45309; padding:3px 10px; border-radius:12px; font-weight:800; font-size:12px;">送信予定</span>';
+
+      tr.innerHTML = `
+        <td style="font-weight:700;">${idx + 1}</td>
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(item.scheduledDate, 10)}</strong></td>
+        <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${escapeHtml(item.typeLabel || item.mailType)}</span></td>
+        <td>${renderVisitorNameLinkHtml(item.visitorId, item.visitorName)}</td>
+        <td>${formatTruncatedCell(item.company, 12)}</td>
+        <td>${formatTruncatedCell(item.email, 15)}</td>
+        <td>${formatTruncatedCell(item.subject, 15)}</td>
+        <td>${stBadge}</td>
+        <td>
+          <button class="btn-sm-action" style="background:#4c6ef5; color:white;" onclick="openEmailPreviewModal(${idx})" title="プレビュー & 送信"><i class="fa-solid fa-eye"></i> 確認</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openEmailPreviewModal(index) {
+    if (!cachedScheduledEmails || !cachedScheduledEmails[index]) return;
+    const item = cachedScheduledEmails[index];
+    currentPreviewItem = item;
+
+    document.getElementById('email-preview-type').innerText = item.typeLabel || item.mailType || '-';
+    document.getElementById('email-preview-to').innerText = `${item.visitorName || ''} <${item.email || ''}>`;
+    document.getElementById('email-preview-date').innerText = item.scheduledDate || '-';
+    document.getElementById('email-preview-subject').innerText = item.subject || '-';
+    document.getElementById('email-preview-body').innerText = item.body || '';
+
+    const modal = document.getElementById('modal-email-preview');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeEmailPreviewModal() {
+    const modal = document.getElementById('modal-email-preview');
+    if (modal) modal.style.display = 'none';
+    currentPreviewItem = null;
+  }
+
+  function sendSingleTestEmailFromPreview() {
+    if (!currentPreviewItem) return;
+    const item = currentPreviewItem;
+    if (!confirm(`【確認】${item.visitorName}様（${item.email}）へメール「${item.subject}」を即時送信してもよろしいですか？`)) return;
+
+    showToast(`メールを送信中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    ApiService.call('sendSingleScheduledEmailApi', item)
       .then(res => {
-        showToast(`✅ 1to1を【${next}】に変更しました`);
-        refreshAllActiveViews();
+        if (loading) loading.style.display = 'none';
+        closeEmailPreviewModal();
+        if (res.success) {
+          showToast(`✅ メール送信が正常に完了しました！`);
+          fetchScheduledEmailsData(true);
+        }
       })
-      .catch(handleError);
+      .catch(err => {
+        if (loading) loading.style.display = 'none';
+        handleError(err);
+      });
   }
+</script>
 
-  function toggle1to1InDetail(id, current) {
-    toggle1to1(id, current);
-  }
-
-  function toggleJoinedInDetail(id, current) {
-    toggleJoined(id, current);
-  }
-
+<script>
   /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
   let currentVdVisitorId = null;
   let previousTabBeforeDetail = "dashboard";
+  let currentVdWebAppUrl = "";
 
   function openVisitorDetailModal(id) {
     openVisitorDetailView(id);
@@ -3207,6 +2687,31 @@ const ApiService = {
       .catch(handleError);
   }
 
+  function toggleAttend(id, newStatus) {
+    showToast(`出欠を【${newStatus}】に変更中...`);
+    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
+      .then(res => {
+        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
+  function toggle1to1(id, current) {
+    const next = (current === '済' || current === true) ? '未' : '済';
+    showToast(`1to1ステータスを変更中...`);
+    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
+      .then(res => {
+        showToast(`✅ 1to1を【${next}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
+  function toggle1to1InDetail(id, current) {
+    toggle1to1(id, current);
+  }
+
   function toggleJoined(id, current) {
     const isJoinedBool = (current === '入会済' || current === '済' || current === '入会' || current === true);
     const next = isJoinedBool ? '未' : '入会済';
@@ -3219,75 +2724,241 @@ const ApiService = {
       .catch(handleError);
   }
 
-  function syncFormResponsesManual() {
-    showToast(`Googleフォーム新着申込を同期中...`);
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'flex';
-
-    ApiService.call('syncFormResponsesApi')
-      .then(res => {
-        if (loading) loading.style.display = 'none';
-
-        const msg = (res && typeof res === 'object' && res.message)
-          ? res.message
-          : String(res || '同期が完了しました。');
-
-        alert("【Googleフォーム同期結果】\n\n" + msg);
-
-        if (res && res.data) {
-          renderDashboard(res.data);
-        } else {
-          fetchDashboardData(true);
-        }
-        if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
-      })
-      .catch(err => {
-        if (loading) loading.style.display = 'none';
-        alert("❌ フォーム同期中にエラーが発生しました:\n" + (err.message || err));
-      });
+  function toggleJoinedInDetail(id, current) {
+    toggleJoined(id, current);
   }
 
-  function forceRefreshAllCacheAndData() {
-    showToast(`🔄 キャッシュをクリアし、最新データを再読み込み中...`);
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'flex';
+  function deleteVisitor(id, name) {
+    if (!confirm(`【確認】ビジター「${name}」のデータを削除してもよろしいですか？`)) return;
 
-    try { sessionStorage.clear(); } catch(e) {}
-    cachedAllVisitors = [];
-    cachedHearingList = [];
-    cachedScheduledEmails = [];
-
-    ApiService.call('checkAndRepairDataFormatApi')
-      .then(res => {
-        if (loading) loading.style.display = 'none';
-        showToast(`✨ キャッシュをクリアし、最新データをロードしました！`);
-        fetchDashboardData(true);
-        const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
-        if (activeTab) {
-          const tabId = activeTab.id.replace('tab-btn-', '');
-          if (tabId === 'visitors') fetchAllVisitorsData(true);
-          else if (tabId === 'hearings') fetchHearingListData(true);
-          else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
-        }
-      })
-      .catch(handleError);
-  }
-
-  function changeStartDate(newVal) {
-    showToast(`集計期間を【${newVal} 〜】に変更中...`);
     document.getElementById('loading').style.display = 'flex';
-
-    ApiService.call('updateSettingStartDateApi', newVal)
+    ApiService.call('deleteVisitorApi', id)
       .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (res.success) {
-          showToast(`✅ 集計期間を【${newVal} 〜】に切り替えました`);
-          renderDashboard(res.data);
+          showToast(`🗑️ ${name}様のデータを削除しました`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
         }
       })
       .catch(handleError);
   }
+</script>
 
+<script>
+  /* --- Visitor CRUD Modal Controls --- */
+  function openAddVisitorModal() {
+    document.getElementById('modal-v-title').innerText = '新規ビジター手動登録';
+    document.getElementById('crud-v-id').value = '';
+    document.getElementById('crud-v-name').value = '';
+    document.getElementById('crud-v-furigana').value = '';
+    document.getElementById('crud-v-event-date').value = '';
+    document.getElementById('crud-v-inviter').value = '';
+    document.getElementById('crud-v-profession').value = '';
+    document.getElementById('crud-v-company').value = '';
+    document.getElementById('crud-v-email').value = '';
+    document.getElementById('crud-v-attendance-count').value = '初めて';
+    setCrudQuickDate('today');
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function openEditVisitorModal(id) {
+    const rawList = cachedAllVisitors || [];
+    const v = rawList.find(item => String(item.id) === String(id));
+    if (!v) return;
+
+    document.getElementById('modal-v-title').innerText = 'ビジター基本情報の編集';
+    document.getElementById('crud-v-id').value = v.id;
+    document.getElementById('crud-v-name').value = v.name || '';
+    document.getElementById('crud-v-furigana').value = v.furigana || '';
+    document.getElementById('crud-v-event-date').value = formatDateForInput(v.eventDate);
+    document.getElementById('crud-v-inviter').value = v.inviter || '';
+    document.getElementById('crud-v-profession').value = v.profession || '';
+    document.getElementById('crud-v-company').value = v.company || '';
+    document.getElementById('crud-v-email').value = v.email || '';
+    document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function closeCrudModal() {
+    const el = document.getElementById('modal-visitor-crud');
+    if (el) el.style.display = 'none';
+  }
+
+  function submitCrudVisitorForm() {
+    const id = document.getElementById('crud-v-id').value;
+    const rawDate = document.getElementById('crud-v-event-date').value.trim();
+    const formattedDate = rawDate.replace(/-/g, '/');
+
+    const vData = {
+      id: id,
+      name: document.getElementById('crud-v-name').value.trim(),
+      furigana: document.getElementById('crud-v-furigana').value.trim(),
+      eventDate: formattedDate,
+      inviter: document.getElementById('crud-v-inviter').value.trim(),
+      profession: document.getElementById('crud-v-profession').value.trim(),
+      company: document.getElementById('crud-v-company').value.trim(),
+      email: document.getElementById('crud-v-email').value.trim(),
+      attendanceCount: document.getElementById('crud-v-attendance-count').value
+    };
+
+    if (!vData.name || !vData.eventDate) {
+      alert('氏名と参加日は必須入力です');
+      return;
+    }
+
+    closeCrudModal();
+    document.getElementById('loading').style.display = 'flex';
+
+    const isEdit = !!id;
+    const apiName = isEdit ? 'updateVisitorApi' : 'addVisitorApi';
+    const msg = isEdit ? 'ビジター情報を更新しました' : '新規ビジターを登録しました';
+
+    ApiService.call(apiName, vData)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ ${msg}`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        }
+      })
+      .catch(handleError);
+  }
+</script>
+
+<script>
+  /* --- Hearing Form Modal Controls --- */
+  function openHearingFormModal(id) {
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('getHearingSheetFormDataApi', id)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (!res.success) { alert('データ取得失敗'); return; }
+
+        const info = res.visitorInfo || {};
+        const form = res.formData || {};
+
+        document.getElementById('hf-visitor-id').value = id;
+        document.getElementById('hf-event-date').innerText = info.event_date || '-';
+        document.getElementById('hf-name').innerText = info.visitor_name || '-';
+        document.getElementById('hf-furigana').innerText = info.furigana || '';
+        document.getElementById('hf-company').innerText = info.company || '-';
+        document.getElementById('hf-profession').innerText = info.profession || '-';
+        document.getElementById('hf-inviter').innerText = info.inviter || '-';
+
+        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
+        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
+
+        document.getElementById('hf-q1').value = form.q1 || '';
+        document.getElementById('hf-q2').value = form.q2 || '';
+        document.getElementById('hf-q3').value = form.q3 || '';
+        document.getElementById('hf-q4').value = form.q4 || '';
+        document.getElementById('hf-q5').value = form.q5 || '';
+        document.getElementById('hf-q6').value = form.q6 || '';
+        document.getElementById('hf-q7').value = form.q7 || '';
+
+        selectAbc(form.feelAbc || '');
+
+        document.getElementById('hf-orient-memo').value = form.orientMemo || '';
+        document.getElementById('hf-follow-memo').value = form.followMemo || '';
+
+        document.getElementById('modal-hearing-form').style.display = 'flex';
+      })
+      .catch(handleError);
+  }
+
+  function renderOrientUserOptions(cats, selectedVal) {
+    const select = document.getElementById('hf-orient-user');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- DBより選択 (オリエン担当者) --</option>';
+
+    let found = false;
+    if (cats && cats.length > 0) {
+      cats.forEach(catObj => {
+        const grp = document.createElement('optgroup');
+        grp.label = catObj.category;
+        if (catObj.members && catObj.members.length > 0) {
+          catObj.members.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.profession || ''})`;
+            if (m.name === selectedVal) {
+              opt.selected = true;
+              found = true;
+            }
+            grp.appendChild(opt);
+          });
+        }
+        select.appendChild(grp);
+      });
+    }
+
+    if (selectedVal && !found) {
+      const opt = document.createElement('option');
+      opt.value = selectedVal;
+      opt.textContent = `${selectedVal} (登録内容)`;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+
+    if (selectedVal) select.value = selectedVal;
+  }
+
+  function closeHearingModal() {
+    const el = document.getElementById('modal-hearing-form');
+    if (el) el.style.display = 'none';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
+  }
+
+  function selectAbc(val) {
+    document.getElementById('hf-feel-abc').value = val;
+    ['A', 'B', 'C'].forEach(k => {
+      const btn = document.getElementById('abc-' + k);
+      if (btn) {
+        if (k === val) btn.classList.add('selected');
+        else btn.classList.remove('selected');
+      }
+    });
+  }
+
+  function submitHearingForm() {
+    const id = document.getElementById('hf-visitor-id').value;
+    const formData = {
+      visitorId: id,
+      orientUser: document.getElementById('hf-orient-user').value.trim(),
+      q1: document.getElementById('hf-q1').value.trim(),
+      q2: document.getElementById('hf-q2').value.trim(),
+      q3: document.getElementById('hf-q3').value.trim(),
+      q4: document.getElementById('hf-q4').value.trim(),
+      q5: document.getElementById('hf-q5').value.trim(),
+      q6: document.getElementById('hf-q6').value.trim(),
+      q7: document.getElementById('hf-q7').value.trim(),
+      feelAbc: document.getElementById('hf-feel-abc').value,
+      orientMemo: document.getElementById('hf-orient-memo').value.trim(),
+      followMemo: document.getElementById('hf-follow-memo').value.trim()
+    };
+
+    closeHearingModal();
+    showToast(`ヒアリングシートを保存中...`);
+
+    ApiService.call('saveHearingSheetApi', formData)
+      .then(res => {
+        showToast(`✅ ヒアリングシートを正常保存しました`);
+        try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
+        if (cachedHearingList.length > 0) fetchHearingListData(true);
+        refreshAllActiveViews();
+      })
+      .catch(err => {
+        closeHearingModal();
+        handleError(err);
+      });
+  }
+</script>
+
+<script>
   /* --- 👥 Member Master Setting CRUD Controls --- */
   let cachedFlatMembers = [];
 
@@ -3319,11 +2990,11 @@ const ApiService = {
       tr.innerHTML = `
         <td style="font-weight: 700;">${idx + 1}</td>
         <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
-        <td style="font-weight: 800; font-size:14px; color:#212529;">${m.name}</td>
+        <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
         <td>
           <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${m.name}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+          <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${escapeJsParam(m.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -3412,20 +3083,42 @@ const ApiService = {
       });
     });
   }
+</script>
 
-  function showToast(msg) {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#51cf66;"></i> ${msg}`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
 
-  function handleError(err) {
-    document.getElementById('loading').style.display = 'none';
-    alert('エラーが発生しました: ' + (err.message || err));
-  }
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    hideLoading();
+
+    if (typeof rawInitialData !== 'undefined' && rawInitialData && rawInitialData.dashboardData) {
+      try {
+        renderDashboard(rawInitialData.dashboardData);
+      } catch(e) {
+        console.error('Dashboard render error:', e);
+        fetchDashboardData();
+      }
+    } else {
+      fetchDashboardData();
+    }
+
+    window.addEventListener('hashchange', handleHashRouting);
+    if (typeof google !== 'undefined' && google.script && google.script.history) {
+      google.script.history.setChangeHandler((e) => {
+        handleHashRouting();
+      });
+    }
+
+    const hash = (window.location.hash || '').replace(/^#/, '');
+    if (hash.startsWith('visitor/')) {
+      openVisitorDetailView(hash.replace('visitor/', ''), false);
+    } else if (hash && ['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash, false);
+    } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
+      openVisitorDetailView(initialVisitorId, true);
+    } else {
+      updateUrlHash('dashboard', { tab: 'dashboard' });
+    }
+  });
 </script>
 
 

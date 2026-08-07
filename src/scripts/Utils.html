@@ -1,0 +1,151 @@
+<script>
+  function parseFeelAbc(val) {
+    if (!val) return '';
+    const s = String(val).toUpperCase().trim();
+    if (s === 'A' || s === 'B' || s === 'C') return s;
+    if (s.includes('A')) return 'A';
+    if (s.includes('B')) return 'B';
+    if (s.includes('C')) return 'C';
+    return '';
+  }
+
+  function renderRankBadgeHtml(val) {
+    const feel = parseFeelAbc(val);
+    if (feel === 'A') {
+      return '<span style="background:#ffe3e3; color:#c92a2a; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク A</span>';
+    }
+    if (feel === 'B') {
+      return '<span style="background:#fff3bf; color:#e67700; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク B</span>';
+    }
+    if (feel === 'C') {
+      return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク C</span>';
+    }
+    return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">未評価</span>';
+  }
+
+  function renderAttendButtonHtml(id, rawStatus) {
+    const isAttended = (rawStatus === '参加' || rawStatus === true);
+    const nextStatus = isAttended ? '不参加' : '参加';
+    const label = isAttended ? '参加' : '不参加';
+    const cssClass = isAttended ? 'btn-status-done' : 'btn-status-todo';
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggleAttend('${id}', '${nextStatus}')">${label}</button>`;
+  }
+
+  function render1to1ButtonHtml(id, rawStatus) {
+    const is11Done = (rawStatus === '済' || rawStatus === true);
+    const label = is11Done ? '1to1 済' : '1to1 未';
+    const cssClass = is11Done ? 'btn-status-done' : 'btn-status-todo';
+    const param = escapeJsParam(rawStatus || '未');
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggle1to1('${id}', '${param}')">${label}</button>`;
+  }
+
+  function renderJoinedButtonHtml(id, rawStatus) {
+    const isJoined = (rawStatus === '入会済' || rawStatus === true);
+    const label = isJoined ? '入会済' : '未入会';
+    const cssClass = isJoined ? 'btn-status-joined' : 'btn-status-todo';
+    const param = escapeJsParam(rawStatus || '未');
+    return `<button class="btn-sm-action ${cssClass}" onclick="toggleJoined('${id}', '${param}')">${label}</button>`;
+  }
+
+  function renderVisitorNameLinkHtml(id, name) {
+    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:800; color:#364fc7; text-decoration:underline;">${escapeHtml(name)}</a>`;
+  }
+
+  function hideLoading() {
+    const el = document.getElementById('loading');
+    if (el) el.style.display = 'none';
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeJsParam(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '');
+  }
+
+  function formatTruncatedCell(text, maxLen = 15) {
+    if (!text) return '-';
+    const str = String(text).trim();
+    if (str.length <= maxLen) return escapeHtml(str);
+    return `<span title="${escapeHtml(str)}">${escapeHtml(str.substring(0, maxLen))}...</span>`;
+  }
+
+  function formatDateForInput(str) {
+    if (!str) return '';
+    const clean = String(str).replace(/\//g, '-').trim();
+    const match = clean.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (match) {
+      const m = match[2].padStart(2, '0');
+      const d = match[3].padStart(2, '0');
+      return `${match[1]}-${m}-${d}`;
+    }
+    return clean;
+  }
+
+  function setCrudQuickDate(type) {
+    const input = document.getElementById('crud-v-event-date');
+    if (!input) return;
+
+    const now = new Date();
+    if (type === 'today') {
+      input.value = formatDateForInput(now.toISOString().split('T')[0]);
+    } else if (type === 'next-thu') {
+      const day = now.getDay();
+      const diff = (4 - day + 7) % 7 || 7;
+      const nextThu = new Date(now);
+      nextThu.setDate(now.getDate() + diff);
+      const yyyy = nextThu.getFullYear();
+      const mm = String(nextThu.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextThu.getDate()).padStart(2, '0');
+      input.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function copyCurrentPageUrl() {
+    let cleanUrl = window.location.href.split('?')[0];
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    const hash = rawHash.replace(/^#+/, '');
+    if (hash && hash !== 'dashboard') {
+      cleanUrl += '#' + hash;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cleanUrl).then(() => {
+        showToast('🔗 共有URLをコピーしました！');
+      }).catch(() => {
+        prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+      });
+    } else {
+      prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+    }
+  }
+
+  function showToast(msg) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#51cf66;"></i> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function handleError(err) {
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
+    alert('エラーが発生しました: ' + (err.message || err));
+  }
+</script>

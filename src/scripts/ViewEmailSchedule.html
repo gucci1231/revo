@@ -1,0 +1,93 @@
+<script>
+  /* --- VIEW 5: Email Schedule & Email Preview Controller --- */
+  function filterEmailSchedule() {
+    const filter = (document.getElementById('email-schedule-filter')?.value || 'ALL').toUpperCase();
+    const rawList = cachedScheduledEmails || [];
+
+    const filtered = rawList.filter(item => {
+      if (filter === 'PENDING') return item.status === '送信予定';
+      if (filter === 'SENT') return item.status === '送信済';
+      return true;
+    });
+
+    renderEmailScheduleTable(filtered);
+  }
+
+  function renderEmailScheduleTable(list) {
+    const tbody = document.getElementById('table-email-schedule');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 20px;">表示するメール送信予定はありません</td></tr>';
+      return;
+    }
+
+    list.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      const stBadge = item.status === '送信済'
+        ? '<span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:12px; font-weight:800; font-size:12px;">送信済</span>'
+        : '<span style="background:#fef3c7; color:#b45309; padding:3px 10px; border-radius:12px; font-weight:800; font-size:12px;">送信予定</span>';
+
+      tr.innerHTML = `
+        <td style="font-weight:700;">${idx + 1}</td>
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(item.scheduledDate, 10)}</strong></td>
+        <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${escapeHtml(item.typeLabel || item.mailType)}</span></td>
+        <td>${renderVisitorNameLinkHtml(item.visitorId, item.visitorName)}</td>
+        <td>${formatTruncatedCell(item.company, 12)}</td>
+        <td>${formatTruncatedCell(item.email, 15)}</td>
+        <td>${formatTruncatedCell(item.subject, 15)}</td>
+        <td>${stBadge}</td>
+        <td>
+          <button class="btn-sm-action" style="background:#4c6ef5; color:white;" onclick="openEmailPreviewModal(${idx})" title="プレビュー & 送信"><i class="fa-solid fa-eye"></i> 確認</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openEmailPreviewModal(index) {
+    if (!cachedScheduledEmails || !cachedScheduledEmails[index]) return;
+    const item = cachedScheduledEmails[index];
+    currentPreviewItem = item;
+
+    document.getElementById('email-preview-type').innerText = item.typeLabel || item.mailType || '-';
+    document.getElementById('email-preview-to').innerText = `${item.visitorName || ''} <${item.email || ''}>`;
+    document.getElementById('email-preview-date').innerText = item.scheduledDate || '-';
+    document.getElementById('email-preview-subject').innerText = item.subject || '-';
+    document.getElementById('email-preview-body').innerText = item.body || '';
+
+    const modal = document.getElementById('modal-email-preview');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeEmailPreviewModal() {
+    const modal = document.getElementById('modal-email-preview');
+    if (modal) modal.style.display = 'none';
+    currentPreviewItem = null;
+  }
+
+  function sendSingleTestEmailFromPreview() {
+    if (!currentPreviewItem) return;
+    const item = currentPreviewItem;
+    if (!confirm(`【確認】${item.visitorName}様（${item.email}）へメール「${item.subject}」を即時送信してもよろしいですか？`)) return;
+
+    showToast(`メールを送信中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    ApiService.call('sendSingleScheduledEmailApi', item)
+      .then(res => {
+        if (loading) loading.style.display = 'none';
+        closeEmailPreviewModal();
+        if (res.success) {
+          showToast(`✅ メール送信が正常に完了しました！`);
+          fetchScheduledEmailsData(true);
+        }
+      })
+      .catch(err => {
+        if (loading) loading.style.display = 'none';
+        handleError(err);
+      });
+  }
+</script>

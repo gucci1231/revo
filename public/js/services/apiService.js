@@ -34,11 +34,13 @@ const ApiService = {
     });
   },
 
-  getRestConfig: function(functionName, args) {
+  getRestConfig: function(functionName, args = []) {
     switch (functionName) {
       case 'getDashboardData':
+      case 'getDashboardDataApi':
         return { url: '/api/dashboard.php', method: 'GET' };
       case 'getAllVisitorsApi':
+      case 'getAllVisitorsDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
       case 'getVisitorDetailApi':
         return { url: '/api/visitors.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
@@ -55,12 +57,20 @@ const ApiService = {
           body: { visitorId: args[0], memo: args[1] }
         };
       case 'addVisitorApi':
+      case 'updateVisitorApi':
         return {
           url: '/api/visitors.php?action=add',
           method: 'POST',
           body: args[0] || {}
         };
+      case 'deleteVisitorApi':
+        return {
+          url: '/api/visitors.php?action=delete',
+          method: 'POST',
+          body: { id: args[0] }
+        };
       case 'getHearingSheetsListApi':
+      case 'getHearingListDataApi':
         return { url: '/api/hearings.php?action=list', method: 'GET' };
       case 'getHearingSheetFormDataApi':
         return { url: '/api/hearings.php?action=get&visitorId=' + (args[0] || ''), method: 'GET' };
@@ -91,7 +101,16 @@ const ApiService = {
           body: { id: args[0] }
         };
       case 'syncFormResponsesApi':
+      case 'checkAndRepairDataFormatApi':
         return { url: '/api/sync.php', method: 'POST' };
+      case 'updateSettingStartDateApi':
+        return {
+          url: '/api/settings.php?action=update',
+          method: 'POST',
+          body: { key: 'startDate', value: args[0] }
+        };
+      case 'getPriorityFollowDataApi':
+        return { url: '/api/visitors.php?action=list', method: 'GET' };
       default:
         return null;
     }

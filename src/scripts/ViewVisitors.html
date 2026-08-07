@@ -1,0 +1,125 @@
+<script>
+  /* --- VIEW 3: Main Visitors List View Controller --- */
+  let filteredVisitors = [];
+  let visitorsCurrentPage = 1;
+  const VISITORS_PAGE_SIZE = 50;
+
+  function changeVisitorsPage(delta) {
+    const totalPages = Math.ceil(filteredVisitors.length / VISITORS_PAGE_SIZE) || 1;
+    const newPage = visitorsCurrentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+      visitorsCurrentPage = newPage;
+      renderVisitorsCurrentPage();
+    }
+  }
+
+  function renderVisitorsCurrentPage() {
+    const tbody = document.getElementById('table-all-visitors');
+    const infoEl = document.getElementById('visitors-pagination-info');
+    const prevBtn = document.getElementById('visitors-btn-prev');
+    const nextBtn = document.getElementById('visitors-btn-next');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const total = filteredVisitors.length;
+    const totalPages = Math.ceil(total / VISITORS_PAGE_SIZE) || 1;
+    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
+
+    const startIdx = (visitorsCurrentPage - 1) * VISITORS_PAGE_SIZE;
+    const pageItems = filteredVisitors.slice(startIdx, startIdx + VISITORS_PAGE_SIZE);
+
+    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + VISITORS_PAGE_SIZE, total)}件 (${visitorsCurrentPage}/${totalPages}ページ)`;
+    if (prevBtn) prevBtn.disabled = (visitorsCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (visitorsCurrentPage >= totalPages);
+
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">条件に合致するビジターはいません</td></tr>';
+      return;
+    }
+
+    pageItems.forEach(v => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+        <td>${formatTruncatedCell(v.company, 12)}</td>
+        <td>${formatTruncatedCell(v.profession, 12)}</td>
+        <td>${formatTruncatedCell(v.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(v.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openEditVisitorModal('${v.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-icon-action btn-icon-danger" onclick="deleteVisitor('${v.id}', '${escapeJsParam(v.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function filterAllVisitorsTable() {
+    const search = (document.getElementById('search-visitor-input')?.value || '').toLowerCase().trim();
+    const dateVal = (document.getElementById('filter-visitor-date')?.value || '').trim();
+
+    const rawList = cachedAllVisitors || [];
+    const dedupedList = deduplicateVisitorListClient(rawList);
+
+    filteredVisitors = dedupedList.filter(v => {
+      const name = (v.name || '').toLowerCase();
+      const furigana = (v.furigana || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      const eventDate = (v.eventDate || '').replace(/\//g, '-');
+
+      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search);
+      const matchDate = !dateVal || eventDate === dateVal;
+
+      return matchSearch && matchDate;
+    });
+
+    visitorsCurrentPage = 1;
+    renderVisitorsCurrentPage();
+  }
+
+  function clearVisitorsDateFilter() {
+    const input = document.getElementById('filter-visitor-date');
+    if (input) input.value = '';
+    filterAllVisitorsTable();
+  }
+
+  function renderSimpleVisitorSubTable(tbodyId, records) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      return;
+    }
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
+        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+        <td>${formatTruncatedCell(r.company, 12)}</td>
+        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderNextMeetingTable(records) {
+    renderSimpleVisitorSubTable('table-next-meeting', records);
+  }
+
+  function renderLastMeetingTable(records) {
+    renderSimpleVisitorSubTable('table-last-meeting', records);
+  }
+
+  function renderOneMonthTable(records) {
+    renderSimpleVisitorSubTable('table-one-month', records);
+  }
+</script>

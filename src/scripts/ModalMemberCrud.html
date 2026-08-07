@@ -1,0 +1,126 @@
+<script>
+  /* --- 👥 Member Master Setting CRUD Controls --- */
+  let cachedFlatMembers = [];
+
+  function fetchMembersMasterData() {
+    document.getElementById('loading').style.display = 'flex';
+    ApiService.call('getMemberListApi')
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          cachedFlatMembers = res.flatMembers || [];
+          renderMembersMasterTable(cachedFlatMembers);
+        }
+      })
+      .catch(handleError);
+  }
+
+  function renderMembersMasterTable(members) {
+    const tbody = document.getElementById('table-members-master');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!members || members.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 20px;">登録されているメンバーはありません</td></tr>`;
+      return;
+    }
+
+    members.forEach((m, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${idx + 1}</td>
+        <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
+        <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
+        <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${escapeJsParam(m.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openAddMemberModal() {
+    document.getElementById('modal-member-title').innerText = '新規メンバー追加';
+    document.getElementById('crud-m-id').value = '';
+    document.getElementById('crud-m-category').value = '';
+    document.getElementById('crud-m-name').value = '';
+    document.getElementById('crud-m-profession').value = '';
+    document.getElementById('modal-member-crud').style.display = 'flex';
+  }
+
+  function openEditMemberModal(id) {
+    const m = cachedFlatMembers.find(item => String(item.id) === String(id));
+    if (!m) return;
+    document.getElementById('modal-member-title').innerText = 'メンバー情報の編集';
+    document.getElementById('crud-m-id').value = m.id;
+    document.getElementById('crud-m-category').value = m.category || '';
+    document.getElementById('crud-m-name').value = m.name || '';
+    document.getElementById('crud-m-profession').value = m.profession || '';
+    document.getElementById('modal-member-crud').style.display = 'flex';
+  }
+
+  function closeMemberCrudModal() {
+    document.getElementById('modal-member-crud').style.display = 'none';
+  }
+
+  function submitMemberCrudForm() {
+    const id = document.getElementById('crud-m-id').value;
+    const category = document.getElementById('crud-m-category').value.trim();
+    const name = document.getElementById('crud-m-name').value.trim();
+    const profession = document.getElementById('crud-m-profession').value.trim();
+
+    if (!category || !name || !profession) {
+      alert('全ての必須項目を入力してください');
+      return;
+    }
+
+    const mObj = { id, category, name, profession };
+    showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    const apiFunc = id ? 'updateMemberApi' : 'addMemberApi';
+
+    ApiService.call(apiFunc, mObj)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        closeMemberCrudModal();
+        showToast(`✅ メンバーを保存しました`);
+        cachedFlatMembers = res.flatMembers || [];
+        renderMembersMasterTable(cachedFlatMembers);
+      })
+      .catch(handleError);
+  }
+
+  function deleteMemberMaster(id, name) {
+    if (!confirm(`【確認】メンバー「${name}」をリストから削除してよろしいですか？`)) return;
+    showToast(`メンバーを削除中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('deleteMemberApi', id)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        showToast(`🗑️ メンバーを削除しました`);
+        cachedFlatMembers = res.flatMembers || [];
+        renderMembersMasterTable(cachedFlatMembers);
+      })
+      .catch(handleError);
+  }
+
+  function renderBniTermsSelectOptions(termsList, selectedDate) {
+    ['select-start-date', 'setting-page-period-select'].forEach(elemId => {
+      const select = document.getElementById(elemId);
+      if (!select || !termsList) return;
+      select.innerHTML = '';
+
+      termsList.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.dateStr;
+        opt.textContent = t.label;
+        if (t.dateStr === selectedDate) opt.selected = true;
+        select.appendChild(opt);
+      });
+    });
+  }
+</script>

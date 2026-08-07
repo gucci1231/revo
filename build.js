@@ -28,20 +28,19 @@ function compileStyles() {
 function buildHtml() {
   compileStyles();
 
-  let indexContent = fs.readFileSync(path.join(SRC_DIR, 'Index.html'), 'utf8');
+  function processIncludes(content) {
+    return content.replace(/<\?!=\s*include\('([^']+)'\);\s*\?>/g, (match, filename) => {
+      let filePath = path.join(SRC_DIR, filename + '.html');
+      if (fs.existsSync(filePath)) {
+        let subContent = fs.readFileSync(filePath, 'utf8');
+        return processIncludes(subContent);
+      }
+      return '';
+    });
+  }
 
-  // Replace <?!= include('FileName'); ?> recursively
-  indexContent = indexContent.replace(/<\?!=\s*include\('([^']+)'\);\s*\?>/g, (match, filename) => {
-    let filePath = path.join(SRC_DIR, filename + '.html');
-    if (fs.existsSync(filePath)) {
-      let subContent = fs.readFileSync(filePath, 'utf8');
-      return subContent.replace(/<\?!=\s*include\('([^']+)'\);\s*\?>/g, (m, fn) => {
-        let fp = path.join(SRC_DIR, fn + '.html');
-        return fs.existsSync(fp) ? fs.readFileSync(fp, 'utf8') : '';
-      });
-    }
-    return '';
-  });
+  let indexContent = fs.readFileSync(path.join(SRC_DIR, 'Index.html'), 'utf8');
+  indexContent = processIncludes(indexContent);
 
   const INDEX_OUTPUT = path.join(__dirname, 'index.html');
   fs.writeFileSync(INDEX_OUTPUT, indexContent, 'utf8');

@@ -1,0 +1,113 @@
+<script>
+  /* --- URL Hash Router & Navigation Utilities --- */
+  let isProgrammaticHashChange = false;
+
+  function updateUrlHash(hashStr, stateObj = {}) {
+    if (!hashStr) return;
+    const cleanHash = String(hashStr).replace(/^#+/, '');
+    if (window.location.hash !== '#' + cleanHash) {
+      isProgrammaticHashChange = true;
+      window.location.hash = '#' + cleanHash;
+      setTimeout(() => { isProgrammaticHashChange = false; }, 100);
+    }
+    if (typeof google !== 'undefined' && google.script && google.script.history) {
+      try {
+        google.script.history.push(stateObj, stateObj, '#' + cleanHash);
+      } catch (e) {}
+    }
+  }
+
+  function handleHashRouting() {
+    if (isProgrammaticHashChange) return;
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    const hash = rawHash.replace(/^#+/, '');
+    if (hash.startsWith('visitor/')) {
+      const vid = hash.replace('visitor/', '').trim();
+      if (vid && vid !== currentVdVisitorId) {
+        openVisitorDetailView(vid, false);
+      }
+    } else if (['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash, false);
+    }
+  }
+
+  /* --- ☰ Left Drawer Controller --- */
+  function toggleLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    if (drawer && drawer.classList.contains('open')) {
+      closeLeftDrawer();
+    } else {
+      openLeftDrawer();
+    }
+  }
+
+  function openLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (drawer) drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+  }
+
+  function closeLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+  }
+
+  /* --- Tab Navigation Controller --- */
+  function switchTab(tabName, updateHash = true) {
+    if (tabName !== 'visitor-detail') {
+      previousTabBeforeDetail = tabName;
+    }
+    ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+      const btn = document.getElementById('tab-btn-' + t);
+      const drawerItem = document.getElementById('drawer-item-' + t);
+      const view = document.getElementById('view-' + t);
+      if (btn) btn.classList.remove('active');
+      if (drawerItem) drawerItem.classList.remove('active');
+      if (view) view.classList.remove('active');
+    });
+
+    const targetBtn = document.getElementById('tab-btn-' + tabName);
+    const targetDrawerItem = document.getElementById('drawer-item-' + tabName);
+    const targetView = document.getElementById('view-' + tabName);
+    if (targetBtn) targetBtn.classList.add('active');
+    if (targetDrawerItem) targetDrawerItem.classList.add('active');
+    if (targetView) targetView.classList.add('active');
+
+    if (window.innerWidth < 1024) {
+      closeLeftDrawer();
+    }
+
+    if (updateHash && tabName !== 'visitor-detail') {
+      updateUrlHash(tabName, { tab: tabName });
+    }
+
+    if (tabName === 'priority-follow') {
+      fetchPriorityFollowData(true);
+    } else if (tabName === 'visitors') {
+      fetchAllVisitorsData(true);
+    } else if (tabName === 'hearings') {
+      fetchHearingListData(true);
+    } else if (tabName === 'email-schedule') {
+      fetchScheduledEmailsData(true);
+    } else if (tabName === 'settings') {
+      fetchMembersMasterData();
+    }
+  }
+
+  function showTableSkeleton(tbodyId, cols = 8, rows = 4) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    let html = '';
+    for (let i = 0; i < rows; i++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) {
+        html += '<td><div class="skeleton skeleton-row"></div></td>';
+      }
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+</script>

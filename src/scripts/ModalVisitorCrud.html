@@ -1,0 +1,81 @@
+<script>
+  /* --- Visitor CRUD Modal Controls --- */
+  function openAddVisitorModal() {
+    document.getElementById('modal-v-title').innerText = '新規ビジター手動登録';
+    document.getElementById('crud-v-id').value = '';
+    document.getElementById('crud-v-name').value = '';
+    document.getElementById('crud-v-furigana').value = '';
+    document.getElementById('crud-v-event-date').value = '';
+    document.getElementById('crud-v-inviter').value = '';
+    document.getElementById('crud-v-profession').value = '';
+    document.getElementById('crud-v-company').value = '';
+    document.getElementById('crud-v-email').value = '';
+    document.getElementById('crud-v-attendance-count').value = '初めて';
+    setCrudQuickDate('today');
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function openEditVisitorModal(id) {
+    const rawList = cachedAllVisitors || [];
+    const v = rawList.find(item => String(item.id) === String(id));
+    if (!v) return;
+
+    document.getElementById('modal-v-title').innerText = 'ビジター基本情報の編集';
+    document.getElementById('crud-v-id').value = v.id;
+    document.getElementById('crud-v-name').value = v.name || '';
+    document.getElementById('crud-v-furigana').value = v.furigana || '';
+    document.getElementById('crud-v-event-date').value = formatDateForInput(v.eventDate);
+    document.getElementById('crud-v-inviter').value = v.inviter || '';
+    document.getElementById('crud-v-profession').value = v.profession || '';
+    document.getElementById('crud-v-company').value = v.company || '';
+    document.getElementById('crud-v-email').value = v.email || '';
+    document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function closeCrudModal() {
+    const el = document.getElementById('modal-visitor-crud');
+    if (el) el.style.display = 'none';
+  }
+
+  function submitCrudVisitorForm() {
+    const id = document.getElementById('crud-v-id').value;
+    const rawDate = document.getElementById('crud-v-event-date').value.trim();
+    const formattedDate = rawDate.replace(/-/g, '/');
+
+    const vData = {
+      id: id,
+      name: document.getElementById('crud-v-name').value.trim(),
+      furigana: document.getElementById('crud-v-furigana').value.trim(),
+      eventDate: formattedDate,
+      inviter: document.getElementById('crud-v-inviter').value.trim(),
+      profession: document.getElementById('crud-v-profession').value.trim(),
+      company: document.getElementById('crud-v-company').value.trim(),
+      email: document.getElementById('crud-v-email').value.trim(),
+      attendanceCount: document.getElementById('crud-v-attendance-count').value
+    };
+
+    if (!vData.name || !vData.eventDate) {
+      alert('氏名と参加日は必須入力です');
+      return;
+    }
+
+    closeCrudModal();
+    document.getElementById('loading').style.display = 'flex';
+
+    const isEdit = !!id;
+    const apiName = isEdit ? 'updateVisitorApi' : 'addVisitorApi';
+    const msg = isEdit ? 'ビジター情報を更新しました' : '新規ビジターを登録しました';
+
+    ApiService.call(apiName, vData)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ ${msg}`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        }
+      })
+      .catch(handleError);
+  }
+</script>

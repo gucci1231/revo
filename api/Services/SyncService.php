@@ -80,14 +80,24 @@ class SyncService {
                     $vId = (string)($h['visitorId'] ?? $h['visitor_id'] ?? '');
                     if (!$vId) continue;
 
+                    $existing = $this->db->fetchOne("SELECT follow_memo, orient_memo FROM hearing_sheets WHERE visitor_id = ?", [$vId]);
+                    $incomingFollowMemo = $h['followMemo'] ?? $h['follow_memo'] ?? '';
+                    if ($incomingFollowMemo === '' && !empty($existing['follow_memo'])) {
+                        $incomingFollowMemo = $existing['follow_memo'];
+                    }
+                    $incomingOrientMemo = $h['orientMemo'] ?? $h['orient_memo'] ?? '';
+                    if ($incomingOrientMemo === '' && !empty($existing['orient_memo'])) {
+                        $incomingOrientMemo = $existing['orient_memo'];
+                    }
+
                     $this->db->upsert('hearing_sheets', [
                         'visitor_id' => $vId,
                         'orient_user' => $h['orientUser'] ?? $h['orient_user'] ?? '',
                         'q1' => $h['q1'] ?? '', 'q2' => $h['q2'] ?? '', 'q3' => $h['q3'] ?? '',
                         'q4' => $h['q4'] ?? '', 'q5' => $h['q5'] ?? '', 'q6' => $h['q6'] ?? '', 'q7' => $h['q7'] ?? '',
                         'feel_abc' => $h['feelAbc'] ?? $h['feel_abc'] ?? '',
-                        'orient_memo' => $h['orientMemo'] ?? $h['orient_memo'] ?? '',
-                        'follow_memo' => $h['followMemo'] ?? $h['follow_memo'] ?? '',
+                        'orient_memo' => $incomingOrientMemo,
+                        'follow_memo' => $incomingFollowMemo,
                         'sheet_url' => $h['sheetUrl'] ?? $h['sheet_url'] ?? '',
                         'updated_at' => $h['updatedAt'] ?? $h['updated_at'] ?? $now
                     ], ['visitor_id']);

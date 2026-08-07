@@ -85,8 +85,19 @@ requiredElementIds.forEach(id => {
 });
 
 // --- TEST SUITE 3: JavaScript Syntax & Helper Functions Validation ---
-console.log('\n⚡ Test Suite 3: Client-side Scripts Syntax & Helper Functions');
-const scriptsHtml = fs.readFileSync(path.join(SRC_DIR, 'Scripts.html'), 'utf8');
+function processIncludes(content) {
+  return content.replace(/<\?!=\s*include\('([^']+)'\);\s*\?>/g, (match, filename) => {
+    let filePath = path.join(SRC_DIR, filename + '.html');
+    if (fs.existsSync(filePath)) {
+      let subContent = fs.readFileSync(filePath, 'utf8');
+      return processIncludes(subContent);
+    }
+    return '';
+  });
+}
+
+const scriptsHtmlRaw = fs.readFileSync(path.join(SRC_DIR, 'Scripts.html'), 'utf8');
+const scriptsHtml = processIncludes(scriptsHtmlRaw);
 
 // Extract JS block from <script> tags
 const jsMatches = scriptsHtml.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi) || [];

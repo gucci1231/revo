@@ -1,0 +1,215 @@
+<script>
+  /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
+  let currentVdVisitorId = null;
+  let previousTabBeforeDetail = "dashboard";
+  let currentVdWebAppUrl = "";
+
+  function openVisitorDetailModal(id) {
+    openVisitorDetailView(id);
+  }
+
+  function openVisitorDetailView(id, updateHash = true) {
+    if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
+      return;
+    }
+    currentVdVisitorId = id;
+    if (updateHash) {
+      updateUrlHash('visitor/' + id, { visitorId: id });
+    }
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('getVisitorDetailApi', id)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (!res || !res.success) {
+          showToast('⚠️ ビジターデータの取得に失敗しました（存在しないIDです）');
+          switchTab('dashboard', true);
+          return;
+        }
+
+        currentVdWebAppUrl = res.webAppUrl || "";
+        const v = res.visitor;
+        const st = res.status;
+        const h = res.hearing || {};
+
+        document.getElementById('vd-name').innerText = v.name || '-';
+        document.getElementById('vd-furigana').innerText = v.furigana || '';
+        document.getElementById('vd-company').innerText = v.company || '-';
+        document.getElementById('vd-profession').innerText = v.profession || '-';
+        document.getElementById('vd-inviter').innerText = v.inviter || '-';
+        document.getElementById('vd-event-date').innerText = v.eventDate || '-';
+        document.getElementById('vd-email').innerText = v.email || '-';
+        document.getElementById('vd-attendance-count').innerText = v.attendanceCount || '初めて';
+
+        // 自由メモ
+        document.getElementById('vd-free-memo').value = v.remarks || '';
+
+        // ステータスバッジ (クリックで参加/不参加トグル)
+        const badgeAtt = document.getElementById('vd-badge-attended');
+        const isAttended = st.isAttended === '参加';
+        badgeAtt.innerText = isAttended ? '出欠: 参加' : '出欠: 不参加';
+        badgeAtt.style.background = isAttended ? '#dcfce7' : '#fee2e2';
+        badgeAtt.style.color = isAttended ? '#15803d' : '#b91c1c';
+        badgeAtt.onclick = () => {
+          const next = isAttended ? '不参加' : '参加';
+          toggleAttend(id, next);
+        };
+
+        const badge1to1 = document.getElementById('vd-badge-1to1');
+        badge1to1.innerText = `1to1: ${st.is1to1 || '未'}`;
+        badge1to1.style.background = st.is1to1 === '済' ? '#dcfce7' : '#f1f5f9';
+        badge1to1.style.color = st.is1to1 === '済' ? '#15803d' : '#64748b';
+        badge1to1.onclick = () => toggle1to1InDetail(id, st.is1to1);
+
+        const badgeJoined = document.getElementById('vd-badge-joined');
+        badgeJoined.innerText = `入会: ${st.isJoined || '未'}`;
+        badgeJoined.style.background = st.isJoined === '入会済' ? '#dcfce7' : '#f1f5f9';
+        badgeJoined.style.color = st.isJoined === '入会済' ? '#15803d' : '#64748b';
+        badgeJoined.onclick = () => toggleJoinedInDetail(id, st.isJoined);
+
+        const badgeFeel = document.getElementById('vd-badge-feel');
+        badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
+        badgeFeel.style.background = h.feelAbc === 'A' ? '#ffe3e3' : (h.feelAbc === 'B' ? '#fff3bf' : '#e9ecef');
+        badgeFeel.style.color = h.feelAbc === 'A' ? '#c92a2a' : (h.feelAbc === 'B' ? '#e67700' : '#495057');
+
+        // ヒアリング内容
+        document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
+        document.getElementById('vd-q1').innerText = h.q1 || '-';
+        document.getElementById('vd-q2').innerText = h.q2 || '-';
+        document.getElementById('vd-q3').innerText = h.q3 || '-';
+        document.getElementById('vd-q4').innerText = h.q4 || '-';
+        document.getElementById('vd-q5').innerText = h.q5 || '-';
+        document.getElementById('vd-q6').innerText = h.q6 || '-';
+        document.getElementById('vd-q7').innerText = h.q7 || '-';
+        document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
+        document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
+
+        // メール履歴
+        const mailContainer = document.getElementById('vd-mail-history-list');
+        mailContainer.innerHTML = '';
+        if (res.mailLogs && res.mailLogs.length > 0) {
+          res.mailLogs.forEach(m => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding: 12px 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #364fc7; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
+            div.innerHTML = `
+              <div>
+                <strong style="color:#343a40;">${m.mailType}</strong>
+                <div style="font-size: 11px; color: #6c757d; margin-top:2px;">送信日時: ${m.sentAt}</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: #2b8a3e; background: #d3f9d8; padding: 3px 10px; border-radius: 10px;">${m.status}</span>
+            `;
+            mailContainer.appendChild(div);
+          });
+        } else {
+          mailContainer.innerHTML = '<div style="color:#868e96; font-size:13px; padding: 10px;">メール送信履歴はありません</div>';
+        }
+
+        document.getElementById('vd-btn-open-hearing-page').onclick = () => {
+          openHearingFormModal(id);
+        };
+
+        // 画面全体を VIEW 4 (ビジター詳細全画面) へ切り替え
+        document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-visitor-detail').classList.add('active');
+
+        switchVdTab('hearing');
+        window.scrollTo(0, 0);
+      })
+      .catch(handleError);
+  }
+
+  function closeVisitorDetailView() {
+    switchTab(previousTabBeforeDetail || 'dashboard', true);
+  }
+
+  function openCurrentVisitorInNewTab() {
+    if (!currentVdVisitorId) return;
+    if (currentVdWebAppUrl) {
+      window.open(`${currentVdWebAppUrl}?id=${currentVdVisitorId}`, '_blank');
+    } else {
+      alert('Web App URLが読み込めていません');
+    }
+  }
+
+  function switchVdTab(tab) {
+    document.getElementById('vd-tab-btn-hearing').classList.toggle('active', tab === 'hearing');
+    document.getElementById('vd-tab-btn-memo').classList.toggle('active', tab === 'memo');
+    document.getElementById('vd-tab-btn-mail').classList.toggle('active', tab === 'mail');
+
+    document.getElementById('vd-tab-content-hearing').style.display = tab === 'hearing' ? 'block' : 'none';
+    document.getElementById('vd-tab-content-memo').style.display = tab === 'memo' ? 'block' : 'none';
+    document.getElementById('vd-tab-content-mail').style.display = tab === 'mail' ? 'block' : 'none';
+  }
+
+  function saveVisitorFreeMemo() {
+    if (!currentVdVisitorId) return;
+    const memoText = document.getElementById('vd-free-memo').value.trim();
+    showToast(`自由メモを保存中...`);
+
+    ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
+      .then(res => {
+        showToast(`✅ メモを正常に保存しました！`);
+        fetchDashboardData();
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .catch(handleError);
+  }
+
+  function toggleAttend(id, newStatus) {
+    showToast(`出欠を【${newStatus}】に変更中...`);
+    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
+      .then(res => {
+        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
+  function toggle1to1(id, current) {
+    const next = (current === '済' || current === true) ? '未' : '済';
+    showToast(`1to1ステータスを変更中...`);
+    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
+      .then(res => {
+        showToast(`✅ 1to1を【${next}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
+  function toggle1to1InDetail(id, current) {
+    toggle1to1(id, current);
+  }
+
+  function toggleJoined(id, current) {
+    const isJoinedBool = (current === '入会済' || current === '済' || current === '入会' || current === true);
+    const next = isJoinedBool ? '未' : '入会済';
+    showToast(`入会ステータスを変更中...`);
+    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
+      .then(res => {
+        showToast(`✅ 入会状況を【${next}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
+  function toggleJoinedInDetail(id, current) {
+    toggleJoined(id, current);
+  }
+
+  function deleteVisitor(id, name) {
+    if (!confirm(`【確認】ビジター「${name}」のデータを削除してもよろしいですか？`)) return;
+
+    document.getElementById('loading').style.display = 'flex';
+    ApiService.call('deleteVisitorApi', id)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`🗑️ ${name}様のデータを削除しました`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        }
+      })
+      .catch(handleError);
+  }
+</script>

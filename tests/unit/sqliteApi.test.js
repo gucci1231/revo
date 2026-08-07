@@ -11,4 +11,13 @@ describe('SQLite REST ApiService Unit Tests', () => {
     const res = await ApiService.call('unknownMethod');
     assert.strictEqual(res.success, true);
   });
+
+  it('correctly maps all frontend API calls in getRestConfig', () => {
+    assert.strictEqual(ApiService.getRestConfig('getHearingListDataApi').url, '/api/hearings.php?action=list');
+    assert.strictEqual(ApiService.getRestConfig('getHearingSheetsListApi').url, '/api/hearings.php?action=list');
+    assert.strictEqual(ApiService.getRestConfig('getHearingSheetFormDataApi', ['142']).url, '/api/hearings.php?action=get&visitorId=142');
+    assert.strictEqual(ApiService.getRestConfig('saveHearingSheetApi').url, '/api/hearings.php?action=save');
+    assert.strictEqual(ApiService.getRestConfig('getDashboardDataApi').url, '/api/dashboard.php');
+    assert.strictEqual(ApiService.getRestConfig('getAllVisitorsDataApi').url, '/api/visitors.php?action=list');
+  });
 });

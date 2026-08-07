@@ -1,0 +1,130 @@
+<script>
+  /* --- Hearing Form Modal Controls --- */
+  function openHearingFormModal(id) {
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('getHearingSheetFormDataApi', id)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (!res.success) { alert('データ取得失敗'); return; }
+
+        const info = res.visitorInfo || {};
+        const form = res.formData || {};
+
+        document.getElementById('hf-visitor-id').value = id;
+        document.getElementById('hf-event-date').innerText = info.event_date || '-';
+        document.getElementById('hf-name').innerText = info.visitor_name || '-';
+        document.getElementById('hf-furigana').innerText = info.furigana || '';
+        document.getElementById('hf-company').innerText = info.company || '-';
+        document.getElementById('hf-profession').innerText = info.profession || '-';
+        document.getElementById('hf-inviter').innerText = info.inviter || '-';
+
+        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
+        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
+
+        document.getElementById('hf-q1').value = form.q1 || '';
+        document.getElementById('hf-q2').value = form.q2 || '';
+        document.getElementById('hf-q3').value = form.q3 || '';
+        document.getElementById('hf-q4').value = form.q4 || '';
+        document.getElementById('hf-q5').value = form.q5 || '';
+        document.getElementById('hf-q6').value = form.q6 || '';
+        document.getElementById('hf-q7').value = form.q7 || '';
+
+        selectAbc(form.feelAbc || '');
+
+        document.getElementById('hf-orient-memo').value = form.orientMemo || '';
+        document.getElementById('hf-follow-memo').value = form.followMemo || '';
+
+        document.getElementById('modal-hearing-form').style.display = 'flex';
+      })
+      .catch(handleError);
+  }
+
+  function renderOrientUserOptions(cats, selectedVal) {
+    const select = document.getElementById('hf-orient-user');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- DBより選択 (オリエン担当者) --</option>';
+
+    let found = false;
+    if (cats && cats.length > 0) {
+      cats.forEach(catObj => {
+        const grp = document.createElement('optgroup');
+        grp.label = catObj.category;
+        if (catObj.members && catObj.members.length > 0) {
+          catObj.members.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.profession || ''})`;
+            if (m.name === selectedVal) {
+              opt.selected = true;
+              found = true;
+            }
+            grp.appendChild(opt);
+          });
+        }
+        select.appendChild(grp);
+      });
+    }
+
+    if (selectedVal && !found) {
+      const opt = document.createElement('option');
+      opt.value = selectedVal;
+      opt.textContent = `${selectedVal} (登録内容)`;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+
+    if (selectedVal) select.value = selectedVal;
+  }
+
+  function closeHearingModal() {
+    const el = document.getElementById('modal-hearing-form');
+    if (el) el.style.display = 'none';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
+  }
+
+  function selectAbc(val) {
+    document.getElementById('hf-feel-abc').value = val;
+    ['A', 'B', 'C'].forEach(k => {
+      const btn = document.getElementById('abc-' + k);
+      if (btn) {
+        if (k === val) btn.classList.add('selected');
+        else btn.classList.remove('selected');
+      }
+    });
+  }
+
+  function submitHearingForm() {
+    const id = document.getElementById('hf-visitor-id').value;
+    const formData = {
+      visitorId: id,
+      orientUser: document.getElementById('hf-orient-user').value.trim(),
+      q1: document.getElementById('hf-q1').value.trim(),
+      q2: document.getElementById('hf-q2').value.trim(),
+      q3: document.getElementById('hf-q3').value.trim(),
+      q4: document.getElementById('hf-q4').value.trim(),
+      q5: document.getElementById('hf-q5').value.trim(),
+      q6: document.getElementById('hf-q6').value.trim(),
+      q7: document.getElementById('hf-q7').value.trim(),
+      feelAbc: document.getElementById('hf-feel-abc').value,
+      orientMemo: document.getElementById('hf-orient-memo').value.trim(),
+      followMemo: document.getElementById('hf-follow-memo').value.trim()
+    };
+
+    closeHearingModal();
+    showToast(`ヒアリングシートを保存中...`);
+
+    ApiService.call('saveHearingSheetApi', formData)
+      .then(res => {
+        showToast(`✅ ヒアリングシートを正常保存しました`);
+        try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
+        if (cachedHearingList.length > 0) fetchHearingListData(true);
+        refreshAllActiveViews();
+      })
+      .catch(err => {
+        closeHearingModal();
+        handleError(err);
+      });
+  }
+</script>

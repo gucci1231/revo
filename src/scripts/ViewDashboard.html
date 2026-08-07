@@ -1,0 +1,173 @@
+<script>
+  /* --- VIEW 1: Dashboard Controller & Chart Renderers --- */
+  let donutChartInstance = null;
+  let lineChartInstance = null;
+
+  function renderDashboard(data) {
+    if (!data) return;
+    currentDashboardData = data;
+
+    // KPI Cards
+    const targetEl = document.getElementById('kpi-target-members');
+    const joinedEl = document.getElementById('kpi-joined-members');
+    const rateEl = document.getElementById('kpi-achievement-rate');
+    const totalVEl = document.getElementById('kpi-total-visitors');
+    const total11El = document.getElementById('kpi-total-1to1');
+
+    if (targetEl) targetEl.innerText = `${data.targetMembers || 0}名`;
+    if (joinedEl) joinedEl.innerText = `${data.joinedMembers || 0}名`;
+    if (rateEl) rateEl.innerText = `${data.achievementRate || 0}%`;
+    if (totalVEl) totalVEl.innerText = `${data.totalVisitors || 0}名`;
+    if (total11El) total11El.innerText = `${data.total1to1 || 0}件`;
+
+    // Charts
+    initDonutChart(data.joinedMembers || 0, data.targetMembers || 15);
+    if (data.chartLabels && data.chartValues) {
+      initLineChart(data.chartLabels, data.chartValues);
+    }
+
+    // Tables
+    renderHotVisitorsTable(data.hotVisitors || []);
+    renderWeeklyStatsTable(data.weeklyStats || []);
+    renderMonthlyStatsTable(data.monthlyStats || []);
+
+    if (data.bniTermsList && data.selectedStartDate) {
+      renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
+    }
+  }
+
+  function renderHotVisitorsTable(records) {
+    const tbody = document.getElementById('table-hot-visitors');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong style="color: #2b8a3e;">${formatTruncatedCell(r.eventDate, 10)}</strong></td>
+        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
+        <td>${render1to1ButtonHtml(r.id, r.is1to1)}</td>
+        <td>${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderPeriodicStatsTable(tbodyId, records, labelKey) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">データなし</td></tr>';
+      return;
+    }
+
+    records.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${row[labelKey] || '-'}</td>
+        <td style="font-weight: 800; color: #364fc7;">${row.visitorCount || 0}名</td>
+        <td>${row.attCount || 0}名</td>
+        <td>${row.oneToOneCount || 0}件</td>
+        <td style="font-weight: 800; color: #2b8a3e;">${row.joinedCount || 0}名</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderWeeklyStatsTable(records) {
+    renderPeriodicStatsTable('table-weekly-stats', records, 'weekLabel');
+  }
+
+  function renderMonthlyStatsTable(records) {
+    renderPeriodicStatsTable('table-monthly-stats', records, 'monthLabel');
+  }
+
+  function initDonutChart(joined, target) {
+    const ctx = document.getElementById('chart-donut');
+    if (!ctx) return;
+
+    if (donutChartInstance) {
+      donutChartInstance.destroy();
+    }
+
+    const remaining = Math.max(0, target - joined);
+    donutChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['達成入会数', '残り目標数'],
+        datasets: [{
+          data: [joined, remaining],
+          backgroundColor: ['#20c997', '#e9ecef'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '75%',
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+
+  function initLineChart(labels, values) {
+    const ctx = document.getElementById('chart-line');
+    if (!ctx) return;
+
+    if (lineChartInstance) {
+      lineChartInstance.destroy();
+    }
+
+    lineChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'ビジター来訪数',
+          data: values,
+          borderColor: '#4c6ef5',
+          backgroundColor: 'rgba(76, 110, 245, 0.1)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+
+  function changeStartDate(newVal) {
+    showToast(`集計期間を【${newVal} 〜】に変更中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    ApiService.call('updateSettingStartDateApi', newVal)
+      .then(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ 集計期間を【${newVal} 〜】に切り替えました`);
+          renderDashboard(res.data);
+        }
+      })
+      .catch(handleError);
+  }
+</script>
