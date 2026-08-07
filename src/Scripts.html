@@ -743,7 +743,15 @@
       const grade = parseFeelAbc(r.feelAbc || r.feeling);
       const joinedVal = r.isJoined || r.is_joined;
       const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-      const matchesGrade = (grade === 'A' || grade === 'B') && !isJoined;
+
+      let matchesGrade = !isJoined;
+      if (pfGradeFilter === 'A') {
+        matchesGrade = matchesGrade && (grade === 'A');
+      } else if (pfGradeFilter === 'B') {
+        matchesGrade = matchesGrade && (grade === 'B');
+      } else {
+        matchesGrade = matchesGrade && (grade === 'A' || grade === 'B');
+      }
 
       const matchesQ = !q ||
         (r.name || '').toLowerCase().includes(q) ||
@@ -818,13 +826,13 @@
       const joinText = isJoined ? '入会済' : '未';
 
       const grade = parseFeelAbc(r.feelAbc || r.feeling);
-      let gradeBadge = '<span style="font-size: 11px; font-weight: 800; background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 9999px;">-</span>';
+      let gradeBadge = '<span style="font-size: 13px; font-weight: 800; background: #e9ecef; color: #495057; padding: 3px 10px; border-radius: 6px; display: inline-block;">-</span>';
       if (grade === 'A') {
-        gradeBadge = '<span style="font-size: 11px; font-weight: 800; background: #ffe3e3; color: #c92a2a; padding: 2px 8px; border-radius: 9999px;">🔴 A</span>';
+        gradeBadge = '<span style="font-size: 15px; font-weight: 900; background: #ffe3e3; color: #c92a2a; padding: 4px 14px; border-radius: 6px; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">A</span>';
       } else if (grade === 'B') {
-        gradeBadge = '<span style="font-size: 11px; font-weight: 800; background: #fff3bf; color: #e67700; padding: 2px 8px; border-radius: 9999px;">🟡 B</span>';
+        gradeBadge = '<span style="font-size: 15px; font-weight: 900; background: #fff3bf; color: #d97706; padding: 4px 14px; border-radius: 6px; display: inline-block; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">B</span>';
       } else if (grade === 'C') {
-        gradeBadge = '<span style="font-size: 11px; font-weight: 800; background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 9999px;">C</span>';
+        gradeBadge = '<span style="font-size: 14px; font-weight: 800; background: #e9ecef; color: #495057; padding: 3px 10px; border-radius: 6px; display: inline-block;">C</span>';
       }
 
       tr.innerHTML = `
