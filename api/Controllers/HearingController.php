@@ -5,18 +5,22 @@ use Api\Core\Controller;
 use Api\Core\Response;
 use Api\Repositories\HearingRepository;
 use Api\Repositories\VisitorRepository;
+use Api\Repositories\MemberRepository;
 
 class HearingController extends Controller {
     private HearingRepository $hearingRepo;
     private VisitorRepository $visitorRepo;
+    private MemberRepository $memberRepo;
 
     public function __construct(
         ?HearingRepository $hearingRepo = null,
-        ?VisitorRepository $visitorRepo = null
+        ?VisitorRepository $visitorRepo = null,
+        ?MemberRepository $memberRepo = null
     ) {
         parent::__construct();
         $this->hearingRepo = $hearingRepo ?? new HearingRepository();
         $this->visitorRepo = $visitorRepo ?? new VisitorRepository();
+        $this->memberRepo = $memberRepo ?? new MemberRepository();
     }
 
     public function handle(): void {
@@ -70,10 +74,13 @@ class HearingController extends Controller {
             'sheetUrl' => $h['sheet_url'] ?? ''
         ];
 
+        $groupedMembers = $this->memberRepo->getGroupedByCategory();
+        $memberCategories = $groupedMembers['memberCategories'] ?? [];
+
         Response::success([
             'visitorInfo' => $vInfo,
             'formData' => $formData,
-            'memberCategories' => []
+            'memberCategories' => $memberCategories
         ]);
     }
 
@@ -84,6 +91,12 @@ class HearingController extends Controller {
         }
 
         $now = date('Y/m/d H:i');
+
+        $existing = $this->hearingRepo->findByVisitorId($vId);
+        $sheetUrl = $this->getParam('sheetUrl');
+        if ($sheetUrl === null && $existing) {
+            $sheetUrl = $existing['sheet_url'] ?? '';
+        }
 
         $this->hearingRepo->saveHearingSheet([
             'visitor_id' => $vId,
@@ -98,10 +111,11 @@ class HearingController extends Controller {
             'feel_abc' => $this->getParam('feelAbc', ''),
             'orient_memo' => $this->getParam('orientMemo', ''),
             'follow_memo' => $this->getParam('followMemo', ''),
-            'sheet_url' => $this->getParam('sheetUrl', ''),
+            'sheet_url' => $sheetUrl ?? '',
             'updated_at' => $now
         ]);
 
         Response::success(['visitorId' => $vId]);
     }
 }
+

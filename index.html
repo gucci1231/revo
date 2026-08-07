@@ -3,9 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>REvo 定例会ビジター管理 2.0 (完全Web運用システム)</title>
   <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2903,22 +2900,34 @@ const ApiService = {
     if (!select) return;
     select.innerHTML = '<option value="">-- DBより選択 (オリエン担当者) --</option>';
 
-    if (!cats || cats.length === 0) return;
+    let found = false;
+    if (cats && cats.length > 0) {
+      cats.forEach(catObj => {
+        const grp = document.createElement('optgroup');
+        grp.label = catObj.category;
+        if (catObj.members && catObj.members.length > 0) {
+          catObj.members.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.profession || ''})`;
+            if (m.name === selectedVal) {
+              opt.selected = true;
+              found = true;
+            }
+            grp.appendChild(opt);
+          });
+        }
+        select.appendChild(grp);
+      });
+    }
 
-    cats.forEach(catObj => {
-      const grp = document.createElement('optgroup');
-      grp.label = catObj.category;
-      if (catObj.members && catObj.members.length > 0) {
-        catObj.members.forEach(m => {
-          const opt = document.createElement('option');
-          opt.value = m.name;
-          opt.textContent = `${m.name} (${m.profession || ''})`;
-          if (m.name === selectedVal) opt.selected = true;
-          grp.appendChild(opt);
-        });
-      }
-      select.appendChild(grp);
-    });
+    if (selectedVal && !found) {
+      const opt = document.createElement('option');
+      opt.value = selectedVal;
+      opt.textContent = `${selectedVal} (登録内容)`;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
 
     if (selectedVal) select.value = selectedVal;
   }
