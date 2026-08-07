@@ -2141,12 +2141,12 @@ const ApiService = {
       .then(res => {
         if (res && res.success) {
           const list = res.list || [];
-          // 感触 A・B の評価があり、かつ未入会のビジターのみ抽出（1人1行に統合）
+          // 感触 A の評価があり、かつ未入会のビジターのみ抽出（1人1行に統合）
           cachedPriorityFollowList = deduplicateVisitorListClient(list.filter(item => {
             const grade = parseFeelAbc(item.feelAbc || item.feeling);
             const joinedVal = item.isJoined || item.is_joined;
             const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-            return (grade === 'A' || grade === 'B' || grade === 'C') && !isJoined;
+            return grade === 'A' && !isJoined;
           }));
           filterPriorityFollowTable();
         } else {
@@ -2154,11 +2154,12 @@ const ApiService = {
           renderPriorityFollowCurrentPage();
         }
       })
-      .catch(err => {
+      .withFailureHandler(err => {
         handleError(err);
         cachedPriorityFollowList = [];
         renderPriorityFollowCurrentPage();
-      });
+      })
+      .getHearingSheetsListApi();
   }
 
   function setPriorityFollowGradeFilter(grade) {
@@ -2179,9 +2180,7 @@ const ApiService = {
       const grade = parseFeelAbc(r.feelAbc || r.feeling);
       const joinedVal = r.isJoined || r.is_joined;
       const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
-      const matchesGrade = pfGradeFilter === 'ALL'
-        ? (grade === 'A' || grade === 'B')
-        : (grade === pfGradeFilter.toUpperCase());
+      const matchesGrade = (grade === 'A' || grade === 'B') && !isJoined;
 
       const matchesQ = !q ||
         (r.name || '').toLowerCase().includes(q) ||
