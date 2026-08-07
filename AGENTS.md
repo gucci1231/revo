@@ -31,3 +31,11 @@
 - Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not reimplement common functionality without a clear reason.
 - Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
 - Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
+
+## 📌 今後の開発タスク & メモ (Upcoming Tasks)
+1. **GAS による PUSH 型リアルタイム同期設定**:
+   - Google スプレッドシート / フォーム送信時のイベントから `https://revo.k-d-o.biz/api/sync.php` をWebフック呼び出し（PUSH型）してSQLite DBに即時同期する。
+2. **Web画面からのメールテンプレート管理 ＆ GAS経由メール送信機能**:
+   - Web画面（`index.html` / 管理画面）上でメールテンプレート（件名・本文、`{name}` や `{event_date}` 等の差し込み変数）の作成・保存・編集機能を構築。
+   - メール送信実行時、PHPからGASエンドポイント（`GmailApp.sendEmail`）を呼び出し、Gmailから迷惑メール判定を回避しつつ送信履歴を残して安全にメール送信する仕組みを実装。
+
