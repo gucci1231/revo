@@ -28,8 +28,8 @@
         }
 
         currentVdWebAppUrl = res.webAppUrl || "";
-        const v = res.visitor;
-        const st = res.status;
+        const v = res.visitor || {};
+        const st = res.status || {};
         const h = res.hearing || {};
 
         document.getElementById('vd-name').innerText = v.name || '-';
