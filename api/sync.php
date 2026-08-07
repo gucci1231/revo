@@ -1,9 +1,17 @@
 <?php
 require_once __DIR__ . '/db.php';
 
-$input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-$addedCount = 0;
+$rawInput = file_get_contents('php://input');
+$input = json_decode($rawInput, true);
 
+if (!$input && !empty($_POST['payload'])) {
+    $input = json_decode($_POST['payload'], true);
+}
+if (!$input) {
+    $input = $_POST;
+}
+
+$addedCount = 0;
 $json = null;
 
 // 1. Primary: Direct POST body payload (Webhook / PUSH sync from Google Sheets / Form)
