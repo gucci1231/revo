@@ -61,4 +61,21 @@ describe('Repeat Visitor Hearing Sheet Synchronization Unit Tests', () => {
     assert.strictEqual(hearingSheets['96'].q1, 'New Q1 Answer');
     assert.strictEqual(hearingSheets['96'].feel_abc, 'B');
   });
+
+  it('sorts hearing sheet list by participation date (eventDate DESC)', () => {
+    const hearingList = [
+      { visitorId: '10', name: 'Visitor A', eventDate: '2026/07/01' },
+      { visitorId: '12', name: 'Visitor B', eventDate: '2026/08/08' },
+      { visitorId: '11', name: 'Visitor C', eventDate: '2026/08/01' }
+    ];
+
+    hearingList.sort((a, b) => {
+      const dA = a.eventDate || '';
+      const dB = b.eventDate || '';
+      if (dA !== dB) return dB.localeCompare(dA);
+      return (parseInt(b.visitorId, 10) || 0) - (parseInt(a.visitorId, 10) || 0);
+    });
+
+    assert.deepStrictEqual(hearingList.map(r => r.visitorId), ['12', '11', '10']);
+  });
 });

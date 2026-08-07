@@ -27,7 +27,7 @@ class HearingRepository {
             FROM hearing_sheets h
             LEFT JOIN visitors v ON h.visitor_id = v.id
             LEFT JOIN visitors_status s ON h.visitor_id = s.visitor_id
-            ORDER BY h.updated_at DESC
+            ORDER BY COALESCE(NULLIF(v.event_date, ''), h.updated_at) DESC, CAST(h.visitor_id AS INTEGER) DESC
         ";
         return $this->db->fetchAll($sql);
     }

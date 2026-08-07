@@ -383,6 +383,12 @@
       .then(res => {
         if (res && res.success) {
           cachedHearingList = deduplicateVisitorListClient(res.list || []);
+          cachedHearingList.sort((a, b) => {
+            const dA = a.eventDate || '';
+            const dB = b.eventDate || '';
+            if (dA !== dB) return dB.localeCompare(dA);
+            return (parseInt(b.visitorId, 10) || 0) - (parseInt(a.visitorId, 10) || 0);
+          });
           renderHearingListTable(cachedHearingList);
         }
       })
