@@ -77,7 +77,35 @@ class VisitorRepository {
     }
 
     public function getStatusByVisitorId(string $visitorId): ?array {
-        return $this->db->fetchOne("SELECT * FROM visitors_status WHERE visitor_id = ?", [$visitorId]);
+        $linkedIds = $this->getLinkedVisitorIds($visitorId);
+        if (empty($linkedIds)) {
+            return $this->db->fetchOne("SELECT * FROM visitors_status WHERE visitor_id = ?", [$visitorId]);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($linkedIds), '?'));
+        $rows = $this->db->fetchAll("SELECT * FROM visitors_status WHERE visitor_id IN ({$placeholders}) ORDER BY updated_at DESC", $linkedIds);
+
+        if (empty($rows)) {
+            return [
+                'visitor_id' => $visitorId,
+                'is_attended' => '未',
+                'is_joined' => '未',
+                'is_1to1' => '未',
+                'is_matched' => '未'
+            ];
+        }
+
+        $merged = $rows[0];
+        $merged['visitor_id'] = $visitorId;
+
+        foreach ($rows as $r) {
+            if (($r['is_attended'] ?? '') === '参加') $merged['is_attended'] = '参加';
+            if (($r['is_joined'] ?? '') === '入会済' || ($r['is_joined'] ?? '') === '済') $merged['is_joined'] = '入会済';
+            if (($r['is_1to1'] ?? '') === '済') $merged['is_1to1'] = '済';
+            if (($r['is_matched'] ?? '') === '成功') $merged['is_matched'] = '成功';
+        }
+
+        return $merged;
     }
 
     public function getNextId(): string {
@@ -98,11 +126,19 @@ class VisitorRepository {
     }
 
     public function updateStatus(string $visitorId, string $column, string $value, string $now): bool {
-        return $this->db->upsert('visitors_status', [
-            'visitor_id' => $visitorId,
-            $column => $value,
-            'updated_at' => $now
-        ], ['visitor_id']);
+        $linkedIds = $this->getLinkedVisitorIds($visitorId);
+        $success = true;
+
+        foreach ($linkedIds as $id) {
+            $ok = $this->db->upsert('visitors_status', [
+                'visitor_id' => $id,
+                $column => $value,
+                'updated_at' => $now
+            ], ['visitor_id']);
+            if (!$ok) $success = false;
+        }
+
+        return $success;
     }
 
     public function updateRemarks(string $visitorId, string $remarks): int {
