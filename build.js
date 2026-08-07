@@ -3,7 +3,6 @@ const path = require('path');
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const SRC_DIR = path.join(__dirname, 'src');
-const STANDALONE_OUTPUT = path.join(__dirname, 'standalone.html');
 
 function compileStyles() {
   const cssFiles = [
@@ -45,9 +44,8 @@ function buildHtml() {
   });
 
   const INDEX_OUTPUT = path.join(__dirname, 'index.html');
-  fs.writeFileSync(STANDALONE_OUTPUT, indexContent, 'utf8');
   fs.writeFileSync(INDEX_OUTPUT, indexContent, 'utf8');
-  console.log(`✅ standalone.html and index.html compiled successfully`);
+  console.log(`✅ index.html compiled successfully`);
 }
 
 buildHtml();

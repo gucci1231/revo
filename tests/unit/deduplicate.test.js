@@ -57,6 +57,19 @@ function deduplicateVisitorListClient(list) {
       const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
       const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
 
+      const mergedQ1 = r.q1 || existing.q1 || '';
+      const mergedQ2 = r.q2 || existing.q2 || '';
+      const mergedQ3 = r.q3 || existing.q3 || '';
+      const mergedQ4 = r.q4 || existing.q4 || '';
+      const mergedQ5 = r.q5 || existing.q5 || '';
+      const mergedQ6 = r.q6 || existing.q6 || '';
+      const mergedQ7 = r.q7 || existing.q7 || '';
+      const mergedOrientUser = r.orientUser || existing.orientUser || '';
+      const mergedOrientMemo = r.orientMemo || existing.orientMemo || '';
+      const mergedFollowMemo = r.followMemo || existing.followMemo || '';
+      const mergedFeelAbc = r.feelAbc || existing.feelAbc || '';
+      const mergedSheetUrl = r.hearingUrl || r.sheetUrl || existing.hearingUrl || existing.sheetUrl || '';
+
       if (tNew >= tExisting) {
         Object.assign(existing, r, {
           historyCount: existing.historyCount,
@@ -64,20 +77,38 @@ function deduplicateVisitorListClient(list) {
           isJoined: mergedJoined,
           is1to1: merged1to1,
           hasHearingSheet: mergedHasHearing,
-          q7: r.q7 || existing.q7,
-          orientUser: r.orientUser || existing.orientUser,
-          orientMemo: r.orientMemo || existing.orientMemo,
-          feelAbc: r.feelAbc || existing.feelAbc
+          q1: mergedQ1,
+          q2: mergedQ2,
+          q3: mergedQ3,
+          q4: mergedQ4,
+          q5: mergedQ5,
+          q6: mergedQ6,
+          q7: mergedQ7,
+          orientUser: mergedOrientUser,
+          orientMemo: mergedOrientMemo,
+          followMemo: mergedFollowMemo,
+          feelAbc: mergedFeelAbc,
+          hearingUrl: mergedSheetUrl,
+          sheetUrl: mergedSheetUrl
         });
       } else {
         existing.isAttended = mergedAttended;
         existing.isJoined = mergedJoined;
         existing.is1to1 = merged1to1;
         existing.hasHearingSheet = mergedHasHearing;
-        if (!existing.q7 && r.q7) existing.q7 = r.q7;
-        if (!existing.orientUser && r.orientUser) existing.orientUser = r.orientUser;
-        if (!existing.orientMemo && r.orientMemo) existing.orientMemo = r.orientMemo;
-        if (!existing.feelAbc && r.feelAbc) existing.feelAbc = r.feelAbc;
+        existing.q1 = mergedQ1;
+        existing.q2 = mergedQ2;
+        existing.q3 = mergedQ3;
+        existing.q4 = mergedQ4;
+        existing.q5 = mergedQ5;
+        existing.q6 = mergedQ6;
+        existing.q7 = mergedQ7;
+        existing.orientUser = mergedOrientUser;
+        existing.orientMemo = mergedOrientMemo;
+        existing.followMemo = mergedFollowMemo;
+        existing.feelAbc = mergedFeelAbc;
+        existing.hearingUrl = mergedSheetUrl;
+        existing.sheetUrl = mergedSheetUrl;
       }
     }
   });
@@ -130,6 +161,18 @@ describe('Visitor Deduplication & Name Variation Normalization', () => {
     assert.strictEqual(deduplicated[0].isAttended, '参加');
     assert.strictEqual(deduplicated[0].isJoined, '入会済');
     assert.strictEqual(deduplicated[0].is1to1, '済');
+  });
+
+  it('preserves hearing sheet fields when newer event has empty hearing sheet', () => {
+    const list = [
+      { id: '1', name: '鈴木 一郎', eventDate: '2026/04/01', feelAbc: 'A', q1: 'とても良かった', orientUser: '田中' },
+      { id: '2', name: '鈴木 一郎', eventDate: '2026/05/01', feelAbc: '', q1: '', orientUser: '' }
+    ];
+    const deduplicated = deduplicateVisitorListClient(list);
+    assert.strictEqual(deduplicated.length, 1);
+    assert.strictEqual(deduplicated[0].feelAbc, 'A');
+    assert.strictEqual(deduplicated[0].q1, 'とても良かった');
+    assert.strictEqual(deduplicated[0].orientUser, '田中');
   });
 
   it('does NOT merge generic "ビジター No.X" placeholder entries', () => {
