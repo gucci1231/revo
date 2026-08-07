@@ -1877,8 +1877,9 @@ const ApiService = {
     showTableSkeleton('table-hot-visitors', 7, 3);
     ApiService.call('getDashboardDataApi')
       .then(res => {
-        if (res && res.success && res.data) {
-          renderDashboard(res.data);
+        if (res && res.success) {
+          const d = res.data || res;
+          renderDashboard(d);
         }
       })
       .catch(handleError);
@@ -1893,7 +1894,7 @@ const ApiService = {
     ApiService.call('getAllVisitorsDataApi')
       .then(res => {
         if (res && res.success) {
-          cachedAllVisitors = res.visitors || [];
+          cachedAllVisitors = res.visitors || res.list || [];
           filterAllVisitorsTable();
         }
       })
@@ -1909,7 +1910,7 @@ const ApiService = {
     ApiService.call('getHearingListDataApi')
       .then(res => {
         if (res && res.success) {
-          cachedHearingList = res.hearings || [];
+          cachedHearingList = res.hearings || res.list || [];
           renderHearingListTable(cachedHearingList);
         }
       })
@@ -1925,7 +1926,7 @@ const ApiService = {
     ApiService.call('getScheduledEmailsApi')
       .then(res => {
         if (res && res.success) {
-          cachedScheduledEmails = res.list || [];
+          cachedScheduledEmails = res.list || res.emails || [];
           filterEmailSchedule();
         }
       })
@@ -1941,7 +1942,7 @@ const ApiService = {
     ApiService.call('getPriorityFollowDataApi')
       .then(res => {
         if (res && res.success) {
-          cachedPriorityFollowList = res.visitors || [];
+          cachedPriorityFollowList = res.visitors || res.list || [];
           filterPriorityFollowTable();
         }
       })
