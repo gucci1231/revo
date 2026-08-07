@@ -29,7 +29,26 @@ $stmt = $pdo->query("
 ");
 $visitors = $stmt->fetchAll();
 
-$totalApplyCount = count($visitors);
+// Fetch start_date setting from parameter or DB
+$startDateStr = $_GET['start_date'] ?? $_POST['start_date'] ?? '';
+if (!$startDateStr) {
+    try {
+        $stmtSet = $pdo->prepare("SELECT value FROM settings WHERE key = 'start_date'");
+        $stmtSet->execute();
+        $startDateStr = $stmtSet->fetchColumn() ?: '';
+    } catch (Exception $e) {}
+}
+if (!$startDateStr) {
+    $startDateStr = '2026/04/01';
+}
+
+$startDateTs = strtotime(str_replace('/', '-', $startDateStr));
+if (!$startDateTs) {
+    $startDateTs = strtotime('2026-04-01');
+    $startDateStr = '2026/04/01';
+}
+
+$totalApplyCount = 0;
 $totalJoinedCount = 0;
 $totalAttendedCount = 0;
 $totalHearingCount = 0;
@@ -75,9 +94,18 @@ $monthlyMap = [];
 $oneMonthAgoTs = strtotime('-30 days');
 
 foreach ($visitors as $r) {
+    $eDate = trim($r['eventDate']);
+    $eTs = strtotime(str_replace('/', '-', $eDate));
+
+    // Filter visitors by start_date (BNI term period)
+    if ($eTs && $eTs < $startDateTs) {
+        continue;
+    }
+
     $isJoinedBool = ($r['isJoined'] === '入会済' || $r['isJoined'] === '済' || $r['isJoined'] === '入会');
     $isAttendedBool = ($r['isAttended'] === '参加' || $r['isAttended'] === '済');
 
+    $totalApplyCount++;
     if ($isJoinedBool) $totalJoinedCount++;
     if ($isAttendedBool) $totalAttendedCount++;
     if ($r['hasHearingSheet']) $totalHearingCount++;
@@ -87,14 +115,12 @@ foreach ($visitors as $r) {
         $hotVisitors[] = $r;
     }
 
-    $eDate = trim($r['eventDate']);
     if ($eDate === $nextThuFull || strpos($eDate, $nextThuStr) !== false) {
         $nextMeetingVisitors[] = $r;
     } else if ($eDate === $lastThuFull || strpos($eDate, $lastThuStr) !== false) {
         $lastMeetingVisitors[] = $r;
     }
 
-    $eTs = strtotime(str_replace('/', '-', $eDate));
     if ($eTs && $eTs >= $oneMonthAgoTs && !$isJoinedBool) {
         $oneMonthFollowupVisitors[] = $r;
     }
@@ -146,8 +172,17 @@ $achievementRate = number_format(($totalJoinedCount / $targetJoinGoal) * 100, 1)
 $joinRate = $totalApplyCount > 0 ? number_format(($totalJoinedCount / $totalApplyCount) * 100, 1) : '0.0';
 $hearingRate = $totalApplyCount > 0 ? number_format(($totalHearingCount / $totalApplyCount) * 100, 1) : '0.0';
 
+// Generate BNI Terms List for selection
+$bniTermsList = [
+    ['label' => '第2期 (2026/04/01〜)', 'value' => '2026/04/01'],
+    ['label' => '第1期 (2025/10/01〜)', 'value' => '2025/10/01'],
+    ['label' => '全期間 (2024/10/01〜)', 'value' => '2024/10/01']
+];
+
 sendJsonResponse([
     'success' => true,
+    'startDateStr' => $startDateStr,
+    'bniTermsList' => $bniTermsList,
     'nextThuStr' => $nextThuStr,
     'afterNextThuStr' => $afterNextThuStr,
     'lastThuStr' => $lastThuStr,
@@ -177,3 +212,4 @@ sendJsonResponse([
         'monthlyStats' => $monthlyStats
     ]
 ]);
+
