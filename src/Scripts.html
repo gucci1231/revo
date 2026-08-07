@@ -704,8 +704,9 @@
       .then(res => {
         if (res && res.success) {
           const list = res.list || [];
-          // 感触 A の評価があり、かつ未入会のビジターのみ抽出（1人1行に統合）
-          cachedPriorityFollowList = deduplicateVisitorListClient(list.filter(item => {
+          // まず全体を重複統合（1人1行）してから A/B評価 かつ 未入会 のみを抽出
+          const deduplicatedList = deduplicateVisitorListClient(list);
+          cachedPriorityFollowList = deduplicatedList.filter(item => {
             const grade = parseFeelAbc(item.feelAbc || item.feeling);
             const joinedVal = item.isJoined || item.is_joined;
             const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
