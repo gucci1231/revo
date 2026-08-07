@@ -35,6 +35,39 @@ function doGet(e) {
 }
 
 /**
+ * Web App HTTP POST Webhook エントリーポイント (Webサーバーからの出欠同期等)
+ */
+function doPost(e) {
+  try {
+    let contents = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        contents = JSON.parse(e.postData.contents);
+      } catch (err) {
+        contents = e.parameter || {};
+      }
+    } else if (e && e.parameter) {
+      contents = e.parameter;
+    }
+
+    const action = contents.action || (e && e.parameter ? e.parameter.action : '');
+
+    if (action === 'update_status') {
+      const visitorId = contents.visitorId;
+      const field = contents.field;
+      const value = contents.value;
+      const res = updateVisitorStatusApi(visitorId, field, value);
+      return ContentService.createTextOutput(JSON.stringify(res)).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Unknown action: ' + action })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: String(err) })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+/**
  * 高速初期ロード用：サーバーサイドで初回表示に必要なデータを一括生成（高速キャッシュ活用）
  */
 function getFastInitialData() {
@@ -757,7 +790,7 @@ function logClientErrorApi(errorInfo) {
 }
 
 /**
- * 【Web UI API】出欠・ステータス更新
+ * 【Web UI API】出欠・ステータス更新 (visitors_status 及び Totalシートへ連携)
  */
 function updateVisitorStatusApi(visitorId, fieldName, value) {
   const statusSheet = SheetUtil.getSheet(SHEET_NAMES.VISITORS_STATUS);
@@ -786,6 +819,36 @@ function updateVisitorStatusApi(visitorId, fieldName, value) {
     let rowVals = [visitorId, "未", "未", "未", "未", "", now];
     rowVals[colIdx - 1] = value;
     statusSheet.appendRow(rowVals);
+  }
+
+  // Totalシートが存在する場合はTotalシートへも連携同期
+  try {
+    const totalSheet = SheetUtil.getSheet(SHEET_NAMES.TOTAL);
+    if (totalSheet && totalSheet.getLastRow() > 1) {
+      const totalData = totalSheet.getDataRange().getValues();
+      for (let j = 1; j < totalData.length; j++) {
+        if (String(totalData[j][0]).trim() === String(visitorId).trim()) {
+          const tRow = j + 1;
+          if (fieldName === 'isAttended') {
+            if (value === '出席' || value === '参加') {
+              totalSheet.getRange(tRow, COL.IS_ATTENDED + 1).setValue('参加');
+              totalSheet.getRange(tRow, COL.IS_ABSENT + 1).setValue('');
+            } else if (value === '欠席') {
+              totalSheet.getRange(tRow, COL.IS_ATTENDED + 1).setValue('');
+              totalSheet.getRange(tRow, COL.IS_ABSENT + 1).setValue('欠席');
+            } else {
+              totalSheet.getRange(tRow, COL.IS_ATTENDED + 1).setValue('');
+              totalSheet.getRange(tRow, COL.IS_ABSENT + 1).setValue('');
+            }
+          } else if (fieldName === 'isJoined') {
+            totalSheet.getRange(tRow, COL.IS_JOINED + 1).setValue(value === '入会' || value === '入会済' ? '済' : '');
+          }
+          break;
+        }
+      }
+    }
+  } catch (errSync) {
+    console.warn("Failed to sync to Total sheet: " + errSync);
   }
 
   updateSummaryCacheTable();
