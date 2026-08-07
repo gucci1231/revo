@@ -29,20 +29,13 @@ if ($json) {
     try {
         if (!empty($json['visitors'])) {
             $stmtV = $pdo->prepare("
-                INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, attendance_count, remarks)
+                INSERT OR REPLACE INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, attendance_count, remarks)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET
-                    inviter = excluded.inviter, event_date = excluded.event_date, visitor_name = excluded.visitor_name,
-                    furigana = excluded.furigana, profession = excluded.profession, company = excluded.company,
-                    email = excluded.email, attendance_count = excluded.attendance_count, remarks = excluded.remarks
             ");
 
             $stmtS = $pdo->prepare("
-                INSERT INTO visitors_status (visitor_id, is_attended, is_joined, is_1to1, is_matched, updated_at)
+                INSERT OR REPLACE INTO visitors_status (visitor_id, is_attended, is_joined, is_1to1, is_matched, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(visitor_id) DO UPDATE SET
-                    is_attended = excluded.is_attended, is_joined = excluded.is_joined,
-                    is_1to1 = excluded.is_1to1, is_matched = excluded.is_matched, updated_at = excluded.updated_at
             ");
 
             $now = date('Y/m/d H:i');
@@ -80,11 +73,8 @@ if ($json) {
 
         if (!empty($json['hearings'])) {
             $stmtH = $pdo->prepare("
-                INSERT INTO hearing_sheets (visitor_id, orient_user, q1, q2, q3, q4, q5, q6, q7, feel_abc, orient_memo, follow_memo, sheet_url, updated_at)
+                INSERT OR REPLACE INTO hearing_sheets (visitor_id, orient_user, q1, q2, q3, q4, q5, q6, q7, feel_abc, orient_memo, follow_memo, sheet_url, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(visitor_id) DO UPDATE SET
-                    orient_user = excluded.orient_user, feel_abc = excluded.feel_abc, q7 = excluded.q7,
-                    orient_memo = excluded.orient_memo, follow_memo = excluded.follow_memo, sheet_url = excluded.sheet_url, updated_at = excluded.updated_at
             ");
 
             $now = date('Y/m/d H:i');
@@ -109,10 +99,8 @@ if ($json) {
 
         if (!empty($json['members'])) {
             $stmtM = $pdo->prepare("
-                INSERT INTO members (id, category, name, profession, updated_at)
+                INSERT OR REPLACE INTO members (id, category, name, profession, updated_at)
                 VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET
-                    category = excluded.category, name = excluded.name, profession = excluded.profession, updated_at = excluded.updated_at
             ");
 
             $now = date('Y/m/d H:i');
