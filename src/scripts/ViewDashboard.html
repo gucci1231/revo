@@ -79,7 +79,7 @@
     records.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong style="color: #2b8a3e;">${formatTruncatedCell(r.eventDate, 10)}</strong></td>
+        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
         <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
         <td>${formatTruncatedCell(r.profession, 12)}</td>
         <td>${formatTruncatedCell(r.inviter, 10)}</td>

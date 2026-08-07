@@ -41,7 +41,7 @@
     pageItems.forEach(v => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${formatTruncatedCell(v.eventDate, 10)}</td>
         <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
         <td>${formatTruncatedCell(v.company, 12)}</td>
         <td>${formatTruncatedCell(v.profession, 12)}</td>

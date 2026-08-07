@@ -12,15 +12,15 @@
   function renderRankBadgeHtml(val) {
     const feel = parseFeelAbc(val);
     if (feel === 'A') {
-      return '<span style="background:#ffe3e3; color:#c92a2a; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク A</span>';
+      return '<span style="background:#ffe3e3; color:#c92a2a; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">A</span>';
     }
     if (feel === 'B') {
-      return '<span style="background:#fff3bf; color:#e67700; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク B</span>';
+      return '<span style="background:#fff3bf; color:#e67700; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">B</span>';
     }
     if (feel === 'C') {
-      return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">ランク C</span>';
+      return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">C</span>';
     }
-    return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">未評価</span>';
+    return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">-</span>';
   }
 
   function renderAttendButtonHtml(id, rawStatus) {
