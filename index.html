@@ -1874,7 +1874,7 @@ const ApiService = {
     ApiService.call('getAllVisitorsApi')
       .then(res => {
         if (res && res.success) {
-          cachedAllVisitors = res.list || [];
+          cachedAllVisitors = deduplicateVisitorListClient(res.list || []);
           renderAllVisitorsTable(cachedAllVisitors);
         } else {
           renderAllVisitorsTable([]);
@@ -1895,7 +1895,7 @@ const ApiService = {
     ApiService.call('getHearingSheetsListApi')
       .then(res => {
         if (res && res.success) {
-          cachedHearingList = res.list || [];
+          cachedHearingList = deduplicateVisitorListClient(res.list || []);
           renderHearingListTable(cachedHearingList);
         }
       })
@@ -1974,55 +1974,96 @@ const ApiService = {
       }
     } catch(e) {}
 
-    try { renderHotVisitorsTable(data.tables ? data.tables.hotVisitors : []); } catch(e) { console.error(e); }
-    try { renderNextMeetingTable(data.tables ? data.tables.nextMeeting : []); } catch(e) { console.error(e); }
-    try { renderLastMeetingTable(data.tables ? data.tables.lastMeeting : []); } catch(e) { console.error(e); }
-    try { renderOneMonthTable(data.tables ? data.tables.oneMonthFollowup : []); } catch(e) { console.error(e); }
+    try { renderHotVisitorsTable(deduplicateVisitorListClient(data.tables ? data.tables.hotVisitors : [])); } catch(e) { console.error(e); }
+    try { renderNextMeetingTable(deduplicateVisitorListClient(data.tables ? data.tables.nextMeeting : [])); } catch(e) { console.error(e); }
+    try { renderLastMeetingTable(deduplicateVisitorListClient(data.tables ? data.tables.lastMeeting : [])); } catch(e) { console.error(e); }
+    try { renderOneMonthTable(deduplicateVisitorListClient(data.tables ? data.tables.oneMonthFollowup : [])); } catch(e) { console.error(e); }
     try { renderWeeklyStatsTable(data.tables ? data.tables.weeklyStats : []); } catch(e) { console.error(e); }
     try { renderMonthlyStatsTable(data.tables ? data.tables.monthlyStats : []); } catch(e) { console.error(e); }
   }
 
+  function normalizeNameKey(str) {
+    if (!str) return '';
+    let s = String(str);
+    try { s = s.normalize('NFKC'); } catch (e) {}
+    s = s.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
+    s = s.replace(/[・·\.\,\-\_]/g, '');
+    s = s.replace(/[\s\u3000\t\r\n]+/g, '');
+    return s.toLowerCase();
+  }
+
   function deduplicateVisitorListClient(list) {
-    if (!list || list.length === 0) return [];
-    const map = new Map();
+    if (!list || !Array.isArray(list) || list.length === 0) return [];
+
+    const result = [];
+    const nameMap = new Map();
+    const furiganaMap = new Map();
+    const emailMap = new Map();
 
     list.forEach(r => {
-      const emailKey = r.email ? String(r.email).toLowerCase().trim() : '';
-      const nameKey = r.name ? String(r.name).replace(/[\s\u3000]+/g, '') : '';
-      const key = emailKey || nameKey || String(r.id || r.visitorId || r.no);
+      const emailKey = r.email ? normalizeNameKey(r.email) : '';
+      const rawName = r.name ? String(r.name).trim() : '';
+      const isGenericName = !rawName || /^ビジター\s*(no\.?\s*\d+)?$/i.test(rawName);
+      const nameKey = !isGenericName ? normalizeNameKey(rawName) : '';
+      const furiganaKey = (r.furigana && !isGenericName) ? normalizeNameKey(r.furigana) : '';
 
-      if (!map.has(key)) {
-        map.set(key, { ...r, historyCount: 1 });
+      let existing = null;
+      if (emailKey && emailMap.has(emailKey)) {
+        existing = emailMap.get(emailKey);
+      } else if (nameKey && nameMap.has(nameKey)) {
+        existing = nameMap.get(nameKey);
+      } else if (furiganaKey && furiganaMap.has(furiganaKey)) {
+        existing = furiganaMap.get(furiganaKey);
+      }
+
+      if (!existing) {
+        const entry = { ...r, historyCount: 1 };
+        result.push(entry);
+
+        if (emailKey) emailMap.set(emailKey, entry);
+        if (nameKey) nameMap.set(nameKey, entry);
+        if (furiganaKey) furiganaMap.set(furiganaKey, entry);
       } else {
-        const existing = map.get(key);
         existing.historyCount = (existing.historyCount || 1) + 1;
+
+        if (emailKey && !emailMap.has(emailKey)) emailMap.set(emailKey, existing);
+        if (nameKey && !nameMap.has(nameKey)) nameMap.set(nameKey, existing);
+        if (furiganaKey && !furiganaMap.has(furiganaKey)) furiganaMap.set(furiganaKey, existing);
 
         const tExisting = new Date(existing.eventDate || 0).getTime();
         const tNew = new Date(r.eventDate || 0).getTime();
 
+        const mergedAttended = (existing.isAttended === '参加' || r.isAttended === '参加') ? '参加' : (r.isAttended || existing.isAttended);
+        const mergedJoined = (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined);
+        const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
+        const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
+
         if (tNew >= tExisting) {
-          map.set(key, {
-            ...r,
+          Object.assign(existing, r, {
             historyCount: existing.historyCount,
-            hasHearingSheet: existing.hasHearingSheet || r.hasHearingSheet,
-            is1to1: (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1),
-            isJoined: (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined),
+            isAttended: mergedAttended,
+            isJoined: mergedJoined,
+            is1to1: merged1to1,
+            hasHearingSheet: mergedHasHearing,
             q7: r.q7 || existing.q7,
             orientUser: r.orientUser || existing.orientUser,
-            orientMemo: r.orientMemo || existing.orientMemo
+            orientMemo: r.orientMemo || existing.orientMemo,
+            feelAbc: r.feelAbc || existing.feelAbc
           });
         } else {
-          existing.hasHearingSheet = existing.hasHearingSheet || r.hasHearingSheet;
-          if (r.is1to1 === '済') existing.is1to1 = '済';
-          if (r.isJoined === '入会済') existing.isJoined = '入会済';
+          existing.isAttended = mergedAttended;
+          existing.isJoined = mergedJoined;
+          existing.is1to1 = merged1to1;
+          existing.hasHearingSheet = mergedHasHearing;
           if (!existing.q7 && r.q7) existing.q7 = r.q7;
           if (!existing.orientUser && r.orientUser) existing.orientUser = r.orientUser;
           if (!existing.orientMemo && r.orientMemo) existing.orientMemo = r.orientMemo;
+          if (!existing.feelAbc && r.feelAbc) existing.feelAbc = r.feelAbc;
         }
       }
     });
 
-    return Array.from(map.values());
+    return result;
   }
 
   /* --- 🔥 入会温度感の高いビジター(HOT)テーブル描画 (評価 A かつ 未入会 のみ、重複統合) --- */
