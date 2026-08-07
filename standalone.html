@@ -1680,27 +1680,28 @@ const ApiService = {
       return;
     }
     showTableSkeleton('table-email-schedule', 9, 4);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getScheduledEmailsApi')
+      .then(res => {
         if (res && res.success) {
           cachedScheduledEmails = res.scheduledList || [];
-          document.getElementById('val-es-total-count').textContent = res.metrics.totalCount;
-          document.getElementById('val-es-today-count').textContent = res.metrics.todayCount;
-          document.getElementById('val-es-week-count').textContent = res.metrics.thisWeekCount;
+          if (document.getElementById('val-es-total-count')) document.getElementById('val-es-total-count').textContent = res.metrics ? res.metrics.totalCount : 0;
+          if (document.getElementById('val-es-today-count')) document.getElementById('val-es-today-count').textContent = res.metrics ? res.metrics.todayCount : 0;
+          if (document.getElementById('val-es-week-count')) document.getElementById('val-es-week-count').textContent = res.metrics ? res.metrics.thisWeekCount : 0;
 
           const testBanner = document.getElementById('es-test-mode-banner');
-          if (res.isTestMode) {
-            testBanner.style.display = 'flex';
-            document.getElementById('es-test-email-list').textContent = (res.testEmailList || []).join(', ');
-          } else {
-            testBanner.style.display = 'none';
+          if (testBanner) {
+            if (res.isTestMode) {
+              testBanner.style.display = 'flex';
+              document.getElementById('es-test-email-list').textContent = (res.testEmailList || []).join(', ');
+            } else {
+              testBanner.style.display = 'none';
+            }
           }
 
           filterEmailSchedule();
         }
       })
-      .withFailureHandler(handleError)
-      .getScheduledEmailsApi();
+      .catch(handleError);
   }
 
   function filterEmailSchedule() {
@@ -1825,14 +1826,13 @@ const ApiService = {
     if (!confirm(`「${currentPreviewItem.visitorName}様」向けのテスト送信を実行しますか？`)) return;
 
     document.getElementById('loading').style.display = 'flex';
-    google.script.run
-      .withSuccessHandler(() => {
+    ApiService.call('executeSend', currentPreviewItem.email, currentPreviewItem.templateKey, null, null, null, currentPreviewItem.visitorId)
+      .then(() => {
         document.getElementById('loading').style.display = 'none';
         showToast('テストメールを送信しました！');
         closeEmailPreviewModal();
       })
-      .withFailureHandler(handleError)
-      .executeSend(currentPreviewItem.email, currentPreviewItem.templateKey, null, null, null, currentPreviewItem.visitorId);
+      .catch(handleError);
   }
 
   function fetchDashboardData(forceRefresh = false) {
@@ -1850,15 +1850,14 @@ const ApiService = {
     } else {
       try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
     }
-    google.script.run
-      .withSuccessHandler(data => {
+    ApiService.call('getDashboardData')
+      .then(data => {
         if (data) {
           try { sessionStorage.setItem('VHR_DASHBOARD_CACHE', JSON.stringify(data)); } catch(e) {}
           renderDashboard(data);
         }
       })
-      .withFailureHandler(handleError)
-      .getDashboardData();
+      .catch(handleError);
   }
 
   function fetchAllVisitorsData(forceRefresh = false) {
@@ -1867,8 +1866,8 @@ const ApiService = {
       return;
     }
     showTableSkeleton('table-all-visitors', 11, 5);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getAllVisitorsApi')
+      .then(res => {
         if (res && res.success) {
           cachedAllVisitors = res.list || [];
           renderAllVisitorsTable(cachedAllVisitors);
@@ -1876,11 +1875,10 @@ const ApiService = {
           renderAllVisitorsTable([]);
         }
       })
-      .withFailureHandler(err => {
+      .catch(err => {
         handleError(err);
         renderAllVisitorsTable([]);
-      })
-      .getAllVisitorsApi();
+      });
   }
 
   function fetchHearingListData(forceRefresh = false) {
@@ -1889,15 +1887,14 @@ const ApiService = {
       return;
     }
     showTableSkeleton('table-hearing-list', 10, 5);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getHearingSheetsListApi')
+      .then(res => {
         if (res && res.success) {
           cachedHearingList = res.list || [];
           renderHearingListTable(cachedHearingList);
         }
       })
-      .withFailureHandler(handleError)
-      .getHearingSheetsListApi();
+      .catch(handleError);
   }
 
   let donutChartInstance = null;
@@ -2140,8 +2137,8 @@ const ApiService = {
       return;
     }
     showTableSkeleton('table-priority-follow-page', 10, 5);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getAllVisitorsApi')
+      .then(res => {
         if (res && res.success) {
           const list = res.list || [];
           // 感触 A の評価があり、かつ未入会のビジターのみ抽出（1人1行に統合）
@@ -2766,8 +2763,8 @@ const ApiService = {
     const apiName = isEdit ? 'updateVisitorApi' : 'addVisitorApi';
     const msg = isEdit ? 'ビジター情報を更新しました' : '新規ビジターを登録しました';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call(apiName, vData)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (res.success) {
           showToast(`✅ ${msg}`);
@@ -2775,15 +2772,15 @@ const ApiService = {
           if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
         }
       })
-      .withFailureHandler(handleError)[apiName](vData);
+      .catch(handleError);
   }
 
   function deleteVisitor(id, name) {
     if (!confirm(`【確認】ビジター「${name}」のデータを削除してもよろしいですか？`)) return;
 
     document.getElementById('loading').style.display = 'flex';
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('deleteVisitorApi', id)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (res.success) {
           showToast(`🗑️ ${name}様のデータを削除しました`);
@@ -2791,21 +2788,20 @@ const ApiService = {
           if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
         }
       })
-      .withFailureHandler(handleError)
-      .deleteVisitorApi(id);
+      .catch(handleError);
   }
 
   /* --- Hearing Form Modal Controls --- */
   function openHearingFormModal(id) {
     document.getElementById('loading').style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getHearingSheetFormDataApi', id)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (!res.success) { alert('データ取得失敗'); return; }
 
-        const info = res.visitorInfo;
-        const form = res.formData;
+        const info = res.visitorInfo || {};
+        const form = res.formData || {};
 
         document.getElementById('hf-visitor-id').value = id;
         document.getElementById('hf-event-date').innerText = info.event_date || '-';
@@ -2900,68 +2896,67 @@ const ApiService = {
     closeHearingModal();
     showToast(`ヒアリングシートを保存中...`);
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('saveHearingSheetApi', formData)
+      .then(res => {
         showToast(`✅ ヒアリングシートを正常保存しました`);
         try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
         fetchDashboardData(true);
         if (cachedHearingList.length > 0) fetchHearingListData(true);
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
       })
-      .withFailureHandler(err => {
+      .catch(err => {
         closeHearingModal();
         handleError(err);
-      })
-      .saveHearingFormApi(formData);
+      });
   }
 
   /* --- Interactive API Handlers --- */
   function toggleAttend(id, newStatus) {
     showToast(`出欠を【${newStatus}】に変更中...`);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
+      .then(res => {
         showToast(`✅ 出欠を【${newStatus}】に変更しました`);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })
-      .updateVisitorStatusApi(id, 'isAttended', newStatus);
+      .catch(handleError);
   }
 
   function toggle1to1(id, current) {
     const next = current === '済' ? '未' : '済';
     showToast(`1to1ステータスを変更中...`);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
+      .then(res => {
         showToast(`✅ 1to1を【${next}】に変更しました`);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })
-      .updateVisitorStatusApi(id, 'is1to1', next);
+      .catch(handleError);
   }
 
 
   function toggle1to1InDetail(id, current) {
     const next = current === '済' ? '未' : '済';
     showToast(`1to1を【${next}】に変更中...`);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
+      .then(res => {
         showToast(`✅ 1to1を【${next}】に変更しました`);
         openVisitorDetailView(id);
         fetchDashboardData();
       })
-      .updateVisitorStatusApi(id, 'is1to1', next);
+      .catch(handleError);
   }
 
   function toggleJoinedInDetail(id, current) {
     const next = current === '入会済' ? '未' : '入会済';
     showToast(`入会状況を【${next}】に変更中...`);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
+      .then(res => {
         showToast(`✅ 入会状況を【${next}】に変更しました`);
         openVisitorDetailView(id);
         fetchDashboardData();
       })
-      .updateVisitorStatusApi(id, 'isJoined', next);
+      .catch(handleError);
   }
 
   /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
@@ -2982,8 +2977,8 @@ const ApiService = {
     }
     document.getElementById('loading').style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getVisitorDetailApi', id)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (!res || !res.success) {
           showToast('⚠️ ビジターデータの取得に失敗しました（存在しないIDです）');
@@ -3112,26 +3107,25 @@ const ApiService = {
     const memoText = document.getElementById('vd-free-memo').value.trim();
     showToast(`自由メモを保存中...`);
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
+      .then(res => {
         showToast(`✅ メモを正常に保存しました！`);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })
-      .withFailureHandler(handleError)
-      .saveVisitorMemoApi(currentVdVisitorId, memoText);
+      .catch(handleError);
   }
 
   function toggleJoined(id, current) {
     const next = current === '入会済' ? '未' : '入会済';
     showToast(`入会ステータスを変更中...`);
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
+      .then(res => {
         showToast(`✅ 入会状況を【${next}】に変更しました`);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })
-      .updateVisitorStatusApi(id, 'isJoined', next);
+      .catch(handleError);
   }
 
   function syncFormResponsesManual() {
@@ -3139,15 +3133,14 @@ const ApiService = {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('syncFormResponsesApi')
+      .then(res => {
         if (loading) loading.style.display = 'none';
 
         const msg = (res && typeof res === 'object' && res.message)
           ? res.message
           : String(res || '同期が完了しました。');
 
-        // ポップアップダイアログで結果を提示
         alert("【Googleフォーム同期結果】\n\n" + msg);
 
         if (res && res.data) {
@@ -3157,11 +3150,10 @@ const ApiService = {
         }
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
       })
-      .withFailureHandler(err => {
+      .catch(err => {
         if (loading) loading.style.display = 'none';
         alert("❌ フォーム同期中にエラーが発生しました:\n" + (err.message || err));
-      })
-      .syncFormResponsesApi();
+      });
   }
 
   function forceRefreshAllCacheAndData() {
@@ -3174,8 +3166,8 @@ const ApiService = {
     cachedHearingList = [];
     cachedScheduledEmails = [];
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('checkAndRepairDataFormatApi')
+      .then(res => {
         if (loading) loading.style.display = 'none';
         showToast(`✨ キャッシュをクリアし、最新データをロードしました！`);
         fetchDashboardData(true);
@@ -3187,24 +3179,22 @@ const ApiService = {
           else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
         }
       })
-      .withFailureHandler(handleError)
-      .checkAndRepairDataFormatApi();
+      .catch(handleError);
   }
 
   function changeStartDate(newVal) {
     showToast(`集計期間を【${newVal} 〜】に変更中...`);
     document.getElementById('loading').style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('updateSettingStartDateApi', newVal)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (res.success) {
           showToast(`✅ 集計期間を【${newVal} 〜】に切り替えました`);
           renderDashboard(res.data);
         }
       })
-      .withFailureHandler(handleError)
-      .updateSettingStartDateApi(newVal);
+      .catch(handleError);
   }
 
   /* --- 👥 Member Master Setting CRUD Controls --- */
@@ -3212,16 +3202,15 @@ const ApiService = {
 
   function fetchMembersMasterData() {
     document.getElementById('loading').style.display = 'flex';
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('getMemberListApi')
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         if (res.success) {
           cachedFlatMembers = res.flatMembers || [];
           renderMembersMasterTable(cachedFlatMembers);
         }
       })
-      .withFailureHandler(handleError)
-      .getMemberListApi();
+      .catch(handleError);
   }
 
   function renderMembersMasterTable(members) {
@@ -3291,16 +3280,15 @@ const ApiService = {
 
     const apiFunc = id ? 'updateMemberApi' : 'addMemberApi';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call(apiFunc, mObj)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         closeMemberCrudModal();
         showToast(`✅ メンバーを保存しました`);
         cachedFlatMembers = res.flatMembers || [];
         renderMembersMasterTable(cachedFlatMembers);
       })
-      .withFailureHandler(handleError)
-      [apiFunc](mObj);
+      .catch(handleError);
   }
 
   function deleteMemberMaster(id, name) {
@@ -3308,15 +3296,14 @@ const ApiService = {
     showToast(`メンバーを削除中...`);
     document.getElementById('loading').style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
+    ApiService.call('deleteMemberApi', id)
+      .then(res => {
         document.getElementById('loading').style.display = 'none';
         showToast(`🗑️ メンバーを削除しました`);
         cachedFlatMembers = res.flatMembers || [];
         renderMembersMasterTable(cachedFlatMembers);
       })
-      .withFailureHandler(handleError)
-      .deleteMemberApi(id);
+      .catch(handleError);
   }
 
   function renderBniTermsSelectOptions(termsList, selectedDate) {
