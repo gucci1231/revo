@@ -2024,25 +2024,30 @@ const ApiService = {
     if (!data) return;
     currentDashboardData = data;
 
-    // Dates & counts
-    const nextThuDateEl = document.getElementById('date-next-thu');
-    const nextThuValEl = document.getElementById('val-next-thu-count');
-    const afterNextThuDateEl = document.getElementById('date-after-next-thu');
-    const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
+    const m = data.metrics || data;
+    const c = data.chart || data;
+    const t = data.tables || data;
 
-    if (nextThuDateEl) nextThuDateEl.innerText = data.nextMeetingDate || '--/--';
-    if (nextThuValEl) nextThuValEl.innerText = (data.nextMeetingCount !== undefined ? data.nextMeetingCount : '-');
-    if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextMeetingDate || '--/--';
-    if (afterNextThuValEl) afterNextThuValEl.innerText = (data.afterNextMeetingCount !== undefined ? data.afterNextMeetingCount : '-');
+    // Dates
+    const nextThuDateEl = document.getElementById('date-next-thu');
+    const afterNextThuDateEl = document.getElementById('date-after-next-thu');
+    if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
+    if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+
+    // Counts
+    const nextThuValEl = document.getElementById('val-next-thu-count');
+    const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
+    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : '-');
+    if (afterNextThuValEl) afterNextThuValEl.innerText = (m.afterNextThuCount !== undefined ? m.afterNextThuCount : '-');
 
     // Main KPI counters
     const applyCountEl = document.getElementById('val-apply-count');
     const joinedCountEl = document.getElementById('val-joined-count');
     const targetGoalEl = document.getElementById('val-target-goal');
 
-    if (applyCountEl) applyCountEl.innerText = data.totalVisitors || data.totalApplyCount || 0;
-    if (joinedCountEl) joinedCountEl.innerText = data.totalJoinedCount || data.joinedMembers || 0;
-    if (targetGoalEl) targetGoalEl.innerText = data.targetMembers || 15;
+    if (applyCountEl) applyCountEl.innerText = m.applyCount !== undefined ? m.applyCount : (m.totalVisitors || 0);
+    if (joinedCountEl) joinedCountEl.innerText = m.joinedCount !== undefined ? m.joinedCount : (m.joinedMembers || 0);
+    if (targetGoalEl) targetGoalEl.innerText = m.targetJoinGoal || m.targetMembers || 15;
 
     // Rates
     const joinRateEl = document.getElementById('val-join-rate');
@@ -2051,22 +2056,27 @@ const ApiService = {
     const feedbackRateEl = document.getElementById('val-feedback-rate');
     const hearingRateEl = document.getElementById('val-hearing-rate');
 
-    if (joinRateEl) joinRateEl.innerText = `${data.joinRate || 0}%`;
-    if (achievementRateEl) achievementRateEl.innerText = `${data.achievementRate || 0}%`;
-    if (avgVisitorsEl) avgVisitorsEl.innerText = `${data.avgVisitors || 0}名`;
-    if (feedbackRateEl) feedbackRateEl.innerText = `${data.feedbackRate || 0}%`;
-    if (hearingRateEl) hearingRateEl.innerText = `${data.hearingRate || 0}%`;
+    if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
+    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
+    if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
+    if (feedbackRateEl) feedbackRateEl.innerText = `${m.feedbackRate || 0}%`;
+    if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
 
     // Charts
-    initDonutChart(data.totalJoinedCount || data.joinedMembers || 0, data.targetMembers || 15);
-    if (data.chartLabels && data.chartValues) {
-      initLineChart(data.chartLabels, data.chartValues);
+    const chartLabels = c.labels || data.chartLabels || [];
+    const chartValues = c.data || data.chartValues || [];
+    initDonutChart(m.joinedCount || 0, m.targetJoinGoal || 15);
+    if (chartLabels.length > 0) {
+      initLineChart(chartLabels, chartValues);
     }
 
     // Tables
-    renderHotVisitorsTable(data.hotVisitors || []);
-    renderWeeklyStatsTable(data.weeklyStats || []);
-    renderMonthlyStatsTable(data.monthlyStats || []);
+    renderWeeklyStatsTable(t.weeklyStats || []);
+    renderMonthlyStatsTable(t.monthlyStats || []);
+    renderNextMeetingTable(t.nextMeeting || t.nextMeetingVisitors || []);
+    renderLastMeetingTable(t.lastMeeting || t.lastMeetingVisitors || []);
+    renderHotVisitorsTable(t.hotVisitors || []);
+    renderOneMonthTable(t.oneMonthFollowup || t.oneMonthFollowupVisitors || []);
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
@@ -2251,8 +2261,9 @@ const ApiService = {
 
   function filterPriorityFollowTable() {
     const rawList = cachedPriorityFollowList || [];
+    const dedupedList = deduplicateVisitorListClient(rawList);
 
-    filteredPfVisitors = rawList.filter(v => {
+    filteredPfVisitors = dedupedList.filter(v => {
       const feel = parseFeelAbc(v.feelAbc);
       if (currentPfGradeFilter === 'A') return feel === 'A';
       if (currentPfGradeFilter === 'B') return feel === 'B';
@@ -2454,17 +2465,18 @@ const ApiService = {
     }
 
     records.forEach(h => {
+      const vid = h.id || h.visitorId;
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
-        <td>${renderVisitorNameLinkHtml(h.id, h.name)}</td>
+        <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
         <td>${formatTruncatedCell(h.company, 12)}</td>
         <td>${formatTruncatedCell(h.profession, 12)}</td>
         <td>${formatTruncatedCell(h.inviter, 10)}</td>
         <td>${formatTruncatedCell(h.orientUser, 10)}</td>
         <td>${renderRankBadgeHtml(h.feelAbc)}</td>
         <td>
-          <button class="btn-icon-action" onclick="openHearingFormModal('${h.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-icon-action" onclick="openHearingFormModal('${vid}')" title="編集"><i class="fa-solid fa-pen"></i></button>
         </td>
       `;
       tbody.appendChild(tr);

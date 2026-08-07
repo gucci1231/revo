@@ -26,8 +26,9 @@
 
   function filterPriorityFollowTable() {
     const rawList = cachedPriorityFollowList || [];
+    const dedupedList = deduplicateVisitorListClient(rawList);
 
-    filteredPfVisitors = rawList.filter(v => {
+    filteredPfVisitors = dedupedList.filter(v => {
       const feel = parseFeelAbc(v.feelAbc);
       if (currentPfGradeFilter === 'A') return feel === 'A';
       if (currentPfGradeFilter === 'B') return feel === 'B';
