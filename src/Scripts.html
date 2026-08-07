@@ -543,8 +543,9 @@
         const tExisting = new Date(existing.eventDate || 0).getTime();
         const tNew = new Date(r.eventDate || 0).getTime();
 
+        const isJoinedBool = (val) => (val === '入会済' || val === '済' || val === '入会' || val === true);
         const mergedAttended = (existing.isAttended === '参加' || r.isAttended === '参加') ? '参加' : (r.isAttended || existing.isAttended);
-        const mergedJoined = (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined);
+        const mergedJoined = (isJoinedBool(existing.isJoined) || isJoinedBool(r.isJoined)) ? '入会済' : (r.isJoined || existing.isJoined);
         const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
         const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
 
@@ -617,6 +618,7 @@
           <div style="display: flex; gap: 6px; align-items: center;">
             <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
             <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
+            <span class="badge-toggle none btn-toggle-joined" title="クリックで入会に変更">未</span>
             <button class="btn-icon-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i></button>
             <button class="btn-icon-action btn-icon-danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i></button>
           </div>
@@ -626,6 +628,7 @@
       tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
       tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
       tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
+      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
       tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
       tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
 
@@ -804,6 +807,11 @@
         ? `<span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-weight:700; margin-left:4px;">${r.historyCount}回目</span>`
         : (r.attendanceCount ? `<span style="font-size:10px; background:#f1f5f9; color:#475569; padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${escapeHtml(r.attendanceCount)}</span>` : '');
 
+      const isJoinedVal = r.isJoined || r.is_joined;
+      const isJoined = (isJoinedVal === '入会済' || isJoinedVal === '済' || isJoinedVal === '入会' || isJoinedVal === true);
+      const joinClass = isJoined ? 'done' : 'none';
+      const joinText = isJoined ? '入会済' : '未';
+
       tr.innerHTML = `
         <td style="font-weight: 700; white-space: nowrap; color: #1e293b;">${escapeHtml(r.eventDate || '-')}</td>
         <td>
@@ -817,6 +825,7 @@
           <div style="display: flex; gap: 6px; align-items: center;">
             <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
             <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
+            <span class="badge-toggle ${joinClass} btn-toggle-joined" title="入会トグル">${escapeHtml(joinText)}</span>
             <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i></button>
           </div>
         </td>
@@ -825,6 +834,7 @@
       tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
       tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.visitorId || r.id);
       tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.visitorId || r.id, r.is1to1);
+      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.visitorId || r.id, r.isJoined);
       tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
 
       tbody.appendChild(tr);
@@ -1007,7 +1017,9 @@
     records.forEach(r => {
       const tr = document.createElement('tr');
       const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const joinClass = r.isJoined === '入会済' ? 'done' : 'none';
+      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
+      const joinClass = isJoined ? 'done' : 'none';
+      const joinText = isJoined ? '入会済' : '未';
 
       const feelTag = r.feelAbc ? `<span class="badge-feel feel-${escapeHtml(r.feelAbc)}">${escapeHtml(r.feelAbc)}評価</span>` : `<span style="color:#adb5bd; font-size:11px;">未入力</span>`;
       const q7Text = r.q7 || r.orientMemo || 'ヒアリングシート未入力';
@@ -1022,7 +1034,7 @@
         <td style="font-weight: 700; color: #364fc7;">${formatTruncatedCell(r.orientUser, 12)}</td>
         <td><div style="font-size: 12px; color: #343a40; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; max-width: 280px; line-height: 1.4;">${formatTruncatedCell(q7Text, 20)}</div></td>
         <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
-        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(r.isJoined || '未')}</span></td>
+        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(joinText)}</span></td>
         <td style="white-space: nowrap;">
           <div class="action-btn-group">
             <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="プロファイル詳細"><i class="fa-solid fa-id-card"></i></button>
@@ -1093,7 +1105,9 @@
       const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
       const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
       const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
-      const joinClass = r.isJoined === '入会済' ? 'done' : 'none';
+      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
+      const joinClass = isJoined ? 'done' : 'none';
+      const joinText = isJoined ? '入会済' : '未';
 
       tr.innerHTML = `
         <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
@@ -1115,7 +1129,7 @@
         </td>
         <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
         <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
-        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(r.isJoined || '未')}</span></td>
+        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(joinText)}</span></td>
         <td style="white-space: nowrap;">
           <div class="action-btn-group">
             <button class="btn-table-action primary btn-detail-act" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i> 詳細</button>
@@ -1465,52 +1479,42 @@
   }
 
   /* --- Interactive API Handlers --- */
+  function refreshAllActiveViews() {
+    fetchDashboardData(true);
+    if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
+    if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
+    if (currentVdVisitorId) {
+      openVisitorDetailView(currentVdVisitorId, false);
+    }
+  }
+
   function toggleAttend(id, newStatus) {
     showToast(`出欠を【${newStatus}】に変更中...`);
     ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
       .then(res => {
         showToast(`✅ 出欠を【${newStatus}】に変更しました`);
-        fetchDashboardData();
-        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        refreshAllActiveViews();
       })
       .catch(handleError);
   }
 
   function toggle1to1(id, current) {
-    const next = current === '済' ? '未' : '済';
+    const next = (current === '済' || current === true) ? '未' : '済';
     showToast(`1to1ステータスを変更中...`);
     ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
       .then(res => {
         showToast(`✅ 1to1を【${next}】に変更しました`);
-        fetchDashboardData();
-        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        refreshAllActiveViews();
       })
       .catch(handleError);
   }
 
-
   function toggle1to1InDetail(id, current) {
-    const next = current === '済' ? '未' : '済';
-    showToast(`1to1を【${next}】に変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
-      .then(res => {
-        showToast(`✅ 1to1を【${next}】に変更しました`);
-        openVisitorDetailView(id);
-        fetchDashboardData();
-      })
-      .catch(handleError);
+    toggle1to1(id, current);
   }
 
   function toggleJoinedInDetail(id, current) {
-    const next = current === '入会済' ? '未' : '入会済';
-    showToast(`入会状況を【${next}】に変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
-      .then(res => {
-        showToast(`✅ 入会状況を【${next}】に変更しました`);
-        openVisitorDetailView(id);
-        fetchDashboardData();
-      })
-      .catch(handleError);
+    toggleJoined(id, current);
   }
 
   /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
@@ -1670,13 +1674,13 @@
   }
 
   function toggleJoined(id, current) {
-    const next = current === '入会済' ? '未' : '入会済';
+    const isJoinedBool = (current === '入会済' || current === '済' || current === '入会' || current === true);
+    const next = isJoinedBool ? '未' : '入会済';
     showToast(`入会ステータスを変更中...`);
     ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
       .then(res => {
         showToast(`✅ 入会状況を【${next}】に変更しました`);
-        fetchDashboardData();
-        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        refreshAllActiveViews();
       })
       .catch(handleError);
   }

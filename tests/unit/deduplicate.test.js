@@ -51,8 +51,9 @@ function deduplicateVisitorListClient(list) {
       const tExisting = new Date(existing.eventDate || 0).getTime();
       const tNew = new Date(r.eventDate || 0).getTime();
 
+      const isJoinedBool = (val) => (val === '入会済' || val === '済' || val === '入会' || val === true);
       const mergedAttended = (existing.isAttended === '参加' || r.isAttended === '参加') ? '参加' : (r.isAttended || existing.isAttended);
-      const mergedJoined = (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined);
+      const mergedJoined = (isJoinedBool(existing.isJoined) || isJoinedBool(r.isJoined)) ? '入会済' : (r.isJoined || existing.isJoined);
       const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
       const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
 
@@ -122,7 +123,7 @@ describe('Visitor Deduplication & Name Variation Normalization', () => {
   it('merges status flags across multiple records for the same visitor', () => {
     const list = [
       { id: '1', name: '佐藤 花子', isAttended: '参加', isJoined: '未', is1to1: '未' },
-      { id: '2', name: '佐藤花子', isAttended: '不参加', isJoined: '入会済', is1to1: '済' }
+      { id: '2', name: '佐藤花子', isAttended: '不参加', isJoined: '済', is1to1: '済' }
     ];
     const deduplicated = deduplicateVisitorListClient(list);
     assert.strictEqual(deduplicated.length, 1);
