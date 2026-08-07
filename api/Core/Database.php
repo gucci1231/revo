@@ -155,17 +155,12 @@ class Database {
     public function upsert(string $table, array $data, array $uniqueKeys): bool {
         $cols = array_keys($data);
         $placeholders = array_fill(0, count($cols), '?');
-        
-        $updateCols = array_diff($cols, $uniqueKeys);
-        $updateSets = array_map(fn($col) => "{$col} = excluded.{$col}", $updateCols);
 
         $sql = sprintf(
-            "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(%s) DO UPDATE SET %s",
+            "INSERT OR REPLACE INTO %s (%s) VALUES (%s)",
             $table,
             implode(', ', $cols),
-            implode(', ', $placeholders),
-            implode(', ', $uniqueKeys),
-            implode(', ', $updateSets)
+            implode(', ', $placeholders)
         );
 
         $stmt = $this->pdo->prepare($sql);

@@ -1504,7 +1504,7 @@ const ApiService = {
         reject(new Error(`API method ${functionName} not found`));
       }
     } else {
-      resolve({ success: true, list: [], metrics: {} });
+      reject(new Error(`API request for ${functionName} failed on server.`));
     }
   }
 };
