@@ -7,21 +7,41 @@
     if (!data) return;
     currentDashboardData = data;
 
-    // KPI Cards
-    const targetEl = document.getElementById('kpi-target-members');
-    const joinedEl = document.getElementById('kpi-joined-members');
-    const rateEl = document.getElementById('kpi-achievement-rate');
-    const totalVEl = document.getElementById('kpi-total-visitors');
-    const total11El = document.getElementById('kpi-total-1to1');
+    // Dates & counts
+    const nextThuDateEl = document.getElementById('date-next-thu');
+    const nextThuValEl = document.getElementById('val-next-thu-count');
+    const afterNextThuDateEl = document.getElementById('date-after-next-thu');
+    const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
 
-    if (targetEl) targetEl.innerText = `${data.targetMembers || 0}名`;
-    if (joinedEl) joinedEl.innerText = `${data.joinedMembers || 0}名`;
-    if (rateEl) rateEl.innerText = `${data.achievementRate || 0}%`;
-    if (totalVEl) totalVEl.innerText = `${data.totalVisitors || 0}名`;
-    if (total11El) total11El.innerText = `${data.total1to1 || 0}件`;
+    if (nextThuDateEl) nextThuDateEl.innerText = data.nextMeetingDate || '--/--';
+    if (nextThuValEl) nextThuValEl.innerText = (data.nextMeetingCount !== undefined ? data.nextMeetingCount : '-');
+    if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextMeetingDate || '--/--';
+    if (afterNextThuValEl) afterNextThuValEl.innerText = (data.afterNextMeetingCount !== undefined ? data.afterNextMeetingCount : '-');
+
+    // Main KPI counters
+    const applyCountEl = document.getElementById('val-apply-count');
+    const joinedCountEl = document.getElementById('val-joined-count');
+    const targetGoalEl = document.getElementById('val-target-goal');
+
+    if (applyCountEl) applyCountEl.innerText = data.totalVisitors || data.totalApplyCount || 0;
+    if (joinedCountEl) joinedCountEl.innerText = data.totalJoinedCount || data.joinedMembers || 0;
+    if (targetGoalEl) targetGoalEl.innerText = data.targetMembers || 15;
+
+    // Rates
+    const joinRateEl = document.getElementById('val-join-rate');
+    const achievementRateEl = document.getElementById('val-achievement-rate');
+    const avgVisitorsEl = document.getElementById('val-avg-visitors');
+    const feedbackRateEl = document.getElementById('val-feedback-rate');
+    const hearingRateEl = document.getElementById('val-hearing-rate');
+
+    if (joinRateEl) joinRateEl.innerText = `${data.joinRate || 0}%`;
+    if (achievementRateEl) achievementRateEl.innerText = `${data.achievementRate || 0}%`;
+    if (avgVisitorsEl) avgVisitorsEl.innerText = `${data.avgVisitors || 0}名`;
+    if (feedbackRateEl) feedbackRateEl.innerText = `${data.feedbackRate || 0}%`;
+    if (hearingRateEl) hearingRateEl.innerText = `${data.hearingRate || 0}%`;
 
     // Charts
-    initDonutChart(data.joinedMembers || 0, data.targetMembers || 15);
+    initDonutChart(data.totalJoinedCount || data.joinedMembers || 0, data.targetMembers || 15);
     if (data.chartLabels && data.chartValues) {
       initLineChart(data.chartLabels, data.chartValues);
     }
@@ -73,27 +93,41 @@
 
     records.forEach(row => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="font-weight: 700;">${row[labelKey] || '-'}</td>
-        <td style="font-weight: 800; color: #364fc7;">${row.visitorCount || 0}名</td>
-        <td>${row.attCount || 0}名</td>
-        <td>${row.oneToOneCount || 0}件</td>
-        <td style="font-weight: 800; color: #2b8a3e;">${row.joinedCount || 0}名</td>
-      `;
+      const labelVal = row[labelKey] || row.date || row.month || '-';
+      const applyVal = row.applyCount !== undefined ? row.applyCount : (row.visitorCount || 0);
+      const attVal = row.attendedCount !== undefined ? row.attendedCount : (row.attCount || 0);
+      const joinedVal = row.joinedCount || 0;
+
+      if (tbodyId === 'table-monthly-stats') {
+        tr.innerHTML = `
+          <td style="font-weight: 700;">${labelVal}</td>
+          <td style="font-weight: 800; color: #364fc7; text-align: center;">${applyVal}名</td>
+          <td style="text-align: center;">${attVal}名</td>
+          <td style="font-weight: 800; color: #2b8a3e; text-align: center;">${joinedVal}名</td>
+          <td style="font-weight: 800; color: #2b8a3e; text-align: center;">${row.joinRate || '0.0%'}</td>
+        `;
+      } else {
+        tr.innerHTML = `
+          <td style="font-weight: 700;">${labelVal}</td>
+          <td style="font-weight: 800; color: #364fc7; text-align: center;">${applyVal}名</td>
+          <td style="text-align: center;">${attVal}名</td>
+          <td style="font-weight: 800; color: #2b8a3e; text-align: center;">${joinedVal}名</td>
+        `;
+      }
       tbody.appendChild(tr);
     });
   }
 
   function renderWeeklyStatsTable(records) {
-    renderPeriodicStatsTable('table-weekly-stats', records, 'weekLabel');
+    renderPeriodicStatsTable('table-weekly-stats', records, 'date');
   }
 
   function renderMonthlyStatsTable(records) {
-    renderPeriodicStatsTable('table-monthly-stats', records, 'monthLabel');
+    renderPeriodicStatsTable('table-monthly-stats', records, 'month');
   }
 
   function initDonutChart(joined, target) {
-    const ctx = document.getElementById('chart-donut');
+    const ctx = document.getElementById('donutChart') || document.getElementById('chart-donut');
     if (!ctx) return;
 
     if (donutChartInstance) {
@@ -116,14 +150,14 @@
         maintainAspectRatio: false,
         cutout: '75%',
         plugins: {
-          legend: { position: 'bottom' }
+          legend: { display: false }
         }
       }
     });
   }
 
   function initLineChart(labels, values) {
-    const ctx = document.getElementById('chart-line');
+    const ctx = document.getElementById('lineChart') || document.getElementById('chart-line');
     if (!ctx) return;
 
     if (lineChartInstance) {
