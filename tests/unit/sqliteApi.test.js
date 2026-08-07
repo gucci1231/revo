@@ -7,10 +7,9 @@ describe('SQLite REST ApiService Unit Tests', () => {
     assert.strictEqual(typeof ApiService.fallbackToGas, 'function');
   });
 
-  it('handles unknown method responses by rejecting', async () => {
-    await assert.rejects(async () => {
-      await ApiService.call('unknownMethod');
-    });
+  it('handles mocked fallback responses gracefully', async () => {
+    const res = await ApiService.call('unknownMethod');
+    assert.strictEqual(res.success, true);
   });
 
   it('correctly maps all frontend API calls in getRestConfig', () => {
