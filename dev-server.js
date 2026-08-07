@@ -1,9 +1,37 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const PORT = 3000;
 const SRC_DIR = path.join(__dirname, 'src');
+const DB_FILE = path.join(__dirname, 'api/data/database.sqlite');
+
+function runSqlJson(sql) {
+  try {
+    const tmpFile = path.join(__dirname, 'temp_query.sql');
+    fs.writeFileSync(tmpFile, sql, 'utf8');
+    const out = execSync(`sqlite3 -json "${DB_FILE}" < "${tmpFile}"`, { encoding: 'utf8' });
+    if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+    return JSON.parse(out || '[]');
+  } catch (err) {
+    console.error('SQL Error:', err.message);
+    return [];
+  }
+}
+
+function runSqlExec(sql) {
+  try {
+    const tmpFile = path.join(__dirname, 'temp_exec.sql');
+    fs.writeFileSync(tmpFile, sql, 'utf8');
+    execSync(`sqlite3 "${DB_FILE}" < "${tmpFile}"`);
+    if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+    return true;
+  } catch (err) {
+    console.error('SQL Exec Error:', err.message);
+    return false;
+  }
+}
 
 function buildHtml() {
   let indexContent = fs.readFileSync(path.join(SRC_DIR, 'Index.html'), 'utf8');
@@ -21,8 +49,8 @@ function buildHtml() {
     return '';
   });
 
-  // Inject Local Mock for google.script.run
-  const mockScript = `
+  // Inject Local Bridge script for google.script.run pointing to REST API endpoints
+  const bridgeScript = `
   <script>
     if (typeof google === 'undefined') {
       window.google = {
@@ -39,97 +67,24 @@ function buildHtml() {
               return this;
             },
             getDashboardData: function() {
-              setTimeout(() => {
-                if (this._successCb) this._successCb({
-                  success: true,
-                  nextThuStr: "2026/08/13",
-                  afterNextThuStr: "2026/08/20",
-                  metrics: { applyCount: 42, joinedCount: 8, targetJoinGoal: 12, achievementRate: "66.7", joinRate: "19.0", nextThuCount: 5, avgVisitorCount: "4.2", feedbackRate: "80.0", hearingRate: "75.0" },
-                  tables: {
-                    hotVisitors: [
-                      { id: "101", no: "101", name: "山田 太郎", furigana: "ヤマダ タロウ", company: "サンプル株式会社", profession: "経営コンサル", inviter: "佐藤 一郎", orientUser: "鈴木 健二", eventDate: "2026/08/06", feelAbc: "A", q7: "ぜひ入会を検討したい", isAttended: "参加", isJoined: "未", is1to1: "済", hasHearingSheet: true },
-                      { id: "102", no: "102", name: "鈴木 花子", furigana: "スズキ ハナコ", company: "テックデザイン合同会社", profession: "Web制作", inviter: "高橋 誠", orientUser: "田中 恵", eventDate: "2026/08/06", feelAbc: "B", q7: "見学後に判断", isAttended: "参加", isJoined: "未", is1to1: "未", hasHearingSheet: true },
-                      { id: "103", no: "103", name: "佐藤 健", furigana: "サトウ タケシ", company: "佐藤企画", profession: "イベント企画", inviter: "川口 陽平", orientUser: "小山 哲夫", eventDate: "2026/08/06", feelAbc: "C", q7: "タイミングをみて再検討", isAttended: "参加", isJoined: "未", is1to1: "未", hasHearingSheet: true }
-                    ],
-                    nextMeeting: [
-                      { id: "103", no: "103", name: "伊藤 健太", furigana: "イトウ ケンタ", company: "クリエイト社", profession: "広告デザイン", inviter: "渡辺 直樹", eventDate: "2026/08/13", isAttended: "未", hasHearingSheet: false }
-                    ]
-                  }
-                });
-              }, 50);
+              fetch('/api/dashboard.php').then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
             getAllVisitorsApi: function() {
-              setTimeout(() => {
-                let list = [];
-                for (let i = 1; i <= 68; i++) {
-                  list.push({
-                    id: String(i),
-                    no: String(i),
-                    eventDate: "2026/08/" + (i % 28 + 1).toString().padStart(2, '0'),
-                    name: "テストビジター " + i,
-                    furigana: "てすとびじたー " + i,
-                    profession: "専門職 " + (i % 5 + 1),
-                    company: "サンプル企業 " + i,
-                    inviter: "紹介者 " + (i % 10 + 1),
-                    attendanceCount: "初めて",
-                    isAttended: i % 3 === 0 ? "参加" : (i % 3 === 1 ? "不参加" : "未"),
-                    isJoined: i % 10 === 0 ? "入会済" : "未",
-                    is1to1: i % 4 === 0 ? "済" : "未",
-                    hasHearingSheet: i % 2 === 0
-                  });
-                }
-                if (this._successCb) this._successCb({ success: true, list: list });
-              }, 50);
+              fetch('/api/visitors.php?action=list').then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
             getHearingSheetsListApi: function() {
-              setTimeout(() => {
-                let list = [];
-                for (let i = 1; i <= 35; i++) {
-                  list.push({
-                    visitorId: String(i),
-                    no: String(i),
-                    name: "ホットビジター " + i,
-                    furigana: "ほっとびじたー " + i,
-                    company: "株式会社サンプル " + i,
-                    profession: "IT・マーケティング",
-                    inviter: "紹介メンバー " + (i % 5 + 1),
-                    orientUser: "オリエン担当 " + (i % 3 + 1),
-                    eventDate: "2026/08/06",
-                    feelAbc: i % 3 === 0 ? "A" : (i % 3 === 1 ? "B" : "C"),
-                    q7: "前向きに入会を検討中。メンバーとの面談を希望。",
-                    isAttended: "参加",
-                    hasHearingSheet: true
-                  });
-                }
-                if (this._successCb) this._successCb({ success: true, list: list });
-              }, 50);
+              fetch('/api/hearings.php?action=list').then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
             getScheduledEmailsApi: function() {
               setTimeout(() => {
-                if (this._successCb) this._successCb({
-                  success: true,
-                  metrics: { totalCount: 12, todayCount: 2, thisWeekCount: 5 },
-                  isTestMode: true,
-                  testEmailList: ["test@example.com"],
-                  scheduledList: []
-                });
+                if (this._successCb) this._successCb({ success: true, metrics: { totalCount: 0, todayCount: 0, thisWeekCount: 0 }, scheduledList: [] });
               }, 50);
             },
             getVisitorDetailApi: function(id) {
-              setTimeout(() => {
-                if (this._successCb) this._successCb({
-                  success: true,
-                  visitorInfo: { id: id, name: "サンプル 太郎", furigana: "サンプル タロウ", company: "サンプル社", profession: "経営者", email: "sample@example.com", eventDate: "2026/08/06", inviter: "紹介者" },
-                  statusInfo: { isAttended: "参加", isJoined: "未", is1to1: "未" },
-                  hearingInfo: { feelAbc: "A", q1: "非常に良かった", q7: "入会検討中", orientUser: "オリエン担当者" },
-                  mailHistories: []
-                });
-              }, 50);
+              fetch('/api/visitors.php?action=detail&id=' + id).then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
-            getMembersMasterApi: function() {
-              setTimeout(() => {
-                if (this._successCb) this._successCb({ success: true, list: [] });
-              }, 50);
+            getMemberListApi: function() {
+              fetch('/api/members.php?action=list').then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
             logClientErrorApi: function() {}
           }
@@ -139,11 +94,207 @@ function buildHtml() {
   </script>
   `;
 
-  return indexContent.replace('</head>', mockScript + '\n</head>');
+  return indexContent.replace('</head>', bridgeScript + '\n</head>');
+}
+
+function handleApiRequest(req, res, urlObj) {
+  const pathname = urlObj.pathname;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    let input = {};
+    try { if (body) input = JSON.parse(body); } catch(e){}
+
+    if (pathname === '/api/visitors.php') {
+      const action = urlObj.searchParams.get('action') || input.action || 'list';
+      if (action === 'list') {
+        const sql = `
+          SELECT 
+              v.id, v.created_at as createdDate, COALESCE(v.inviter, '') as inviter, v.event_date as eventDate, 
+              COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || v.id) as name, 
+              COALESCE(v.furigana, '') as furigana, 
+              COALESCE(v.profession, '') as profession, 
+              COALESCE(v.company, '') as company, 
+              COALESCE(v.email, '') as email, 
+              v.attendance_count as attendanceCount, v.remarks,
+              COALESCE(s.is_attended, '未') as isAttended,
+              COALESCE(s.is_joined, '未') as isJoined,
+              COALESCE(s.is_1to1, '未') as is1to1,
+              COALESCE(s.is_matched, '未') as matching,
+              CASE WHEN h.visitor_id IS NOT NULL THEN 1 ELSE 0 END as hasHearingSheet,
+              COALESCE(h.sheet_url, '') as hearingUrl,
+              COALESCE(h.feel_abc, '') as feelAbc,
+              COALESCE(h.q7, '') as q7,
+              COALESCE(h.orient_user, '') as orientUser,
+              COALESCE(h.orient_memo, '') as orientMemo
+          FROM visitors v
+          LEFT JOIN visitors_status s ON v.id = s.visitor_id
+          LEFT JOIN hearing_sheets h ON v.id = h.visitor_id
+          ORDER BY v.event_date DESC;
+        `;
+        const list = runSqlJson(sql);
+        return res.end(JSON.stringify({ success: true, list: list }));
+      }
+
+      if (action === 'detail') {
+        const id = urlObj.searchParams.get('id') || input.id || '';
+        const vSql = `SELECT * FROM visitors WHERE id = '${id.replace(/'/g, "''")}';`;
+        const sSql = `SELECT * FROM visitors_status WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
+        const hSql = `SELECT * FROM hearing_sheets WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
+
+        const v = runSqlJson(vSql)[0] || null;
+        const s = runSqlJson(sSql)[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未' };
+        const h = runSqlJson(hSql)[0] || null;
+
+        if (!v) return res.end(JSON.stringify({ success: false, message: 'Visitor not found' }));
+
+        return res.end(JSON.stringify({
+          success: true,
+          visitor: {
+            id: v.id, createdAt: v.created_at, inviter: v.inviter, eventDate: v.event_date,
+            name: v.visitor_name, furigana: v.furigana, profession: v.profession, company: v.company,
+            email: v.email, attendanceCount: v.attendance_count, remarks: v.remarks
+          },
+          status: {
+            isAttended: s.is_attended || '未', isJoined: s.is_joined || '未', is1to1: s.is_1to1 || '未', matching: s.is_matched || '未'
+          },
+          hearing: h ? {
+            orientUser: h.orient_user, q1: h.q1, q2: h.q2, q3: h.q3, q4: h.q4, q5: h.q5, q6: h.q6, q7: h.q7,
+            feelAbc: h.feel_abc, orientMemo: h.orient_memo, followMemo: h.follow_memo, sheetUrl: h.sheet_url, updatedAt: h.updated_at
+          } : null,
+          mailLogs: []
+        }));
+      }
+
+      if (action === 'update_status') {
+        const vId = (input.visitorId || '').replace(/'/g, "''");
+        const colMap = { isAttended: 'is_attended', isJoined: 'is_joined', is1to1: 'is_1to1', matching: 'is_matched' };
+        const col = colMap[input.field];
+        if (col && vId) {
+          const val = (input.value || '').replace(/'/g, "''");
+          const sql = `INSERT INTO visitors_status (visitor_id, ${col}, updated_at) VALUES ('${vId}', '${val}', datetime('now')) ON CONFLICT(visitor_id) DO UPDATE SET ${col} = '${val}', updated_at = datetime('now');`;
+          runSqlExec(sql);
+        }
+        return res.end(JSON.stringify({ success: true, visitorId: input.visitorId }));
+      }
+    }
+
+    if (pathname === '/api/hearings.php') {
+      const action = urlObj.searchParams.get('action') || input.action || 'list';
+      if (action === 'list') {
+        const sql = `
+          SELECT 
+              h.visitor_id as visitorId, 
+              COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || h.visitor_id) as name, 
+              COALESCE(v.company, '') as company, 
+              COALESCE(v.profession, '') as profession, 
+              COALESCE(v.inviter, '') as inviter, 
+              COALESCE(NULLIF(v.event_date, ''), h.updated_at) as eventDate,
+              h.orient_user as orientUser, h.q1, h.q2, h.q3, h.q4, h.q5, h.q6, h.q7, h.feel_abc as feelAbc,
+              h.orient_memo as orientMemo, h.follow_memo as followMemo, h.sheet_url as sheetUrl, h.updated_at as updatedAt,
+              COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1
+          FROM hearing_sheets h
+          LEFT JOIN visitors v ON h.visitor_id = v.id
+          LEFT JOIN visitors_status s ON h.visitor_id = s.visitor_id
+          ORDER BY h.updated_at DESC;
+        `;
+        const list = runSqlJson(sql);
+        return res.end(JSON.stringify({ success: true, list: list }));
+      }
+    }
+
+    if (pathname === '/api/dashboard.php') {
+      const sql = `
+        SELECT 
+            v.id, v.visitor_name as name, v.furigana, v.company, v.profession, v.inviter, v.event_date as eventDate,
+            COALESCE(s.is_attended, '未') as isAttended,
+            COALESCE(s.is_joined, '未') as isJoined,
+            COALESCE(s.is_1to1, '未') as is1to1,
+            COALESCE(h.feel_abc, '') as feelAbc,
+            COALESCE(h.q7, '') as q7,
+            COALESCE(h.orient_user, '') as orientUser,
+            COALESCE(h.orient_memo, '') as orientMemo,
+            CASE WHEN h.visitor_id IS NOT NULL THEN 1 ELSE 0 END as hasHearingSheet
+        FROM visitors v
+        LEFT JOIN visitors_status s ON v.id = s.visitor_id
+        LEFT JOIN hearing_sheets h ON v.id = h.visitor_id;
+      `;
+      const visitors = runSqlJson(sql);
+      const totalApplyCount = visitors.length;
+      let totalJoinedCount = 0;
+      let totalHearingCount = 0;
+      const hotVisitors = [];
+
+      visitors.forEach(r => {
+        if (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会') totalJoinedCount++;
+        if (r.hasHearingSheet) totalHearingCount++;
+        const feel = (r.feelAbc || '').toUpperCase().trim();
+        const isJoinedBool = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会');
+        if (feel === 'A' && !isJoinedBool) {
+          hotVisitors.push(r);
+        }
+      });
+
+      return res.end(JSON.stringify({
+        success: true,
+        nextThuStr: "08/13",
+        afterNextThuStr: "08/20",
+        metrics: {
+          applyCount: totalApplyCount,
+          joinedCount: totalJoinedCount,
+          targetJoinGoal: 12,
+          achievementRate: totalJoinedCount > 0 ? ((totalJoinedCount / 12) * 100).toFixed(1) : "0.0",
+          joinRate: totalApplyCount > 0 ? ((totalJoinedCount / totalApplyCount) * 100).toFixed(1) : "0.0",
+          nextThuCount: 0,
+          avgVisitorCount: "4.2",
+          feedbackRate: "80.0",
+          hearingRate: totalApplyCount > 0 ? ((totalHearingCount / totalApplyCount) * 100).toFixed(1) : "0.0",
+          hotVisitorCount: hotVisitors.length
+        },
+        chart: { labels: [], data: [] },
+        tables: { hotVisitors: hotVisitors, nextMeeting: [] }
+      }));
+    }
+
+    if (pathname === '/api/members.php') {
+      const sql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
+      const flatMembers = runSqlJson(sql);
+      const categoriesMap = {};
+      flatMembers.forEach(m => {
+        const cat = m.category || 'その他';
+        if (!categoriesMap[cat]) categoriesMap[cat] = [];
+        categoriesMap[cat].push(m);
+      });
+      const memberCategories = Object.keys(categoriesMap).map(cat => ({ category: cat, members: categoriesMap[cat] }));
+      return res.end(JSON.stringify({ success: true, memberCategories: memberCategories, flatMembers: flatMembers }));
+    }
+
+    return res.end(JSON.stringify({ success: false, message: 'Endpoint not found' }));
+  });
 }
 
 const server = http.createServer((req, res) => {
   try {
+    const urlObj = new URL(req.url, `http://${req.headers.host || 'localhost:3000'}`);
+
+    if (urlObj.pathname.startsWith('/api/')) {
+      return handleApiRequest(req, res, urlObj);
+    }
+
+    // Serve public static assets if requested
+    if (urlObj.pathname.startsWith('/public/')) {
+      const staticPath = path.join(__dirname, urlObj.pathname);
+      if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
+        const ext = path.extname(staticPath).toLowerCase();
+        const mimeTypes = { '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
+        res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'text/plain' });
+        return fs.createReadStream(staticPath).pipe(res);
+      }
+    }
+
+    // Fallback: serve built HTML
     const html = buildHtml();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -155,5 +306,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`🚀 ローカルテストサーバーが起動しました: http://localhost:${PORT}`);
-  console.log(`💡 src/ 内のHTML/CSS/JSファイルを編集してブラウザでリロードするだけでローカルテストできます！`);
+  console.log(`💡 ローカルSQLiteデータベース (api/data/database.sqlite) と直接接続して動作しています。`);
 });
