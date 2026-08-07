@@ -2,106 +2,3354 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>REvo 定例会ビジター管理 2.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REvo 定例会ビジター管理 2.0 (完全Web運用システム)</title>
+  <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Global Client Error Reporter -->
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      const errInfo = {
+        message: String(msg),
+        url: String(url),
+        line: line,
+        col: col,
+        stack: error ? String(error.stack) : '',
+        href: window.location.href
+      };
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.logClientErrorApi(errInfo);
+      }
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      const errInfo = {
+        message: 'Unhandled Rejection: ' + (event.reason ? (event.reason.message || event.reason) : ''),
+        stack: event.reason ? String(event.reason.stack) : '',
+        href: window.location.href
+      };
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.logClientErrorApi(errInfo);
+      }
+    });
+
+  </script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #f8fafc;
-      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    #app-frame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-    .loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-    }
-    .loading-screen.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #e63946;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-title {
-      margin-top: 20px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #1e293b;
-    }
-    .loading-sub {
-      margin-top: 6px;
-      font-size: 13px;
-      color: #64748b;
-    }
-  </style>
+/* --- variables.css --- */
+:root {
+  --primary-accent: #2563eb;
+  --primary-hover: #1d4ed8;
+  --danger-accent: #ef4444;
+  --bg-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+
+/* --- base.css --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  padding: 24px 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 1280px; margin: 0 auto; }
+
+/* Header Bar & Navigation */
+.header-bar {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+  gap: 16px; margin-bottom: 20px; background: var(--card-bg); padding: 16px 24px;
+  border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+}
+
+.logo-area { display: flex; align-items: center; gap: 12px; }
+.logo-title { font-size: 20px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+.nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.main-tab-bar { display: flex; gap: 6px; margin-bottom: 24px; background: #e2e8f0; padding: 4px; border-radius: var(--radius); }
+.tab-btn {
+  flex: 1; padding: 10px 16px; border-radius: var(--radius-sm); border: none; background: transparent;
+  font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s ease;
+}
+.tab-btn:hover { color: #0f172a; }
+.tab-btn.active { background: #ffffff; color: var(--text-main); font-weight: 700; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+
+.view-content { display: none; }
+.view-content.active { display: block; }
+
+/* Left Drawer Menu */
+.btn-drawer-trigger {
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  color: #1e293b;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  transition: all 0.15s ease;
+}
+.btn-drawer-trigger:hover {
+  background: #e2e8f0;
+  color: var(--primary-accent);
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 9990;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.left-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 290px;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 9995;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+.left-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+.drawer-brand {
+  font-weight: 800;
+  font-size: 15px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-drawer-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.btn-drawer-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.drawer-nav-list {
+  padding: 16px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+.drawer-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.drawer-nav-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.drawer-nav-item.active {
+  background: #eff6ff;
+  color: var(--primary-accent);
+  font-weight: 800;
+  border-left: 4px solid var(--primary-accent);
+}
+.drawer-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background: #f8fafc;
+}
+
+@media (min-width: 1024px) {
+  body { padding-left: 280px; }
+  .left-drawer {
+    transform: translateX(0) !important;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05);
+    border-right: 1px solid var(--border-color);
+  }
+  .drawer-backdrop, .btn-drawer-trigger, .btn-drawer-close { display: none !important; }
+  .container { max-width: 1380px; margin: 0 auto; }
+}
+
+@media (max-width: 1023px) {
+  body { padding-left: 16px; }
+  .left-drawer { transform: translateX(-100%); }
+  .left-drawer.open { transform: translateX(0); }
+  .btn-drawer-trigger { display: inline-flex; }
+}
+
+
+/* --- components.css --- */
+/* Buttons */
+.btn-action-primary {
+  background: var(--primary-accent); color: #ffffff; padding: 8px 16px; border-radius: var(--radius-sm);
+  border: none; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: all 0.15s ease;
+}
+.btn-action-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+.btn-action-secondary {
+  background: #f1f5f9; color: #334155; padding: 8px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color); font-weight: 600; font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;
+}
+.btn-action-secondary:hover { background: #e2e8f0; color: #0f172a; }
+
+.btn-icon-quick {
+  background: #f1f5f9; color: #475569; border: 1px solid var(--border-color);
+  width: 36px; height: 36px; border-radius: 8px; font-size: 15px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease;
+}
+.btn-icon-quick:hover { background: #e2e8f0; color: var(--primary-accent); transform: translateY(-1px); }
+
+.btn-table-action {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; height: 30px; border-radius: 6px;
+  font-size: 12px; font-weight: 600; border: 1px solid var(--border-color); background: #ffffff; color: #334155;
+  cursor: pointer; white-space: nowrap; transition: all 0.15s ease;
+}
+.btn-table-action:hover { background: #f1f5f9; color: #0f172a; }
+.btn-table-action.primary { background: var(--primary-accent); color: #ffffff; border-color: var(--primary-accent); }
+.btn-table-action.primary:hover { background: var(--primary-hover); }
+.btn-table-action.danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+.btn-icon-action {
+  background: #f1f5f9; border: 1px solid var(--border-color); color: #475569; width: 30px; height: 30px; border-radius: 6px;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s ease; flex-shrink: 0; white-space: nowrap;
+}
+.btn-icon-action:hover { background: #e2e8f0; color: #0f172a; }
+.btn-icon-action.btn-icon-danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+/* Tables */
+.table-container {
+  width: 100%;
+  max-height: calc(100vh - 200px);
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13px; white-space: nowrap; }
+th {
+  position: sticky; top: 0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.03em; padding: 12px 14px; border-bottom: 2px solid var(--border-color);
+  white-space: nowrap; word-break: keep-all; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+tr:hover td { background-color: #f8fafc; }
+tr:last-child td { border-bottom: none; }
+
+.cell-truncate-text {
+  display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; cursor: help;
+}
+
+/* Badges */
+.badge-feel { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 9999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.feel-A { background: #ffe4e6; color: #e11d48; }
+.feel-B { background: #fef3c7; color: #d97706; }
+.feel-C { background: #f1f5f9; color: #64748b; }
+
+.badge-abc {
+  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
+  border-radius: 8px; font-size: 16px; font-weight: 900; line-height: 1; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.badge-abc.A { background: #ffe3e3; color: #d6336c; border: 1.5px solid #ff8787; }
+.badge-abc.B { background: #fff9db; color: #d97706; border: 1.5px solid #ffe066; }
+.badge-abc.C { background: #f1f5f9; color: #64748b; border: 1.5px solid #cbd5e1; }
+
+.badge-toggle { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; background: #f1f5f9; color: #64748b; user-select: none; white-space: nowrap; }
+.badge-toggle.done { background: #dcfce7; color: #15803d; }
+.badge-toggle.none { background: #f1f5f9; color: #64748b; }
+
+.btn-attend, .select-attend { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); white-space: nowrap; outline: none; transition: all 0.15s ease; }
+.btn-attend.attended, .select-attend.attended { background: #dcfce7; color: #15803d; border-color: #86efac; }
+.btn-attend.absent, .select-attend.absent { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+.btn-hearing { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #f1f5f9; color: #475569; border: 1px solid var(--border-color); cursor: pointer; white-space: nowrap; }
+.btn-hearing.has-data { background: #dcfce7; color: #15803d; border-color: #86efac; }
+
+/* Search & Inputs */
+.search-box { padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px; width: 260px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
+.form-textarea { width: 100%; min-height: 70px; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: inherit; font-size: 13px; }
+.form-input { width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px; }
+
+/* Modals & Backdrop */
+.modal-backdrop, .modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5);
+  display: none; justify-content: center; align-items: flex-start; z-index: 9999; overflow-y: auto; padding: 40px 16px;
+}
+.modal-box-medium, .modal-card {
+  background: #fff; padding: 24px; border-radius: var(--radius); width: 100%; max-width: 540px;
+  box-shadow: var(--shadow-md); margin: auto; border: 1px solid var(--border-color);
+}
+.modal-box-large {
+  background: #fff; padding: 28px; border-radius: var(--radius); width: 100%; max-width: 760px;
+  box-shadow: var(--shadow-md); margin: auto; border: 1px solid var(--border-color);
+}
+
+.modal-header-title, .modal-title {
+  font-size: 18px; font-weight: 800; color: var(--text-main); border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+
+.modal-footer-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+.btn-cancel { padding: 8px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+.btn-save { padding: 8px 20px; border-radius: var(--radius-sm); border: none; background: var(--primary-accent); color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; }
+
+/* Toast & Overlay */
+.loading-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85);
+  display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+}
+.spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary-accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; }
+.toast {
+  background: #0f172a; color: #ffffff; padding: 12px 20px; border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+  font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-top: 8px; animation: fadeIn 0.3s forwards;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+/* --- views.css --- */
+/* KPI Cards Grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card {
+  background: var(--card-bg); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color); position: relative; display: flex; flex-direction: column; justify-content: space-between;
+}
+.kpi-title { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-value-large { font-size: 38px; font-weight: 800; color: var(--text-main); line-height: 1; margin-top: 8px; display: flex; align-items: baseline; gap: 4px; }
+.kpi-value-large .unit { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+
+.col-chart { grid-column: span 12; padding: 14px; }
+.col-next-visitors { grid-column: span 4; display: flex; flex-direction: row; gap: 16px; justify-content: space-around; align-items: center; }
+.col-apply-joined { grid-column: span 8; }
+.apply-joined-inner { display: flex; flex-direction: row; align-items: center; gap: 24px; height: 100%; }
+.apply-joined-block { flex: 1; }
+.col-rates { grid-column: span 12; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+
+@media (max-width: 1024px) {
+  .col-chart, .col-next-visitors, .col-apply-joined, .col-rates { grid-column: span 12; }
+  .col-rates { grid-template-columns: repeat(3, 1fr); }
+  .apply-joined-inner { gap: 16px; }
+}
+@media (max-width: 640px) { .col-rates { grid-template-columns: repeat(2, 1fr); } }
+
+.next-vis-item { text-align: center; }
+.next-vis-date { font-size: 11px; font-weight: 700; color: var(--primary-accent); }
+.next-vis-num { font-size: 32px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+
+.rate-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+.rate-title { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+.rate-val { font-size: 22px; font-weight: 800; color: var(--text-main); margin-top: 4px; }
+
+.donut-wrap { width: 56px; height: 56px; position: relative; }
+.line-chart-wrap { width: 100%; height: 120px; position: relative; }
+
+/* Section Cards */
+.section-card { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 24px; overflow: hidden; }
+.section-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.section-title { font-size: 15px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+
+.btn-filter-tab {
+  padding: 6px 14px; border-radius: 6px; border: none; background: transparent;
+  font-size: 12px; font-weight: 700; color: #64748b; cursor: pointer; transition: all 0.15s ease;
+}
+.btn-filter-tab:hover { color: #1e293b; }
+.btn-filter-tab.active { background: #ffffff; color: var(--primary-accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.radio-abc-group { display: flex; gap: 10px; margin-top: 6px; }
+.btn-abc-option {
+  flex: 1; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #fff;
+  font-weight: 700; font-size: 12px; cursor: pointer; text-align: center; color: #475569; transition: all 0.15s ease;
+}
+.btn-abc-option.selected { background: var(--primary-accent); color: #fff; border-color: var(--primary-accent); }
+
+.link-actions-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 14px 18px; border-radius: var(--radius-sm); margin-top: 20px; }
+.link-action-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #ffffff;
+  color: var(--primary-accent); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; margin-top: 6px; margin-right: 8px;
+}
+.link-action-btn:hover { background: var(--primary-accent); color: #fff; }
+
+/* Skeleton Loading UI */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.skeleton {
+  background: #e2e8f0;
+  background-image: linear-gradient(90deg, #e2e8f0 0px, #f1f5f9 40px, #e2e8f0 80px);
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-shimmer 1.5s infinite ease-in-out;
+  border-radius: 4px;
+  display: inline-block;
+}
+.skeleton-text { height: 16px; width: 80%; margin-bottom: 6px; }
+.skeleton-title { height: 24px; width: 50%; margin-bottom: 12px; }
+.skeleton-card { min-height: 80px; width: 100%; }
+.skeleton-row { height: 36px; width: 100%; margin-bottom: 8px; }
+
+
+</style>
 </head>
 <body>
 
-  <div id="loading" class="loading-screen">
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading-overlay" style="display: none;">
     <div class="spinner"></div>
-    <div class="loading-title">REvo 定例会ビジター管理 2.0</div>
-    <div class="loading-sub">システムを初期化中...</div>
+    <p style="margin-top: 16px; font-weight: 800; color: #495057;">データをロード中...</p>
   </div>
 
-  <iframe id="app-frame" allow="clipboard-write; clipboard-read; camera; microphone"></iframe>
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- CRUD Modals -->
+  <!-- CRUD Modal: Add / Edit Visitor -->
+<div id="modal-visitor-crud" class="modal-backdrop">
+  <div class="modal-box-medium">
+    <div class="modal-header-title" id="crud-modal-title">
+      <i class="fa-solid fa-user-plus"></i> 新規ビジター登録
+    </div>
+    <form id="form-visitor-crud">
+      <input type="hidden" id="crud-v-id">
+
+      <div class="form-group">
+        <label class="form-label">氏名 <span style="color:red;">*</span></label>
+        <input type="text" id="crud-v-name" class="form-input" placeholder="例：山田 太郎" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">ふりがな</label>
+          <input type="text" id="crud-v-furigana" class="form-input" placeholder="やまだ たろう">
+        </div>
+        <div class="form-group">
+          <label class="form-label">参加日 (定例会) <span style="color:red;">*</span></label>
+          <input type="date" id="crud-v-event-date" class="form-input" required style="font-weight:700;">
+          <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('next')">⚡ 次回定例会</button>
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('afterNext')">⚡ 次々回定例会</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">招待者</label>
+          <input type="text" id="crud-v-inviter" class="form-input" placeholder="紹介メンバー名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">専門分野</label>
+          <input type="text" id="crud-v-profession" class="form-input" placeholder="例：税理士、店舗内装">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">会社名</label>
+          <input type="text" id="crud-v-company" class="form-input" placeholder="株式会社〇〇">
+        </div>
+        <div class="form-group">
+          <label class="form-label">メールアドレス</label>
+          <input type="email" id="crud-v-email" class="form-input" placeholder="example@email.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ビジター参加回数</label>
+        <select id="crud-v-attendance-count" class="form-input">
+          <option value="初めて">初めて</option>
+          <option value="2回目">2回目</option>
+          <option value="3回以上">3回以上</option>
+        </select>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button type="button" class="btn-cancel" onclick="closeCrudModal()">キャンセル</button>
+        <button type="button" class="btn-save" onclick="submitCrudVisitorForm()">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <!-- Modal for Hearing Form -->
+<div id="modal-hearing-form" class="modal-backdrop">
+  <div class="modal-box-large">
+    <div class="modal-header-title">
+      <i class="fa-solid fa-file-signature"></i> REvo オリエンテーション＆ヒアリングシート
+    </div>
+
+    <div class="info-summary-grid">
+      <div><strong>定例会参加日:</strong> <span id="hf-event-date">-</span></div>
+      <div><strong>お名前:</strong> <span id="hf-name">-</span> 様 (<span id="hf-furigana">-</span>)</div>
+      <div><strong>会社名・屋号:</strong> <span id="hf-company">-</span></div>
+      <div><strong>専門分野:</strong> <span id="hf-profession">-</span></div>
+      <div><strong>紹介者:</strong> <span id="hf-inviter">-</span></div>
+    </div>
+
+    <form id="hearing-form-element">
+      <input type="hidden" id="hf-visitor-id">
+
+      <div class="form-group">
+        <label class="form-label">オリエン担当者名 (DB連動)</label>
+        <select id="hf-orient-user" class="form-input" style="font-weight: 700; color: #343a40;">
+          <option value="">-- DB読み込み中... --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q1：【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？</label>
+        <textarea id="hf-q1" class="form-textarea" placeholder="ビジター様からの回答・感想"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q2：【お仕事について】〇〇さんのお仕事について再度聞かせてください。</label>
+        <textarea id="hf-q2" class="form-textarea" placeholder="仕事内容の補足や詳細"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q3：【Goal(目標)】夢や目標、〇年後にこうなりたい計画はありますか？</label>
+        <textarea id="hf-q3" class="form-textarea" placeholder="目標や達成したいこと"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q4：【Reality(現実・課題)】課題と感じることはございますか？いつ頃からですか？</label>
+        <textarea id="hf-q4" class="form-textarea" placeholder="現状の課題や悩み"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q5：【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？</label>
+        <textarea id="hf-q5" class="form-textarea" placeholder="検討中の選択肢"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q6：【Way Forward(今後の力に)】REvoメンバーでお役に立てること</label>
+        <textarea id="hf-q6" class="form-textarea" placeholder="具体的なお役立ち提案（リファーラル・人脈紹介等）"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q7：【次のアクション】促し内容</label>
+        <textarea id="hf-q7" class="form-textarea" placeholder="・入会 / 繋がりたいメンバーへの紹介 / 再度定例会 / BOD / コーヒーミーティング等"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">入会への感触 (ABC評価)</label>
+        <input type="hidden" id="hf-feel-abc">
+        <div class="radio-abc-group">
+          <button type="button" class="btn-abc-option" id="abc-A" onclick="selectAbc('A')">A: 好印象・即入会意向あり</button>
+          <button type="button" class="btn-abc-option" id="abc-B" onclick="selectAbc('B')">B: 好印象だがハードルあり</button>
+          <button type="button" class="btn-abc-option" id="abc-C" onclick="selectAbc('C')">C: 時間がかかる / 見送り</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">定例会直後のオリエン感想メモ</label>
+        <textarea id="hf-orient-memo" class="form-textarea" placeholder="オリエン直後の定例会での様子や感想"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">フォローアップ感想メモ</label>
+        <textarea id="hf-follow-memo" class="form-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
+      </div>
+
+      <div class="link-actions-box">
+        <div style="font-size: 13px; font-weight: 800; color: var(--primary-accent); margin-bottom: 8px;">
+          <i class="fa-solid fa-link"></i> 入会手続き・案内用公式URL
+        </div>
+        <div>
+          <a href="https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376" target="_blank" class="link-action-btn"><i class="fa-solid fa-external-link"></i> ① 入会オンライン申込 (ビジホス)</a>
+          <a href="https://docs.google.com/document/d/1P-FZeshUDnzXTOEKI3M1xwoBvxfCKSQL/edit" target="_blank" class="link-action-btn"><i class="fa-solid fa-file-word"></i> ② BNI加入審査案内 (メンバーシップ)</a>
+          <a href="https://www.bniconnectglobal.com/web/applications/register?chapterId=7638" target="_blank" class="link-action-btn"><i class="fa-solid fa-globe"></i> ③ オンラインメンバーシップ申込</a>
+        </div>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button type="button" class="btn-cancel" onclick="closeHearingModal()">キャンセル</button>
+        <button type="button" class="btn-save" onclick="submitHearingForm()">保存する</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+  <!-- Modal 4: メンバーマスタ登録・編集モーダル (CRUD) -->
+<div id="modal-member-crud" class="modal-overlay" style="display:none;">
+  <div class="modal-card" style="max-width: 520px;">
+    <h2 id="modal-member-title" class="modal-title">メンバーの登録・編集</h2>
+    <form id="member-crud-form">
+      <input type="hidden" id="crud-m-id">
+
+      <div class="form-group">
+        <label class="form-label">カテゴリ / 専門領域 <span class="required">*</span></label>
+        <input type="text" id="crud-m-category" class="form-input" placeholder="例：〇士業・事業サポート または DNAメンバー" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">メンバー氏名 <span class="required">*</span></label>
+        <input type="text" id="crud-m-name" class="form-input" placeholder="例：前井 宏之" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">専門分野 <span class="required">*</span></label>
+        <input type="text" id="crud-m-profession" class="form-input" placeholder="例：社長の孤独をなくす専属AI" required>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button type="button" class="btn-cancel" onclick="closeMemberCrudModal()">キャンセル</button>
+        <button type="button" class="btn-save" onclick="submitMemberCrudForm()">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+  <!-- Left Slide-over Drawer Navigation -->
+  <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeLeftDrawer()"></div>
+  <aside id="left-drawer" class="left-drawer">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
+        <span>REvo ビジター管理</span>
+      </div>
+      <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="drawer-nav-list">
+      <!-- ➕ 新規登録メインボタン -->
+      <div style="padding: 0 4px 12px 4px;">
+        <button class="btn-action-primary" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px;" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+        </button>
+      </div>
+
+      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
+        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
+        <i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロー
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')">
+        <i class="fa-solid fa-users"></i> 全ビジター統合管理名簿
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')">
+        <i class="fa-solid fa-file-lines"></i> ヒアリングシート一覧
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')">
+        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')">
+        <i class="fa-solid fa-gear"></i> 各種設定・メンバー管理
+      </button>
+    </div>
+
+    <div class="drawer-footer">
+      <div style="font-size: 11px; color: #94a3b8; text-align: center;">REvo Chapter Visitor Host v2.0</div>
+    </div>
+  </aside>
+
+  <div class="container">
+
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="logo-area" style="display: flex; align-items: center; gap: 12px;">
+        <button class="btn-drawer-trigger" onclick="toggleLeftDrawer()" title="メニューを開く">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="logo-title">REvo 定例会ビジター管理</h1>
+      </div>
+      <div class="nav-links" style="display: flex; align-items: center; gap: 8px;">
+        <button class="btn-icon-quick" onclick="copyCurrentPageUrl()" title="画面URLの共有 (クリップボードにコピー)">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+        <button class="btn-icon-quick" onclick="syncFormResponsesManual()" title="Googleフォーム新着回答の同期">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-icon-quick" onclick="forceRefreshAllCacheAndData()" title="最新データの再読み込み (キャッシュ削除)">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+        <button class="btn-action-primary" onclick="openAddVisitorModal()" style="margin-left: 4px;">
+          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-tab-bar" style="display: none;">
+      <button class="tab-btn active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
+        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      </button>
+      <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
+        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      </button>
+      <button class="tab-btn" id="tab-btn-visitors" onclick="switchTab('visitors')">
+        <i class="fa-solid fa-users"></i> ビジター全一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-hearings" onclick="switchTab('hearings')">
+        <i class="fa-solid fa-file-lines"></i> ヒアリング一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
+        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
+        <i class="fa-solid fa-gear"></i> 設定
+      </button>
+    </nav>
+
+    <!-- Views -->
+    <!-- VIEW 1: ダッシュボード -->
+<div id="view-dashboard" class="view-content active">
+  <section class="kpi-grid">
+    <!-- 1行目: グラフ (全幅) -->
+    <div class="kpi-card col-chart">
+      <div class="kpi-title">定例会別ビジター推移</div>
+      <div class="line-chart-wrap">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 2行目: 次回/次々回 + 申込数/入会数 -->
+    <div class="kpi-card col-next-visitors">
+      <div class="next-vis-item">
+        <div class="kpi-title" style="margin-bottom:2px;">次回定例会</div>
+        <div class="next-vis-date" id="date-next-thu">--/--</div>
+        <div class="next-vis-num" id="val-next-thu-count">-</div>
+      </div>
+      <div style="border-left: 1px solid var(--border-color); height: 50px;"></div>
+      <div class="next-vis-item">
+        <div class="kpi-title" style="margin-bottom:2px;">次々回</div>
+        <div class="next-vis-date" id="date-after-next-thu">--/--</div>
+        <div class="next-vis-num" id="val-after-next-thu-count">-</div>
+      </div>
+    </div>
+
+    <div class="kpi-card col-apply-joined">
+      <div class="apply-joined-inner">
+        <div class="apply-joined-block">
+          <div class="kpi-title">申込数</div>
+          <div class="kpi-value-large"><span id="val-apply-count">-</span> <span class="unit">名</span></div>
+        </div>
+        <div style="border-left: 1px solid var(--border-color); height: 50px;"></div>
+        <div class="apply-joined-block">
+          <div class="kpi-title">入会数 / 目標</div>
+          <div class="kpi-value-large"><span id="val-joined-count">-</span> <span class="unit">/<span id="val-target-goal">12</span>名</span></div>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-rates">
+      <div class="rate-card">
+        <div class="rate-title">入会率</div>
+        <div class="rate-val" id="val-join-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">目標達成率</div>
+        <div class="rate-val" id="val-achievement-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">平均ビジター数</div>
+        <div class="rate-val" id="val-avg-visitors">-</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">メール送信率</div>
+        <div class="rate-val" id="val-feedback-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">ヒアリング提出率</div>
+        <div class="rate-val" id="val-hearing-rate">-%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: 週別・月別ビジター集計 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-chart-simple" style="color: var(--primary-accent);"></i> 週別・月別ビジター集計
+      </h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; padding: 16px;">
+      <!-- 週別ビジター数表 -->
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-calendar-week" style="color: #3b82f6;"></i> 定例会別（週別）ビジター数</span>
+          <span style="font-size: 11px; color: #64748b; font-weight: 500;">直近順</span>
+        </div>
+        <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <table style="font-size: 13px;">
+            <thead>
+              <tr style="background: #f1f5f9;">
+                <th>定例会日付</th>
+                <th style="text-align: center;">申込数</th>
+                <th style="text-align: center;">参加数</th>
+                <th style="text-align: center;">入会数</th>
+              </tr>
+            </thead>
+            <tbody id="table-weekly-stats"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 月別ビジター数表 -->
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-calendar-days" style="color: #10b981;"></i> 月別ビジター集計</span>
+          <span style="font-size: 11px; color: #64748b; font-weight: 500;">全期間</span>
+        </div>
+        <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <table style="font-size: 13px;">
+            <thead>
+              <tr style="background: #f1f5f9;">
+                <th>対象年月</th>
+                <th style="text-align: center;">申込数</th>
+                <th style="text-align: center;">参加数</th>
+                <th style="text-align: center;">入会数</th>
+                <th style="text-align: center;">入会率</th>
+              </tr>
+            </thead>
+            <tbody id="table-monthly-stats"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table 1: 次回定例会のビジター様 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-calendar-days" style="color: var(--primary-accent);"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名 (ふりがな)</th>
+            <th>会社名 / 専門分野</th>
+            <th>招待者</th>
+            <th style="width: 80px;">出欠</th>
+            <th style="width: 110px;">ヒアリング</th>
+            <th style="width: 80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-next-meeting"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Table 1b: 今週定例会のビジター様 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-calendar-check" style="color: #64748b;"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名 (ふりがな)</th>
+            <th>会社名 / 専門分野</th>
+            <th>招待者</th>
+            <th style="width: 80px;">出欠</th>
+            <th style="width: 110px;">ヒアリング</th>
+          </tr>
+        </thead>
+        <tbody id="table-last-meeting"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section: HOTビジター (最優先フォロー) -->
+  <section class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 class="section-title" style="color: #e11d48;">
+        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      </h2>
+      <button type="button" class="btn-action-secondary" style="font-size: 12px;" onclick="switchTab('priority-follow')">
+        最優先フォローページで全件見る <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 95px;">参加日</th>
+            <th>氏名 / 会社名・専門分野</th>
+            <th style="width: 110px;">招待者</th>
+            <th style="width: 110px;">オリエン担当</th>
+            <th>促し内容 (Q7) / メモ</th>
+            <th style="width: 160px;">シート / 1to1 / 操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-hot-visitors"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Table 2: 1ヶ月のフォローアップ -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-comments" style="color: var(--primary-accent);"></i> 1ヶ月フォローアップ名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名</th>
+            <th style="width: 90px;">感触</th>
+            <th>オリエン担当</th>
+            <th>次のアクション / 促し内容 (Q7)</th>
+            <th style="width: 70px;">1to1</th>
+            <th style="width: 70px;">入会</th>
+            <th style="width: 80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-one-month"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+    <!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価) -->
+<div id="view-priority-follow" class="view-content">
+  <section class="section-card">
+    <div class="section-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+      <div>
+        <h2 class="section-title"><i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロービジター一覧</h2>
+        <div class="section-sub">ヒアリングシートで感触 《A》または《B》 と評価されたビジター名簿です。</div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div style="font-size: 13px; font-weight: 700; background: #fee2e2; color: #991b1b; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-fire"></i> 感触 A･B 評価
+        </div>
+        <input type="text" id="search-priority-follow-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterPriorityFollowTable()">
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 95px;">参加日</th>
+            <th>氏名 / 会社名・専門分野</th>
+            <th style="width: 120px;">招待者</th>
+            <th style="width: 120px;">オリエン担当</th>
+            <th>ヒアリングメモ (Q7 / 直後メモ)</th>
+            <th style="width: 160px;">シート / 1to1 / 操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-priority-follow-page"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color);">
+      <div style="font-size: 13px; color: #64748b; font-weight: 600;" id="pf-pagination-info">全 0 件中 0 - 0 件を表示</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" class="btn-action-secondary" id="btn-pf-prev-page" onclick="changePriorityFollowPage(-1)"><i class="fa-solid fa-chevron-left"></i> 前の50件</button>
+        <span id="pf-pagination-page-num" style="font-size: 13px; font-weight: 700; color: #1e293b; min-width: 60px; text-align: center;">1 / 1</span>
+        <button type="button" class="btn-action-secondary" id="btn-pf-next-page" onclick="changePriorityFollowPage(1)">次の50件 <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+    <!-- VIEW 2: ビジター全一覧 (CRUD統合管理) -->
+<div id="view-visitors" class="view-content">
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-users"></i> 全ビジター統合管理名簿</h2>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 6px; align-items: center; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <i class="fa-solid fa-calendar-range" style="color: #64748b; font-size: 12px;"></i>
+          <input type="date" id="visitors-date-from" style="border: none; background: transparent; font-size: 13px; color: #334155; cursor: pointer; outline: none;" onchange="filterAllVisitorsTable()" title="開始日">
+          <span style="color: #94a3b8; font-size: 13px;">〜</span>
+          <input type="date" id="visitors-date-to" style="border: none; background: transparent; font-size: 13px; color: #334155; cursor: pointer; outline: none;" onchange="filterAllVisitorsTable()" title="終了日">
+          <button type="button" onclick="clearVisitorsDateFilter()" style="border: none; background: none; cursor: pointer; color: #94a3b8; font-size: 12px; padding: 0 2px;" title="期間クリア"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
+        <button class="btn-create-visitor" onclick="openAddVisitorModal()"><i class="fa-solid fa-plus"></i> 新規追加</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>招待者</th>
+            <th>参加日</th>
+            <th>氏名 / ふりがな</th>
+            <th>専門分野 / 会社名</th>
+            <th>参加回数</th>
+            <th>出欠</th>
+            <th>ヒアリングシート</th>
+            <th>1to1</th>
+            <th>入会状況</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-all-visitors"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color);">
+      <div style="font-size: 13px; color: #64748b; font-weight: 600;" id="visitors-pagination-info">全 0 件中 0 - 0 件を表示</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" class="btn-action-secondary" id="btn-visitors-prev-page" onclick="changeVisitorsPage(-1)"><i class="fa-solid fa-chevron-left"></i> 前の50件</button>
+        <span id="visitors-pagination-page-num" style="font-size: 13px; font-weight: 700; color: #1e293b; min-width: 60px; text-align: center;">1 / 1</span>
+        <button type="button" class="btn-action-secondary" id="btn-visitors-next-page" onclick="changeVisitorsPage(1)">次の50件 <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+    <!-- VIEW 3: ヒアリングシート一覧 -->
+<div id="view-hearings" class="view-content">
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-file-lines"></i> ヒアリングシート回答・管理一覧</h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>参加日</th>
+            <th>氏名</th>
+            <th>会社名 / 専門分野</th>
+            <th>招待者</th>
+            <th>オリエン担当</th>
+            <th>感触(ABC)</th>
+            <th>Q1感想</th>
+            <th>直後感想メモ</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-hearing-list"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+    <!-- VIEW 4: ビジター詳細プロファイル (全画面フルサイズページ) -->
+<div id="view-visitor-detail" class="view-content">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #ffffff; padding: 14px 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+    <button type="button" class="btn-cancel" style="padding: 8px 18px; font-weight: 800; font-size: 13px;" onclick="closeVisitorDetailView()">
+      <i class="fa-solid fa-arrow-left"></i> 前の画面へ戻る
+    </button>
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn-action-primary" id="vd-btn-open-hearing-page" onclick="">
+        <i class="fa-solid fa-file-pen"></i> ヒアリングシートを編集
+      </button>
+      <button type="button" class="btn-action-secondary" onclick="copyCurrentPageUrl()">
+        <i class="fa-solid fa-share-nodes"></i> 共有URLをコピー
+      </button>
+      <button type="button" class="btn-action-secondary" onclick="openCurrentVisitorInNewTab()">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> 別タブで開く
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card" style="padding: 24px;">
+    <div style="border-bottom: 2px solid var(--border-color); padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <span style="font-size: 11px; font-weight: 800; color: #6c757d; text-transform: uppercase;">Visitor Details Profile</span>
+        <h1 id="vd-name" style="font-size: 28px; font-weight: 900; color: var(--primary-accent); margin: 4px 0;">-</h1>
+        <span id="vd-furigana" style="font-size: 13px; color: #6c757d;">-</span>
+      </div>
+
+      <!-- ステータス概要バッジ (クリックで直感切替) -->
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div id="vd-badge-attended" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで出欠状況を変更 (参加 / 不参加)">出欠: -</div>
+        <div id="vd-badge-1to1" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで1to1ステータスを変更 (済 / 未)">1to1: -</div>
+        <div id="vd-badge-joined" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで入会状況を変更 (入会済 / 未)">入会: -</div>
+        <div id="vd-badge-feel" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; background: #f1f5f9; color: #64748b;">感触評価: 未</div>
+      </div>
+    </div>
+
+    <!-- 基本スペック -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: #f8f9fa; padding: 18px; border-radius: 10px; margin-bottom: 24px; font-size: 14px; border: 1px solid #e9ecef;">
+      <div><strong style="color:#495057;">会社名:</strong> <span id="vd-company">-</span></div>
+      <div><strong style="color:#495057;">専門分野:</strong> <span id="vd-profession">-</span></div>
+      <div><strong style="color:#495057;">招待者:</strong> <span id="vd-inviter" style="font-weight:800; color:#d6336c;">-</span></div>
+      <div><strong style="color:#495057;">定例会参加日:</strong> <span id="vd-event-date" style="font-weight:800;">-</span></div>
+      <div><strong style="color:#495057;">メール:</strong> <span id="vd-email">-</span></div>
+      <div><strong style="color:#495057;">参加区分:</strong> <span id="vd-attendance-count">-</span></div>
+    </div>
+
+    <!-- 詳細タブバー -->
+    <div style="display: flex; gap: 8px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px;">
+      <button type="button" class="tab-btn active" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">📝 ヒアリングシート全回答</button>
+      <button type="button" class="tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">📌 自由メモ・活動記録</button>
+      <button type="button" class="tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">✉️ メール送信・自動化履歴</button>
+    </div>
+
+    <!-- Tab Content 1: ヒアリングシート -->
+    <div id="vd-tab-content-hearing">
+      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px; font-size: 14px; display: flex; flex-direction: column; gap: 16px;">
+        <div><strong>オリエン担当者:</strong> <span id="vd-orient-user" style="font-weight:800; color:#364fc7; font-size:16px;">-</span></div>
+        <div><strong style="color:var(--primary-accent);">Q1【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？:</strong> <p id="vd-q1" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q2【お仕事について】〇〇さんのお仕事について再度聞かせてください。:</strong> <p id="vd-q2" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q3【Goal(目標)】夢や目標、〇年後にこうなりたいという計画はありますか？:</strong> <p id="vd-q3" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q4【Reality(現実)】課題と感じることはございますか？それはいつ頃からですか？:</strong> <p id="vd-q4" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q5【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？:</strong> <p id="vd-q5" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q6【Way Forward(今後)】私たちREvoチャプターのメンバーでお力になれそうな人はいましたか？:</strong> <p id="vd-q6" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong style="color:var(--primary-accent);">Q7【促し・クロージング】次回イベントや1to1、BOD等の提案状況:</strong> <p id="vd-q7" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong>オリエン直後メモ:</strong> <p id="vd-orient-memo" style="background:#fff3bf; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+        <div><strong>追跡フォローメモ:</strong> <p id="vd-follow-memo" style="background:#e7f5ff; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+      </div>
+    </div>
+
+    <!-- Tab Content 2: 自由メモ -->
+    <div id="vd-tab-content-memo" style="display:none;">
+      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px;">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--primary-accent);">📌 自由メモ・チームフォロー活動ノート</h3>
+        <p style="font-size: 12px; color: #6c757d; margin-bottom: 14px;">やり取りのメモ、興味関心、招待者・他メンバーとの共有記録などを自由に書き込めます。</p>
+        <textarea id="vd-free-memo" class="form-textarea" style="height: 240px; font-size: 14px; font-family: inherit; line-height: 1.6; font-weight: 700; color: #343a40; padding: 14px;" placeholder="例：電話でフォロー実施。次回1to1の調整中。AIに興味あり。前井さんを引き合わせると良さそう。"></textarea>
+        <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+          <button type="button" class="btn-save" style="background:#2b8a3e; padding: 10px 30px; font-size: 14px;" onclick="saveVisitorFreeMemo()">💾 メモを保存する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Content 3: メール履歴 -->
+    <div id="vd-tab-content-mail" style="display:none;">
+      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px;">
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--primary-accent);">✉️ ステップメール送信履歴 ＆ ログ</h3>
+        <div id="vd-mail-history-list" style="display: flex; flex-direction: column; gap: 12px;">
+          <!-- JSで動的挿入 -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+    <!-- VIEW 5: セッティング・メンバーマスター管理ビュー -->
+<div id="view-settings" class="view-content">
+  <div class="section-card" style="margin-bottom: 24px;">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 定例会スタート期間 (BNI期) セッティング</h2>
+    </div>
+    <div style="padding: 20px;">
+      <p style="font-size: 13px; color: #495057; margin-bottom: 12px;">集計の基準となるBNIの期（スタート期間）を選択できます。選択するとダッシュボード全体の数値が即座に切り替わります。</p>
+      <div style="display: flex; gap: 12px; align-items: center; max-width: 450px;">
+        <select id="setting-page-period-select" class="form-input" style="font-weight: 800; color: var(--primary-accent);" onchange="changeStartDate(this.value)">
+          <option value="">自動計算中...</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom: 24px;">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>
+    </div>
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <p style="font-size: 13px; color: #495057; margin-bottom: 8px;">
+          Googleフォームで送信された最新のビジター回答データを手動同期します。
+        </p>
+        <button class="btn-create-visitor" style="background: #2563eb;" onclick="syncFormResponsesManual()">
+          <i class="fa-solid fa-arrows-rotate"></i> Googleフォーム新着回答を同期
+        </button>
+      </div>
+      <hr style="border: none; border-top: 1px dashed var(--border-color);">
+      <div>
+        <p style="font-size: 13px; color: #495057; margin-bottom: 8px;">
+          スプレッドシートの入力フォーマット（ヘッダー・日付等）を自動検査・修復し、ブラウザおよびサーバーのキャッシュをクリアして最新データへ即座に更新します。
+        </p>
+        <button class="btn-create-visitor" style="background: #364fc7;" onclick="forceRefreshAllCacheAndData()">
+          <i class="fa-solid fa-rotate"></i> キャッシュ全削除 ＆ 最新データ再読み込み
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
+        <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
+      </div>
+      <button class="btn-create-visitor" onclick="openAddMemberModal()">
+        <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
+      </button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60px;">No.</th>
+            <th>カテゴリ / 専門領域</th>
+            <th>メンバー氏名</th>
+            <th>専門分野</th>
+            <th style="width: 120px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-members-master"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    <!-- VIEW 6: メール送信予定一覧ビュー -->
+<div id="view-email-schedule" class="view-content">
+  <div id="es-test-mode-banner" style="display:none; background: #fffbe6; border: 1px solid #ffe58f; padding: 12px 18px; border-radius: var(--radius-sm); margin-bottom: 20px; font-size: 13px; color: #856404; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <i class="fa-solid fa-flask" style="color: #d97706; margin-right: 6px;"></i>
+      <strong>テストモード稼働中:</strong> 送信処理実行時、実際のアドレスではなく管理者テストアドレス（<span id="es-test-email-list">-</span>）へ配信されます。
+    </div>
+    <span class="badge-status badge-urgent">TEST MODE</span>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom: 24px;">
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title"><i class="fa-solid fa-envelope-open-text"></i> 総送信予定件数</div>
+      <div class="kpi-value-large"><span id="val-es-total-count">-</span> <span class="unit">件</span></div>
+    </div>
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title" style="color: #15803d;"><i class="fa-solid fa-calendar-day"></i> 本日送信予定</div>
+      <div class="kpi-value-large" style="color: #15803d;"><span id="val-es-today-count">-</span> <span class="unit">件</span></div>
+    </div>
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title" style="color: #1d4ed8;"><i class="fa-solid fa-calendar-week"></i> 今週の送信予定 (7日以内)</div>
+      <div class="kpi-value-large" style="color: #1d4ed8;"><span id="val-es-week-count">-</span> <span class="unit">件</span></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <h2 class="section-title"><i class="fa-solid fa-clock"></i> 自動ステップメール送信予定リスト</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="es-search-box" class="search-box" placeholder="氏名・メール・招待者で検索..." oninput="filterEmailSchedule()">
+        <select id="es-type-filter" class="search-box" style="width: auto;" onchange="filterEmailSchedule()">
+          <option value="all">全メール種別</option>
+          <option value="intro">参加案内 (Welcome)</option>
+          <option value="remind">リマインドメール</option>
+          <option value="thanks">御礼・欠席フォロー</option>
+          <option value="follow">中長期フォロー (7日/30日)</option>
+        </select>
+        <select id="es-status-filter" class="search-box" style="width: auto;" onchange="filterEmailSchedule()">
+          <option value="all">全ステータス</option>
+          <option value="today">本日送信予定</option>
+          <option value="upcoming">今後の予定</option>
+          <option value="urgent">即時/未処理</option>
+        </select>
+        <button class="btn-action-secondary" onclick="fetchScheduledEmailsData()"><i class="fa-solid fa-rotate-right"></i> 更新</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 110px;">予定日</th>
+            <th style="width: 120px;">ステータス</th>
+            <th>宛先ビジター</th>
+            <th>会社名 / 専門分野</th>
+            <th>紹介者</th>
+            <th style="width: 100px;">参加日</th>
+            <th>メール種別</th>
+            <th>件名</th>
+            <th style="width: 110px; text-align: center;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-email-schedule"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Email Preview -->
+<div id="modal-email-preview" class="modal-backdrop">
+  <div class="modal-box-large">
+    <div class="modal-header-title">
+      <i class="fa-solid fa-envelope-open-text"></i> メール送信予定プレビュー
+    </div>
+    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; font-size: 13px;">
+      <div style="margin-bottom: 6px;"><strong>宛先:</strong> <span id="ep-visitor-name">-</span> 様 (&lt;<span id="ep-email">-</span>&gt;)</div>
+      <div style="margin-bottom: 6px;"><strong>種別:</strong> <span id="ep-mail-type">-</span></div>
+      <div style="margin-bottom: 6px;"><strong>送信予定日:</strong> <span id="ep-scheduled-date">-</span> (<span id="ep-status-badge">-</span>)</div>
+      <div><strong>定例会参加日:</strong> <span id="ep-event-date">-</span> (紹介者: <span id="ep-inviter">-</span>)</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">件名</label>
+      <input type="text" id="ep-subject" class="form-input" readonly style="font-weight: 700; background: #fff;">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">本文プレビュー</label>
+      <textarea id="ep-body" class="form-textarea" readonly style="min-height: 240px; font-family: monospace; font-size: 12px; background: #fff; line-height: 1.6;"></textarea>
+    </div>
+
+    <div class="modal-footer-btns">
+      <button type="button" class="btn-cancel" onclick="closeEmailPreviewModal()">閉じる</button>
+      <button type="button" class="btn-save" style="background: var(--primary-accent);" onclick="sendSingleTestEmailFromPreview()"><i class="fa-solid fa-paper-plane"></i> テスト送信実行</button>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+
+  <!-- Client-side Scripts -->
+  <script>
+/**
+ * Ultra-Fast REST API Bridge & Fallback Service
+ */
+const ApiService = {
+  call: function(functionName, ...args) {
+    return new Promise((resolve, reject) => {
+      const restConfig = this.getRestConfig(functionName, args);
+
+      if (restConfig) {
+        const fetchOptions = {
+          method: restConfig.method || 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        };
+        if (restConfig.body) {
+          fetchOptions.body = JSON.stringify(restConfig.body);
+        }
+
+        fetch(restConfig.url, fetchOptions)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.success !== false) {
+              resolve(data);
+              return;
+            }
+            this.fallbackToGas(functionName, args, resolve, reject);
+          })
+          .catch(() => {
+            this.fallbackToGas(functionName, args, resolve, reject);
+          });
+      } else {
+        this.fallbackToGas(functionName, args, resolve, reject);
+      }
+    });
+  },
+
+  getRestConfig: function(functionName, args) {
+    switch (functionName) {
+      case 'getDashboardData':
+        return { url: '/api/dashboard.php', method: 'GET' };
+      case 'getAllVisitorsApi':
+        return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getVisitorDetailApi':
+        return { url: '/api/visitors.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
+      case 'updateVisitorStatusApi':
+        return {
+          url: '/api/visitors.php?action=update_status',
+          method: 'POST',
+          body: { visitorId: args[0], field: args[1], value: args[2] }
+        };
+      case 'saveVisitorMemoApi':
+        return {
+          url: '/api/visitors.php?action=save_memo',
+          method: 'POST',
+          body: { visitorId: args[0], memo: args[1] }
+        };
+      case 'addVisitorApi':
+        return {
+          url: '/api/visitors.php?action=add',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'getHearingSheetsListApi':
+        return { url: '/api/hearings.php?action=list', method: 'GET' };
+      case 'getHearingSheetFormDataApi':
+        return { url: '/api/hearings.php?action=get&visitorId=' + (args[0] || ''), method: 'GET' };
+      case 'saveHearingSheetApi':
+        return {
+          url: '/api/hearings.php?action=save',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'getMemberListApi':
+        return { url: '/api/members.php?action=list', method: 'GET' };
+      case 'addMemberApi':
+        return {
+          url: '/api/members.php?action=add',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'updateMemberApi':
+        return {
+          url: '/api/members.php?action=update',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteMemberApi':
+        return {
+          url: '/api/members.php?action=delete',
+          method: 'POST',
+          body: { id: args[0] }
+        };
+      case 'syncFormResponsesApi':
+        return { url: '/api/sync.php', method: 'POST' };
+      default:
+        return null;
+    }
+  },
+
+  fallbackToGas: function(functionName, args, resolve, reject) {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      let runner = google.script.run
+        .withSuccessHandler(res => resolve(res))
+        .withFailureHandler(err => reject(err));
+      if (typeof runner[functionName] === 'function') {
+        runner[functionName](...args);
+      } else {
+        reject(new Error(`API method ${functionName} not found`));
+      }
+    } else {
+      resolve({ success: true, list: [], metrics: {} });
+    }
+  }
+};
+</script>
 
   <script>
-    (function() {
-      const baseUrl = "https://script.google.com/macros/s/AKfycbydC-gIMjpdAoeQpsgIwq-RQcBzWHZ17yijcMxc_zm2BNZfWxbij9DO2XutZxs1jO11/exec";
-      const currentQuery = window.location.search;
-      const iframe = document.getElementById('app-frame');
-      const loading = document.getElementById('loading');
+  function parseFeelAbc(val) {
+    if (!val) return '';
+    const s = String(val).toUpperCase().trim();
+    if (s === 'A' || s === 'B' || s === 'C') return s;
+    if (s.includes('A')) return 'A';
+    if (s.includes('B')) return 'B';
+    if (s.includes('C')) return 'C';
+    return '';
+  }
 
-      iframe.src = baseUrl + currentQuery;
+  let currentDashboardData = null;
+  let cachedAllVisitors = [];
+  let cachedHearingList = [];
+  let cachedScheduledEmails = [];
+  let currentPreviewItem = null;
 
-      iframe.onload = function() {
-        setTimeout(function() {
-          loading.classList.add('hidden');
-        }, 300);
-      };
+  const initialVisitorId = "";
+  const rawInitialData = {};
 
-      // Safety timeout in case iframe onload event is delayed
-      setTimeout(function() {
-        if (!loading.classList.contains('hidden')) {
-          loading.classList.add('hidden');
+  function hideLoading() {
+    const el = document.getElementById('loading');
+    if (el) el.style.display = 'none';
+  }
+  setTimeout(hideLoading, 1500);
+
+  /* --- URL Hash Router & Share Utilities --- */
+  let isProgrammaticHashChange = false;
+  let currentVdWebAppUrl = "";
+
+  function updateUrlHash(hashStr, stateObj = {}) {
+    if (!hashStr) return;
+    const cleanHash = String(hashStr).replace(/^#+/, '');
+    if (window.location.hash !== '#' + cleanHash) {
+      isProgrammaticHashChange = true;
+      window.location.hash = '#' + cleanHash;
+      setTimeout(() => { isProgrammaticHashChange = false; }, 100);
+    }
+    if (typeof google !== 'undefined' && google.script && google.script.history) {
+      try {
+        google.script.history.push(stateObj, stateObj, '#' + cleanHash);
+      } catch (e) {}
+    }
+  }
+
+  function handleHashRouting() {
+    if (isProgrammaticHashChange) return;
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    const hash = rawHash.replace(/^#+/, '');
+    if (hash.startsWith('visitor/')) {
+      const vid = hash.replace('visitor/', '').trim();
+      if (vid && vid !== currentVdVisitorId) {
+        openVisitorDetailView(vid, false);
+      }
+    } else if (['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash, false);
+    }
+  }
+
+  function copyCurrentPageUrl() {
+    let cleanUrl = window.location.href.split('?')[0];
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    const hash = rawHash.replace(/^#+/, '');
+    if (hash && hash !== 'dashboard') {
+      cleanUrl += '#' + hash;
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cleanUrl).then(() => {
+        showToast('🔗 共有URLをコピーしました！');
+      }).catch(() => {
+        prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+      });
+    } else {
+      prompt('以下のURLをコピーしてシェアしてください:', cleanUrl);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    hideLoading();
+
+    if (rawInitialData && rawInitialData.dashboardData) {
+      try {
+        renderDashboard(rawInitialData.dashboardData);
+      } catch(e) {
+        console.error('Dashboard render error:', e);
+        fetchDashboardData();
+      }
+    } else {
+      fetchDashboardData();
+    }
+
+    window.addEventListener('hashchange', handleHashRouting);
+    if (typeof google !== 'undefined' && google.script && google.script.history) {
+      google.script.history.setChangeHandler((e) => {
+        handleHashRouting();
+      });
+    }
+
+    const hash = (window.location.hash || '').replace(/^#/, '');
+    if (hash.startsWith('visitor/')) {
+      openVisitorDetailView(hash.replace('visitor/', ''), false);
+    } else if (hash && ['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash, false);
+    } else if (initialVisitorId) {
+      openVisitorDetailView(initialVisitorId, true);
+    } else {
+      updateUrlHash('dashboard', { tab: 'dashboard' });
+    }
+  });
+
+  /* --- ☰ Left Drawer Controller --- */
+  function toggleLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    if (drawer && drawer.classList.contains('open')) {
+      closeLeftDrawer();
+    } else {
+      openLeftDrawer();
+    }
+  }
+
+  function openLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (drawer) drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+  }
+
+  function closeLeftDrawer() {
+    const drawer = document.getElementById('left-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+  }
+
+  /* --- Tab Navigation Controller --- */
+  function switchTab(tabName, updateHash = true) {
+    if (tabName !== 'visitor-detail') {
+      previousTabBeforeDetail = tabName;
+    }
+    ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+      const btn = document.getElementById('tab-btn-' + t);
+      const drawerItem = document.getElementById('drawer-item-' + t);
+      const view = document.getElementById('view-' + t);
+      if (btn) btn.classList.remove('active');
+      if (drawerItem) drawerItem.classList.remove('active');
+      if (view) view.classList.remove('active');
+    });
+
+    const targetBtn = document.getElementById('tab-btn-' + tabName);
+    const targetDrawerItem = document.getElementById('drawer-item-' + tabName);
+    const targetView = document.getElementById('view-' + tabName);
+    if (targetBtn) targetBtn.classList.add('active');
+    if (targetDrawerItem) targetDrawerItem.classList.add('active');
+    if (targetView) targetView.classList.add('active');
+
+    if (window.innerWidth < 1024) {
+      closeLeftDrawer();
+    }
+
+    if (updateHash && tabName !== 'visitor-detail') {
+      updateUrlHash(tabName, { tab: tabName });
+    }
+
+    if (tabName === 'priority-follow') {
+      fetchPriorityFollowData(true);
+    } else if (tabName === 'visitors') {
+      fetchAllVisitorsData(true);
+    } else if (tabName === 'hearings') {
+      fetchHearingListData(true);
+    } else if (tabName === 'email-schedule') {
+      fetchScheduledEmailsData(true);
+    } else if (tabName === 'settings') {
+      fetchMembersMasterData();
+    }
+  }
+
+  function showTableSkeleton(tbodyId, cols = 8, rows = 4) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    let html = '';
+    for (let i = 0; i < rows; i++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) {
+        html += '<td><div class="skeleton skeleton-row"></div></td>';
+      }
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  function fetchScheduledEmailsData(forceRefresh = false) {
+    if (!forceRefresh && cachedScheduledEmails && cachedScheduledEmails.length > 0) {
+      filterEmailSchedule();
+      return;
+    }
+    showTableSkeleton('table-email-schedule', 9, 4);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          cachedScheduledEmails = res.scheduledList || [];
+          document.getElementById('val-es-total-count').textContent = res.metrics.totalCount;
+          document.getElementById('val-es-today-count').textContent = res.metrics.todayCount;
+          document.getElementById('val-es-week-count').textContent = res.metrics.thisWeekCount;
+
+          const testBanner = document.getElementById('es-test-mode-banner');
+          if (res.isTestMode) {
+            testBanner.style.display = 'flex';
+            document.getElementById('es-test-email-list').textContent = (res.testEmailList || []).join(', ');
+          } else {
+            testBanner.style.display = 'none';
+          }
+
+          filterEmailSchedule();
         }
-      }, 5000);
-    })();
-  </script>
+      })
+      .withFailureHandler(handleError)
+      .getScheduledEmailsApi();
+  }
+
+  function filterEmailSchedule() {
+    const q = (document.getElementById('es-search-box').value || '').toLowerCase().trim();
+    const typeFilter = document.getElementById('es-type-filter').value;
+    const statusFilter = document.getElementById('es-status-filter').value;
+
+    let filtered = cachedScheduledEmails.filter(item => {
+      const matchesQ = !q || 
+        (item.visitorName && item.visitorName.toLowerCase().includes(q)) ||
+        (item.email && item.email.toLowerCase().includes(q)) ||
+        (item.inviter && item.inviter.toLowerCase().includes(q)) ||
+        (item.company && item.company.toLowerCase().includes(q));
+
+      let matchesType = true;
+      if (typeFilter === 'intro') matchesType = item.templateKey.includes('INTRO');
+      else if (typeFilter === 'remind') matchesType = item.templateKey.includes('REMIND');
+      else if (typeFilter === 'thanks') matchesType = item.templateKey.includes('THANKS');
+      else if (typeFilter === 'follow') matchesType = item.templateKey.includes('FOLLOW');
+
+      let matchesStatus = true;
+      if (statusFilter === 'today') matchesStatus = item.daysRemaining === 0;
+      else if (statusFilter === 'upcoming') matchesStatus = item.daysRemaining > 0;
+      else if (statusFilter === 'urgent') matchesStatus = item.daysRemaining < 0;
+
+      return matchesQ && matchesType && matchesStatus;
+    });
+
+    renderEmailScheduleTable(filtered);
+  }
+
+  /* --- 🛡️ 安全なエスケープヘルパー --- */
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeJsParam(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\r/g, '')
+      .replace(/\n/g, '\\n');
+  }
+
+  /* --- ✂️ テキスト省略＆ポップアップツールチップヘルパー --- */
+  function formatTruncatedCell(text, maxLen = 15) {
+    if (!text && text !== 0) return '-';
+    const str = String(text).trim();
+    if (!str || str === '-') return '-';
+    const safeAttr = escapeHtml(str);
+    if (str.length > maxLen) {
+      const shortText = escapeHtml(str.substring(0, maxLen) + '...');
+      return `<span class="cell-truncate-text" title="${safeAttr}">${shortText}</span>`;
+    }
+    return `<span title="${safeAttr}">${escapeHtml(str)}</span>`;
+  }
+
+  function renderEmailScheduleTable(list) {
+    const tbody = document.getElementById('table-email-schedule');
+    tbody.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #868e96; padding: 24px;">送信予定のメールはありません。</td></tr>';
+      return;
+    }
+
+    list.forEach((item, index) => {
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${item.scheduledDate}</td>
+        <td><span class="badge-status ${item.statusBadgeClass}">${item.status}</span></td>
+        <td><strong>${item.visitorName}</strong><br><span style="font-size: 11px; color: #6c757d;">${item.email}</span></td>
+        <td>${formatTruncatedCell(item.company, 12)}<br><span style="font-size: 11px; color: #6c757d;">${formatTruncatedCell(item.profession, 12)}</span></td>
+        <td>${formatTruncatedCell(item.inviter, 12)}</td>
+        <td>${item.eventDate}</td>
+        <td><span style="font-weight: 600; font-size: 12px;">${item.mailTypeName}</span></td>
+        <td>${formatTruncatedCell(item.subject, 18)}</td>
+        <td style="text-align: center;">
+          <button class="btn-icon-action" title="プレビュー" onclick="openEmailPreviewModal(${index})">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openEmailPreviewModal(index) {
+    const item = cachedScheduledEmails[index];
+    if (!item) return;
+    currentPreviewItem = item;
+
+    document.getElementById('ep-visitor-name').textContent = item.visitorName;
+    document.getElementById('ep-email').textContent = item.email;
+    document.getElementById('ep-mail-type').textContent = item.mailTypeName;
+    document.getElementById('ep-scheduled-date').textContent = item.scheduledDate;
+    document.getElementById('ep-status-badge').textContent = item.status;
+    document.getElementById('ep-event-date').textContent = item.eventDate;
+    document.getElementById('ep-inviter').textContent = item.inviter || '-';
+    document.getElementById('ep-subject').value = item.subject;
+    document.getElementById('ep-body').value = item.bodyFull;
+
+    document.getElementById('modal-email-preview').style.display = 'flex';
+  }
+
+  function closeEmailPreviewModal() {
+    document.getElementById('modal-email-preview').style.display = 'none';
+    currentPreviewItem = null;
+  }
+
+  function sendSingleTestEmailFromPreview() {
+    if (!currentPreviewItem) return;
+    if (!confirm(`「${currentPreviewItem.visitorName}様」向けのテスト送信を実行しますか？`)) return;
+
+    document.getElementById('loading').style.display = 'flex';
+    google.script.run
+      .withSuccessHandler(() => {
+        document.getElementById('loading').style.display = 'none';
+        showToast('テストメールを送信しました！');
+        closeEmailPreviewModal();
+      })
+      .withFailureHandler(handleError)
+      .executeSend(currentPreviewItem.email, currentPreviewItem.templateKey, null, null, null, currentPreviewItem.visitorId);
+  }
+
+  function fetchDashboardData(forceRefresh = false) {
+    if (!forceRefresh) {
+      try {
+        const cached = sessionStorage.getItem('VHR_DASHBOARD_CACHE');
+        if (cached) {
+          renderDashboard(JSON.parse(cached));
+        } else {
+          showTableSkeleton('table-priority-follow', 11, 3);
+          showTableSkeleton('table-next-meeting', 9, 3);
+          showTableSkeleton('table-1month-follow', 9, 3);
+        }
+      } catch(e) {}
+    } else {
+      try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
+    }
+    google.script.run
+      .withSuccessHandler(data => {
+        if (data) {
+          try { sessionStorage.setItem('VHR_DASHBOARD_CACHE', JSON.stringify(data)); } catch(e) {}
+          renderDashboard(data);
+        }
+      })
+      .withFailureHandler(handleError)
+      .getDashboardData();
+  }
+
+  function fetchAllVisitorsData(forceRefresh = false) {
+    if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      renderAllVisitorsTable(cachedAllVisitors);
+      return;
+    }
+    showTableSkeleton('table-all-visitors', 11, 5);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          cachedAllVisitors = res.list || [];
+          renderAllVisitorsTable(cachedAllVisitors);
+        } else {
+          renderAllVisitorsTable([]);
+        }
+      })
+      .withFailureHandler(err => {
+        handleError(err);
+        renderAllVisitorsTable([]);
+      })
+      .getAllVisitorsApi();
+  }
+
+  function fetchHearingListData(forceRefresh = false) {
+    if (!forceRefresh && cachedHearingList && cachedHearingList.length > 0) {
+      renderHearingListTable(cachedHearingList);
+      return;
+    }
+    showTableSkeleton('table-hearing-list', 10, 5);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          cachedHearingList = res.list || [];
+          renderHearingListTable(cachedHearingList);
+        }
+      })
+      .withFailureHandler(handleError)
+      .getHearingSheetsListApi();
+  }
+
+  let donutChartInstance = null;
+  let lineChartInstance = null;
+
+  function renderBniTermsSelectOptions(termsList, selectedStartDate) {
+    if (!termsList || !Array.isArray(termsList)) return;
+    const activeStartDate = selectedStartDate || "2025/01/01";
+    const selects = [
+      document.getElementById('select-start-date'),
+      document.getElementById('setting-page-period-select')
+    ];
+
+    selects.forEach(selectEl => {
+      if (!selectEl) return;
+      let html = '';
+      termsList.forEach(t => {
+        const isSel = (t.dateStr === activeStartDate) || (!selectedStartDate && t.dateStr === "2025/01/01");
+        html += `<option value="${t.dateStr}" ${isSel ? 'selected' : ''}>${t.label}</option>`;
+      });
+      selectEl.innerHTML = html;
+    });
+  }
+
+  function renderDashboard(data) {
+    if (!data) return;
+    currentDashboardData = data;
+    hideLoading();
+
+    const cleanNum = (val, defaultVal) => {
+      if (typeof val === 'number') return val;
+      const s = String(val || "").replace(/[^0-9.]/g, '');
+      return s !== "" ? s : defaultVal;
+    };
+
+    const setSafeText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    };
+
+    setSafeText('date-next-thu', data.nextThuStr || '');
+    setSafeText('date-after-next-thu', data.afterNextThuStr || '');
+    setSafeText('title-next-meeting-date', data.nextThuStr ? `${data.nextThuStr} ` : '次回');
+    setSafeText('title-last-meeting-date', data.lastThuStr ? `${data.lastThuStr} ` : '先週');
+
+    const m = data.metrics || {};
+    setSafeText('val-apply-count', cleanNum(m.applyCount, 0));
+    setSafeText('val-joined-count', cleanNum(m.joinedCount, 0));
+    setSafeText('val-target-goal', cleanNum(m.targetJoinGoal, 12));
+    setSafeText('val-next-thu-count', cleanNum(m.nextThuCount, 0));
+    setSafeText('val-after-next-thu-count', cleanNum(m.afterNextThuCount, 0));
+
+    setSafeText('val-join-rate', cleanNum(m.joinRate, "0.0") + '%');
+    setSafeText('val-achievement-rate', cleanNum(m.achievementRate, "0.0") + '%');
+    setSafeText('val-avg-visitors', cleanNum(m.avgVisitorCount, "0.0"));
+    setSafeText('val-feedback-rate', cleanNum(m.feedbackRate, "0.0") + '%');
+    setSafeText('val-hearing-rate', cleanNum(m.hearingRate, "0.0") + '%');
+
+    if (data.bniTermsList) {
+      try { renderBniTermsSelectOptions(data.bniTermsList, data.startDateStr); } catch(e) {}
+    }
+
+    try {
+      if (m.joinedCount !== undefined && m.targetJoinGoal !== undefined) {
+        initDonutChart(m.joinedCount, m.targetJoinGoal);
+      }
+    } catch(e) {}
+
+    try {
+      if (data.chart && data.chart.labels && data.chart.data) {
+        initLineChart(data.chart.labels, data.chart.data);
+      }
+    } catch(e) {}
+
+    try { renderHotVisitorsTable(data.tables ? data.tables.hotVisitors : []); } catch(e) { console.error(e); }
+    try { renderNextMeetingTable(data.tables ? data.tables.nextMeeting : []); } catch(e) { console.error(e); }
+    try { renderLastMeetingTable(data.tables ? data.tables.lastMeeting : []); } catch(e) { console.error(e); }
+    try { renderOneMonthTable(data.tables ? data.tables.oneMonthFollowup : []); } catch(e) { console.error(e); }
+    try { renderWeeklyStatsTable(data.tables ? data.tables.weeklyStats : []); } catch(e) { console.error(e); }
+    try { renderMonthlyStatsTable(data.tables ? data.tables.monthlyStats : []); } catch(e) { console.error(e); }
+  }
+
+  function deduplicateVisitorListClient(list) {
+    if (!list || list.length === 0) return [];
+    const map = new Map();
+
+    list.forEach(r => {
+      const emailKey = r.email ? String(r.email).toLowerCase().trim() : '';
+      const nameKey = r.name ? String(r.name).replace(/[\s\u3000]+/g, '') : '';
+      const key = emailKey || nameKey || String(r.id || r.visitorId || r.no);
+
+      if (!map.has(key)) {
+        map.set(key, { ...r, historyCount: 1 });
+      } else {
+        const existing = map.get(key);
+        existing.historyCount = (existing.historyCount || 1) + 1;
+
+        const tExisting = new Date(existing.eventDate || 0).getTime();
+        const tNew = new Date(r.eventDate || 0).getTime();
+
+        if (tNew >= tExisting) {
+          map.set(key, {
+            ...r,
+            historyCount: existing.historyCount,
+            hasHearingSheet: existing.hasHearingSheet || r.hasHearingSheet,
+            is1to1: (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1),
+            isJoined: (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined),
+            q7: r.q7 || existing.q7,
+            orientUser: r.orientUser || existing.orientUser,
+            orientMemo: r.orientMemo || existing.orientMemo
+          });
+        } else {
+          existing.hasHearingSheet = existing.hasHearingSheet || r.hasHearingSheet;
+          if (r.is1to1 === '済') existing.is1to1 = '済';
+          if (r.isJoined === '入会済') existing.isJoined = '入会済';
+          if (!existing.q7 && r.q7) existing.q7 = r.q7;
+          if (!existing.orientUser && r.orientUser) existing.orientUser = r.orientUser;
+          if (!existing.orientMemo && r.orientMemo) existing.orientMemo = r.orientMemo;
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
+  /* --- 🔥 入会温度感の高いビジター(HOT)テーブル描画 (評価 A かつ 未入会 のみ、重複統合) --- */
+  function renderHotVisitorsTable(records) {
+    const tbody = document.getElementById('table-hot-visitors');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    // 評価 A のみ かつ 未入会 のみ表示 (1人1行に統合)
+    const validRecords = deduplicateVisitorListClient((records || []).filter(r => {
+      const g = parseFeelAbc(r.feelAbc);
+      const isJoined = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会' || r.isJoined === true);
+      return g === 'A' && !isJoined;
+    }));
+
+    if (validRecords.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">🔥 現在、感触【A評価】の最優先フォロー対象（未入会）ビジターはいません</td></tr>`;
+      return;
+    }
+
+    validRecords.forEach(r => {
+      const tr = document.createElement('tr');
+      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
+      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
+      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート' : '<i class="fa-solid fa-plus"></i> 入力';
+
+      const countBadge = (r.historyCount && r.historyCount > 1)
+        ? `<span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-weight:700; margin-left:4px;">${r.historyCount}回目</span>`
+        : (r.attendanceCount ? `<span style="font-size:10px; background:#f1f5f9; color:#475569; padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${escapeHtml(r.attendanceCount)}</span>` : '');
+
+      tr.innerHTML = `
+        <td style="font-weight: 700; white-space: nowrap; color: #1e293b;">${escapeHtml(r.eventDate)}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline;" title="クリックでプロファイル詳細を表示">${escapeHtml(r.name)}</strong>${countBadge}
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${formatTruncatedCell(r.company, 14)} (${formatTruncatedCell(r.profession, 12)})</div>
+        </td>
+        <td style="font-weight: 600; color: #0f172a;">${formatTruncatedCell(r.inviter, 10)}</td>
+        <td style="color: #334155;">${formatTruncatedCell(r.orientUser, 10)}</td>
+        <td><div style="font-size: 12px; line-height: 1.4; color: #334155;">${formatTruncatedCell(r.q7 || r.orientMemo, 25)}</div></td>
+        <td style="white-space: nowrap;">
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
+            <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
+            <button class="btn-icon-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-icon-action btn-icon-danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
+      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
+      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
+      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- 📊 週別（定例会別）ビジター集計テーブル描画 --- */
+  function renderWeeklyStatsTable(records) {
+    const tbody = document.getElementById('table-weekly-stats');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 16px;">集計データはありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700; color: #1e293b;">${escapeHtml(r.date)}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--primary-accent);">${r.applyCount || 0}</td>
+        <td style="text-align: center; font-weight: 600; color: #2563eb;">${r.attendedCount || 0}</td>
+        <td style="text-align: center; font-weight: 700; color: #16a34a;">${r.joinedCount || 0}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- 📅 月別ビジター集計テーブル描画 --- */
+  function renderMonthlyStatsTable(records) {
+    const tbody = document.getElementById('table-monthly-stats');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 16px;">集計データはありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700; color: #1e293b;">${escapeHtml(r.month)}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--primary-accent);">${r.applyCount || 0}</td>
+        <td style="text-align: center; font-weight: 600; color: #2563eb;">${r.attendedCount || 0}</td>
+        <td style="text-align: center; font-weight: 700; color: #16a34a;">${r.joinedCount || 0}</td>
+        <td style="text-align: center; font-weight: 700; color: #0d9488;">${escapeHtml(r.joinRate || '0.0%')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- 🔥 最優先フォロー専用ページ（感触A評価・未入会一覧 ＆ 50件ページネーション） --- */
+  let pfCurrentPage = 1;
+  const pfPageSize = 50;
+  let pfFilteredList = [];
+  let pfGradeFilter = 'ALL';
+  let cachedPriorityFollowList = [];
+
+  function fetchPriorityFollowData(forceRefresh = false) {
+    if (!forceRefresh && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      filterPriorityFollowTable();
+      return;
+    }
+    showTableSkeleton('table-priority-follow-page', 10, 5);
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res && res.success) {
+          const list = res.list || [];
+          // 感触 A の評価があり、かつ未入会のビジターのみ抽出（1人1行に統合）
+          cachedPriorityFollowList = deduplicateVisitorListClient(list.filter(item => {
+            const grade = parseFeelAbc(item.feelAbc || item.feeling);
+            const joinedVal = item.isJoined || item.is_joined;
+            const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
+            return grade === 'A' && !isJoined;
+          }));
+          filterPriorityFollowTable();
+        } else {
+          cachedPriorityFollowList = [];
+          renderPriorityFollowCurrentPage();
+        }
+      })
+      .withFailureHandler(err => {
+        handleError(err);
+        cachedPriorityFollowList = [];
+        renderPriorityFollowCurrentPage();
+      })
+      .getHearingSheetsListApi();
+  }
+
+  function setPriorityFollowGradeFilter(grade) {
+    pfGradeFilter = grade;
+    ['all', 'a', 'b', 'c'].forEach(g => {
+      const btn = document.getElementById('pf-tab-' + g);
+      if (btn) btn.classList.remove('active');
+    });
+    const activeBtn = document.getElementById('pf-tab-' + grade.toLowerCase());
+    if (activeBtn) activeBtn.classList.add('active');
+    filterPriorityFollowTable();
+  }
+
+  function filterPriorityFollowTable() {
+    const q = (document.getElementById('search-priority-follow-input')?.value || '').toLowerCase().trim();
+
+    pfFilteredList = cachedPriorityFollowList.filter(r => {
+      const grade = parseFeelAbc(r.feelAbc || r.feeling);
+      const joinedVal = r.isJoined || r.is_joined;
+      const isJoined = (joinedVal === '入会済' || joinedVal === '済' || joinedVal === '入会' || joinedVal === true);
+      const matchesGrade = (grade === 'A' || grade === 'B') && !isJoined;
+
+      const matchesQ = !q ||
+        (r.name || '').toLowerCase().includes(q) ||
+        (r.company || '').toLowerCase().includes(q) ||
+        (r.profession || '').toLowerCase().includes(q) ||
+        (r.inviter || '').toLowerCase().includes(q) ||
+        (r.orientUser || '').toLowerCase().includes(q);
+
+      return matchesGrade && matchesQ;
+    });
+
+    pfCurrentPage = 1;
+    renderPriorityFollowCurrentPage();
+  }
+
+  function changePriorityFollowPage(delta) {
+    const totalPages = Math.ceil(pfFilteredList.length / pfPageSize) || 1;
+    pfCurrentPage += delta;
+    if (pfCurrentPage < 1) pfCurrentPage = 1;
+    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
+    renderPriorityFollowCurrentPage();
+  }
+
+  function renderPriorityFollowCurrentPage() {
+    const tbody = document.getElementById('table-priority-follow-page');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const totalRecords = pfFilteredList.length;
+    const totalPages = Math.ceil(totalRecords / pfPageSize) || 1;
+    if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
+    if (pfCurrentPage < 1) pfCurrentPage = 1;
+
+    const startIdx = (pfCurrentPage - 1) * pfPageSize;
+    const endIdx = Math.min(startIdx + pfPageSize, totalRecords);
+
+    // ページネーションUI表示の更新
+    const infoEl = document.getElementById('pf-pagination-info');
+    const pageNumEl = document.getElementById('pf-pagination-page-num');
+    const prevBtn = document.getElementById('btn-pf-prev-page');
+    const nextBtn = document.getElementById('btn-pf-next-page');
+
+    if (infoEl) {
+      infoEl.innerText = totalRecords === 0
+        ? '全 0 件中 0 - 0 件を表示'
+        : `全 ${totalRecords} 件中 ${startIdx + 1} - ${endIdx} 件を表示`;
+    }
+    if (pageNumEl) pageNumEl.innerText = `${pfCurrentPage} / ${totalPages}`;
+    if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
+
+    if (totalRecords === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当する最優先フォロー対象（A・B評価・未入会）のビジターはいません</td></tr>`;
+      return;
+    }
+
+    const pageRecords = pfFilteredList.slice(startIdx, endIdx);
+
+    pageRecords.forEach(r => {
+      const tr = document.createElement('tr');
+      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
+      const hearingBtnClass = (r.hasHearingSheet || r.sheetUrl) ? 'btn-hearing has-data' : 'btn-hearing';
+      const hearingBtnText = (r.hasHearingSheet || r.sheetUrl) ? '<i class="fa-solid fa-pen-to-square"></i> シート' : '<i class="fa-solid fa-plus"></i> 入力';
+
+      const countBadge = (r.historyCount && r.historyCount > 1)
+        ? `<span style="font-size:10px; background:#e0e7ff; color:#3730a3; padding:1px 6px; border-radius:4px; font-weight:700; margin-left:4px;">${r.historyCount}回目</span>`
+        : (r.attendanceCount ? `<span style="font-size:10px; background:#f1f5f9; color:#475569; padding:1px 6px; border-radius:4px; font-weight:600; margin-left:4px;">${escapeHtml(r.attendanceCount)}</span>` : '');
+
+      tr.innerHTML = `
+        <td style="font-weight: 700; white-space: nowrap; color: #1e293b;">${escapeHtml(r.eventDate || '-')}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline;" title="クリックでビジター詳細プロファイルを表示">${escapeHtml(r.name)}</strong>${countBadge}
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${formatTruncatedCell(r.company, 14)} (${formatTruncatedCell(r.profession, 12)})</div>
+        </td>
+        <td style="font-weight: 600; color: #0f172a;">${formatTruncatedCell(r.inviter || '-', 10)}</td>
+        <td style="color: #334155;">${formatTruncatedCell(r.orientUser || '-', 10)}</td>
+        <td><div style="font-size: 12px; line-height: 1.4; color: #334155;">${formatTruncatedCell(r.q7 || r.orientMemo || r.followMemo, 25)}</div></td>
+        <td style="white-space: nowrap;">
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="${hearingBtnClass} btn-hearing-act" style="font-size: 11px; padding: 3px 8px;">${hearingBtnText}</button>
+            <span class="badge-toggle ${is1to1Class} btn-toggle-1to1" title="1to1トグル">${escapeHtml(r.is1to1 || '未')}</span>
+            <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i></button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.visitorId || r.id);
+      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.visitorId || r.id, r.is1to1);
+      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.visitorId || r.id);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function initDonutChart(joined, target) {
+    const canvas = document.getElementById('donutChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (donutChartInstance) {
+      try { donutChartInstance.destroy(); } catch(e) {}
+    }
+    const ctx = canvas.getContext('2d');
+    const remain = Math.max(0, target - joined);
+    try {
+      donutChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [joined, remain],
+            backgroundColor: ['#e63946', '#e9ecef'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          cutout: '72%',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { tooltip: { enabled: false } }
+        }
+      });
+    } catch(e) {
+      console.warn('Donut chart error:', e);
+    }
+  }
+
+  function initLineChart(labels, values) {
+    const canvas = document.getElementById('lineChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (lineChartInstance) {
+      try { lineChartInstance.destroy(); } catch(e) {}
+    }
+    const ctx = canvas.getContext('2d');
+    try {
+      lineChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'ビジター数',
+            data: values,
+            borderColor: '#e63946',
+            backgroundColor: 'rgba(230, 57, 70, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3,
+            pointBackgroundColor: '#e63946'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+            y: { display: false, beginAtZero: true }
+          }
+        }
+      });
+    } catch(e) {
+      console.warn('Line chart error:', e);
+    }
+  }
+
+  /* --- 📅 Table 1: 次回定例会 (超スッキリ7列) --- */
+  function renderNextMeetingTable(records) {
+    const tbody = document.getElementById('table-next-meeting');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">次回定例会のビジターデータはありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      const attendClass = r.isAttended === '参加' ? 'attended' : 'absent';
+      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
+      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;" title="プロファイルを表示">${escapeHtml(r.name)}</strong>
+          <div style="color: #6c757d; font-size: 11px;">${escapeHtml(r.furigana)}</div>
+        </td>
+        <td>
+          <strong style="font-size: 13px; color: #343a40;">${formatTruncatedCell(r.company, 15)}</strong>
+          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.profession, 15)}</div>
+        </td>
+        <td style="font-weight: 700; color:#d6336c;">${formatTruncatedCell(r.inviter, 12)}</td>
+        <td>
+          <label class="toggle-attend-wrapper">
+            <input type="checkbox" class="toggle-attend ${attendClass}" ${r.isAttended === '参加' ? 'checked' : ''} />
+          </label>
+        </td>
+        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
+        <td style="white-space: nowrap;">
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button class="btn-icon-action btn-detail-act" style="background:#4c6ef5; color:#fff;" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i></button>
+            <button class="btn-icon-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-icon-action btn-icon-danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.toggle-attend').onchange = (e) => toggleAttend(r.id, e.target.checked ? '参加' : '不参加');
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
+      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
+      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- 📅 先週定例会のビジター --- */
+  function renderLastMeetingTable(records) {
+    const tbody = document.getElementById('table-last-meeting');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">先週定例会のビジターデータはありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
+      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
+      const attendBadge = r.isAttended === '参加'
+        ? `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700;">参加</span>`
+        : `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:700;">不参加</span>`;
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;">${escapeHtml(r.name)}</strong>
+          <div style="color: #6c757d; font-size: 11px;">${escapeHtml(r.furigana)}</div>
+        </td>
+        <td>
+          <strong style="font-size: 13px; color: #343a40;">${formatTruncatedCell(r.company, 15)}</strong>
+          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.profession, 15)}</div>
+        </td>
+        <td style="font-weight: 700; color:#d6336c;">${formatTruncatedCell(r.inviter, 12)}</td>
+        <td>${attendBadge}</td>
+        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderOneMonthTable(records) {
+    const tbody = document.getElementById('table-one-month');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">フォローアップ対象のビジターはありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
+      const joinClass = r.isJoined === '入会済' ? 'done' : 'none';
+
+      const feelTag = r.feelAbc ? `<span class="badge-feel feel-${escapeHtml(r.feelAbc)}">${escapeHtml(r.feelAbc)}評価</span>` : `<span style="color:#adb5bd; font-size:11px;">未入力</span>`;
+      const q7Text = r.q7 || r.orientMemo || 'ヒアリングシート未入力';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;">${escapeHtml(r.name)}</strong>
+          <div style="color: #6c757d; font-size: 11px;">${formatTruncatedCell(r.company, 12)} (${formatTruncatedCell(r.profession, 12)})</div>
+        </td>
+        <td>${feelTag}</td>
+        <td style="font-weight: 700; color: #364fc7;">${formatTruncatedCell(r.orientUser, 12)}</td>
+        <td><div style="font-size: 12px; color: #343a40; background: #f8f9fa; padding: 6px 10px; border-radius: 6px; max-width: 280px; line-height: 1.4;">${formatTruncatedCell(q7Text, 20)}</div></td>
+        <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
+        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(r.isJoined || '未')}</span></td>
+        <td style="white-space: nowrap;">
+          <div class="action-btn-group">
+            <button class="btn-icon-action btn-detail-act" style="background:#eff6ff; color:var(--primary-accent);" title="プロファイル詳細"><i class="fa-solid fa-id-card"></i></button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
+      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
+      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- 50人ずつページネーション変数 ＆ ロジック --- */
+  let visitorsCurrentPage = 1;
+  const visitorsPageSize = 50;
+  let visitorsFilteredList = [];
+
+  function changeVisitorsPage(delta) {
+    const totalPages = Math.ceil(visitorsFilteredList.length / visitorsPageSize) || 1;
+    visitorsCurrentPage += delta;
+    if (visitorsCurrentPage < 1) visitorsCurrentPage = 1;
+    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
+    renderVisitorsCurrentPage();
+  }
+
+  function renderVisitorsCurrentPage() {
+    const tbody = document.getElementById('table-all-visitors');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const totalRecords = visitorsFilteredList.length;
+    const totalPages = Math.ceil(totalRecords / visitorsPageSize) || 1;
+    if (visitorsCurrentPage > totalPages) visitorsCurrentPage = totalPages;
+    if (visitorsCurrentPage < 1) visitorsCurrentPage = 1;
+
+    const startIdx = (visitorsCurrentPage - 1) * visitorsPageSize;
+    const endIdx = Math.min(startIdx + visitorsPageSize, totalRecords);
+
+    // ページネーションUI表示の更新
+    const infoEl = document.getElementById('visitors-pagination-info');
+    const pageNumEl = document.getElementById('visitors-pagination-page-num');
+    const prevBtn = document.getElementById('btn-visitors-prev-page');
+    const nextBtn = document.getElementById('btn-visitors-next-page');
+
+    if (infoEl) {
+      infoEl.innerText = totalRecords === 0
+        ? '全 0 件中 0 - 0 件を表示'
+        : `全 ${totalRecords} 件中 ${startIdx + 1} - ${endIdx} 件を表示`;
+    }
+    if (pageNumEl) pageNumEl.innerText = `${visitorsCurrentPage} / ${totalPages}`;
+    if (prevBtn) prevBtn.disabled = (visitorsCurrentPage <= 1);
+    if (nextBtn) nextBtn.disabled = (visitorsCurrentPage >= totalPages);
+
+    if (totalRecords === 0) {
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #868e96; padding: 20px;">データがありません</td></tr>`;
+      return;
+    }
+
+    const pageRecords = visitorsFilteredList.slice(startIdx, endIdx);
+
+    pageRecords.forEach(r => {
+      const tr = document.createElement('tr');
+      const attendClass = r.isAttended === '参加' ? 'attended' : 'absent';
+      const hearingBtnClass = r.hasHearingSheet ? 'btn-hearing has-data' : 'btn-hearing';
+      const hearingBtnText = r.hasHearingSheet ? '<i class="fa-solid fa-pen-to-square"></i> シート確認' : '<i class="fa-solid fa-plus"></i> シート入力';
+      const is1to1Class = r.is1to1 === '済' ? 'done' : 'none';
+      const joinClass = r.isJoined === '入会済' ? 'done' : 'none';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${escapeHtml(r.no)}</td>
+        <td style="font-weight: 700;">${formatTruncatedCell(r.inviter, 12)}</td>
+        <td style="font-weight: 700; white-space: nowrap;">${escapeHtml(r.eventDate)}</td>
+        <td>
+          <strong class="link-visitor-name" style="font-weight: 800; color: var(--primary-accent); cursor: pointer; text-decoration: underline; font-size: 14px;" title="クリックでビジター詳細プロファイルを表示">${escapeHtml(r.name)}</strong>
+          <div style="color: #6c757d; font-size: 11px; margin-top: 2px;">${escapeHtml(r.furigana)}</div>
+        </td>
+        <td>
+          <div style="font-weight: 600; color: #212529; font-size: 13px;">${formatTruncatedCell(r.profession, 15)}</div>
+          <div style="color: #6c757d; font-size: 11px; margin-top: 2px;">${formatTruncatedCell(r.company, 15)}</div>
+        </td>
+        <td><span class="badge-count">${escapeHtml(r.attendanceCount)}</span></td>
+        <td>
+          <label class="toggle-attend-wrapper">
+            <input type="checkbox" class="toggle-attend ${attendClass}" ${r.isAttended === '参加' ? 'checked' : ''} />
+          </label>
+        </td>
+        <td><button class="${hearingBtnClass} btn-hearing-act">${hearingBtnText}</button></td>
+        <td><span class="badge-toggle ${is1to1Class} btn-toggle-1to1">${escapeHtml(r.is1to1 || '未')}</span></td>
+        <td><span class="badge-toggle ${joinClass} btn-toggle-joined">${escapeHtml(r.isJoined || '未')}</span></td>
+        <td style="white-space: nowrap;">
+          <div class="action-btn-group">
+            <button class="btn-table-action primary btn-detail-act" title="詳細プロファイル"><i class="fa-solid fa-id-card"></i> 詳細</button>
+            <button class="btn-table-action btn-edit-act" title="編集"><i class="fa-solid fa-pen"></i> 編集</button>
+            <button class="btn-table-action danger btn-delete-act" title="削除"><i class="fa-solid fa-trash"></i> 削除</button>
+          </div>
+        </td>
+      `;
+
+      tr.querySelector('.link-visitor-name').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.toggle-attend').onchange = (e) => toggleAttend(r.id, e.target.checked ? '参加' : '不参加');
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.id);
+      tr.querySelector('.btn-toggle-1to1').onclick = () => toggle1to1(r.id, r.is1to1);
+      tr.querySelector('.btn-toggle-joined').onclick = () => toggleJoined(r.id, r.isJoined);
+      tr.querySelector('.btn-detail-act').onclick = () => openVisitorDetailModal(r.id);
+      tr.querySelector('.btn-edit-act').onclick = () => openEditVisitorModal(r.id);
+      tr.querySelector('.btn-delete-act').onclick = () => deleteVisitor(r.id, r.name);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- ビジター全一覧テーブル描写 (CRUD ＆ 50件ページネーション対応) --- */
+  function renderAllVisitorsTable(records) {
+    if (!records) records = [];
+
+    // 参加日順（最新順）に並び替え
+    visitorsFilteredList = [...records].sort((a, b) => {
+      const ta = a.eventDate ? new Date(a.eventDate).getTime() : 0;
+      const tb = b.eventDate ? new Date(b.eventDate).getTime() : 0;
+      return tb - ta;
+    });
+
+    visitorsCurrentPage = 1;
+    renderVisitorsCurrentPage();
+  }
+
+  function filterAllVisitorsTable() {
+    const q = (document.getElementById('search-visitors-input')?.value || '').toLowerCase().trim();
+    const fromVal = document.getElementById('visitors-date-from')?.value || '';
+    const toVal = document.getElementById('visitors-date-to')?.value || '';
+    const fromDate = fromVal ? new Date(fromVal) : null;
+    const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+    const filtered = cachedAllVisitors.filter(r => {
+      // テキスト検索
+      const matchesQ = !q ||
+        (r.name || '').toLowerCase().includes(q) ||
+        (r.company || '').toLowerCase().includes(q) ||
+        (r.profession || '').toLowerCase().includes(q) ||
+        (r.inviter || '').toLowerCase().includes(q);
+
+      // 日付範囲フィルタ
+      let matchesDate = true;
+      if (fromDate || toDate) {
+        const d = r.eventDate ? new Date(r.eventDate) : null;
+        if (!d) return false;
+        if (fromDate && d < fromDate) matchesDate = false;
+        if (toDate && d > toDate) matchesDate = false;
+      }
+
+      return matchesQ && matchesDate;
+    });
+
+    renderAllVisitorsTable(filtered);
+  }
+
+  function clearVisitorsDateFilter() {
+    const fromEl = document.getElementById('visitors-date-from');
+    const toEl = document.getElementById('visitors-date-to');
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+    filterAllVisitorsTable();
+  }
+
+  /* --- ヒアリングシート一覧テーブル描写 --- */
+  function renderHearingListTable(records) {
+    const tbody = document.getElementById('table-hearing-list');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">ヒアリングシート回答データがまだありません</td></tr>`;
+      return;
+    }
+
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      const abcBadge = r.feelAbc ? `<span class="badge-abc ${escapeHtml(r.feelAbc)}">${escapeHtml(r.feelAbc)}</span>` : '<span style="color:#adb5bd;">-</span>';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${escapeHtml(r.visitorId)}</td>
+        <td style="font-weight: 700; white-space: nowrap;">${escapeHtml(r.eventDate)}</td>
+        <td style="font-weight: 800;">${escapeHtml(r.name)}</td>
+        <td>${formatTruncatedCell(r.company, 12)}<br><span style="font-size:11px; color:#6c757d;">${formatTruncatedCell(r.profession, 12)}</span></td>
+        <td style="font-weight: 700;">${formatTruncatedCell(r.inviter, 12)}</td>
+        <td>${formatTruncatedCell(r.orientUser, 12)}</td>
+        <td>${abcBadge}</td>
+        <td>${formatTruncatedCell(r.q1, 15)}</td>
+        <td>${formatTruncatedCell(r.orientMemo, 15)}</td>
+        <td>
+          <button class="btn-hearing has-data btn-hearing-act"><i class="fa-solid fa-pen-to-square"></i> 確認・編集</button>
+        </td>
+      `;
+
+      tr.querySelector('.btn-hearing-act').onclick = () => openHearingFormModal(r.visitorId);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- CRUD Modal Controls --- */
+  function formatDateForInput(str) {
+    if (!str) return '';
+    const parts = String(str).replace(/年|月/g, '/').replace(/日/g, '').replace(/\./g, '/').replace(/-/g, '/').split('/');
+    if (parts.length === 3) {
+      const y = parts[0].trim();
+      const m = parts[1].trim().padStart(2, '0');
+      const d = parts[2].trim().padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    return '';
+  }
+
+  function setCrudQuickDate(type) {
+    if (!currentDashboardData) return;
+    const dateStr = type === 'next' ? currentDashboardData.nextThuStr : currentDashboardData.afterNextThuStr;
+    const formatted = formatDateForInput(dateStr);
+    if (formatted) {
+      document.getElementById('crud-v-event-date').value = formatted;
+    }
+  }
+
+  function openAddVisitorModal() {
+    document.getElementById('crud-modal-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> 新規ビジター登録';
+    document.getElementById('crud-v-id').value = '';
+    document.getElementById('crud-v-name').value = '';
+    document.getElementById('crud-v-furigana').value = '';
+    
+    const defaultDate = currentDashboardData ? currentDashboardData.nextThuStr : '';
+    document.getElementById('crud-v-event-date').value = formatDateForInput(defaultDate);
+
+    document.getElementById('crud-v-inviter').value = '';
+    document.getElementById('crud-v-profession').value = '';
+    document.getElementById('crud-v-company').value = '';
+    document.getElementById('crud-v-email').value = '';
+    document.getElementById('crud-v-attendance-count').value = '初めて';
+
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function openEditVisitorModal(id) {
+    const v = cachedAllVisitors.find(item => String(item.id) === String(id));
+    if (!v) { alert('対象データの取得に失敗しました'); return; }
+
+    document.getElementById('crud-modal-title').innerHTML = '<i class="fa-solid fa-user-pen"></i> ビジター情報の編集';
+    document.getElementById('crud-v-id').value = v.id;
+    document.getElementById('crud-v-name').value = v.name || '';
+    document.getElementById('crud-v-furigana').value = v.furigana || '';
+    document.getElementById('crud-v-event-date').value = formatDateForInput(v.eventDate || '');
+    document.getElementById('crud-v-inviter').value = v.inviter || '';
+    document.getElementById('crud-v-profession').value = v.profession || '';
+    document.getElementById('crud-v-company').value = v.company || '';
+    document.getElementById('crud-v-email').value = v.email || '';
+    document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
+
+    document.getElementById('modal-visitor-crud').style.display = 'flex';
+  }
+
+  function closeCrudModal() {
+    document.getElementById('modal-visitor-crud').style.display = 'none';
+  }
+
+  function submitCrudVisitorForm() {
+    const id = document.getElementById('crud-v-id').value;
+    const rawDate = document.getElementById('crud-v-event-date').value.trim();
+    const formattedDate = rawDate.replace(/-/g, '/');
+
+    const vData = {
+      id: id,
+      name: document.getElementById('crud-v-name').value.trim(),
+      furigana: document.getElementById('crud-v-furigana').value.trim(),
+      eventDate: formattedDate,
+      inviter: document.getElementById('crud-v-inviter').value.trim(),
+      profession: document.getElementById('crud-v-profession').value.trim(),
+      company: document.getElementById('crud-v-company').value.trim(),
+      email: document.getElementById('crud-v-email').value.trim(),
+      attendanceCount: document.getElementById('crud-v-attendance-count').value
+    };
+
+    if (!vData.name || !vData.eventDate) {
+      alert('氏名と参加日は必須入力です');
+      return;
+    }
+
+    closeCrudModal();
+    document.getElementById('loading').style.display = 'flex';
+
+    const isEdit = !!id;
+    const apiName = isEdit ? 'updateVisitorApi' : 'addVisitorApi';
+    const msg = isEdit ? 'ビジター情報を更新しました' : '新規ビジターを登録しました';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ ${msg}`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        }
+      })
+      .withFailureHandler(handleError)[apiName](vData);
+  }
+
+  function deleteVisitor(id, name) {
+    if (!confirm(`【確認】ビジター「${name}」のデータを削除してもよろしいですか？`)) return;
+
+    document.getElementById('loading').style.display = 'flex';
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`🗑️ ${name}様のデータを削除しました`);
+          fetchDashboardData();
+          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+        }
+      })
+      .withFailureHandler(handleError)
+      .deleteVisitorApi(id);
+  }
+
+  /* --- Hearing Form Modal Controls --- */
+  function openHearingFormModal(id) {
+    document.getElementById('loading').style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (!res.success) { alert('データ取得失敗'); return; }
+
+        const info = res.visitorInfo;
+        const form = res.formData;
+
+        document.getElementById('hf-visitor-id').value = id;
+        document.getElementById('hf-event-date').innerText = info.event_date || '-';
+        document.getElementById('hf-name').innerText = info.visitor_name || '-';
+        document.getElementById('hf-furigana').innerText = info.furigana || '';
+        document.getElementById('hf-company').innerText = info.company || '-';
+        document.getElementById('hf-profession').innerText = info.profession || '-';
+        document.getElementById('hf-inviter').innerText = info.inviter || '-';
+
+        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
+        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
+
+        document.getElementById('hf-q1').value = form.q1 || '';
+        document.getElementById('hf-q2').value = form.q2 || '';
+        document.getElementById('hf-q3').value = form.q3 || '';
+        document.getElementById('hf-q4').value = form.q4 || '';
+        document.getElementById('hf-q5').value = form.q5 || '';
+        document.getElementById('hf-q6').value = form.q6 || '';
+        document.getElementById('hf-q7').value = form.q7 || '';
+
+        selectAbc(form.feelAbc || '');
+
+        document.getElementById('hf-orient-memo').value = form.orientMemo || '';
+        document.getElementById('hf-follow-memo').value = form.followMemo || '';
+
+        document.getElementById('modal-hearing-form').style.display = 'flex';
+      })
+      .withFailureHandler(handleError)
+      .getHearingFormDataApi(id);
+  }
+
+  function renderOrientUserOptions(cats, selectedVal) {
+    const select = document.getElementById('hf-orient-user');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- DBより選択 (オリエン担当者) --</option>';
+
+    if (!cats || cats.length === 0) return;
+
+    cats.forEach(catObj => {
+      const grp = document.createElement('optgroup');
+      grp.label = catObj.category;
+      if (catObj.members && catObj.members.length > 0) {
+        catObj.members.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.name;
+          opt.textContent = `${m.name} (${m.profession || ''})`;
+          if (m.name === selectedVal) opt.selected = true;
+          grp.appendChild(opt);
+        });
+      }
+      select.appendChild(grp);
+    });
+
+    if (selectedVal) select.value = selectedVal;
+  }
+
+  function closeHearingModal() {
+    const el = document.getElementById('modal-hearing-form');
+    if (el) el.style.display = 'none';
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'none';
+  }
+
+  function selectAbc(val) {
+    document.getElementById('hf-feel-abc').value = val;
+    ['A', 'B', 'C'].forEach(k => {
+      const btn = document.getElementById('abc-' + k);
+      if (btn) {
+        if (k === val) btn.classList.add('selected');
+        else btn.classList.remove('selected');
+      }
+    });
+  }
+
+  function submitHearingForm() {
+    const id = document.getElementById('hf-visitor-id').value;
+    const formData = {
+      visitorId: id,
+      orientUser: document.getElementById('hf-orient-user').value.trim(),
+      q1: document.getElementById('hf-q1').value.trim(),
+      q2: document.getElementById('hf-q2').value.trim(),
+      q3: document.getElementById('hf-q3').value.trim(),
+      q4: document.getElementById('hf-q4').value.trim(),
+      q5: document.getElementById('hf-q5').value.trim(),
+      q6: document.getElementById('hf-q6').value.trim(),
+      q7: document.getElementById('hf-q7').value.trim(),
+      feelAbc: document.getElementById('hf-feel-abc').value,
+      orientMemo: document.getElementById('hf-orient-memo').value.trim(),
+      followMemo: document.getElementById('hf-follow-memo').value.trim()
+    };
+
+    closeHearingModal();
+    showToast(`ヒアリングシートを保存中...`);
+
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ ヒアリングシートを正常保存しました`);
+        try { sessionStorage.removeItem('VHR_DASHBOARD_CACHE'); } catch(e) {}
+        fetchDashboardData(true);
+        if (cachedHearingList.length > 0) fetchHearingListData(true);
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
+      })
+      .withFailureHandler(err => {
+        closeHearingModal();
+        handleError(err);
+      })
+      .saveHearingFormApi(formData);
+  }
+
+  /* --- Interactive API Handlers --- */
+  function toggleAttend(id, newStatus) {
+    showToast(`出欠を【${newStatus}】に変更中...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
+        fetchDashboardData();
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .updateVisitorStatusApi(id, 'isAttended', newStatus);
+  }
+
+  function toggle1to1(id, current) {
+    const next = current === '済' ? '未' : '済';
+    showToast(`1to1ステータスを変更中...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ 1to1を【${next}】に変更しました`);
+        fetchDashboardData();
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .updateVisitorStatusApi(id, 'is1to1', next);
+  }
+
+
+  function toggle1to1InDetail(id, current) {
+    const next = current === '済' ? '未' : '済';
+    showToast(`1to1を【${next}】に変更中...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ 1to1を【${next}】に変更しました`);
+        openVisitorDetailView(id);
+        fetchDashboardData();
+      })
+      .updateVisitorStatusApi(id, 'is1to1', next);
+  }
+
+  function toggleJoinedInDetail(id, current) {
+    const next = current === '入会済' ? '未' : '入会済';
+    showToast(`入会状況を【${next}】に変更中...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ 入会状況を【${next}】に変更しました`);
+        openVisitorDetailView(id);
+        fetchDashboardData();
+      })
+      .updateVisitorStatusApi(id, 'isJoined', next);
+  }
+
+  /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
+  let currentVdVisitorId = null;
+  let previousTabBeforeDetail = "dashboard";
+
+  function openVisitorDetailModal(id) {
+    openVisitorDetailView(id);
+  }
+
+  function openVisitorDetailView(id, updateHash = true) {
+    if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
+      return;
+    }
+    currentVdVisitorId = id;
+    if (updateHash) {
+      updateUrlHash('visitor/' + id, { visitorId: id });
+    }
+    document.getElementById('loading').style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (!res || !res.success) {
+          showToast('⚠️ ビジターデータの取得に失敗しました（存在しないIDです）');
+          switchTab('dashboard', true);
+          return;
+        }
+
+        currentVdWebAppUrl = res.webAppUrl || "";
+        const v = res.visitor;
+        const st = res.status;
+        const h = res.hearing || {};
+
+        document.getElementById('vd-name').innerText = v.name || '-';
+        document.getElementById('vd-furigana').innerText = v.furigana || '';
+        document.getElementById('vd-company').innerText = v.company || '-';
+        document.getElementById('vd-profession').innerText = v.profession || '-';
+        document.getElementById('vd-inviter').innerText = v.inviter || '-';
+        document.getElementById('vd-event-date').innerText = v.eventDate || '-';
+        document.getElementById('vd-email').innerText = v.email || '-';
+        document.getElementById('vd-attendance-count').innerText = v.attendanceCount || '初めて';
+
+        // 自由メモ
+        document.getElementById('vd-free-memo').value = v.remarks || '';
+
+        // ステータスバッジ (クリックで参加/不参加トグル)
+        const badgeAtt = document.getElementById('vd-badge-attended');
+        const isAttended = st.isAttended === '参加';
+        badgeAtt.innerText = isAttended ? '出欠: 参加' : '出欠: 不参加';
+        badgeAtt.style.background = isAttended ? '#dcfce7' : '#fee2e2';
+        badgeAtt.style.color = isAttended ? '#15803d' : '#b91c1c';
+        badgeAtt.onclick = () => {
+          const next = isAttended ? '不参加' : '参加';
+          toggleAttend(id, next);
+        };
+
+        const badge1to1 = document.getElementById('vd-badge-1to1');
+        badge1to1.innerText = `1to1: ${st.is1to1 || '未'}`;
+        badge1to1.style.background = st.is1to1 === '済' ? '#dcfce7' : '#f1f5f9';
+        badge1to1.style.color = st.is1to1 === '済' ? '#15803d' : '#64748b';
+        badge1to1.onclick = () => toggle1to1InDetail(id, st.is1to1);
+
+        const badgeJoined = document.getElementById('vd-badge-joined');
+        badgeJoined.innerText = `入会: ${st.isJoined || '未'}`;
+        badgeJoined.style.background = st.isJoined === '入会済' ? '#dcfce7' : '#f1f5f9';
+        badgeJoined.style.color = st.isJoined === '入会済' ? '#15803d' : '#64748b';
+        badgeJoined.onclick = () => toggleJoinedInDetail(id, st.isJoined);
+
+        const badgeFeel = document.getElementById('vd-badge-feel');
+        badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
+        badgeFeel.style.background = h.feelAbc === 'A' ? '#ffe3e3' : (h.feelAbc === 'B' ? '#fff3bf' : '#e9ecef');
+        badgeFeel.style.color = h.feelAbc === 'A' ? '#c92a2a' : (h.feelAbc === 'B' ? '#e67700' : '#495057');
+
+        // ヒアリング内容
+        document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
+        document.getElementById('vd-q1').innerText = h.q1 || '-';
+        document.getElementById('vd-q2').innerText = h.q2 || '-';
+        document.getElementById('vd-q3').innerText = h.q3 || '-';
+        document.getElementById('vd-q4').innerText = h.q4 || '-';
+        document.getElementById('vd-q5').innerText = h.q5 || '-';
+        document.getElementById('vd-q6').innerText = h.q6 || '-';
+        document.getElementById('vd-q7').innerText = h.q7 || '-';
+        document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
+        document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
+
+        // メール履歴
+        const mailContainer = document.getElementById('vd-mail-history-list');
+        mailContainer.innerHTML = '';
+        if (res.mailLogs && res.mailLogs.length > 0) {
+          res.mailLogs.forEach(m => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding: 12px 16px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #364fc7; display: flex; justify-content: space-between; align-items: center; font-size: 13px;';
+            div.innerHTML = `
+              <div>
+                <strong style="color:#343a40;">${m.mailType}</strong>
+                <div style="font-size: 11px; color: #6c757d; margin-top:2px;">送信日時: ${m.sentAt}</div>
+              </div>
+              <span style="font-size: 11px; font-weight: 800; color: #2b8a3e; background: #d3f9d8; padding: 3px 10px; border-radius: 10px;">${m.status}</span>
+            `;
+            mailContainer.appendChild(div);
+          });
+        } else {
+          mailContainer.innerHTML = '<div style="color:#868e96; font-size:13px; padding: 10px;">メール送信履歴はありません</div>';
+        }
+
+        document.getElementById('vd-btn-open-hearing-page').onclick = () => {
+          openHearingFormModal(id);
+        };
+
+        // 画面全体を VIEW 4 (ビジター詳細全画面) へ切り替え
+        document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById('view-visitor-detail').classList.add('active');
+
+        switchVdTab('hearing');
+        window.scrollTo(0, 0);
+      })
+      .withFailureHandler(handleError)
+      .getVisitorDetailApi(id);
+  }
+
+  function closeVisitorDetailView() {
+    switchTab(previousTabBeforeDetail || 'dashboard', true);
+  }
+
+  function openCurrentVisitorInNewTab() {
+    if (!currentVdVisitorId) return;
+    if (currentVdWebAppUrl) {
+      window.open(`${currentVdWebAppUrl}?id=${currentVdVisitorId}`, '_blank');
+    } else {
+      alert('Web App URLが読み込めていません');
+    }
+  }
+
+  function switchVdTab(tab) {
+    document.getElementById('vd-tab-btn-hearing').classList.toggle('active', tab === 'hearing');
+    document.getElementById('vd-tab-btn-memo').classList.toggle('active', tab === 'memo');
+    document.getElementById('vd-tab-btn-mail').classList.toggle('active', tab === 'mail');
+
+    document.getElementById('vd-tab-content-hearing').style.display = tab === 'hearing' ? 'block' : 'none';
+    document.getElementById('vd-tab-content-memo').style.display = tab === 'memo' ? 'block' : 'none';
+    document.getElementById('vd-tab-content-mail').style.display = tab === 'mail' ? 'block' : 'none';
+  }
+
+  function saveVisitorFreeMemo() {
+    if (!currentVdVisitorId) return;
+    const memoText = document.getElementById('vd-free-memo').value.trim();
+    showToast(`自由メモを保存中...`);
+
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ メモを正常に保存しました！`);
+        fetchDashboardData();
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .withFailureHandler(handleError)
+      .saveVisitorMemoApi(currentVdVisitorId, memoText);
+  }
+
+  function toggleJoined(id, current) {
+    const next = current === '入会済' ? '未' : '入会済';
+    showToast(`入会ステータスを変更中...`);
+    google.script.run
+      .withSuccessHandler(res => {
+        showToast(`✅ 入会状況を【${next}】に変更しました`);
+        fetchDashboardData();
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .updateVisitorStatusApi(id, 'isJoined', next);
+  }
+
+  function syncFormResponsesManual() {
+    showToast(`Googleフォーム新着申込を同期中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (loading) loading.style.display = 'none';
+
+        const msg = (res && typeof res === 'object' && res.message)
+          ? res.message
+          : String(res || '同期が完了しました。');
+
+        // ポップアップダイアログで結果を提示
+        alert("【Googleフォーム同期結果】\n\n" + msg);
+
+        if (res && res.data) {
+          renderDashboard(res.data);
+        } else {
+          fetchDashboardData(true);
+        }
+        if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
+      })
+      .withFailureHandler(err => {
+        if (loading) loading.style.display = 'none';
+        alert("❌ フォーム同期中にエラーが発生しました:\n" + (err.message || err));
+      })
+      .syncFormResponsesApi();
+  }
+
+  function forceRefreshAllCacheAndData() {
+    showToast(`🔄 キャッシュをクリアし、最新データを再読み込み中...`);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'flex';
+
+    try { sessionStorage.clear(); } catch(e) {}
+    cachedAllVisitors = [];
+    cachedHearingList = [];
+    cachedScheduledEmails = [];
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (loading) loading.style.display = 'none';
+        showToast(`✨ キャッシュをクリアし、最新データをロードしました！`);
+        fetchDashboardData(true);
+        const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
+        if (activeTab) {
+          const tabId = activeTab.id.replace('tab-btn-', '');
+          if (tabId === 'visitors') fetchAllVisitorsData(true);
+          else if (tabId === 'hearings') fetchHearingListData(true);
+          else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
+        }
+      })
+      .withFailureHandler(handleError)
+      .checkAndRepairDataFormatApi();
+  }
+
+  function changeStartDate(newVal) {
+    showToast(`集計期間を【${newVal} 〜】に変更中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          showToast(`✅ 集計期間を【${newVal} 〜】に切り替えました`);
+          renderDashboard(res.data);
+        }
+      })
+      .withFailureHandler(handleError)
+      .updateSettingStartDateApi(newVal);
+  }
+
+  /* --- 👥 Member Master Setting CRUD Controls --- */
+  let cachedFlatMembers = [];
+
+  function fetchMembersMasterData() {
+    document.getElementById('loading').style.display = 'flex';
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        if (res.success) {
+          cachedFlatMembers = res.flatMembers || [];
+          renderMembersMasterTable(cachedFlatMembers);
+        }
+      })
+      .withFailureHandler(handleError)
+      .getMemberListApi();
+  }
+
+  function renderMembersMasterTable(members) {
+    const tbody = document.getElementById('table-members-master');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!members || members.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 20px;">登録されているメンバーはありません</td></tr>`;
+      return;
+    }
+
+    members.forEach((m, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-weight: 700;">${idx + 1}</td>
+        <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
+        <td style="font-weight: 800; font-size:14px; color:#212529;">${m.name}</td>
+        <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
+        <td>
+          <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${m.name}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openAddMemberModal() {
+    document.getElementById('modal-member-title').innerText = '新規メンバー追加';
+    document.getElementById('crud-m-id').value = '';
+    document.getElementById('crud-m-category').value = '';
+    document.getElementById('crud-m-name').value = '';
+    document.getElementById('crud-m-profession').value = '';
+    document.getElementById('modal-member-crud').style.display = 'flex';
+  }
+
+  function openEditMemberModal(id) {
+    const m = cachedFlatMembers.find(item => String(item.id) === String(id));
+    if (!m) return;
+    document.getElementById('modal-member-title').innerText = 'メンバー情報の編集';
+    document.getElementById('crud-m-id').value = m.id;
+    document.getElementById('crud-m-category').value = m.category || '';
+    document.getElementById('crud-m-name').value = m.name || '';
+    document.getElementById('crud-m-profession').value = m.profession || '';
+    document.getElementById('modal-member-crud').style.display = 'flex';
+  }
+
+  function closeMemberCrudModal() {
+    document.getElementById('modal-member-crud').style.display = 'none';
+  }
+
+  function submitMemberCrudForm() {
+    const id = document.getElementById('crud-m-id').value;
+    const category = document.getElementById('crud-m-category').value.trim();
+    const name = document.getElementById('crud-m-name').value.trim();
+    const profession = document.getElementById('crud-m-profession').value.trim();
+
+    if (!category || !name || !profession) {
+      alert('全ての必須項目を入力してください');
+      return;
+    }
+
+    const mObj = { id, category, name, profession };
+    showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    const apiFunc = id ? 'updateMemberApi' : 'addMemberApi';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        closeMemberCrudModal();
+        showToast(`✅ メンバーを保存しました`);
+        cachedFlatMembers = res.flatMembers || [];
+        renderMembersMasterTable(cachedFlatMembers);
+      })
+      .withFailureHandler(handleError)
+      [apiFunc](mObj);
+  }
+
+  function deleteMemberMaster(id, name) {
+    if (!confirm(`【確認】メンバー「${name}」をリストから削除してよろしいですか？`)) return;
+    showToast(`メンバーを削除中...`);
+    document.getElementById('loading').style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loading').style.display = 'none';
+        showToast(`🗑️ メンバーを削除しました`);
+        cachedFlatMembers = res.flatMembers || [];
+        renderMembersMasterTable(cachedFlatMembers);
+      })
+      .withFailureHandler(handleError)
+      .deleteMemberApi(id);
+  }
+
+  function renderBniTermsSelectOptions(termsList, selectedDate) {
+    ['select-start-date', 'setting-page-period-select'].forEach(elemId => {
+      const select = document.getElementById(elemId);
+      if (!select || !termsList) return;
+      select.innerHTML = '';
+
+      termsList.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.dateStr;
+        opt.textContent = t.label;
+        if (t.dateStr === selectedDate) opt.selected = true;
+        select.appendChild(opt);
+      });
+    });
+  }
+
+  function showToast(msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#51cf66;"></i> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+  }
+
+  function handleError(err) {
+    document.getElementById('loading').style.display = 'none';
+    alert('エラーが発生しました: ' + (err.message || err));
+  }
+</script>
+
+
 </body>
 </html>

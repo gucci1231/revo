@@ -44,8 +44,10 @@ function buildHtml() {
     return '';
   });
 
+  const INDEX_OUTPUT = path.join(__dirname, 'index.html');
   fs.writeFileSync(STANDALONE_OUTPUT, indexContent, 'utf8');
-  console.log(`✅ standalone.html compiled successfully at ${STANDALONE_OUTPUT}`);
+  fs.writeFileSync(INDEX_OUTPUT, indexContent, 'utf8');
+  console.log(`✅ standalone.html and index.html compiled successfully`);
 }
 
 buildHtml();

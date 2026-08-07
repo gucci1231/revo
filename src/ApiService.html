@@ -1,10 +1,10 @@
+<script>
 /**
  * Ultra-Fast REST API Bridge & Fallback Service
  */
 const ApiService = {
   call: function(functionName, ...args) {
     return new Promise((resolve, reject) => {
-      // 1. Try local SQLite REST API first (<10ms)
       const restConfig = this.getRestConfig(functionName, args);
 
       if (restConfig) {
@@ -112,10 +112,4 @@ const ApiService = {
     }
   }
 };
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ApiService;
-} else {
-  (typeof window !== 'undefined' ? window : global).ApiService = ApiService;
-}
-
+</script>

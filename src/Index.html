@@ -39,14 +39,6 @@
       }
     });
 
-    window.addEventListener('DOMContentLoaded', function() {
-      if (typeof google === 'undefined' || !google.script || !google.script.run) {
-        var warnDiv = document.createElement('div');
-        warnDiv.style.cssText = 'background: #fff0f6; border: 2px solid #ff4d4f; color: #cf1322; padding: 16px 24px; font-weight: bold; text-align: center; border-radius: 8px; margin: 16px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
-        warnDiv.innerHTML = '⚠️ <strong>注意: Google Web App API (google) が検出されません</strong><br><span style="font-size:12px; font-weight:normal; color:#495057;">Googleドライブのファイルプレビュー等ではなく、以下の正規Web App URLを開いてください。</span><br><br><a href="https://script.google.com/macros/s/AKfycbydC-gIMjpdAoeQpsgIwq-RQcBzWHZ17yijcMxc_zm2BNZfWxbij9DO2XutZxs1jO11/exec" target="_blank" style="background:#e63946; color:#ffffff; padding:10px 20px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:6px;">👉 ここをクリックして正規Web Appを開く</a>';
-        document.body.insertBefore(warnDiv, document.body.firstChild);
-      }
-    });
   </script>
   <?!= include('Styles'); ?>
 </head>
@@ -172,6 +164,7 @@
   </div>
 
   <!-- Client-side Scripts -->
+  <?!= include('ApiService'); ?>
   <?!= include('Scripts'); ?>
 
 </body>

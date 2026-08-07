@@ -39,14 +39,6 @@
       }
     });
 
-    window.addEventListener('DOMContentLoaded', function() {
-      if (typeof google === 'undefined' || !google.script || !google.script.run) {
-        var warnDiv = document.createElement('div');
-        warnDiv.style.cssText = 'background: #fff0f6; border: 2px solid #ff4d4f; color: #cf1322; padding: 16px 24px; font-weight: bold; text-align: center; border-radius: 8px; margin: 16px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
-        warnDiv.innerHTML = '⚠️ <strong>注意: Google Web App API (google) が検出されません</strong><br><span style="font-size:12px; font-weight:normal; color:#495057;">Googleドライブのファイルプレビュー等ではなく、以下の正規Web App URLを開いてください。</span><br><br><a href="https://script.google.com/macros/s/AKfycbydC-gIMjpdAoeQpsgIwq-RQcBzWHZ17yijcMxc_zm2BNZfWxbij9DO2XutZxs1jO11/exec" target="_blank" style="background:#e63946; color:#ffffff; padding:10px 20px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:6px;">👉 ここをクリックして正規Web Appを開く</a>';
-        document.body.insertBefore(warnDiv, document.body.firstChild);
-      }
-    });
   </script>
   <style>
 /* --- variables.css --- */
@@ -1375,6 +1367,122 @@ tr:last-child td { border-bottom: none; }
   </div>
 
   <!-- Client-side Scripts -->
+  <script>
+/**
+ * Ultra-Fast REST API Bridge & Fallback Service
+ */
+const ApiService = {
+  call: function(functionName, ...args) {
+    return new Promise((resolve, reject) => {
+      const restConfig = this.getRestConfig(functionName, args);
+
+      if (restConfig) {
+        const fetchOptions = {
+          method: restConfig.method || 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        };
+        if (restConfig.body) {
+          fetchOptions.body = JSON.stringify(restConfig.body);
+        }
+
+        fetch(restConfig.url, fetchOptions)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.success !== false) {
+              resolve(data);
+              return;
+            }
+            this.fallbackToGas(functionName, args, resolve, reject);
+          })
+          .catch(() => {
+            this.fallbackToGas(functionName, args, resolve, reject);
+          });
+      } else {
+        this.fallbackToGas(functionName, args, resolve, reject);
+      }
+    });
+  },
+
+  getRestConfig: function(functionName, args) {
+    switch (functionName) {
+      case 'getDashboardData':
+        return { url: '/api/dashboard.php', method: 'GET' };
+      case 'getAllVisitorsApi':
+        return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getVisitorDetailApi':
+        return { url: '/api/visitors.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
+      case 'updateVisitorStatusApi':
+        return {
+          url: '/api/visitors.php?action=update_status',
+          method: 'POST',
+          body: { visitorId: args[0], field: args[1], value: args[2] }
+        };
+      case 'saveVisitorMemoApi':
+        return {
+          url: '/api/visitors.php?action=save_memo',
+          method: 'POST',
+          body: { visitorId: args[0], memo: args[1] }
+        };
+      case 'addVisitorApi':
+        return {
+          url: '/api/visitors.php?action=add',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'getHearingSheetsListApi':
+        return { url: '/api/hearings.php?action=list', method: 'GET' };
+      case 'getHearingSheetFormDataApi':
+        return { url: '/api/hearings.php?action=get&visitorId=' + (args[0] || ''), method: 'GET' };
+      case 'saveHearingSheetApi':
+        return {
+          url: '/api/hearings.php?action=save',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'getMemberListApi':
+        return { url: '/api/members.php?action=list', method: 'GET' };
+      case 'addMemberApi':
+        return {
+          url: '/api/members.php?action=add',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'updateMemberApi':
+        return {
+          url: '/api/members.php?action=update',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteMemberApi':
+        return {
+          url: '/api/members.php?action=delete',
+          method: 'POST',
+          body: { id: args[0] }
+        };
+      case 'syncFormResponsesApi':
+        return { url: '/api/sync.php', method: 'POST' };
+      default:
+        return null;
+    }
+  },
+
+  fallbackToGas: function(functionName, args, resolve, reject) {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      let runner = google.script.run
+        .withSuccessHandler(res => resolve(res))
+        .withFailureHandler(err => reject(err));
+      if (typeof runner[functionName] === 'function') {
+        runner[functionName](...args);
+      } else {
+        reject(new Error(`API method ${functionName} not found`));
+      }
+    } else {
+      resolve({ success: true, list: [], metrics: {} });
+    }
+  }
+};
+</script>
+
   <script>
   function parseFeelAbc(val) {
     if (!val) return '';
