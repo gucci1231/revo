@@ -5,9 +5,11 @@ use Api\Core\Database;
 
 class HearingRepository {
     private Database $db;
+    private ?VisitorRepository $visitorRepo;
 
-    public function __construct(?Database $db = null) {
+    public function __construct(?Database $db = null, ?VisitorRepository $visitorRepo = null) {
         $this->db = $db ?? Database::getInstance();
+        $this->visitorRepo = $visitorRepo;
     }
 
     public function getAllWithVisitorInfo(): array {
@@ -31,14 +33,40 @@ class HearingRepository {
     }
 
     public function findByVisitorId(string $visitorId): ?array {
-        return $this->db->fetchOne("SELECT * FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
+        $visitorRepo = $this->visitorRepo ?? new VisitorRepository($this->db);
+        $linkedIds = $visitorRepo->getLinkedVisitorIds($visitorId);
+
+        if (empty($linkedIds)) {
+            return $this->db->fetchOne("SELECT * FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
+        }
+
+        $placeholders = implode(',', array_fill(0, count($linkedIds), '?'));
+        $sql = "SELECT * FROM hearing_sheets WHERE visitor_id IN ({$placeholders}) ORDER BY updated_at DESC LIMIT 1";
+        return $this->db->fetchOne($sql, $linkedIds);
     }
 
     public function saveHearingSheet(array $data): bool {
-        return $this->db->upsert('hearing_sheets', $data, ['visitor_id']);
+        $vId = (string)($data['visitor_id'] ?? '');
+        if (!$vId) {
+            return false;
+        }
+
+        $visitorRepo = $this->visitorRepo ?? new VisitorRepository($this->db);
+        $linkedIds = $visitorRepo->getLinkedVisitorIds($vId);
+
+        $success = true;
+        foreach ($linkedIds as $id) {
+            $row = $data;
+            $row['visitor_id'] = $id;
+            if (!$this->db->upsert('hearing_sheets', $row, ['visitor_id'])) {
+                $success = false;
+            }
+        }
+        return $success;
     }
 
     public function deleteByVisitorId(string $visitorId): int {
         return $this->db->execute("DELETE FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
     }
 }
+

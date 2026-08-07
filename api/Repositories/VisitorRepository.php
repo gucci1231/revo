@@ -42,6 +42,40 @@ class VisitorRepository {
         return $this->db->fetchOne("SELECT * FROM visitors WHERE id = ?", [$id]);
     }
 
+    public function getLinkedVisitorIds(string $visitorId): array {
+        $v = $this->findById($visitorId);
+        if (!$v) return [$visitorId];
+
+        $email = trim($v['email'] ?? '');
+        $name = trim($v['visitor_name'] ?? '');
+        $cleanName = preg_replace('/[\s\x{3000}]+/u', '', $name);
+
+        if (!$email && (mb_strlen($cleanName) <= 1 || preg_match('/^ビジター\s*(no\.?\s*\d+)?$/iu', $name))) {
+            return [$visitorId];
+        }
+
+        $params = [];
+        $conditions = [];
+
+        if ($email !== '') {
+            $conditions[] = "LOWER(TRIM(email)) = LOWER(?)";
+            $params[] = $email;
+        }
+
+        if ($cleanName !== '') {
+            $conditions[] = "REPLACE(REPLACE(visitor_name, ' ', ''), '　', '') = ?";
+            $params[] = $cleanName;
+        }
+
+        if (empty($conditions)) return [$visitorId];
+
+        $sql = "SELECT id FROM visitors WHERE " . implode(" OR ", $conditions);
+        $rows = $this->db->fetchAll($sql, $params);
+        $ids = array_map(fn($r) => (string)$r['id'], $rows);
+        $ids[] = (string)$visitorId;
+        return array_values(array_unique($ids));
+    }
+
     public function getStatusByVisitorId(string $visitorId): ?array {
         return $this->db->fetchOne("SELECT * FROM visitors_status WHERE visitor_id = ?", [$visitorId]);
     }
