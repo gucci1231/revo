@@ -1,0 +1,99 @@
+<!-- Modal for Hearing Form -->
+<div id="modal-hearing-form" class="modal-backdrop">
+  <div class="modal-box-large">
+    <div class="modal-header-title">
+      <i class="fa-solid fa-file-signature"></i> REvo オリエンテーション＆ヒアリングシート
+    </div>
+
+    <div class="info-summary-grid">
+      <div><strong>定例会参加日:</strong> <span id="hf-event-date">-</span></div>
+      <div><strong>お名前:</strong> <span id="hf-name">-</span> 様 (<span id="hf-furigana">-</span>)</div>
+      <div><strong>会社名・屋号:</strong> <span id="hf-company">-</span></div>
+      <div><strong>専門分野:</strong> <span id="hf-profession">-</span></div>
+      <div><strong>紹介者:</strong> <span id="hf-inviter">-</span></div>
+    </div>
+
+    <form id="hearing-form-element">
+      <input type="hidden" id="hf-visitor-id">
+
+      <div class="form-group">
+        <label class="form-label">オリエン担当者名 (DB連動)</label>
+        <select id="hf-orient-user" class="form-input" style="font-weight: 700; color: #343a40;">
+          <option value="">-- DB読み込み中... --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q1：【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？</label>
+        <textarea id="hf-q1" class="form-textarea" placeholder="ビジター様からの回答・感想"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q2：【お仕事について】〇〇さんのお仕事について再度聞かせてください。</label>
+        <textarea id="hf-q2" class="form-textarea" placeholder="仕事内容の補足や詳細"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q3：【Goal(目標)】夢や目標、〇年後にこうなりたい計画はありますか？</label>
+        <textarea id="hf-q3" class="form-textarea" placeholder="目標や達成したいこと"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q4：【Reality(現実・課題)】課題と感じることはございますか？いつ頃からですか？</label>
+        <textarea id="hf-q4" class="form-textarea" placeholder="現状の課題や悩み"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q5：【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？</label>
+        <textarea id="hf-q5" class="form-textarea" placeholder="検討中の選択肢"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q6：【Way Forward(今後の力に)】REvoメンバーでお役に立てること</label>
+        <textarea id="hf-q6" class="form-textarea" placeholder="具体的なお役立ち提案（リファーラル・人脈紹介等）"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Q7：【次のアクション】促し内容</label>
+        <textarea id="hf-q7" class="form-textarea" placeholder="・入会 / 繋がりたいメンバーへの紹介 / 再度定例会 / BOD / コーヒーミーティング等"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">入会への感触 (ABC評価)</label>
+        <input type="hidden" id="hf-feel-abc">
+        <div class="radio-abc-group">
+          <button type="button" class="btn-abc-option" id="abc-A" onclick="selectAbc('A')">A: 好印象・即入会意向あり</button>
+          <button type="button" class="btn-abc-option" id="abc-B" onclick="selectAbc('B')">B: 好印象だがハードルあり</button>
+          <button type="button" class="btn-abc-option" id="abc-C" onclick="selectAbc('C')">C: 時間がかかる / 見送り</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">定例会直後のオリエン感想メモ</label>
+        <textarea id="hf-orient-memo" class="form-textarea" placeholder="オリエン直後の定例会での様子や感想"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">フォローアップ感想メモ</label>
+        <textarea id="hf-follow-memo" class="form-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
+      </div>
+
+      <div class="link-actions-box">
+        <div style="font-size: 13px; font-weight: 800; color: var(--primary-accent); margin-bottom: 8px;">
+          <i class="fa-solid fa-link"></i> 入会手続き・案内用公式URL
+        </div>
+        <div>
+          <a href="https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376" target="_blank" class="link-action-btn"><i class="fa-solid fa-external-link"></i> ① 入会オンライン申込 (ビジホス)</a>
+          <a href="https://docs.google.com/document/d/1P-FZeshUDnzXTOEKI3M1xwoBvxfCKSQL/edit" target="_blank" class="link-action-btn"><i class="fa-solid fa-file-word"></i> ② BNI加入審査案内 (メンバーシップ)</a>
+          <a href="https://www.bniconnectglobal.com/web/applications/register?chapterId=7638" target="_blank" class="link-action-btn"><i class="fa-solid fa-globe"></i> ③ オンラインメンバーシップ申込</a>
+        </div>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button type="button" class="btn-cancel" onclick="closeHearingModal()">キャンセル</button>
+        <button type="button" class="btn-save" onclick="submitHearingForm()">保存する</button>
+      </div>
+    </form>
+
+  </div>
+</div>

@@ -1,0 +1,222 @@
+<!-- VIEW 1: ダッシュボード -->
+<div id="view-dashboard" class="view-content active">
+  <section class="kpi-grid">
+    <!-- 1行目: グラフ (全幅) -->
+    <div class="kpi-card col-chart">
+      <div class="kpi-title">定例会別ビジター推移</div>
+      <div class="line-chart-wrap">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 2行目: 次回/次々回 + 申込数/入会数 -->
+    <div class="kpi-card col-next-visitors">
+      <div class="next-vis-item">
+        <div class="kpi-title" style="margin-bottom:2px;">次回定例会</div>
+        <div class="next-vis-date" id="date-next-thu">--/--</div>
+        <div class="next-vis-num" id="val-next-thu-count">-</div>
+      </div>
+      <div style="border-left: 1px solid var(--border-color); height: 50px;"></div>
+      <div class="next-vis-item">
+        <div class="kpi-title" style="margin-bottom:2px;">次々回</div>
+        <div class="next-vis-date" id="date-after-next-thu">--/--</div>
+        <div class="next-vis-num" id="val-after-next-thu-count">-</div>
+      </div>
+    </div>
+
+    <div class="kpi-card col-apply-joined">
+      <div class="apply-joined-inner">
+        <div class="apply-joined-block">
+          <div class="kpi-title">申込数</div>
+          <div class="kpi-value-large"><span id="val-apply-count">-</span> <span class="unit">名</span></div>
+        </div>
+        <div style="border-left: 1px solid var(--border-color); height: 50px;"></div>
+        <div class="apply-joined-block">
+          <div class="kpi-title">入会数 / 目標</div>
+          <div class="kpi-value-large"><span id="val-joined-count">-</span> <span class="unit">/<span id="val-target-goal">12</span>名</span></div>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="donutChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-rates">
+      <div class="rate-card">
+        <div class="rate-title">入会率</div>
+        <div class="rate-val" id="val-join-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">目標達成率</div>
+        <div class="rate-val" id="val-achievement-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">平均ビジター数</div>
+        <div class="rate-val" id="val-avg-visitors">-</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">メール送信率</div>
+        <div class="rate-val" id="val-feedback-rate">-%</div>
+      </div>
+      <div class="rate-card">
+        <div class="rate-title">ヒアリング提出率</div>
+        <div class="rate-val" id="val-hearing-rate">-%</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: 週別・月別ビジター集計 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-chart-simple" style="color: var(--primary-accent);"></i> 週別・月別ビジター集計
+      </h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; padding: 16px;">
+      <!-- 週別ビジター数表 -->
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-calendar-week" style="color: #3b82f6;"></i> 定例会別（週別）ビジター数</span>
+          <span style="font-size: 11px; color: #64748b; font-weight: 500;">直近順</span>
+        </div>
+        <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <table style="font-size: 13px;">
+            <thead>
+              <tr style="background: #f1f5f9;">
+                <th>定例会日付</th>
+                <th style="text-align: center;">申込数</th>
+                <th style="text-align: center;">参加数</th>
+                <th style="text-align: center;">入会数</th>
+              </tr>
+            </thead>
+            <tbody id="table-weekly-stats"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 月別ビジター数表 -->
+      <div style="background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-calendar-days" style="color: #10b981;"></i> 月別ビジター集計</span>
+          <span style="font-size: 11px; color: #64748b; font-weight: 500;">全期間</span>
+        </div>
+        <div class="table-container" style="max-height: 280px; overflow-y: auto;">
+          <table style="font-size: 13px;">
+            <thead>
+              <tr style="background: #f1f5f9;">
+                <th>対象年月</th>
+                <th style="text-align: center;">申込数</th>
+                <th style="text-align: center;">参加数</th>
+                <th style="text-align: center;">入会数</th>
+                <th style="text-align: center;">入会率</th>
+              </tr>
+            </thead>
+            <tbody id="table-monthly-stats"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Table 1: 次回定例会のビジター様 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-calendar-days" style="color: var(--primary-accent);"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名 (ふりがな)</th>
+            <th>会社名 / 専門分野</th>
+            <th>招待者</th>
+            <th style="width: 80px;">出欠</th>
+            <th style="width: 110px;">ヒアリング</th>
+            <th style="width: 80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-next-meeting"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Table 1b: 今週定例会のビジター様 -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-calendar-check" style="color: #64748b;"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名 (ふりがな)</th>
+            <th>会社名 / 専門分野</th>
+            <th>招待者</th>
+            <th style="width: 80px;">出欠</th>
+            <th style="width: 110px;">ヒアリング</th>
+          </tr>
+        </thead>
+        <tbody id="table-last-meeting"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section: HOTビジター (最優先フォロー) -->
+  <section class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 class="section-title" style="color: #e11d48;">
+        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      </h2>
+      <button type="button" class="btn-action-secondary" style="font-size: 12px;" onclick="switchTab('priority-follow')">
+        最優先フォローページで全件見る <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 95px;">参加日</th>
+            <th>氏名 / 会社名・専門分野</th>
+            <th style="width: 110px;">招待者</th>
+            <th style="width: 110px;">オリエン担当</th>
+            <th>促し内容 (Q7) / メモ</th>
+            <th style="width: 160px;">シート / 1to1 / 操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-hot-visitors"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Table 2: 1ヶ月のフォローアップ -->
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fa-solid fa-comments" style="color: var(--primary-accent);"></i> 1ヶ月フォローアップ名簿
+      </h2>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No.</th>
+            <th>氏名</th>
+            <th style="width: 90px;">感触</th>
+            <th>オリエン担当</th>
+            <th>次のアクション / 促し内容 (Q7)</th>
+            <th style="width: 70px;">1to1</th>
+            <th style="width: 70px;">入会</th>
+            <th style="width: 80px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-one-month"></tbody>
+      </table>
+    </div>
+  </section>
+</div>

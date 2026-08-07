@@ -1,0 +1,67 @@
+<!-- VIEW 5: セッティング・メンバーマスター管理ビュー -->
+<div id="view-settings" class="view-content">
+  <div class="section-card" style="margin-bottom: 24px;">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 定例会スタート期間 (BNI期) セッティング</h2>
+    </div>
+    <div style="padding: 20px;">
+      <p style="font-size: 13px; color: #495057; margin-bottom: 12px;">集計の基準となるBNIの期（スタート期間）を選択できます。選択するとダッシュボード全体の数値が即座に切り替わります。</p>
+      <div style="display: flex; gap: 12px; align-items: center; max-width: 450px;">
+        <select id="setting-page-period-select" class="form-input" style="font-weight: 800; color: var(--primary-accent);" onchange="changeStartDate(this.value)">
+          <option value="">自動計算中...</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom: 24px;">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>
+    </div>
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <p style="font-size: 13px; color: #495057; margin-bottom: 8px;">
+          Googleフォームで送信された最新のビジター回答データを手動同期します。
+        </p>
+        <button class="btn-create-visitor" style="background: #2563eb;" onclick="syncFormResponsesManual()">
+          <i class="fa-solid fa-arrows-rotate"></i> Googleフォーム新着回答を同期
+        </button>
+      </div>
+      <hr style="border: none; border-top: 1px dashed var(--border-color);">
+      <div>
+        <p style="font-size: 13px; color: #495057; margin-bottom: 8px;">
+          スプレッドシートの入力フォーマット（ヘッダー・日付等）を自動検査・修復し、ブラウザおよびサーバーのキャッシュをクリアして最新データへ即座に更新します。
+        </p>
+        <button class="btn-create-visitor" style="background: #364fc7;" onclick="forceRefreshAllCacheAndData()">
+          <i class="fa-solid fa-rotate"></i> キャッシュ全削除 ＆ 最新データ再読み込み
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
+        <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
+      </div>
+      <button class="btn-create-visitor" onclick="openAddMemberModal()">
+        <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
+      </button>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60px;">No.</th>
+            <th>カテゴリ / 専門領域</th>
+            <th>メンバー氏名</th>
+            <th>専門分野</th>
+            <th style="width: 120px;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-members-master"></tbody>
+      </table>
+    </div>
+  </div>
+</div>

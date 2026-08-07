@@ -1,0 +1,96 @@
+<!-- VIEW 6: メール送信予定一覧ビュー -->
+<div id="view-email-schedule" class="view-content">
+  <div id="es-test-mode-banner" style="display:none; background: #fffbe6; border: 1px solid #ffe58f; padding: 12px 18px; border-radius: var(--radius-sm); margin-bottom: 20px; font-size: 13px; color: #856404; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <i class="fa-solid fa-flask" style="color: #d97706; margin-right: 6px;"></i>
+      <strong>テストモード稼働中:</strong> 送信処理実行時、実際のアドレスではなく管理者テストアドレス（<span id="es-test-email-list">-</span>）へ配信されます。
+    </div>
+    <span class="badge-status badge-urgent">TEST MODE</span>
+  </div>
+
+  <div class="kpi-grid" style="margin-bottom: 24px;">
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title"><i class="fa-solid fa-envelope-open-text"></i> 総送信予定件数</div>
+      <div class="kpi-value-large"><span id="val-es-total-count">-</span> <span class="unit">件</span></div>
+    </div>
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title" style="color: #15803d;"><i class="fa-solid fa-calendar-day"></i> 本日送信予定</div>
+      <div class="kpi-value-large" style="color: #15803d;"><span id="val-es-today-count">-</span> <span class="unit">件</span></div>
+    </div>
+    <div class="kpi-card" style="grid-column: span 4;">
+      <div class="kpi-title" style="color: #1d4ed8;"><i class="fa-solid fa-calendar-week"></i> 今週の送信予定 (7日以内)</div>
+      <div class="kpi-value-large" style="color: #1d4ed8;"><span id="val-es-week-count">-</span> <span class="unit">件</span></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <h2 class="section-title"><i class="fa-solid fa-clock"></i> 自動ステップメール送信予定リスト</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="es-search-box" class="search-box" placeholder="氏名・メール・招待者で検索..." oninput="filterEmailSchedule()">
+        <select id="es-type-filter" class="search-box" style="width: auto;" onchange="filterEmailSchedule()">
+          <option value="all">全メール種別</option>
+          <option value="intro">参加案内 (Welcome)</option>
+          <option value="remind">リマインドメール</option>
+          <option value="thanks">御礼・欠席フォロー</option>
+          <option value="follow">中長期フォロー (7日/30日)</option>
+        </select>
+        <select id="es-status-filter" class="search-box" style="width: auto;" onchange="filterEmailSchedule()">
+          <option value="all">全ステータス</option>
+          <option value="today">本日送信予定</option>
+          <option value="upcoming">今後の予定</option>
+          <option value="urgent">即時/未処理</option>
+        </select>
+        <button class="btn-action-secondary" onclick="fetchScheduledEmailsData()"><i class="fa-solid fa-rotate-right"></i> 更新</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 110px;">予定日</th>
+            <th style="width: 120px;">ステータス</th>
+            <th>宛先ビジター</th>
+            <th>会社名 / 専門分野</th>
+            <th>紹介者</th>
+            <th style="width: 100px;">参加日</th>
+            <th>メール種別</th>
+            <th>件名</th>
+            <th style="width: 110px; text-align: center;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-email-schedule"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Email Preview -->
+<div id="modal-email-preview" class="modal-backdrop">
+  <div class="modal-box-large">
+    <div class="modal-header-title">
+      <i class="fa-solid fa-envelope-open-text"></i> メール送信予定プレビュー
+    </div>
+    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; font-size: 13px;">
+      <div style="margin-bottom: 6px;"><strong>宛先:</strong> <span id="ep-visitor-name">-</span> 様 (&lt;<span id="ep-email">-</span>&gt;)</div>
+      <div style="margin-bottom: 6px;"><strong>種別:</strong> <span id="ep-mail-type">-</span></div>
+      <div style="margin-bottom: 6px;"><strong>送信予定日:</strong> <span id="ep-scheduled-date">-</span> (<span id="ep-status-badge">-</span>)</div>
+      <div><strong>定例会参加日:</strong> <span id="ep-event-date">-</span> (紹介者: <span id="ep-inviter">-</span>)</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">件名</label>
+      <input type="text" id="ep-subject" class="form-input" readonly style="font-weight: 700; background: #fff;">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">本文プレビュー</label>
+      <textarea id="ep-body" class="form-textarea" readonly style="min-height: 240px; font-family: monospace; font-size: 12px; background: #fff; line-height: 1.6;"></textarea>
+    </div>
+
+    <div class="modal-footer-btns">
+      <button type="button" class="btn-cancel" onclick="closeEmailPreviewModal()">閉じる</button>
+      <button type="button" class="btn-save" style="background: var(--primary-accent);" onclick="sendSingleTestEmailFromPreview()"><i class="fa-solid fa-paper-plane"></i> テスト送信実行</button>
+    </div>
+  </div>
+</div>

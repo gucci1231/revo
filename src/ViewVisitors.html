@@ -1,0 +1,47 @@
+<!-- VIEW 2: ビジター全一覧 (CRUD統合管理) -->
+<div id="view-visitors" class="view-content">
+  <section class="section-card">
+    <div class="section-header">
+      <h2 class="section-title"><i class="fa-solid fa-users"></i> 全ビジター統合管理名簿</h2>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 6px; align-items: center; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <i class="fa-solid fa-calendar-range" style="color: #64748b; font-size: 12px;"></i>
+          <input type="date" id="visitors-date-from" style="border: none; background: transparent; font-size: 13px; color: #334155; cursor: pointer; outline: none;" onchange="filterAllVisitorsTable()" title="開始日">
+          <span style="color: #94a3b8; font-size: 13px;">〜</span>
+          <input type="date" id="visitors-date-to" style="border: none; background: transparent; font-size: 13px; color: #334155; cursor: pointer; outline: none;" onchange="filterAllVisitorsTable()" title="終了日">
+          <button type="button" onclick="clearVisitorsDateFilter()" style="border: none; background: none; cursor: pointer; color: #94a3b8; font-size: 12px; padding: 0 2px;" title="期間クリア"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
+        <button class="btn-create-visitor" onclick="openAddVisitorModal()"><i class="fa-solid fa-plus"></i> 新規追加</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>招待者</th>
+            <th>参加日</th>
+            <th>氏名 / ふりがな</th>
+            <th>専門分野 / 会社名</th>
+            <th>参加回数</th>
+            <th>出欠</th>
+            <th>ヒアリングシート</th>
+            <th>1to1</th>
+            <th>入会状況</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-all-visitors"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color);">
+      <div style="font-size: 13px; color: #64748b; font-weight: 600;" id="visitors-pagination-info">全 0 件中 0 - 0 件を表示</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" class="btn-action-secondary" id="btn-visitors-prev-page" onclick="changeVisitorsPage(-1)"><i class="fa-solid fa-chevron-left"></i> 前の50件</button>
+        <span id="visitors-pagination-page-num" style="font-size: 13px; font-weight: 700; color: #1e293b; min-width: 60px; text-align: center;">1 / 1</span>
+        <button type="button" class="btn-action-secondary" id="btn-visitors-next-page" onclick="changeVisitorsPage(1)">次の50件 <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+</div>

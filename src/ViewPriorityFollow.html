@@ -1,0 +1,40 @@
+<!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価) -->
+<div id="view-priority-follow" class="view-content">
+  <section class="section-card">
+    <div class="section-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+      <div>
+        <h2 class="section-title"><i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロービジター一覧</h2>
+        <div class="section-sub">ヒアリングシートで感触 《A》または《B》 と評価されたビジター名簿です。</div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div style="font-size: 13px; font-weight: 700; background: #fee2e2; color: #991b1b; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-fire"></i> 感触 A･B 評価
+        </div>
+        <input type="text" id="search-priority-follow-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterPriorityFollowTable()">
+      </div>
+    </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 95px;">参加日</th>
+            <th>氏名 / 会社名・専門分野</th>
+            <th style="width: 120px;">招待者</th>
+            <th style="width: 120px;">オリエン担当</th>
+            <th>ヒアリングメモ (Q7 / 直後メモ)</th>
+            <th style="width: 160px;">シート / 1to1 / 操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-priority-follow-page"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #f8fafc; border-top: 1px solid var(--border-color);">
+      <div style="font-size: 13px; color: #64748b; font-weight: 600;" id="pf-pagination-info">全 0 件中 0 - 0 件を表示</div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" class="btn-action-secondary" id="btn-pf-prev-page" onclick="changePriorityFollowPage(-1)"><i class="fa-solid fa-chevron-left"></i> 前の50件</button>
+        <span id="pf-pagination-page-num" style="font-size: 13px; font-weight: 700; color: #1e293b; min-width: 60px; text-align: center;">1 / 1</span>
+        <button type="button" class="btn-action-secondary" id="btn-pf-next-page" onclick="changePriorityFollowPage(1)">次の50件 <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </section>
+</div>

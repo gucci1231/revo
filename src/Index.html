@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REvo 定例会ビジター管理 2.0 (完全Web運用システム)</title>
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Global Client Error Reporter -->
+  <script>
+    window.onerror = function(msg, url, line, col, error) {
+      const errInfo = {
+        message: String(msg),
+        url: String(url),
+        line: line,
+        col: col,
+        stack: error ? String(error.stack) : '',
+        href: window.location.href
+      };
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.logClientErrorApi(errInfo);
+      }
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+      const errInfo = {
+        message: 'Unhandled Rejection: ' + (event.reason ? (event.reason.message || event.reason) : ''),
+        stack: event.reason ? String(event.reason.stack) : '',
+        href: window.location.href
+      };
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.logClientErrorApi(errInfo);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', function() {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        var warnDiv = document.createElement('div');
+        warnDiv.style.cssText = 'background: #fff0f6; border: 2px solid #ff4d4f; color: #cf1322; padding: 16px 24px; font-weight: bold; text-align: center; border-radius: 8px; margin: 16px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);';
+        warnDiv.innerHTML = '⚠️ <strong>注意: Google Web App API (google) が検出されません</strong><br><span style="font-size:12px; font-weight:normal; color:#495057;">Googleドライブのファイルプレビュー等ではなく、以下の正規Web App URLを開いてください。</span><br><br><a href="https://script.google.com/macros/s/AKfycbydC-gIMjpdAoeQpsgIwq-RQcBzWHZ17yijcMxc_zm2BNZfWxbij9DO2XutZxs1jO11/exec" target="_blank" style="background:#e63946; color:#ffffff; padding:10px 20px; border-radius:6px; text-decoration:none; display:inline-block; margin-top:6px;">👉 ここをクリックして正規Web Appを開く</a>';
+        document.body.insertBefore(warnDiv, document.body.firstChild);
+      }
+    });
+  </script>
+  <?!= include('Styles'); ?>
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p style="margin-top: 16px; font-weight: 800; color: #495057;">データをロード中...</p>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- CRUD Modals -->
+  <?!= include('ModalVisitorCrud'); ?>
+  <?!= include('ModalHearingForm'); ?>
+  <?!= include('ModalMemberCrud'); ?>
+
+  <!-- Left Slide-over Drawer Navigation -->
+  <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeLeftDrawer()"></div>
+  <aside id="left-drawer" class="left-drawer">
+    <div class="drawer-header">
+      <div class="drawer-brand">
+        <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
+        <span>REvo ビジター管理</span>
+      </div>
+      <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="drawer-nav-list">
+      <!-- ➕ 新規登録メインボタン -->
+      <div style="padding: 0 4px 12px 4px;">
+        <button class="btn-action-primary" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px;" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+        </button>
+      </div>
+
+      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
+        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
+        <i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロー
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')">
+        <i class="fa-solid fa-users"></i> 全ビジター統合管理名簿
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')">
+        <i class="fa-solid fa-file-lines"></i> ヒアリングシート一覧
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')">
+        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')">
+        <i class="fa-solid fa-gear"></i> 各種設定・メンバー管理
+      </button>
+    </div>
+
+    <div class="drawer-footer">
+      <div style="font-size: 11px; color: #94a3b8; text-align: center;">REvo Chapter Visitor Host v2.0</div>
+    </div>
+  </aside>
+
+  <div class="container">
+
+    <!-- Top Header -->
+    <header class="header-bar">
+      <div class="logo-area" style="display: flex; align-items: center; gap: 12px;">
+        <button class="btn-drawer-trigger" onclick="toggleLeftDrawer()" title="メニューを開く">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="logo-title">REvo 定例会ビジター管理</h1>
+      </div>
+      <div class="nav-links" style="display: flex; align-items: center; gap: 8px;">
+        <button class="btn-icon-quick" onclick="copyCurrentPageUrl()" title="画面URLの共有 (クリップボードにコピー)">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+        <button class="btn-icon-quick" onclick="syncFormResponsesManual()" title="Googleフォーム新着回答の同期">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button class="btn-icon-quick" onclick="forceRefreshAllCacheAndData()" title="最新データの再読み込み (キャッシュ削除)">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+        <button class="btn-action-primary" onclick="openAddVisitorModal()" style="margin-left: 4px;">
+          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-tab-bar" style="display: none;">
+      <button class="tab-btn active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
+        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      </button>
+      <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
+        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      </button>
+      <button class="tab-btn" id="tab-btn-visitors" onclick="switchTab('visitors')">
+        <i class="fa-solid fa-users"></i> ビジター全一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-hearings" onclick="switchTab('hearings')">
+        <i class="fa-solid fa-file-lines"></i> ヒアリング一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
+        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
+        <i class="fa-solid fa-gear"></i> 設定
+      </button>
+    </nav>
+
+    <!-- Views -->
+    <?!= include('ViewDashboard'); ?>
+    <?!= include('ViewPriorityFollow'); ?>
+    <?!= include('ViewVisitors'); ?>
+    <?!= include('ViewHearings'); ?>
+    <?!= include('ViewVisitorDetail'); ?>
+    <?!= include('ViewSettings'); ?>
+    <?!= include('ViewEmailSchedule'); ?>
+
+  </div>
+
+  <!-- Client-side Scripts -->
+  <?!= include('Scripts'); ?>
+
+</body>
+</html>

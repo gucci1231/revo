@@ -1,0 +1,67 @@
+<!-- CRUD Modal: Add / Edit Visitor -->
+<div id="modal-visitor-crud" class="modal-backdrop">
+  <div class="modal-box-medium">
+    <div class="modal-header-title" id="crud-modal-title">
+      <i class="fa-solid fa-user-plus"></i> 新規ビジター登録
+    </div>
+    <form id="form-visitor-crud">
+      <input type="hidden" id="crud-v-id">
+
+      <div class="form-group">
+        <label class="form-label">氏名 <span style="color:red;">*</span></label>
+        <input type="text" id="crud-v-name" class="form-input" placeholder="例：山田 太郎" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">ふりがな</label>
+          <input type="text" id="crud-v-furigana" class="form-input" placeholder="やまだ たろう">
+        </div>
+        <div class="form-group">
+          <label class="form-label">参加日 (定例会) <span style="color:red;">*</span></label>
+          <input type="date" id="crud-v-event-date" class="form-input" required style="font-weight:700;">
+          <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('next')">⚡ 次回定例会</button>
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('afterNext')">⚡ 次々回定例会</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">招待者</label>
+          <input type="text" id="crud-v-inviter" class="form-input" placeholder="紹介メンバー名">
+        </div>
+        <div class="form-group">
+          <label class="form-label">専門分野</label>
+          <input type="text" id="crud-v-profession" class="form-input" placeholder="例：税理士、店舗内装">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">会社名</label>
+          <input type="text" id="crud-v-company" class="form-input" placeholder="株式会社〇〇">
+        </div>
+        <div class="form-group">
+          <label class="form-label">メールアドレス</label>
+          <input type="email" id="crud-v-email" class="form-input" placeholder="example@email.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ビジター参加回数</label>
+        <select id="crud-v-attendance-count" class="form-input">
+          <option value="初めて">初めて</option>
+          <option value="2回目">2回目</option>
+          <option value="3回以上">3回以上</option>
+        </select>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button type="button" class="btn-cancel" onclick="closeCrudModal()">キャンセル</button>
+        <button type="button" class="btn-save" onclick="submitCrudVisitorForm()">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
