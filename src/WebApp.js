@@ -20,10 +20,10 @@ function doGet(e) {
 }
 
 /**
- * 高速初期ロード用：サーバーサイドで初回表示に必要なデータを一括生成
+ * 高速初期ロード用：サーバーサイドで初回表示に必要なデータを一括生成（高速キャッシュ活用）
  */
 function getFastInitialData() {
-  const dashboardData = updateSummaryCacheTable();
+  const dashboardData = getCachedDashboardData();
   const memberRes = getMemberListApi();
 
   return {
@@ -36,10 +36,10 @@ function getFastInitialData() {
 }
 
 /**
- * ダッシュボード用データ取得 (最新リアルタイム反映)
+ * ダッシュボード用データ取得 (高速キャッシュ活用 ＆ 必要時強制更新対応)
  */
-function getDashboardData() {
-  return updateSummaryCacheTable();
+function getDashboardData(forceRefresh = false) {
+  return getCachedDashboardData(forceRefresh);
 }
 
 /**

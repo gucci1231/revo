@@ -95,3 +95,81 @@ function processStepEmails(sheet, row, email, diffDays, statusObj) {
     }
   }
 }
+
+/**
+ * 【一括設定】シートの10分おき定期チェック＆編集時リアルタイム同期トリガーを全自動登録
+ */
+function setupAutomatedTriggers() {
+  const currentTriggers = ScriptApp.getProjectTriggers();
+  currentTriggers.forEach(t => {
+    const fnName = t.getHandlerFunction();
+    if (["autoCheckAndSyncSheets", "sendVisitorAutomatedEmails", "onSpreadsheetEditTrigger", "onFormSubmitTrigger"].includes(fnName)) {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+
+  // 1. 10分おきのシート定期チェック ＆ 新着データ自動取り込みトリガー
+  ScriptApp.newTrigger("autoCheckAndSyncSheets")
+    .timeBased()
+    .everyMinutes(10)
+    .create();
+
+  // 2. 1時間おきのステップメール自動送信エンジン
+  ScriptApp.newTrigger("sendVisitorAutomatedEmails")
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  // 3. スプレッドシートの手動編集時リアルタイムキャッシュ更新トリガー
+  const ss = SheetUtil.getSpreadsheet();
+  if (ss) {
+    ScriptApp.newTrigger("onSpreadsheetEditTrigger")
+      .forSpreadsheet(ss)
+      .onEdit()
+      .create();
+
+    // 4. フォーム送信時リアルタイム同期トリガー
+    ScriptApp.newTrigger("onFormSubmitTrigger")
+      .forSpreadsheet(ss)
+      .onFormSubmit()
+      .create();
+  }
+
+  Logger.log("✅ [自動同期トリガー設定完了] 10分おきのシート定期チェック・編集時リアルタイム同期トリガーが正常に有効化されました。");
+  return "定期チェック＆高速データ管理用トリガーの登録が完了しました！";
+}
+
+/**
+ * シートの手動編集時に即座に高速キャッシュを最新化するトリガーハンドラー
+ */
+function onSpreadsheetEditTrigger(e) {
+  try {
+    updateSummaryCacheTable();
+  } catch (err) {
+    Logger.log("Edit trigger error: " + err);
+  }
+}
+
+/**
+ * フォーム送信時に即座に新着データを同期＆キャッシュ更新するトリガーハンドラー
+ */
+function onFormSubmitTrigger(e) {
+  try {
+    autoCheckAndSyncSheets();
+  } catch (err) {
+    Logger.log("Form submit trigger error: " + err);
+  }
+}
+
+/**
+ * スプレッドシート開いた際にカスタムメニューを追加
+ */
+function onOpen() {
+  try {
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu("⚡ ビジホスDX管理")
+      .addItem("🔄 今すぐ同期＆高速キャッシュ更新", "autoCheckAndSyncSheets")
+      .addItem("⚙️ 定期チェック自動トリガーの有効化", "setupAutomatedTriggers")
+      .addToUi();
+  } catch (e) {}
+}

@@ -606,6 +606,40 @@ function updateSummaryCacheTable() {
 }
 
 /**
+ * 高速キャッシュ取得機能（ミリ秒レスポンスを実現）
+ * キャッシュが存在する場合は即座に返し、存在しない場合や強制更新指定時に再構築
+ */
+function getCachedDashboardData(forceRefresh = false) {
+  if (!forceRefresh) {
+    // 1. In-Memory Cache (0-5ms)
+    try {
+      const cachedStr = CacheService.getScriptCache().get("VHR_DASHBOARD_DATA_CACHE_V7");
+      if (cachedStr) {
+        return JSON.parse(cachedStr);
+      }
+    } catch (e) {}
+
+    // 2. Summary Cache Sheet (50-100ms)
+    try {
+      const summarySheet = SheetUtil.getSheet(SHEET_NAMES.SUMMARY_CACHE);
+      if (summarySheet && summarySheet.getLastRow() > 1) {
+        const val = summarySheet.getRange("A2").getValue();
+        if (val) {
+          const parsed = JSON.parse(val);
+          try {
+            CacheService.getScriptCache().put("VHR_DASHBOARD_DATA_CACHE_V7", String(val), 300);
+          } catch (e) {}
+          return parsed;
+        }
+      }
+    } catch (e) {}
+  }
+
+  // 3. Fallback: フル集計＆キャッシュ更新
+  return updateSummaryCacheTable();
+}
+
+/**
  * 最後にフォーム同期を行った日時を取得
  */
 function getLastFormSyncTime() {
@@ -829,6 +863,27 @@ function syncFormResponsesToRdb() {
       ? `同期完了: 前回同期（${lastTimeStr}）以降の新着ビジター ${addedCount} 件を追加登録しました。`
       : `新着データはありません（前回同期: ${lastTimeStr}。登録済みビジターは重複防止のためスキップされました）。`
   };
+}
+
+/**
+ * 【定期自動同期エンジン】スプレッドシートを定期チェックし、新着データの自動取り込み・整合性修復・高速キャッシュ更新を全自動で行う
+ */
+function autoCheckAndSyncSheets() {
+  try {
+    initDatabaseSchema();
+    // 1. Googleフォーム/Listシートからの新着回答全自動同期
+    const addedCount = syncFormResponsesToRdbInternal();
+    // 2. データフォーマット検証とヘッダー整合性修復
+    runDataFormatCheckAndRepair();
+    // 3. 最新集計結果の高速キャッシュ構築
+    const updatedSummary = updateSummaryCacheTable();
+
+    Logger.log(`[自動定期同期完了] 新着追加: ${addedCount}件 / タイムスタンプ: ${new Date()}`);
+    return { success: true, addedCount: addedCount, summary: updatedSummary };
+  } catch (err) {
+    Logger.log(`[自動定期同期エラー] ${err.stack || err}`);
+    return { success: false, error: String(err) };
+  }
 }
 
 /**
