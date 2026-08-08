@@ -133,6 +133,23 @@
   }
 
   function renderOneMonthTable(records) {
-    renderSimpleVisitorSubTable('table-one-month', records);
+    const tbody = document.getElementById('table-one-month');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!records || records.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      return;
+    }
+    records.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
+        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+        <td>${formatTruncatedCell(r.company, 12)}</td>
+        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 </script>
