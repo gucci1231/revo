@@ -901,12 +901,12 @@ tr:last-child td { border-bottom: none; }
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
             <th class="p-3 border-b-2 border-slate-200 w-10">No.</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名 (ふりがな)</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名</th>
             <th class="p-3 border-b-2 border-slate-200">会社名 / 専門分野</th>
             <th class="p-3 border-b-2 border-slate-200">招待者</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">出欠</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28 text-center">ヒアリング</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">操作</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28 text-center">操作</th>
           </tr>
         </thead>
         <tbody id="table-next-meeting"></tbody>
@@ -926,11 +926,11 @@ tr:last-child td { border-bottom: none; }
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
             <th class="p-3 border-b-2 border-slate-200 w-10">No.</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名 (ふりがな)</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名</th>
             <th class="p-3 border-b-2 border-slate-200">会社名 / 専門分野</th>
             <th class="p-3 border-b-2 border-slate-200">招待者</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">出欠</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28 text-center">ヒアリング</th>
           </tr>
         </thead>
         <tbody id="table-last-meeting"></tbody>
@@ -953,11 +953,12 @@ tr:last-child td { border-bottom: none; }
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
             <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社名・専門分野</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名</th>
+            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
             <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">オリエン担当</th>
-            <th class="p-3 border-b-2 border-slate-200">促し内容 (Q7) / メモ</th>
-            <th class="p-3 border-b-2 border-slate-200 w-40">シート / 1to1 / 操作</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
           </tr>
         </thead>
         <tbody id="table-hot-visitors"></tbody>
@@ -976,14 +977,11 @@ tr:last-child td { border-bottom: none; }
       <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-10">No.</th>
+            <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
             <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200 w-24">感触</th>
-            <th class="p-3 border-b-2 border-slate-200">オリエン担当</th>
-            <th class="p-3 border-b-2 border-slate-200">次のアクション / 促し内容 (Q7)</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">1to1</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">入会</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">操作</th>
+            <th class="p-3 border-b-2 border-slate-200">会社名</th>
+            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
           </tr>
         </thead>
         <tbody id="table-one-month"></tbody>
@@ -1057,17 +1055,16 @@ tr:last-child td { border-bottom: none; }
       <table>
         <thead>
           <tr>
-            <th>No.</th>
-            <th>招待者</th>
             <th>参加日</th>
-            <th>氏名 / ふりがな</th>
-            <th>専門分野 / 会社名</th>
-            <th>参加回数</th>
-            <th>出欠</th>
-            <th>ヒアリングシート</th>
-            <th>1to1</th>
-            <th>入会状況</th>
-            <th>操作</th>
+            <th>氏名</th>
+            <th>会社名</th>
+            <th>専門分野</th>
+            <th>招待者</th>
+            <th style="text-align:center;">ランク</th>
+            <th style="text-align:center;">出欠</th>
+            <th style="text-align:center;">1to1</th>
+            <th style="text-align:center;">入会</th>
+            <th style="text-align:center;">操作</th>
           </tr>
         </thead>
         <tbody id="table-all-visitors"></tbody>
