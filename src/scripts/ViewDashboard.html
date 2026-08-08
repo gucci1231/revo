@@ -16,6 +16,11 @@
     const afterNextThuDateEl = document.getElementById('date-after-next-thu');
     if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
     if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+    // Meeting table titles
+    const nextMeetingTitleEl = document.getElementById('title-next-meeting-date');
+    const lastMeetingTitleEl = document.getElementById('title-last-meeting-date');
+    if (nextMeetingTitleEl) nextMeetingTitleEl.innerText = data.nextThuStr || '次回';
+    if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = data.lastThuStr || '今週';
 
     // Counts
     const nextThuValEl = document.getElementById('val-next-thu-count');

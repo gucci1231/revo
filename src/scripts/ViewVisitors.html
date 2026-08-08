@@ -90,33 +90,46 @@
     filterAllVisitorsTable();
   }
 
-  function renderSimpleVisitorSubTable(tbodyId, records) {
+  function renderMeetingVisitorTable(tbodyId, records, showActions) {
     const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
     tbody.innerHTML = '';
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      const cols = showActions ? 7 : 6;
+      tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>`;
       return;
     }
-    records.forEach(r => {
+    records.forEach((r, idx) => {
       const tr = document.createElement('tr');
+      const companyPart = formatTruncatedCell(r.company, 12);
+      const profPart = formatTruncatedCell(r.profession, 12);
+      const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
+      const actionsCell = showActions ? `
+        <td>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="btn-icon-action" onclick="openHearingFormModal('${r.id}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
+            <button class="btn-icon-action" onclick="openEditVisitorModal('${r.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          </div>
+        </td>` : '';
       tr.innerHTML = `
-        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
+        <td>${idx + 1}</td>
         <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${formatTruncatedCell(r.company, 12)}</td>
-        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${companyCell}</td>
         <td>${formatTruncatedCell(r.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(r.id, r.isAttended)}</td>
+        ${actionsCell}
       `;
       tbody.appendChild(tr);
     });
   }
 
   function renderNextMeetingTable(records) {
-    renderSimpleVisitorSubTable('table-next-meeting', records);
+    renderMeetingVisitorTable('table-next-meeting', records, true);
   }
 
   function renderLastMeetingTable(records) {
-    renderSimpleVisitorSubTable('table-last-meeting', records);
+    renderMeetingVisitorTable('table-last-meeting', records, false);
   }
 
   function renderOneMonthTable(records) {

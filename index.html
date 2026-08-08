@@ -2033,6 +2033,11 @@ const ApiService = {
     const afterNextThuDateEl = document.getElementById('date-after-next-thu');
     if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
     if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+    // Meeting table titles
+    const nextMeetingTitleEl = document.getElementById('title-next-meeting-date');
+    const lastMeetingTitleEl = document.getElementById('title-last-meeting-date');
+    if (nextMeetingTitleEl) nextMeetingTitleEl.innerText = data.nextThuStr || '次回';
+    if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = data.lastThuStr || '今週';
 
     // Counts
     const nextThuValEl = document.getElementById('val-next-thu-count');
@@ -2327,7 +2332,7 @@ const ApiService = {
       const vid = v.id || v.visitorId;
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(v.eventDate, 10)}</strong></td>
+        <td>${formatTruncatedCell(v.eventDate, 10)}</td>
         <td>${renderRankBadgeHtml(v.feelAbc)}</td>
         <td>
           <div style="font-weight:700;">${renderVisitorNameLinkHtml(vid, v.name)}</div>
@@ -2443,33 +2448,46 @@ const ApiService = {
     filterAllVisitorsTable();
   }
 
-  function renderSimpleVisitorSubTable(tbodyId, records) {
+  function renderMeetingVisitorTable(tbodyId, records, showActions) {
     const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
     tbody.innerHTML = '';
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      const cols = showActions ? 7 : 6;
+      tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>`;
       return;
     }
-    records.forEach(r => {
+    records.forEach((r, idx) => {
       const tr = document.createElement('tr');
+      const companyPart = formatTruncatedCell(r.company, 12);
+      const profPart = formatTruncatedCell(r.profession, 12);
+      const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
+      const actionsCell = showActions ? `
+        <td>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="btn-icon-action" onclick="openHearingFormModal('${r.id}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
+            <button class="btn-icon-action" onclick="openEditVisitorModal('${r.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+          </div>
+        </td>` : '';
       tr.innerHTML = `
-        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
+        <td>${idx + 1}</td>
         <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${formatTruncatedCell(r.company, 12)}</td>
-        <td>${formatTruncatedCell(r.profession, 12)}</td>
+        <td>${companyCell}</td>
         <td>${formatTruncatedCell(r.inviter, 10)}</td>
+        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
+        <td>${renderAttendButtonHtml(r.id, r.isAttended)}</td>
+        ${actionsCell}
       `;
       tbody.appendChild(tr);
     });
   }
 
   function renderNextMeetingTable(records) {
-    renderSimpleVisitorSubTable('table-next-meeting', records);
+    renderMeetingVisitorTable('table-next-meeting', records, true);
   }
 
   function renderLastMeetingTable(records) {
-    renderSimpleVisitorSubTable('table-last-meeting', records);
+    renderMeetingVisitorTable('table-last-meeting', records, false);
   }
 
   function renderOneMonthTable(records) {
