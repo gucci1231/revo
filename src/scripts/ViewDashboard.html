@@ -205,20 +205,34 @@
     tbody.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       return;
     }
 
     records.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
-        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${formatTruncatedCell(r.profession, 12)}</td>
-        <td>${formatTruncatedCell(r.inviter, 10)}</td>
-        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td>${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td>${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+        <td>
+          <div>
+            ${renderVisitorNameLinkHtml(r.id, r.name)}
+            ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+          </div>
+        </td>
+        <td>
+          <div>
+            <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
+            ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+          </div>
+        </td>
+        <td>${renderCurrentStatusColumnHtml(r)}</td>
+        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
+        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td class="text-center">
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });

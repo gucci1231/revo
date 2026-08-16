@@ -417,10 +417,39 @@ function handleApiRequest(req, res, urlObj) {
       const lastMeetingVisitors = [];
       const oneMonthFollowup = [];
 
-      const weeklyMap = {};
-      const monthlyMap = {};
+      const apSql = `
+        SELECT ap.*, 
+               COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+               COALESCE(v.company, '') as visitor_company, 
+               COALESCE(v.profession, '') as visitor_profession, 
+               COALESCE(v.inviter, '') as visitor_inviter, 
+               COALESCE(v.event_date, '') as visitor_event_date
+        FROM action_plans ap
+        LEFT JOIN visitors v ON ap.visitor_id = v.id
+        ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
+        LIMIT 100;
+      `;
+      const actionPlans = runSqlJson(apSql);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const apMap = {};
+      let pendingApCount = 0;
+      let overdueApCount = 0;
+      actionPlans.forEach(ap => {
+        const vId = String(ap.visitor_id);
+        if (!apMap[vId]) {
+          apMap[vId] = ap;
+        } else if (Number(apMap[vId].is_completed) === 1 && Number(ap.is_completed) === 0) {
+          apMap[vId] = ap;
+        }
+
+        if (Number(ap.is_completed) === 0) {
+          pendingApCount++;
+          if (ap.due_date && ap.due_date < todayStr) overdueApCount++;
+        }
+      });
 
       visitors.forEach(r => {
+        r.latestActionPlan = apMap[String(r.id)] || null;
         const isJoinedBool = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会');
         const isAttendedBool = (r.isAttended === '参加' || r.isAttended === '済');
 
@@ -470,29 +499,6 @@ function handleApiRequest(req, res, urlObj) {
 
       const meetingCount = Math.max(1, weeklyKeys.length);
       const avgVisitorCount = (totalApplyCount / meetingCount).toFixed(1);
-
-      const apSql = `
-        SELECT ap.*, 
-               COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
-               COALESCE(v.company, '') as visitor_company, 
-               COALESCE(v.profession, '') as visitor_profession, 
-               COALESCE(v.inviter, '') as visitor_inviter, 
-               COALESCE(v.event_date, '') as visitor_event_date
-        FROM action_plans ap
-        LEFT JOIN visitors v ON ap.visitor_id = v.id
-        ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
-        LIMIT 50;
-      `;
-      const actionPlans = runSqlJson(apSql);
-      const todayStr = new Date().toISOString().slice(0, 10);
-      let pendingApCount = 0;
-      let overdueApCount = 0;
-      actionPlans.forEach(ap => {
-        if (Number(ap.is_completed) === 0) {
-          pendingApCount++;
-          if (ap.due_date && ap.due_date < todayStr) overdueApCount++;
-        }
-      });
 
       return res.end(JSON.stringify({
         success: true,

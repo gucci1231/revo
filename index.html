@@ -1161,9 +1161,12 @@ tr:last-child td { border-bottom: none; }
   <!-- Section: HOTビジター (最優先フォロー) -->
   <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
     <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-      <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
-        <i class="fa-solid fa-fire"></i> 最優先フォロー
-      </h2>
+      <div>
+        <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
+          <i class="fa-solid fa-fire"></i> 最優先フォロー (感触Aビジター)
+        </h2>
+        <div class="text-xs text-slate-500 mt-0.5">直近の定例会で好感触（ランクA）だったビジターのフォロー進捗状況</div>
+      </div>
       <button type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all flex items-center gap-1.5" onclick="switchTab('priority-follow')">
         最優先フォローページで全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
       </button>
@@ -1172,13 +1175,13 @@ tr:last-child td { border-bottom: none; }
       <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社名</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
+            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">操作</th>
           </tr>
         </thead>
         <tbody id="table-hot-visitors"></tbody>
@@ -1190,18 +1193,21 @@ tr:last-child td { border-bottom: none; }
   <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
     <div class="p-4 border-b border-slate-200">
       <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-comments text-blue-600"></i> 1ヶ月フォローアップ名簿
+        <i class="fa-solid fa-comments text-blue-600"></i> 1ヶ月フォローアップ名簿 (過去30日間の未入会ビジター)
       </h2>
+      <div class="text-xs text-slate-500 mt-0.5">定例会参加から1ヶ月以内のビジター進捗と次の一手</div>
     </div>
     <div class="table-container">
       <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">会社名</th>
-            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社・専門分野</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
+            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
           </tr>
         </thead>
         <tbody id="table-one-month"></tbody>
@@ -1922,6 +1928,76 @@ const ApiService = {
     return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:800; color:#364fc7; text-decoration:underline;">${escapeHtml(name)}</a>`;
   }
 
+  function formatEventDateWithElapsed(eventDate) {
+    if (!eventDate) return '-';
+    const clean = String(eventDate).replace(/\//g, '-').trim();
+    const d = new Date(clean);
+    if (isNaN(d.getTime())) return escapeHtml(eventDate);
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffTime = now.getTime() - target.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    let elapsedBadge = '';
+    if (diffDays === 0) {
+      elapsedBadge = '<span style="font-size:10px; font-weight:800; color:#2b8a3e; background:#d3f9d8; padding:1px 5px; border-radius:4px; margin-left:4px;">本日</span>';
+    } else if (diffDays > 0) {
+      const color = diffDays >= 28 ? '#c92a2a' : (diffDays >= 14 ? '#e67700' : '#495057');
+      const bg = diffDays >= 28 ? '#ffe3e3' : (diffDays >= 14 ? '#fff3bf' : '#f1f5f9');
+      elapsedBadge = `<span style="font-size:10px; font-weight:800; color:${color}; background:${bg}; padding:1px 5px; border-radius:4px; margin-left:4px;">${diffDays}日前</span>`;
+    }
+
+    const shortDate = eventDate.length >= 10 ? eventDate.substring(5) : eventDate;
+    return `<div><span style="font-weight:700;">${escapeHtml(shortDate)}</span>${elapsedBadge}</div>`;
+  }
+
+  function renderCurrentStatusColumnHtml(r) {
+    const ap = r.latestActionPlan;
+    if (ap) {
+      const isCompleted = Number(ap.is_completed) === 1;
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
+      const dateBadge = `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-calendar"></i> ${ap.due_date || '期日未定'}</span>`;
+      const userBadge = ap.assignee_name ? `<span class="vd-ap-badge-user" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-user"></i> ${escapeHtml(ap.assignee_name)}</span>` : '';
+      const textStyle = isCompleted ? 'color:#868e96; text-decoration:line-through;' : 'color:#1e293b; font-weight:700;';
+
+      return `
+        <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
+          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
+            <span style="font-size:11px; font-weight:800; color:#228be6;">🎯 次の一手:</span>
+            ${dateBadge}
+            ${userBadge}
+          </div>
+          <div style="font-size:12px; line-height:1.3; ${textStyle}" title="${escapeHtml(ap.action_text)}">
+            ${escapeHtml(ap.action_text)}
+          </div>
+        </div>
+      `;
+    }
+
+    const note = r.q7 || r.orientMemo || r.followMemo;
+    if (note) {
+      return `
+        <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
+          <div style="font-size:11px; font-weight:800; color:#495057;">
+            <i class="fa-regular fa-comment-dots" style="color:#868e96;"></i> 共有メモ / 提案状況:
+          </div>
+          <div style="font-size:12px; color:#475569; line-height:1.3;" title="${escapeHtml(note)}">
+            ${formatTruncatedCell(note, 26)}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <button type="button" class="btn-action-secondary" style="padding: 2px 8px; font-size: 11px; font-weight: 700; color: #228be6;" onclick="openVisitorDetailView('${r.id}'); return false;">
+        <i class="fa-solid fa-plus text-[10px]"></i> プランを登録
+      </button>
+    `;
+  }
+
   function hideLoading() {
     const el = document.getElementById('loading');
     if (el) el.style.display = 'none';
@@ -2578,20 +2654,34 @@ const ApiService = {
     tbody.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       return;
     }
 
     records.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
-        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${formatTruncatedCell(r.profession, 12)}</td>
-        <td>${formatTruncatedCell(r.inviter, 10)}</td>
-        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td>${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td>${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+        <td>
+          <div>
+            ${renderVisitorNameLinkHtml(r.id, r.name)}
+            ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+          </div>
+        </td>
+        <td>
+          <div>
+            <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
+            ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+          </div>
+        </td>
+        <td>${renderCurrentStatusColumnHtml(r)}</td>
+        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
+        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td class="text-center">
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -2979,17 +3069,29 @@ const ApiService = {
     if (!tbody) return;
     tbody.innerHTML = '';
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
       return;
     }
     records.forEach(r => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${formatTruncatedCell(r.eventDate, 10)}</td>
-        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${formatTruncatedCell(r.company, 12)}</td>
-        <td>${formatTruncatedCell(r.profession, 12)}</td>
-        <td>${formatTruncatedCell(r.inviter, 10)}</td>
+        <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+        <td>
+          <div>
+            ${renderVisitorNameLinkHtml(r.id, r.name)}
+            <div style="font-size:11px; color:#64748b;">${escapeHtml(r.company || '-')} / ${escapeHtml(r.profession || '-')}</div>
+          </div>
+        </td>
+        <td>
+          <div>
+            <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
+            ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+          </div>
+        </td>
+        <td>${renderCurrentStatusColumnHtml(r)}</td>
+        <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
+        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
+        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
       `;
       tbody.appendChild(tr);
     });

@@ -54,7 +54,27 @@ class DashboardService {
         $weeklyMap = [];
         $monthlyMap = [];
 
-        $oneMonthAgoTs = strtotime('-30 days');
+        $actionPlans = $this->actionPlanRepo->getAllWithVisitor(null, 100);
+        $todayStr = date('Y-m-d');
+        $apMap = [];
+        $pendingActionPlansCount = 0;
+        $overdueActionPlansCount = 0;
+
+        foreach ($actionPlans as $ap) {
+            $vId = (string)$ap['visitor_id'];
+            if (!isset($apMap[$vId])) {
+                $apMap[$vId] = $ap;
+            } else if ((int)$apMap[$vId]['is_completed'] === 1 && (int)$ap['is_completed'] === 0) {
+                $apMap[$vId] = $ap;
+            }
+
+            if ((int)$ap['is_completed'] === 0) {
+                $pendingActionPlansCount++;
+                if (!empty($ap['due_date']) && $ap['due_date'] < $todayStr) {
+                    $overdueActionPlansCount++;
+                }
+            }
+        }
 
         foreach ($visitors as $r) {
             $eDate = trim($r['eventDate']);
@@ -72,6 +92,8 @@ class DashboardService {
             if ($isJoinedBool) $totalJoinedCount++;
             if ($isAttendedBool) $totalAttendedCount++;
             if ($r['hasHearingSheet']) $totalHearingCount++;
+
+            $r['latestActionPlan'] = $apMap[(string)$r['id']] ?? null;
 
             $feel = strtoupper(trim($r['feelAbc']));
             if ($feel === 'A' && !$isJoinedBool) {
@@ -133,19 +155,6 @@ class DashboardService {
         $achievementRate = number_format(($totalJoinedCount / $targetJoinGoal) * 100, 1);
         $joinRate = $totalApplyCount > 0 ? number_format(($totalJoinedCount / $totalApplyCount) * 100, 1) : '0.0';
         $hearingRate = $totalApplyCount > 0 ? number_format(($totalHearingCount / $totalApplyCount) * 100, 1) : '0.0';
-
-        $actionPlans = $this->actionPlanRepo->getAllWithVisitor(null, 50);
-        $todayStr = date('Y-m-d');
-        $pendingActionPlansCount = 0;
-        $overdueActionPlansCount = 0;
-        foreach ($actionPlans as $ap) {
-            if ((int)$ap['is_completed'] === 0) {
-                $pendingActionPlansCount++;
-                if (!empty($ap['due_date']) && $ap['due_date'] < $todayStr) {
-                    $overdueActionPlansCount++;
-                }
-            }
-        }
 
         $bniTermsList = [
             ['label' => '第2期 (2026/04/01〜)', 'value' => '2026/04/01'],

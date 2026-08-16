@@ -211,9 +211,12 @@
   <!-- Section: HOTビジター (最優先フォロー) -->
   <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
     <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-      <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
-        <i class="fa-solid fa-fire"></i> 最優先フォロー
-      </h2>
+      <div>
+        <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
+          <i class="fa-solid fa-fire"></i> 最優先フォロー (感触Aビジター)
+        </h2>
+        <div class="text-xs text-slate-500 mt-0.5">直近の定例会で好感触（ランクA）だったビジターのフォロー進捗状況</div>
+      </div>
       <button type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all flex items-center gap-1.5" onclick="switchTab('priority-follow')">
         最優先フォローページで全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
       </button>
@@ -222,13 +225,13 @@
       <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社名</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
+            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
             <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">操作</th>
           </tr>
         </thead>
         <tbody id="table-hot-visitors"></tbody>
@@ -240,18 +243,21 @@
   <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
     <div class="p-4 border-b border-slate-200">
       <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-comments text-blue-600"></i> 1ヶ月フォローアップ名簿
+        <i class="fa-solid fa-comments text-blue-600"></i> 1ヶ月フォローアップ名簿 (過去30日間の未入会ビジター)
       </h2>
+      <div class="text-xs text-slate-500 mt-0.5">定例会参加から1ヶ月以内のビジター進捗と次の一手</div>
     </div>
     <div class="table-container">
       <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
         <thead>
           <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-24">参加日</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">会社名</th>
-            <th class="p-3 border-b-2 border-slate-200">専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
+            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社・専門分野</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
+            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
+            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
           </tr>
         </thead>
         <tbody id="table-one-month"></tbody>
