@@ -6,6 +6,9 @@ namespace Api\Core;
  */
 class Response {
     public static function json(array $data, int $statusCode = 200): void {
+        if (ob_get_length()) {
+            ob_clean();
+        }
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=utf-8');
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');

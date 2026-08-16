@@ -53,6 +53,7 @@ class DashboardService {
 
         $weeklyMap = [];
         $monthlyMap = [];
+        $oneMonthAgoTs = strtotime('-30 days');
 
         $actionPlans = $this->actionPlanRepo->getAllWithVisitor(null, 100);
         $todayStr = date('Y-m-d');
