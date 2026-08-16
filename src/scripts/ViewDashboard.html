@@ -2,6 +2,35 @@
   /* --- VIEW 1: Dashboard Controller & Chart Renderers --- */
   let donutChartInstance = null;
   let lineChartInstance = null;
+  let currentDashboardActivePanel = 'hot';
+
+  function switchDashboardPanel(panelName) {
+    currentDashboardActivePanel = panelName;
+    ['hot', 'ap', 'meeting', 'onemonth', 'stats'].forEach(p => {
+      const btn = document.getElementById(`dash-tab-btn-${p}`);
+      const panel = document.getElementById(`dash-panel-${p}`);
+      if (btn) {
+        if (p === panelName) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+      if (panel) {
+        if (p === panelName) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      }
+    });
+
+    if (panelName === 'stats' && lineChartInstance) {
+      setTimeout(() => {
+        try { lineChartInstance.resize(); } catch(e){}
+      }, 50);
+    }
+  }
 
   function renderDashboard(data) {
     if (!data) return;
@@ -16,6 +45,7 @@
     const afterNextThuDateEl = document.getElementById('date-after-next-thu');
     if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
     if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+    
     // Meeting table titles
     const nextMeetingTitleEl = document.getElementById('title-next-meeting-date');
     const lastMeetingTitleEl = document.getElementById('title-last-meeting-date');
@@ -23,9 +53,15 @@
     if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = data.lastThuStr || '今週';
 
     // Counts
+    const nextMeetingList = t.nextMeeting || t.nextMeetingVisitors || [];
+    const lastMeetingList = t.lastMeeting || t.lastMeetingVisitors || [];
+    const hotList = t.hotVisitors || [];
+    const oneMonthList = t.oneMonthFollowup || t.oneMonthFollowupVisitors || [];
+    const allActionPlans = t.actionPlans || [];
+
     const nextThuValEl = document.getElementById('val-next-thu-count');
     const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
-    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : '-');
+    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : nextMeetingList.length);
     if (afterNextThuValEl) afterNextThuValEl.innerText = (m.afterNextThuCount !== undefined ? m.afterNextThuCount : '-');
 
     // Main KPI counters
@@ -35,37 +71,56 @@
 
     if (applyCountEl) applyCountEl.innerText = m.applyCount !== undefined ? m.applyCount : (m.totalVisitors || 0);
     if (joinedCountEl) joinedCountEl.innerText = m.joinedCount !== undefined ? m.joinedCount : (m.joinedMembers || 0);
-    if (targetGoalEl) targetGoalEl.innerText = m.targetJoinGoal || m.targetMembers || 15;
+    if (targetGoalEl) targetGoalEl.innerText = m.targetJoinGoal || m.targetMembers || 12;
 
     // Rates
     const joinRateEl = document.getElementById('val-join-rate');
     const achievementRateEl = document.getElementById('val-achievement-rate');
     const avgVisitorsEl = document.getElementById('val-avg-visitors');
-    const feedbackRateEl = document.getElementById('val-feedback-rate');
     const hearingRateEl = document.getElementById('val-hearing-rate');
     const pendingApValEl = document.getElementById('val-pending-action-plans');
+    const overdueApValEl = document.getElementById('val-overdue-action-plans');
+    const hotCountValEl = document.getElementById('val-hot-count');
+    const overdueBadgeEl = document.getElementById('badge-overdue-summary');
 
     if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
-    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
+    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%達成`;
     if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
-    if (feedbackRateEl) feedbackRateEl.innerText = `${m.feedbackRate || 0}%`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
 
-    const allActionPlans = t.actionPlans || [];
-    if (pendingApValEl) {
-      const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
-      const overdueCount = m.overdueActionPlansCount || 0;
+    const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
+    const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
+
+    if (pendingApValEl) pendingApValEl.innerText = pendingCount;
+    if (overdueApValEl) overdueApValEl.innerText = overdueCount;
+    if (hotCountValEl) hotCountValEl.innerText = hotList.length;
+
+    if (overdueBadgeEl) {
       if (overdueCount > 0) {
-        pendingApValEl.innerHTML = `<span style="color:#e03131;">${pendingCount}件</span> <span style="font-size:11px; color:#e03131; font-weight:700;">(超過${overdueCount})</span>`;
+        overdueBadgeEl.innerText = `超過 ${overdueCount}件`;
+        overdueBadgeEl.style.background = '#ffe3e3';
+        overdueBadgeEl.style.color = '#e03131';
       } else {
-        pendingApValEl.innerText = `${pendingCount}件`;
+        overdueBadgeEl.innerText = '順調';
+        overdueBadgeEl.style.background = '#e6fcf5';
+        overdueBadgeEl.style.color = '#0ca678';
       }
     }
+
+    // Tab badges
+    const tabBadgeHot = document.getElementById('dash-tab-badge-hot');
+    const tabBadgeAp = document.getElementById('dash-tab-badge-ap');
+    const tabBadgeMeeting = document.getElementById('dash-tab-badge-meeting');
+    const tabBadgeOnemonth = document.getElementById('dash-tab-badge-onemonth');
+
+    if (tabBadgeHot) tabBadgeHot.innerText = hotList.length;
+    if (tabBadgeAp) tabBadgeAp.innerText = pendingCount;
+    if (tabBadgeMeeting) tabBadgeMeeting.innerText = `次回 ${nextMeetingList.length}名`;
+    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = oneMonthList.length;
 
     // Charts
     const chartLabels = c.labels || data.chartLabels || [];
     const chartValues = c.data || data.chartValues || [];
-    initDonutChart(m.joinedCount || 0, m.targetJoinGoal || 15);
     if (chartLabels.length > 0) {
       initLineChart(chartLabels, chartValues);
     }
@@ -74,10 +129,10 @@
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
     renderMonthlyStatsTable(t.monthlyStats || []);
-    renderNextMeetingTable(t.nextMeeting || t.nextMeetingVisitors || []);
-    renderLastMeetingTable(t.lastMeeting || t.lastMeetingVisitors || []);
-    renderHotVisitorsTable(t.hotVisitors || []);
-    renderOneMonthTable(t.oneMonthFollowup || t.oneMonthFollowupVisitors || []);
+    renderNextMeetingTable(nextMeetingList);
+    renderLastMeetingTable(lastMeetingList);
+    renderHotVisitorsTable(hotList);
+    renderOneMonthTable(oneMonthList);
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);

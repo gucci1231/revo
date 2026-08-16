@@ -638,6 +638,118 @@ tr:last-child td { border-bottom: none; }
   padding: 3px 10px; border-radius: 10px;
 }
 
+/* --- 📊 Modern Intuitive Dashboard Styles --- */
+.dash-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.dash-hero-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.dash-hero-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.dash-hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.dash-hero-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-hero-val {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.dash-hero-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-nav-wrap {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+}
+.dash-nav-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.dash-nav-btn:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.6);
+}
+.dash-nav-btn.active {
+  background: #ffffff;
+  color: var(--primary-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.dash-nav-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #475569;
+}
+.dash-nav-btn.active .dash-nav-badge {
+  background: #e7f5ff;
+  color: #1c7ed6;
+}
+.dash-nav-badge.danger {
+  background: #ffe3e3 !important;
+  color: #e03131 !important;
+}
+
+.dash-panel { display: none; }
+.dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
+
+
 
 
 </style>
@@ -948,272 +1060,293 @@ tr:last-child td { border-bottom: none; }
     </nav>
 
     <!-- Views -->
-    <!-- VIEW 1: ダッシュボード (スマホ＆レスポンシブ最適化) -->
+    <!-- VIEW 1: ダッシュボード (直感・要約型エグゼクティブデザイン) -->
 <div id="view-dashboard" class="view-content active">
-  <section class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
-    
-    <!-- 1行目: 定例会別ビジター推移 (全幅) -->
-    <div class="col-span-1 md:col-span-12 bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">定例会別ビジター推移</div>
-      <div class="relative w-full h-32 sm:h-40">
+
+  <!-- 1. トップ4大主要KPIサマリー (一目で状況把握) -->
+  <div class="dash-hero-grid">
+    <!-- KPI 1: 入会目標達成 -->
+    <div class="dash-hero-card">
+      <div class="dash-hero-header">
+        <span class="dash-hero-title"><i class="fa-solid fa-trophy" style="color: #f59f00;"></i> 入会数 / 目標</span>
+        <span class="badge" style="background:#e7f5ff; color:#1864ab; font-size:11px; font-weight:800;" id="val-achievement-rate">0%達成</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="val-joined-count" style="color: #2b8a3e;">-</span>
+        <span style="font-size: 15px; font-weight: 700; color: #64748b;">/ <span id="val-target-goal">12</span>名</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>入会率: <strong id="val-join-rate" style="color: #334155;">-%</strong></span>
+        <span style="font-size: 10px; color: #94a3b8;">今期目標</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: ビジター総数 & 平均 -->
+    <div class="dash-hero-card">
+      <div class="dash-hero-header">
+        <span class="dash-hero-title"><i class="fa-solid fa-users" style="color: #364fc7;"></i> 申込ビジター総数</span>
+        <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:800;">今期累計</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="val-apply-count" style="color: #1e293b;">-</span>
+        <span style="font-size: 15px; font-weight: 700; color: #64748b;">名</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>平均: <strong id="val-avg-visitors" style="color: #334155;">-</strong></span>
+        <span>ヒアリング提出: <strong id="val-hearing-rate" style="color: #334155;">-%</strong></span>
+      </div>
+    </div>
+
+    <!-- KPI 3: 次回・次々回定例会 -->
+    <div class="dash-hero-card">
+      <div class="dash-hero-header">
+        <span class="dash-hero-title"><i class="fa-solid fa-calendar-check" style="color: #0ca678;"></i> 次回定例会</span>
+        <span class="badge" style="background:#e6fcf5; color:#0ca678; font-size:11px; font-weight:800;" id="date-next-thu">--/--</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="val-next-thu-count" style="color: #0ca678;">-</span>
+        <span style="font-size: 15px; font-weight: 700; color: #64748b;">名参加予定</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>次々回 (<span id="date-after-next-thu">--/--</span>): <strong id="val-after-next-thu-count" style="color: #334155;">-</strong>名</span>
+        <span style="font-size: 10px; color: #94a3b8;">木曜開催</span>
+      </div>
+    </div>
+
+    <!-- KPI 4: 進行中アクション & HOTビジター -->
+    <div class="dash-hero-card">
+      <div class="dash-hero-header">
+        <span class="dash-hero-title"><i class="fa-solid fa-bullseye" style="color: #e03131;"></i> 要対応アクション</span>
+        <span class="badge" style="background:#ffe3e3; color:#e03131; font-size:11px; font-weight:800;" id="badge-overdue-summary">進行中</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="val-pending-action-plans" style="color: #e03131;">-</span>
+        <span style="font-size: 15px; font-weight: 700; color: #64748b;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>HOTビジター: <strong id="val-hot-count" style="color: #e03131;">-</strong>名</span>
+        <span>期限超過: <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 直感セグメントタブ (見たい情報を1タップで切替) -->
+  <div class="dash-nav-wrap">
+    <button type="button" class="dash-nav-btn active" id="dash-tab-btn-hot" onclick="switchDashboardPanel('hot')">
+      <i class="fa-solid fa-fire text-rose-500"></i> 最優先フォロー <span class="dash-nav-badge danger" id="dash-tab-badge-hot">0</span>
+    </button>
+    <button type="button" class="dash-nav-btn" id="dash-tab-btn-ap" onclick="switchDashboardPanel('ap')">
+      <i class="fa-solid fa-bullseye text-blue-500"></i> 進行中アクション <span class="dash-nav-badge" id="dash-tab-badge-ap">0</span>
+    </button>
+    <button type="button" class="dash-nav-btn" id="dash-tab-btn-meeting" onclick="switchDashboardPanel('meeting')">
+      <i class="fa-solid fa-calendar-days text-emerald-500"></i> 定例会ビジター名簿 <span class="dash-nav-badge" id="dash-tab-badge-meeting">-</span>
+    </button>
+    <button type="button" class="dash-nav-btn" id="dash-tab-btn-onemonth" onclick="switchDashboardPanel('onemonth')">
+      <i class="fa-solid fa-comments text-indigo-500"></i> 1ヶ月フォロー <span class="dash-nav-badge" id="dash-tab-badge-onemonth">0</span>
+    </button>
+    <button type="button" class="dash-nav-btn" id="dash-tab-btn-stats" onclick="switchDashboardPanel('stats')">
+      <i class="fa-solid fa-chart-line text-slate-500"></i> 定例会推移 ＆ 集計
+    </button>
+  </div>
+
+  <!-- 3. セグメント別コンテンツパネル群 -->
+
+  <!-- パネル 1: 最優先フォロー (HOT Aランクビジター) -->
+  <div id="dash-panel-hot" class="dash-panel active">
+    <section class="section-card overflow-hidden">
+      <div class="section-header flex-wrap">
+        <div>
+          <h2 class="section-title text-rose-600"><i class="fa-solid fa-fire"></i> 最優先フォロー (感触Aビジター)</h2>
+          <div class="section-sub">成約・入会可能性が最も高いビジターの最新状況と次の一手</div>
+        </div>
+        <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
+          最優先フォロー管理で全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-w-sm">参加日</th>
+              <th>氏名 / 会社名</th>
+              <th class="col-w-md">招待者 / 担当</th>
+              <th>現在の状況・次の一手</th>
+              <th class="text-center col-w-sm">1to1</th>
+              <th class="text-center col-w-sm">入会</th>
+              <th class="text-center col-w-sm">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-hot-visitors"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- パネル 2: アクションプラン進捗管理 -->
+  <div id="dash-panel-ap" class="dash-panel">
+    <section class="section-card overflow-hidden">
+      <div class="section-header flex-wrap">
+        <div>
+          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン進捗</h2>
+          <div class="section-sub">ビジターごとの次の一手（いつ・誰が・どうする）の期日と完了状況</div>
+        </div>
+        <div class="flex gap-1.5">
+          <button type="button" class="btn-action-primary text-xs" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">全件</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="text-center col-w-sm">状態</th>
+              <th class="col-w-md">期日 (いつ)</th>
+              <th class="col-w-md">担当 (誰が)</th>
+              <th>対象ビジター</th>
+              <th>アクション内容 (どうする)</th>
+              <th class="text-center col-w-sm">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-dashboard-action-plans"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- パネル 3: 定例会ビジター名簿 (次回 & 直近) -->
+  <div id="dash-panel-meeting" class="dash-panel">
+    <!-- 次回定例会 -->
+    <section class="section-card overflow-hidden mb-4">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-calendar-days text-blue-600"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿</h2>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-w-sm">No.</th>
+              <th>氏名</th>
+              <th>会社名 / 専門分野</th>
+              <th>招待者</th>
+              <th class="text-center col-w-sm">ランク</th>
+              <th class="text-center col-w-sm">出欠</th>
+              <th class="text-center col-w-sm">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-next-meeting"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 直近定例会 -->
+    <section class="section-card overflow-hidden">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-calendar-check text-slate-500"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿</h2>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-w-sm">No.</th>
+              <th>氏名</th>
+              <th>会社名 / 専門分野</th>
+              <th>招待者</th>
+              <th class="text-center col-w-sm">ランク</th>
+              <th class="text-center col-w-sm">出欠</th>
+            </tr>
+          </thead>
+          <tbody id="table-last-meeting"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- パネル 4: 1ヶ月フォローアップ名簿 -->
+  <div id="dash-panel-onemonth" class="dash-panel">
+    <section class="section-card overflow-hidden">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title text-indigo-600"><i class="fa-solid fa-comments"></i> 1ヶ月フォローアップ名簿</h2>
+          <div class="section-sub">定例会参加から30日以内のビジター進捗と次の一手</div>
+        </div>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-w-sm">参加日</th>
+              <th>氏名 / 会社・専門分野</th>
+              <th class="col-w-md">招待者 / 担当</th>
+              <th>現在の状況・次の一手</th>
+              <th class="text-center col-w-sm">ランク</th>
+              <th class="text-center col-w-sm">1to1</th>
+              <th class="text-center col-w-sm">入会</th>
+            </tr>
+          </thead>
+          <tbody id="table-one-month"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- パネル 5: 推移チャート ＆ 週別月別集計 -->
+  <div id="dash-panel-stats" class="dash-panel">
+    <!-- 推移グラフ -->
+    <section class="section-card p-4 mb-4">
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">定例会別ビジター推移</div>
+      <div class="relative w-full h-44">
         <canvas id="lineChart"></canvas>
       </div>
-    </div>
+    </section>
 
-    <!-- 2行目: 次回/次々回定例会カウント -->
-    <div class="col-span-1 md:col-span-4 bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-row items-center justify-around gap-2">
-      <div class="text-center">
-        <div class="text-xs font-semibold text-slate-500 mb-0.5">次回定例会</div>
-        <div class="text-xs font-bold text-blue-600" id="date-next-thu">--/--</div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-tight" id="val-next-thu-count">-</div>
-      </div>
-      <div class="w-px h-12 bg-slate-200"></div>
-      <div class="text-center">
-        <div class="text-xs font-semibold text-slate-500 mb-0.5">次々回</div>
-        <div class="text-xs font-bold text-blue-600" id="date-after-next-thu">--/--</div>
-        <div class="text-2xl sm:text-3xl font-extrabold text-slate-800 leading-tight" id="val-after-next-thu-count">-</div>
-      </div>
-    </div>
-
-    <!-- 3行目: 申込数 / 入会数 & ドーナツグラフ -->
-    <div class="col-span-1 md:col-span-8 bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-row items-center justify-between gap-3 sm:gap-6">
-      <div class="flex-1">
-        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">申込数</div>
-        <div class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none mt-1">
-          <span id="val-apply-count">-</span> <span class="text-xs sm:text-sm font-semibold text-slate-500">名</span>
-        </div>
-      </div>
-      <div class="w-px h-12 bg-slate-200"></div>
-      <div class="flex-1">
-        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">入会数 / 目標</div>
-        <div class="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none mt-1">
-          <span id="val-joined-count">-</span> <span class="text-xs sm:text-sm font-semibold text-slate-500">/<span id="val-target-goal">12</span>名</span>
-        </div>
-      </div>
-      <div class="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-        <canvas id="donutChart"></canvas>
-      </div>
-    </div>
-
-    <!-- 4行目: 率・平均カード群 (スマホで2列、タブレット3列、PC6列) -->
-    <div class="col-span-1 md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">入会率</div>
-        <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-join-rate">-%</div>
-      </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">目標達成率</div>
-        <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-achievement-rate">-%</div>
-      </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">平均ビジター数</div>
-        <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-avg-visitors">-</div>
-      </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">メール送信率</div>
-        <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-feedback-rate">-%</div>
-      </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">ヒアリング提出率</div>
-        <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-hearing-rate">-%</div>
-      </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
-        <div class="text-[11px] font-semibold text-slate-500">進行中アクション</div>
-        <div class="text-xl font-extrabold text-blue-600 mt-1" id="val-pending-action-plans">-</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section: アクションプラン進捗管理 (いつ・誰が・どうする) -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-          <i class="fa-solid fa-bullseye text-blue-600"></i> アクションプラン進捗管理 (いつ・誰が・どうする)
-        </h2>
-        <span id="dashboard-ap-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">0件</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-blue-600 text-white transition-all" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
-        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">全件</button>
-        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
-      </div>
-    </div>
-    <div class="table-container">
-      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
-        <thead>
-          <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-12 text-center">状態</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">期日 (いつ)</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">担当 (誰が)</th>
-            <th class="p-3 border-b-2 border-slate-200">対象ビジター</th>
-            <th class="p-3 border-b-2 border-slate-200">アクション内容 (どうする)</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-dashboard-action-plans"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Section: 週別・月別ビジター集計 -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-      <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-chart-simple text-blue-600"></i> 週別・月別ビジター集計
-      </h2>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-      <!-- 週別ビジター数表 -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-xs">
-        <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-xs sm:text-sm text-slate-800 flex justify-between items-center">
-          <span><i class="fa-solid fa-calendar-week text-blue-500 mr-1.5"></i> 定例会別（週別）ビジター数</span>
-          <span class="text-[11px] text-slate-500 font-normal">直近順</span>
+    <!-- 週別・月別集計 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- 週別 -->
+      <section class="section-card overflow-hidden">
+        <div class="section-header py-2.5">
+          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-blue-500 mr-1.5"></i> 定例会別（週別）</span>
+          <span class="text-[11px] text-slate-500">直近順</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
+          <table>
             <thead>
-              <tr class="bg-slate-100/70 text-slate-600">
-                <th class="p-2.5 border-b border-slate-200 font-bold">定例会日付</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">申込数</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">参加数</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">入会数</th>
+              <tr>
+                <th>定例会日付</th>
+                <th class="text-center">申込</th>
+                <th class="text-center">参加</th>
+                <th class="text-center">入会</th>
               </tr>
             </thead>
             <tbody id="table-weekly-stats"></tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      <!-- 月別ビジター数表 -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-xs">
-        <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-xs sm:text-sm text-slate-800 flex justify-between items-center">
-          <span><i class="fa-solid fa-calendar-days text-emerald-500 mr-1.5"></i> 月別ビジター集計</span>
-          <span class="text-[11px] text-slate-500 font-normal">全期間</span>
+      <!-- 月別 -->
+      <section class="section-card overflow-hidden">
+        <div class="section-header py-2.5">
+          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-days text-emerald-500 mr-1.5"></i> 月別集計</span>
+          <span class="text-[11px] text-slate-500">全期間</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
-          <table class="w-full text-left text-xs sm:text-sm">
+          <table>
             <thead>
-              <tr class="bg-slate-100/70 text-slate-600">
-                <th class="p-2.5 border-b border-slate-200 font-bold">対象年月</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">申込数</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">参加数</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">入会数</th>
-                <th class="p-2.5 border-b border-slate-200 font-bold text-center">入会率</th>
+              <tr>
+                <th>対象年月</th>
+                <th class="text-center">申込</th>
+                <th class="text-center">参加</th>
+                <th class="text-center">入会</th>
+                <th class="text-center">入会率</th>
               </tr>
             </thead>
             <tbody id="table-monthly-stats"></tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
-  </section>
+  </div>
 
-  <!-- Table 1: 次回定例会のビジター様 -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200">
-      <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-calendar-days text-blue-600"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿
-      </h2>
-    </div>
-    <div class="table-container">
-      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
-        <thead>
-          <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-10">No.</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">会社名 / 専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200">招待者</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">出欠</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28 text-center">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-next-meeting"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Table 1b: 今週定例会のビジター様 -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200">
-      <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-calendar-check text-slate-500"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿
-      </h2>
-    </div>
-    <div class="table-container">
-      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
-        <thead>
-          <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-10">No.</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名</th>
-            <th class="p-3 border-b-2 border-slate-200">会社名 / 専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200">招待者</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">出欠</th>
-          </tr>
-        </thead>
-        <tbody id="table-last-meeting"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Section: HOTビジター (最優先フォロー) -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-      <div>
-        <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
-          <i class="fa-solid fa-fire"></i> 最優先フォロー (感触Aビジター)
-        </h2>
-        <div class="text-xs text-slate-500 mt-0.5">直近の定例会で好感触（ランクA）だったビジターのフォロー進捗状況</div>
-      </div>
-      <button type="button" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg border border-slate-200 transition-all flex items-center gap-1.5" onclick="switchTab('priority-follow')">
-        最優先フォローページで全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
-      </button>
-    </div>
-    <div class="table-container">
-      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
-        <thead>
-          <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社名</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
-            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-hot-visitors"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Table 2: 1ヶ月のフォローアップ -->
-  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
-    <div class="p-4 border-b border-slate-200">
-      <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-        <i class="fa-solid fa-comments text-blue-600"></i> 1ヶ月フォローアップ名簿 (過去30日間の未入会ビジター)
-      </h2>
-      <div class="text-xs text-slate-500 mt-0.5">定例会参加から1ヶ月以内のビジター進捗と次の一手</div>
-    </div>
-    <div class="table-container">
-      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
-        <thead>
-          <tr class="bg-slate-50 text-slate-600 font-bold">
-            <th class="p-3 border-b-2 border-slate-200 w-28">参加日 / 経過</th>
-            <th class="p-3 border-b-2 border-slate-200">氏名 / 会社・専門分野</th>
-            <th class="p-3 border-b-2 border-slate-200 w-28">招待者 / 担当</th>
-            <th class="p-3 border-b-2 border-slate-200">現在の状況・次の一手</th>
-            <th class="p-3 border-b-2 border-slate-200 w-16 text-center">ランク</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">1to1</th>
-            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">入会</th>
-          </tr>
-        </thead>
-        <tbody id="table-one-month"></tbody>
-      </table>
-    </div>
-  </section>
 </div>
 
     <!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価) -->
@@ -2451,6 +2584,35 @@ const ApiService = {
   /* --- VIEW 1: Dashboard Controller & Chart Renderers --- */
   let donutChartInstance = null;
   let lineChartInstance = null;
+  let currentDashboardActivePanel = 'hot';
+
+  function switchDashboardPanel(panelName) {
+    currentDashboardActivePanel = panelName;
+    ['hot', 'ap', 'meeting', 'onemonth', 'stats'].forEach(p => {
+      const btn = document.getElementById(`dash-tab-btn-${p}`);
+      const panel = document.getElementById(`dash-panel-${p}`);
+      if (btn) {
+        if (p === panelName) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+      if (panel) {
+        if (p === panelName) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      }
+    });
+
+    if (panelName === 'stats' && lineChartInstance) {
+      setTimeout(() => {
+        try { lineChartInstance.resize(); } catch(e){}
+      }, 50);
+    }
+  }
 
   function renderDashboard(data) {
     if (!data) return;
@@ -2465,6 +2627,7 @@ const ApiService = {
     const afterNextThuDateEl = document.getElementById('date-after-next-thu');
     if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
     if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+    
     // Meeting table titles
     const nextMeetingTitleEl = document.getElementById('title-next-meeting-date');
     const lastMeetingTitleEl = document.getElementById('title-last-meeting-date');
@@ -2472,9 +2635,15 @@ const ApiService = {
     if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = data.lastThuStr || '今週';
 
     // Counts
+    const nextMeetingList = t.nextMeeting || t.nextMeetingVisitors || [];
+    const lastMeetingList = t.lastMeeting || t.lastMeetingVisitors || [];
+    const hotList = t.hotVisitors || [];
+    const oneMonthList = t.oneMonthFollowup || t.oneMonthFollowupVisitors || [];
+    const allActionPlans = t.actionPlans || [];
+
     const nextThuValEl = document.getElementById('val-next-thu-count');
     const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
-    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : '-');
+    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : nextMeetingList.length);
     if (afterNextThuValEl) afterNextThuValEl.innerText = (m.afterNextThuCount !== undefined ? m.afterNextThuCount : '-');
 
     // Main KPI counters
@@ -2484,37 +2653,56 @@ const ApiService = {
 
     if (applyCountEl) applyCountEl.innerText = m.applyCount !== undefined ? m.applyCount : (m.totalVisitors || 0);
     if (joinedCountEl) joinedCountEl.innerText = m.joinedCount !== undefined ? m.joinedCount : (m.joinedMembers || 0);
-    if (targetGoalEl) targetGoalEl.innerText = m.targetJoinGoal || m.targetMembers || 15;
+    if (targetGoalEl) targetGoalEl.innerText = m.targetJoinGoal || m.targetMembers || 12;
 
     // Rates
     const joinRateEl = document.getElementById('val-join-rate');
     const achievementRateEl = document.getElementById('val-achievement-rate');
     const avgVisitorsEl = document.getElementById('val-avg-visitors');
-    const feedbackRateEl = document.getElementById('val-feedback-rate');
     const hearingRateEl = document.getElementById('val-hearing-rate');
     const pendingApValEl = document.getElementById('val-pending-action-plans');
+    const overdueApValEl = document.getElementById('val-overdue-action-plans');
+    const hotCountValEl = document.getElementById('val-hot-count');
+    const overdueBadgeEl = document.getElementById('badge-overdue-summary');
 
     if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
-    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
+    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%達成`;
     if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
-    if (feedbackRateEl) feedbackRateEl.innerText = `${m.feedbackRate || 0}%`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
 
-    const allActionPlans = t.actionPlans || [];
-    if (pendingApValEl) {
-      const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
-      const overdueCount = m.overdueActionPlansCount || 0;
+    const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
+    const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
+
+    if (pendingApValEl) pendingApValEl.innerText = pendingCount;
+    if (overdueApValEl) overdueApValEl.innerText = overdueCount;
+    if (hotCountValEl) hotCountValEl.innerText = hotList.length;
+
+    if (overdueBadgeEl) {
       if (overdueCount > 0) {
-        pendingApValEl.innerHTML = `<span style="color:#e03131;">${pendingCount}件</span> <span style="font-size:11px; color:#e03131; font-weight:700;">(超過${overdueCount})</span>`;
+        overdueBadgeEl.innerText = `超過 ${overdueCount}件`;
+        overdueBadgeEl.style.background = '#ffe3e3';
+        overdueBadgeEl.style.color = '#e03131';
       } else {
-        pendingApValEl.innerText = `${pendingCount}件`;
+        overdueBadgeEl.innerText = '順調';
+        overdueBadgeEl.style.background = '#e6fcf5';
+        overdueBadgeEl.style.color = '#0ca678';
       }
     }
+
+    // Tab badges
+    const tabBadgeHot = document.getElementById('dash-tab-badge-hot');
+    const tabBadgeAp = document.getElementById('dash-tab-badge-ap');
+    const tabBadgeMeeting = document.getElementById('dash-tab-badge-meeting');
+    const tabBadgeOnemonth = document.getElementById('dash-tab-badge-onemonth');
+
+    if (tabBadgeHot) tabBadgeHot.innerText = hotList.length;
+    if (tabBadgeAp) tabBadgeAp.innerText = pendingCount;
+    if (tabBadgeMeeting) tabBadgeMeeting.innerText = `次回 ${nextMeetingList.length}名`;
+    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = oneMonthList.length;
 
     // Charts
     const chartLabels = c.labels || data.chartLabels || [];
     const chartValues = c.data || data.chartValues || [];
-    initDonutChart(m.joinedCount || 0, m.targetJoinGoal || 15);
     if (chartLabels.length > 0) {
       initLineChart(chartLabels, chartValues);
     }
@@ -2523,10 +2711,10 @@ const ApiService = {
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
     renderMonthlyStatsTable(t.monthlyStats || []);
-    renderNextMeetingTable(t.nextMeeting || t.nextMeetingVisitors || []);
-    renderLastMeetingTable(t.lastMeeting || t.lastMeetingVisitors || []);
-    renderHotVisitorsTable(t.hotVisitors || []);
-    renderOneMonthTable(t.oneMonthFollowup || t.oneMonthFollowupVisitors || []);
+    renderNextMeetingTable(nextMeetingList);
+    renderLastMeetingTable(lastMeetingList);
+    renderHotVisitorsTable(hotList);
+    renderOneMonthTable(oneMonthList);
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
