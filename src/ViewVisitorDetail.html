@@ -1,10 +1,10 @@
 <!-- VIEW 4: ビジター詳細プロファイル (全画面フルサイズページ) -->
 <div id="view-visitor-detail" class="view-content">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: #ffffff; padding: 14px 20px; border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-    <button type="button" class="btn-cancel" style="padding: 8px 18px; font-weight: 800; font-size: 13px;" onclick="closeVisitorDetailView()">
+  <div class="vd-top-bar">
+    <button type="button" class="btn-cancel" onclick="closeVisitorDetailView()">
       <i class="fa-solid fa-arrow-left"></i> 前の画面へ戻る
     </button>
-    <div style="display: flex; gap: 10px;">
+    <div class="vd-header-buttons">
       <button type="button" class="btn-action-primary" id="vd-btn-open-hearing-page" onclick="">
         <i class="fa-solid fa-file-pen"></i> ヒアリングシートを編集
       </button>
@@ -17,110 +17,110 @@
     </div>
   </div>
 
-  <div class="section-card" style="padding: 24px;">
-    <div style="border-bottom: 2px solid var(--border-color); padding-bottom: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
-      <div>
-        <span style="font-size: 11px; font-weight: 800; color: #6c757d; text-transform: uppercase;">Visitor Details Profile</span>
-        <h1 id="vd-name" style="font-size: 28px; font-weight: 900; color: #333333; margin: 4px 0;">-</h1>
-        <span id="vd-furigana" style="font-size: 13px; color: #6c757d;">-</span>
+  <div class="section-card vd-profile-card">
+    <div class="vd-profile-header">
+      <div class="vd-profile-title-area">
+        <span class="vd-profile-subtitle">Visitor Details Profile</span>
+        <h1 id="vd-name" class="vd-profile-name">-</h1>
+        <span id="vd-furigana" class="vd-profile-furigana">-</span>
       </div>
 
       <!-- ステータス概要バッジ (クリックで直感切替) -->
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div id="vd-badge-attended" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで出欠状況を変更 (参加 / 不参加)">出欠: -</div>
-        <div id="vd-badge-1to1" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで1to1ステータスを変更 (済 / 未)">1to1: -</div>
-        <div id="vd-badge-joined" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.15s ease;" title="タップで入会状況を変更 (入会済 / 未)">入会: -</div>
-        <div id="vd-badge-feel" style="padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px; background: #f1f5f9; color: #64748b;">感触評価: 未</div>
+      <div class="vd-badges-wrap">
+        <div id="vd-badge-attended" class="vd-badge" title="タップで出欠状況を変更 (参加 / 不参加)">出欠: -</div>
+        <div id="vd-badge-1to1" class="vd-badge" title="タップで1to1ステータスを変更 (済 / 未)">1to1: -</div>
+        <div id="vd-badge-joined" class="vd-badge" title="タップで入会状況を変更 (入会済 / 未)">入会: -</div>
+        <div id="vd-badge-feel" class="vd-badge-static">感触評価: 未</div>
       </div>
     </div>
 
     <!-- 基本スペック -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; background: #f8f9fa; padding: 18px; border-radius: 10px; margin-bottom: 24px; font-size: 14px; border: 1px solid #e9ecef;">
-      <div><strong style="color:#495057;">会社名:</strong> <span id="vd-company">-</span></div>
-      <div><strong style="color:#495057;">専門分野:</strong> <span id="vd-profession">-</span></div>
-      <div><strong style="color:#495057;">招待者:</strong> <span id="vd-inviter" style="font-weight:800; color:#d6336c;">-</span></div>
-      <div><strong style="color:#495057;">定例会参加日:</strong> <span id="vd-event-date" style="font-weight:800;">-</span></div>
-      <div><strong style="color:#495057;">メール:</strong> <span id="vd-email">-</span></div>
-      <div><strong style="color:#495057;">参加区分:</strong> <span id="vd-attendance-count">-</span></div>
+    <div class="vd-specs-grid">
+      <div class="vd-spec-item"><strong class="vd-spec-label">会社名:</strong> <span id="vd-company" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><strong class="vd-spec-label">専門分野:</strong> <span id="vd-profession" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><strong class="vd-spec-label">招待者:</strong> <span id="vd-inviter" class="vd-spec-val accent">-</span></div>
+      <div class="vd-spec-item"><strong class="vd-spec-label">定例会参加日:</strong> <span id="vd-event-date" class="vd-spec-val bold">-</span></div>
+      <div class="vd-spec-item"><strong class="vd-spec-label">メール:</strong> <span id="vd-email" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><strong class="vd-spec-label">参加区分:</strong> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
     </div>
 
     <!-- 詳細タブバー -->
-    <div style="display: flex; gap: 8px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; flex-wrap: wrap;">
-      <button type="button" class="tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 6px;">
-        🎯 アクションプラン <span id="vd-action-plan-badge" style="background:#e03131; color:#ffffff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; display:none;">0</span>
+    <div class="vd-tab-nav">
+      <button type="button" class="tab-btn vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
+        🎯 アクションプラン <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
       </button>
-      <button type="button" class="tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">📝 ヒアリングシート全回答</button>
-      <button type="button" class="tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">📌 自由メモ・活動記録</button>
-      <button type="button" class="tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')" style="padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;">✉️ メール送信・自動化履歴</button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">📝 ヒアリングシート全回答</button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">📌 自由メモ・活動記録</button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">✉️ メール送信・自動化履歴</button>
     </div>
 
     <!-- Tab Content 0: アクションプラン (いつ・誰が・どうする) -->
     <div id="vd-tab-content-action-plan">
       <!-- アクションプラン登録カード -->
-      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 22px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 17px; font-weight: 900; color: #1c7ed6; margin: 0; display: flex; align-items: center; gap: 8px;">
+      <div class="vd-box">
+        <div class="vd-box-header">
+          <h3 class="vd-box-title accent">
             <i class="fa-solid fa-bullseye"></i> アクションプランを登録 (いつ・誰が・どうする)
           </h3>
-          <span style="font-size: 12px; color: #6c757d; font-weight: 700;">ビジターの成約・定着に向けた次の一手を明確化</span>
+          <span class="vd-box-subtitle">ビジターの成約・定着に向けた次の一手を明確化</span>
         </div>
 
-        <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();" style="display: flex; flex-direction: column; gap: 16px;">
+        <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
           <input type="hidden" id="vd-ap-edit-id" value="">
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+          <div class="vd-form-grid">
             <!-- いつ (期日) -->
             <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="font-weight: 800; color: #343a40; display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-regular fa-calendar" style="color:#1c7ed6;"></i> ① いつ（期日） <span style="color:#e03131;">*</span></span>
+              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fa-regular fa-calendar" style="color: var(--primary-accent);"></i> ① いつ（期日） <span style="color: var(--danger-accent);">*</span></span>
               </label>
-              <input type="date" id="vd-ap-due-date" class="form-input" style="font-weight: 700; font-size: 14px; color: #343a40;" required>
-              <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                <button type="button" class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px; font-weight: 700;" onclick="setApDateQuick(0)">今日</button>
-                <button type="button" class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px; font-weight: 700;" onclick="setApDateQuick(1)">明日</button>
-                <button type="button" class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px; font-weight: 700;" onclick="setApDateQuick(3)">3日後</button>
-                <button type="button" class="btn-action-secondary" style="padding: 3px 8px; font-size: 11px; font-weight: 700;" onclick="setApDateQuick(7)">1週間後</button>
+              <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
+              <div class="vd-quick-chips">
+                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(0)">今日</button>
+                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(1)">明日</button>
+                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(3)">3日後</button>
+                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(7)">1週間後</button>
               </div>
             </div>
 
             <!-- 誰が (担当者) -->
             <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="font-weight: 800; color: #343a40; display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-regular fa-user" style="color:#1c7ed6;"></i> ② 誰が（担当者） <span style="color:#e03131;">*</span></span>
+              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span><i class="fa-regular fa-user" style="color: var(--primary-accent);"></i> ② 誰が（担当者） <span style="color: var(--danger-accent);">*</span></span>
               </label>
-              <select id="vd-ap-assignee-select" class="form-input" style="font-weight: 700; font-size: 14px; color: #343a40;" required>
+              <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
                 <option value="">-- 担当メンバーを選択 --</option>
               </select>
-              <div id="vd-ap-quick-assignees" style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+              <div id="vd-ap-quick-assignees" class="vd-quick-chips">
                 <!-- 招待者やオリエン担当のサジェストボタンがJSで入る -->
               </div>
             </div>
           </div>
 
           <!-- どうする (アクション内容) -->
-          <div class="form-group" style="margin-bottom: 0;">
-            <label class="form-label" style="font-weight: 800; color: #343a40;">
-              <i class="fa-solid fa-list-check" style="color:#1c7ed6;"></i> ③ どうする（アクション内容） <span style="color:#e03131;">*</span>
+          <div class="form-group" style="margin-top: 16px; margin-bottom: 0;">
+            <label class="form-label">
+              <i class="fa-solid fa-list-check" style="color: var(--primary-accent);"></i> ③ どうする（アクション内容） <span style="color: var(--danger-accent);">*</span>
             </label>
-            <input type="text" id="vd-ap-action-text" class="form-input" style="font-weight: 700; font-size: 14px; color: #343a40;" placeholder="例：〇〇さんと1to1の日程調整をする、入会案内を送付してフォロー連絡 など" required>
+            <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：〇〇さんと1to1の日程調整をする、入会案内を送付してフォロー連絡 など" required>
 
             <!-- クイック定型文チップ -->
             <div style="margin-top: 8px;">
               <div style="font-size: 11px; font-weight: 800; color: #868e96; margin-bottom: 4px;">⚡ 定型アクションから素早く入力:</div>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('1to1の日程調整を実施')">🤝 1to1日程調整</button>
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('入会フォローの電話連絡')">📞 入会フォロー連絡</button>
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('チャプターメンバーの紹介・引き合わせ')">👥 メンバー紹介</button>
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('次回定例会への再参加案内')">📅 次回定例会案内</button>
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('リファーラル・推薦案件の提案')">🎁 推薦案件の提供</button>
-                <button type="button" class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px; border-radius: 14px;" onclick="setApActionQuick('メンバーシップ申請書のフォロー')">📄 入会申請フォロー</button>
+              <div class="vd-quick-chips">
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('1to1の日程調整を実施')">🤝 1to1日程調整</button>
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('入会フォローの電話連絡')">📞 入会フォロー連絡</button>
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('チャプターメンバーの紹介・引き合わせ')">👥 メンバー紹介</button>
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('次回定例会への再参加案内')">📅 次回定例会案内</button>
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('リファーラル・推薦案件の提案')">🎁 推薦案件の提供</button>
+                <button type="button" class="btn-action-secondary vd-quick-action-chip" onclick="setApActionQuick('メンバーシップ申請書のフォロー')">📄 入会申請フォロー</button>
               </div>
             </div>
           </div>
 
-          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px;">
-            <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel" style="display: none; padding: 10px 20px; font-size: 14px;" onclick="cancelApEdit()">編集をキャンセル</button>
-            <button type="submit" id="vd-ap-btn-submit" class="btn-save" style="background: #1c7ed6; padding: 10px 28px; font-size: 14px; font-weight: 800;">
+          <div class="vd-form-actions">
+            <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel" style="display: none;" onclick="cancelApEdit()">編集をキャンセル</button>
+            <button type="submit" id="vd-ap-btn-submit" class="btn-save">
               <i class="fa-solid fa-plus"></i> <span id="vd-ap-btn-submit-label">アクションプランを登録する</span>
             </button>
           </div>
@@ -128,30 +128,30 @@
       </div>
 
       <!-- アクションプラン一覧 -->
-      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 22px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="font-size: 16px; font-weight: 800; color: #343a40; margin: 0; display: flex; align-items: center; gap: 8px;">
+      <div class="vd-box">
+        <div class="vd-box-header">
+          <h3 class="vd-box-title">
             <i class="fa-solid fa-list-check" style="color: #2b8a3e;"></i> アクションプラン一覧
           </h3>
-          <span id="vd-ap-summary-text" style="font-size: 12px; font-weight: 700; color: #6c757d;">0件のプラン</span>
+          <span id="vd-ap-summary-text" class="vd-box-subtitle">0件のプラン</span>
         </div>
 
         <!-- 未完了プランリスト -->
         <div style="margin-bottom: 20px;">
-          <div style="font-size: 12px; font-weight: 800; color: #495057; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e03131;"></span> 未完了（進行中）
+          <div class="vd-ap-section-header">
+            <span class="vd-ap-dot pending"></span> 未完了（進行中）
           </div>
-          <div id="vd-ap-pending-list" style="display: flex; flex-direction: column; gap: 10px;">
+          <div id="vd-ap-pending-list" class="vd-ap-list">
             <!-- JSで挿入 -->
           </div>
         </div>
 
         <!-- 完了済みプランリスト -->
         <div>
-          <div style="font-size: 12px; font-weight: 800; color: #868e96; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #40c057;"></span> 完了済み
+          <div class="vd-ap-section-header">
+            <span class="vd-ap-dot completed"></span> 完了済み
           </div>
-          <div id="vd-ap-completed-list" style="display: flex; flex-direction: column; gap: 10px;">
+          <div id="vd-ap-completed-list" class="vd-ap-list">
             <!-- JSで挿入 -->
           </div>
         </div>
@@ -160,37 +160,39 @@
 
     <!-- Tab Content 1: ヒアリングシート -->
     <div id="vd-tab-content-hearing">
-      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px; font-size: 14px; display: flex; flex-direction: column; gap: 16px;">
-        <div><strong>オリエン担当者:</strong> <span id="vd-orient-user" style="font-weight:800; color:#666666; font-size:16px;">-</span></div>
-        <div><strong style="color:#666666;">Q1【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？:</strong> <p id="vd-q1" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q2【お仕事について】〇〇さんのお仕事について再度聞かせてください。:</strong> <p id="vd-q2" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q3【Goal(目標)】夢や目標、〇年後にこうなりたいという計画はありますか？:</strong> <p id="vd-q3" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q4【Reality(現実)】課題と感じることはございますか？それはいつ頃からですか？:</strong> <p id="vd-q4" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q5【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？:</strong> <p id="vd-q5" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q6【Way Forward(今後)】私たちREvoチャプターのメンバーでお力になれそうな人はいましたか？:</strong> <p id="vd-q6" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong style="color:#666666;">Q7【促し・クロージング】次回イベントや1to1、BOD等の提案状況:</strong> <p id="vd-q7" style="background:#f8f9fa; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong>オリエン直後メモ:</strong> <p id="vd-orient-memo" style="background:#fff3bf; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
-        <div><strong>追跡フォローメモ:</strong> <p id="vd-follow-memo" style="background:#e7f5ff; padding:12px 16px; border-radius:8px; margin:6px 0; white-space:pre-wrap; line-height:1.6;">-</p></div>
+      <div class="vd-box">
+        <div class="vd-hearing-list">
+          <div><strong class="vd-spec-label">オリエン担当者:</strong> <span id="vd-orient-user" class="vd-spec-val bold">-</span></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q1【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？:</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q2【お仕事について】〇〇さんのお仕事について再度聞かせてください。:</div> <p id="vd-q2" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q3【Goal(目標)】夢や目標、〇年後にこうなりたいという計画はありますか？:</div> <p id="vd-q3" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q4【Reality(現実)】課題と感じることはございますか？それはいつ頃からですか？:</div> <p id="vd-q4" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q5【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？:</div> <p id="vd-q5" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q6【Way Forward(今後)】私たちREvoチャプターのメンバーでお力になれそうな人はいましたか？:</div> <p id="vd-q6" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">Q7【促し・クロージング】次回イベントや1to1、BOD等の提案状況:</div> <p id="vd-q7" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">オリエン直後メモ:</div> <p id="vd-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">追跡フォローメモ:</div> <p id="vd-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
+        </div>
       </div>
     </div>
 
     <!-- Tab Content 2: 自由メモ -->
     <div id="vd-tab-content-memo" style="display:none;">
-      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px;">
-        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 6px; color: #666666;">📌 自由メモ・チームフォロー活動ノート</h3>
-        <p style="font-size: 12px; color: #6c757d; margin-bottom: 14px;">やり取りのメモ、興味関心、招待者・他メンバーとの共有記録などを自由に書き込めます。</p>
-        <textarea id="vd-free-memo" class="form-textarea" style="height: 240px; font-size: 14px; font-family: inherit; line-height: 1.6; font-weight: 700; color: #343a40; padding: 14px;" placeholder="例：電話でフォロー実施。次回1to1の調整中。AIに興味あり。前井さんを引き合わせると良さそう。"></textarea>
-        <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
-          <button type="button" class="btn-save" style="background:#2b8a3e; padding: 10px 30px; font-size: 14px;" onclick="saveVisitorFreeMemo()">💾 メモを保存する</button>
+      <div class="vd-box">
+        <h3 class="vd-box-title" style="margin-bottom: 6px;">📌 自由メモ・チームフォロー活動ノート</h3>
+        <p class="settings-desc">やり取りのメモ、興味関心、招待者・他メンバーとの共有記録などを自由に書き込めます。</p>
+        <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="例：電話でフォロー実施。次回1to1の調整中。AIに興味あり。前井さんを引き合わせると良さそう。"></textarea>
+        <div class="vd-form-actions" style="margin-top: 14px;">
+          <button type="button" class="btn-save btn-action-emerald" onclick="saveVisitorFreeMemo()">💾 メモを保存する</button>
         </div>
       </div>
     </div>
 
     <!-- Tab Content 3: メール履歴 -->
     <div id="vd-tab-content-mail" style="display:none;">
-      <div style="background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 20px;">
-        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: #666666;">✉️ ステップメール送信履歴 ＆ ログ</h3>
-        <div id="vd-mail-history-list" style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="vd-box">
+        <h3 class="vd-box-title" style="margin-bottom: 14px;">✉️ ステップメール送信履歴 ＆ ログ</h3>
+        <div id="vd-mail-history-list" class="vd-mail-list">
           <!-- JSで動的挿入 -->
         </div>
       </div>

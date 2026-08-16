@@ -278,7 +278,7 @@
     // 1. 未完了リスト
     if (pendingItems.length === 0) {
       pendingList.innerHTML = `
-        <div style="padding: 18px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #868e96; font-size: 13px; border: 1px dashed #dee2e6;">
+        <div class="vd-ap-empty">
           🎉 進行中の未完了アクションプランはありません。
         </div>
       `;
@@ -286,44 +286,32 @@
       pendingItems.forEach(item => {
         const isOverdue = item.due_date && item.due_date < todayStr;
         const card = document.createElement('div');
-        card.style.cssText = `
-          padding: 14px 16px;
-          background: #ffffff;
-          border: 1px solid ${isOverdue ? '#ffa8a8' : '#e9ecef'};
-          border-left: 5px solid ${isOverdue ? '#fa5252' : '#228be6'};
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          box-shadow: var(--shadow-sm);
-          transition: all 0.15s ease;
-        `;
+        card.className = `vd-ap-card ${isOverdue ? 'is-overdue' : ''}`;
 
         card.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-            <button type="button" onclick="toggleActionPlan('${item.id}', 1)" style="background: none; border: none; font-size: 22px; color: #ced4da; cursor: pointer; padding: 0;" title="クリックして完了にする">
+          <div class="vd-ap-left">
+            <button type="button" class="vd-ap-check-btn" onclick="toggleActionPlan('${item.id}', 1)" title="クリックして完了にする">
               <i class="fa-regular fa-circle-check"></i>
             </button>
-            <div style="flex: 1;">
-              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
-                <span style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${isOverdue ? '#ffe3e3' : '#e7f5ff'}; color: ${isOverdue ? '#c92a2a' : '#1864ab'};">
+            <div class="vd-ap-body">
+              <div class="vd-ap-meta-row">
+                <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
                   <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日なし'} ${isOverdue ? '(期限超過)' : ''}
                 </span>
-                <span style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #f3f0ff; color: #5f3dc4;">
+                <span class="vd-ap-badge-user">
                   <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '担当未定')}
                 </span>
               </div>
-              <div style="font-size: 15px; font-weight: 800; color: #212529; line-height: 1.4;">
+              <div class="vd-ap-text">
                 ${escapeHtml(item.action_text)}
               </div>
             </div>
           </div>
-          <div style="display: flex; gap: 6px;">
-            <button type="button" class="btn-action-secondary" style="padding: 6px 10px; font-size: 12px;" onclick="editActionPlan('${item.id}')" title="編集">
+          <div class="vd-ap-actions">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
               <i class="fa-solid fa-pen-to-square"></i>
             </button>
-            <button type="button" class="btn-action-secondary" style="padding: 6px 10px; font-size: 12px; color: #e03131;" onclick="deleteActionPlan('${item.id}')" title="削除">
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="color: var(--danger-accent);" onclick="deleteActionPlan('${item.id}')" title="削除">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
@@ -336,34 +324,23 @@
     if (completedItems.length > 0) {
       completedItems.forEach(item => {
         const card = document.createElement('div');
-        card.style.cssText = `
-          padding: 10px 16px;
-          background: #f8f9fa;
-          border: 1px solid #e9ecef;
-          border-left: 4px solid #40c057;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          opacity: 0.85;
-        `;
+        card.className = 'vd-ap-card is-completed';
 
         card.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-            <button type="button" onclick="toggleActionPlan('${item.id}', 0)" style="background: none; border: none; font-size: 20px; color: #2b8a3e; cursor: pointer; padding: 0;" title="クリックして未完了に戻す">
+          <div class="vd-ap-left">
+            <button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlan('${item.id}', 0)" title="クリックして未完了に戻す">
               <i class="fa-solid fa-circle-check"></i>
             </button>
-            <div style="flex: 1;">
-              <div style="font-size: 14px; font-weight: 700; color: #868e96; text-decoration: line-through;">
+            <div class="vd-ap-body">
+              <div class="vd-ap-text completed">
                 ${escapeHtml(item.action_text)}
               </div>
-              <div style="font-size: 11px; color: #adb5bd; margin-top: 2px;">
+              <div class="vd-ap-submeta">
                 期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了: ${item.completed_at}` : ''}
               </div>
             </div>
           </div>
-          <button type="button" class="btn-action-secondary" style="padding: 4px 8px; font-size: 11px; color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
+          <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         `;
@@ -371,7 +348,7 @@
       });
     } else {
       completedList.innerHTML = `
-        <div style="padding: 10px; color: #adb5bd; font-size: 12px;">完了済みのアクションはありません</div>
+        <div class="vd-ap-submeta" style="padding: 10px;">完了済みのアクションはありません</div>
       `;
     }
   }
