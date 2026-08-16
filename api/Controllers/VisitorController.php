@@ -5,21 +5,29 @@ use Api\Core\Controller;
 use Api\Core\Response;
 use Api\Repositories\VisitorRepository;
 use Api\Repositories\HearingRepository;
+use Api\Repositories\ActionPlanRepository;
+use Api\Repositories\MemberRepository;
 use Api\Services\GasWebhookService;
 
 class VisitorController extends Controller {
     private VisitorRepository $visitorRepo;
     private HearingRepository $hearingRepo;
+    private ActionPlanRepository $actionPlanRepo;
+    private MemberRepository $memberRepo;
     private GasWebhookService $gasWebhookService;
 
     public function __construct(
         ?VisitorRepository $visitorRepo = null,
         ?HearingRepository $hearingRepo = null,
+        ?ActionPlanRepository $actionPlanRepo = null,
+        ?MemberRepository $memberRepo = null,
         ?GasWebhookService $gasWebhookService = null
     ) {
         parent::__construct();
         $this->visitorRepo = $visitorRepo ?? new VisitorRepository();
         $this->hearingRepo = $hearingRepo ?? new HearingRepository();
+        $this->actionPlanRepo = $actionPlanRepo ?? new ActionPlanRepository();
+        $this->memberRepo = $memberRepo ?? new MemberRepository();
         $this->gasWebhookService = $gasWebhookService ?? new GasWebhookService();
     }
 
@@ -74,6 +82,8 @@ class VisitorController extends Controller {
         ];
 
         $hearing = $this->hearingRepo->findByVisitorId($id);
+        $actionPlans = $this->actionPlanRepo->getByVisitorId($id);
+        $groupedMembers = $this->memberRepo->getGroupedByCategory();
 
         Response::success([
             'visitor' => [
@@ -105,6 +115,8 @@ class VisitorController extends Controller {
                 'sheetUrl' => $hearing['sheet_url'],
                 'updatedAt' => $hearing['updated_at']
             ] : null,
+            'actionPlans' => $actionPlans,
+            'memberCategories' => $groupedMembers['memberCategories'] ?? [],
             'mailLogs' => []
         ]);
     }

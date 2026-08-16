@@ -3,6 +3,8 @@
   let currentVdVisitorId = null;
   let previousTabBeforeDetail = "dashboard";
   let currentVdWebAppUrl = "";
+  let currentVdActionPlans = [];
+  let cachedMemberCategories = [];
 
   function openVisitorDetailModal(id) {
     openVisitorDetailView(id);
@@ -31,6 +33,8 @@
         const v = res.visitor || {};
         const st = res.status || {};
         const h = res.hearing || {};
+        currentVdActionPlans = res.actionPlans || [];
+        cachedMemberCategories = res.memberCategories || [];
 
         document.getElementById('vd-name').innerText = v.name || '-';
         document.getElementById('vd-furigana').innerText = v.furigana || '';
@@ -84,6 +88,10 @@
         document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
         document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
 
+        // アクションプランの担当者セレクト＆サジェスト初期化
+        initActionPlanForm(v, h);
+        renderActionPlansList(currentVdActionPlans);
+
         // メール履歴
         const mailContainer = document.getElementById('vd-mail-history-list');
         mailContainer.innerHTML = '';
@@ -113,7 +121,7 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-visitor-detail').classList.add('active');
 
-        switchVdTab('hearing');
+        switchVdTab('action-plan');
         window.scrollTo(0, 0);
       })
       .catch(handleError);
@@ -133,13 +141,343 @@
   }
 
   function switchVdTab(tab) {
+    document.getElementById('vd-tab-btn-action-plan').classList.toggle('active', tab === 'action-plan');
     document.getElementById('vd-tab-btn-hearing').classList.toggle('active', tab === 'hearing');
     document.getElementById('vd-tab-btn-memo').classList.toggle('active', tab === 'memo');
     document.getElementById('vd-tab-btn-mail').classList.toggle('active', tab === 'mail');
 
+    document.getElementById('vd-tab-content-action-plan').style.display = tab === 'action-plan' ? 'block' : 'none';
     document.getElementById('vd-tab-content-hearing').style.display = tab === 'hearing' ? 'block' : 'none';
     document.getElementById('vd-tab-content-memo').style.display = tab === 'memo' ? 'block' : 'none';
     document.getElementById('vd-tab-content-mail').style.display = tab === 'mail' ? 'block' : 'none';
+  }
+
+  /* --- 🎯 Action Plan Specific Controls --- */
+  function initActionPlanForm(visitor, hearing) {
+    // 担当者セレクトをチャプターメンバーで構築
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (select) {
+      select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
+      if (cachedMemberCategories && cachedMemberCategories.length > 0) {
+        cachedMemberCategories.forEach(catObj => {
+          const grp = document.createElement('optgroup');
+          grp.label = catObj.category;
+          if (catObj.members && catObj.members.length > 0) {
+            catObj.members.forEach(m => {
+              const opt = document.createElement('option');
+              opt.value = m.name;
+              opt.textContent = `${m.name} (${m.profession || ''})`;
+              grp.appendChild(opt);
+            });
+          }
+          select.appendChild(grp);
+        });
+      }
+    }
+
+    // 担当者クイックサジェストボタン
+    const quickContainer = document.getElementById('vd-ap-quick-assignees');
+    if (quickContainer) {
+      quickContainer.innerHTML = '';
+      const inviter = visitor.inviter || '';
+      const orientUser = hearing.orientUser || '';
+
+      if (inviter && inviter !== '-') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-action-secondary';
+        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #d6336c;';
+        btn.innerHTML = `<i class="fa-solid fa-user-tag"></i> 招待者 (${inviter})`;
+        btn.onclick = () => setApAssigneeQuick(inviter);
+        quickContainer.appendChild(btn);
+      }
+
+      if (orientUser && orientUser !== '-' && orientUser !== '未設定') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-action-secondary';
+        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #1c7ed6;';
+        btn.innerHTML = `<i class="fa-solid fa-user-check"></i> オリエン担当 (${orientUser})`;
+        btn.onclick = () => setApAssigneeQuick(orientUser);
+        quickContainer.appendChild(btn);
+      }
+    }
+
+    // デフォルト期日（3日後）
+    setApDateQuick(3);
+    cancelApEdit();
+  }
+
+  function setApDateQuick(daysOffset) {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const input = document.getElementById('vd-ap-due-date');
+    if (input) {
+      input.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function setApAssigneeQuick(name) {
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (!select) return;
+
+    // もし既存の選択肢になければ追加して選択
+    let found = false;
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === name) {
+        select.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found && name) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      opt.selected = true;
+      select.appendChild(opt);
+    }
+  }
+
+  function setApActionQuick(text) {
+    const input = document.getElementById('vd-ap-action-text');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  function renderActionPlansList(list) {
+    currentVdActionPlans = list || [];
+    const pendingList = document.getElementById('vd-ap-pending-list');
+    const completedList = document.getElementById('vd-ap-completed-list');
+    const badge = document.getElementById('vd-action-plan-badge');
+    const summaryText = document.getElementById('vd-ap-summary-text');
+
+    if (!pendingList || !completedList) return;
+
+    pendingList.innerHTML = '';
+    completedList.innerHTML = '';
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const pendingItems = currentVdActionPlans.filter(p => Number(p.is_completed) === 0);
+    const completedItems = currentVdActionPlans.filter(p => Number(p.is_completed) === 1);
+
+    // バッジとサマリー更新
+    if (badge) {
+      badge.innerText = pendingItems.length;
+      badge.style.display = pendingItems.length > 0 ? 'inline-block' : 'none';
+    }
+    if (summaryText) {
+      summaryText.innerText = `計 ${currentVdActionPlans.length}件 (未完了: ${pendingItems.length}件 / 完了: ${completedItems.length}件)`;
+    }
+
+    // 1. 未完了リスト
+    if (pendingItems.length === 0) {
+      pendingList.innerHTML = `
+        <div style="padding: 18px; background: #f8f9fa; border-radius: 8px; text-align: center; color: #868e96; font-size: 13px; border: 1px dashed #dee2e6;">
+          🎉 進行中の未完了アクションプランはありません。
+        </div>
+      `;
+    } else {
+      pendingItems.forEach(item => {
+        const isOverdue = item.due_date && item.due_date < todayStr;
+        const card = document.createElement('div');
+        card.style.cssText = `
+          padding: 14px 16px;
+          background: #ffffff;
+          border: 1px solid ${isOverdue ? '#ffa8a8' : '#e9ecef'};
+          border-left: 5px solid ${isOverdue ? '#fa5252' : '#228be6'};
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          box-shadow: var(--shadow-sm);
+          transition: all 0.15s ease;
+        `;
+
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+            <button type="button" onclick="toggleActionPlan('${item.id}', 1)" style="background: none; border: none; font-size: 22px; color: #ced4da; cursor: pointer; padding: 0;" title="クリックして完了にする">
+              <i class="fa-regular fa-circle-check"></i>
+            </button>
+            <div style="flex: 1;">
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap;">
+                <span style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${isOverdue ? '#ffe3e3' : '#e7f5ff'}; color: ${isOverdue ? '#c92a2a' : '#1864ab'};">
+                  <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日なし'} ${isOverdue ? '(期限超過)' : ''}
+                </span>
+                <span style="font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #f3f0ff; color: #5f3dc4;">
+                  <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '担当未定')}
+                </span>
+              </div>
+              <div style="font-size: 15px; font-weight: 800; color: #212529; line-height: 1.4;">
+                ${escapeHtml(item.action_text)}
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn-action-secondary" style="padding: 6px 10px; font-size: 12px;" onclick="editActionPlan('${item.id}')" title="編集">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button type="button" class="btn-action-secondary" style="padding: 6px 10px; font-size: 12px; color: #e03131;" onclick="deleteActionPlan('${item.id}')" title="削除">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        `;
+        pendingList.appendChild(card);
+      });
+    }
+
+    // 2. 完了済みリスト
+    if (completedItems.length > 0) {
+      completedItems.forEach(item => {
+        const card = document.createElement('div');
+        card.style.cssText = `
+          padding: 10px 16px;
+          background: #f8f9fa;
+          border: 1px solid #e9ecef;
+          border-left: 4px solid #40c057;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          opacity: 0.85;
+        `;
+
+        card.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+            <button type="button" onclick="toggleActionPlan('${item.id}', 0)" style="background: none; border: none; font-size: 20px; color: #2b8a3e; cursor: pointer; padding: 0;" title="クリックして未完了に戻す">
+              <i class="fa-solid fa-circle-check"></i>
+            </button>
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 700; color: #868e96; text-decoration: line-through;">
+                ${escapeHtml(item.action_text)}
+              </div>
+              <div style="font-size: 11px; color: #adb5bd; margin-top: 2px;">
+                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了: ${item.completed_at}` : ''}
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-action-secondary" style="padding: 4px 8px; font-size: 11px; color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        `;
+        completedList.appendChild(card);
+      });
+    } else {
+      completedList.innerHTML = `
+        <div style="padding: 10px; color: #adb5bd; font-size: 12px;">完了済みのアクションはありません</div>
+      `;
+    }
+  }
+
+  function submitNewActionPlan() {
+    if (!currentVdVisitorId) return;
+
+    const editId = document.getElementById('vd-ap-edit-id').value;
+    const dueDate = document.getElementById('vd-ap-due-date').value.trim();
+    const assigneeName = document.getElementById('vd-ap-assignee-select').value.trim();
+    const actionText = document.getElementById('vd-ap-action-text').value.trim();
+
+    if (!dueDate) {
+      alert('いつ（期日）を入力してください');
+      return;
+    }
+    if (!assigneeName) {
+      alert('誰が（担当者）を選択してください');
+      return;
+    }
+    if (!actionText) {
+      alert('どうする（アクション内容）を入力してください');
+      return;
+    }
+
+    const payload = {
+      visitorId: currentVdVisitorId,
+      dueDate: dueDate,
+      assigneeName: assigneeName,
+      actionText: actionText
+    };
+
+    if (editId) {
+      payload.id = editId;
+      showToast('アクションプランを更新中...');
+      ApiService.call('updateActionPlanApi', payload)
+        .then(res => {
+          showToast('✅ アクションプランを更新しました！');
+          if (res.list) renderActionPlansList(res.list);
+          cancelApEdit();
+        })
+        .catch(handleError);
+    } else {
+      showToast('アクションプランを登録中...');
+      ApiService.call('createActionPlanApi', payload)
+        .then(res => {
+          showToast('✅ アクションプランを登録しました！');
+          if (res.list) renderActionPlansList(res.list);
+          document.getElementById('vd-ap-action-text').value = '';
+          setApDateQuick(3);
+        })
+        .catch(handleError);
+    }
+  }
+
+  function toggleActionPlan(id, newStatus) {
+    if (!id) return;
+    ApiService.call('toggleActionPlanApi', id, newStatus)
+      .then(res => {
+        showToast(newStatus === 1 ? '🎉 アクションプランを完了にしました！' : 'アクションプランを未完了に戻しました');
+        if (res.list) renderActionPlansList(res.list);
+      })
+      .catch(handleError);
+  }
+
+  function editActionPlan(id) {
+    const item = currentVdActionPlans.find(p => String(p.id) === String(id));
+    if (!item) return;
+
+    document.getElementById('vd-ap-edit-id').value = item.id;
+    document.getElementById('vd-ap-due-date').value = item.due_date || '';
+    setApAssigneeQuick(item.assignee_name || '');
+    document.getElementById('vd-ap-action-text').value = item.action_text || '';
+
+    document.getElementById('vd-ap-btn-submit-label').innerText = '変更を保存する';
+    document.getElementById('vd-ap-btn-cancel-edit').style.display = 'inline-block';
+
+    document.getElementById('vd-ap-action-text').focus();
+    window.scrollTo({ top: document.getElementById('vd-form-action-plan').offsetTop - 60, behavior: 'smooth' });
+  }
+
+  function cancelApEdit() {
+    document.getElementById('vd-ap-edit-id').value = '';
+    document.getElementById('vd-ap-btn-submit-label').innerText = 'アクションプランを登録する';
+    document.getElementById('vd-ap-btn-cancel-edit').style.display = 'none';
+  }
+
+  function deleteActionPlan(id) {
+    if (!confirm('このアクションプランを削除してもよろしいですか？')) return;
+
+    ApiService.call('deleteActionPlanApi', id, currentVdVisitorId)
+      .then(res => {
+        showToast('🗑️ アクションプランを削除しました');
+        if (res.list) renderActionPlansList(res.list);
+      })
+      .catch(handleError);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   function saveVisitorFreeMemo() {

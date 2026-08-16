@@ -143,10 +143,22 @@ function handleApiRequest(req, res, urlObj) {
         const vSql = `SELECT * FROM visitors WHERE id = '${id.replace(/'/g, "''")}';`;
         const sSql = `SELECT * FROM visitors_status WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
         const hSql = `SELECT * FROM hearing_sheets WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
+        const apSql = `SELECT * FROM action_plans WHERE visitor_id = '${id.replace(/'/g, "''")}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
+        const mSql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
 
         const v = runSqlJson(vSql)[0] || null;
         const s = runSqlJson(sSql)[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未' };
         const h = runSqlJson(hSql)[0] || null;
+        const actionPlans = runSqlJson(apSql);
+        const members = runSqlJson(mSql);
+
+        const catMap = {};
+        members.forEach(m => {
+          const cat = m.category || 'その他';
+          if (!catMap[cat]) catMap[cat] = [];
+          catMap[cat].push({ id: m.id, name: m.name, profession: m.profession });
+        });
+        const memberCategories = Object.keys(catMap).map(c => ({ category: c, members: catMap[c] }));
 
         if (!v) return res.end(JSON.stringify({ success: false, message: 'Visitor not found' }));
 
@@ -164,6 +176,8 @@ function handleApiRequest(req, res, urlObj) {
             orientUser: h.orient_user, q1: h.q1, q2: h.q2, q3: h.q3, q4: h.q4, q5: h.q5, q6: h.q6, q7: h.q7,
             feelAbc: h.feel_abc, orientMemo: h.orient_memo, followMemo: h.follow_memo, sheetUrl: h.sheet_url, updatedAt: h.updated_at
           } : null,
+          actionPlans: actionPlans,
+          memberCategories: memberCategories,
           mailLogs: []
         }));
       }
@@ -271,6 +285,101 @@ function handleApiRequest(req, res, urlObj) {
         `;
         runSqlExec(sql);
         return res.end(JSON.stringify({ success: true, visitorId: input.visitorId }));
+      }
+    }
+
+    if (pathname === '/api/action_plans.php') {
+      const action = urlObj.searchParams.get('action') || input.action || 'list';
+      const esc = s => (s || '').toString().replace(/'/g, "''");
+
+      if (action === 'list') {
+        const vId = esc(urlObj.searchParams.get('visitorId') || input.visitorId || '');
+        const sql = `SELECT * FROM action_plans WHERE visitor_id = '${vId}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
+        const list = runSqlJson(sql);
+        return res.end(JSON.stringify({ success: true, visitorId: vId, list: list }));
+      }
+
+      if (action === 'create' || action === 'add') {
+        const vId = esc(input.visitorId || input.visitor_id || '');
+        const actionText = esc(input.actionText || input.action_text || '');
+        if (!vId || !actionText) {
+          return res.end(JSON.stringify({ success: false, message: 'visitorId and actionText are required' }));
+        }
+        const id = 'ap_' + Math.random().toString(36).substring(2, 10);
+        const dueDate = esc(input.dueDate || input.due_date || '');
+        const assigneeName = esc(input.assigneeName || input.assignee_name || '');
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+        const sql = `
+          INSERT INTO action_plans (id, visitor_id, due_date, assignee_name, assignee_id, action_text, is_completed, completed_at, created_at, updated_at)
+          VALUES ('${id}', '${vId}', '${dueDate}', '${assigneeName}', '', '${actionText}', 0, '', '${now}', '${now}');
+        `;
+        runSqlExec(sql);
+        const listSql = `SELECT * FROM action_plans WHERE visitor_id = '${vId}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
+        const list = runSqlJson(listSql);
+        return res.end(JSON.stringify({ success: true, id: id, list: list }));
+      }
+
+      if (action === 'update') {
+        const id = esc(input.id || '');
+        if (!id) return res.end(JSON.stringify({ success: false, message: 'id is required' }));
+
+        const dueDate = esc(input.dueDate || input.due_date || '');
+        const assigneeName = esc(input.assigneeName || input.assignee_name || '');
+        const actionText = esc(input.actionText || input.action_text || '');
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+        const curItem = runSqlJson(`SELECT * FROM action_plans WHERE id = '${id}';`)[0] || null;
+        if (!curItem) return res.end(JSON.stringify({ success: false, message: 'Not found' }));
+
+        const isCompleted = input.isCompleted !== undefined ? Number(input.isCompleted) : curItem.is_completed;
+        const completedAt = isCompleted === 1 ? now : '';
+
+        const sql = `
+          UPDATE action_plans SET
+            due_date = '${dueDate}',
+            assignee_name = '${assigneeName}',
+            action_text = '${actionText}',
+            is_completed = ${isCompleted},
+            completed_at = '${completedAt}',
+            updated_at = '${now}'
+          WHERE id = '${id}';
+        `;
+        runSqlExec(sql);
+        const list = runSqlJson(`SELECT * FROM action_plans WHERE visitor_id = '${curItem.visitor_id}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`);
+        return res.end(JSON.stringify({ success: true, id: id, list: list }));
+      }
+
+      if (action === 'toggle') {
+        const id = esc(input.id || '');
+        const curItem = runSqlJson(`SELECT * FROM action_plans WHERE id = '${id}';`)[0] || null;
+        if (!curItem) return res.end(JSON.stringify({ success: false, message: 'Not found' }));
+
+        const newStatus = input.isCompleted !== undefined ? Number(input.isCompleted) : (Number(curItem.is_completed) === 1 ? 0 : 1);
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        const completedAt = newStatus === 1 ? now : '';
+
+        const sql = `
+          UPDATE action_plans SET
+            is_completed = ${newStatus},
+            completed_at = '${completedAt}',
+            updated_at = '${now}'
+          WHERE id = '${id}';
+        `;
+        runSqlExec(sql);
+        const list = runSqlJson(`SELECT * FROM action_plans WHERE visitor_id = '${curItem.visitor_id}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`);
+        return res.end(JSON.stringify({ success: true, id: id, list: list }));
+      }
+
+      if (action === 'delete') {
+        const id = esc(input.id || '');
+        const vId = esc(input.visitorId || '');
+        const curItem = runSqlJson(`SELECT * FROM action_plans WHERE id = '${id}';`)[0] || null;
+        const targetVId = vId || (curItem ? curItem.visitor_id : '');
+
+        runSqlExec(`DELETE FROM action_plans WHERE id = '${id}';`);
+        const list = targetVId ? runSqlJson(`SELECT * FROM action_plans WHERE visitor_id = '${targetVId}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`) : [];
+        return res.end(JSON.stringify({ success: true, id: id, list: list }));
       }
     }
 

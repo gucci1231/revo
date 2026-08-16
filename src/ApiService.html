@@ -109,6 +109,32 @@ const ApiService = {
           method: 'POST',
           body: { key: 'startDate', value: args[0] }
         };
+      case 'getActionPlansApi':
+        return { url: '/api/action_plans.php?action=list&visitorId=' + (args[0] || ''), method: 'GET' };
+      case 'createActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=create',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { visitorId: args[0], dueDate: args[1], assigneeName: args[2], actionText: args[3], assigneeId: args[4] }
+        };
+      case 'updateActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=update',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0], dueDate: args[1], assigneeName: args[2], actionText: args[3], isCompleted: args[4] }
+        };
+      case 'toggleActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=toggle',
+          method: 'POST',
+          body: { id: args[0], isCompleted: args[1] }
+        };
+      case 'deleteActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=delete',
+          method: 'POST',
+          body: { id: args[0], visitorId: args[1] }
+        };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
       case 'getScheduledEmailsApi':

@@ -96,6 +96,21 @@ class Database {
                 value TEXT,
                 updated_at TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS action_plans (
+                id TEXT PRIMARY KEY,
+                visitor_id TEXT NOT NULL,
+                due_date TEXT,
+                assignee_name TEXT DEFAULT '',
+                assignee_id TEXT DEFAULT '',
+                action_text TEXT NOT NULL,
+                is_completed INTEGER DEFAULT 0,
+                completed_at TEXT DEFAULT '',
+                created_at TEXT,
+                updated_at TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
         ");
     }
 
