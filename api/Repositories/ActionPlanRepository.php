@@ -57,6 +57,9 @@ class ActionPlanRepository {
             'assignee_name' => $data['assignee_name'] ?? '',
             'assignee_id' => $data['assignee_id'] ?? '',
             'action_text' => $data['action_text'],
+            'report_text' => $data['report_text'] ?? '',
+            'reporter_name' => $data['reporter_name'] ?? '',
+            'completed_by' => $data['completed_by'] ?? '',
             'is_completed' => (int)($data['is_completed'] ?? 0),
             'completed_at' => !empty($data['is_completed']) ? $now : '',
             'created_at' => $now,
@@ -82,12 +85,43 @@ class ActionPlanRepository {
         if (isset($data['action_text'])) {
             $updateData['action_text'] = $data['action_text'];
         }
+        if (isset($data['report_text'])) {
+            $updateData['report_text'] = $data['report_text'];
+        }
+        if (isset($data['reporter_name'])) {
+            $updateData['reporter_name'] = $data['reporter_name'];
+        }
+        if (isset($data['completed_by'])) {
+            $updateData['completed_by'] = $data['completed_by'];
+        }
         if (isset($data['is_completed'])) {
             $updateData['is_completed'] = (int)$data['is_completed'];
             $updateData['completed_at'] = $updateData['is_completed'] === 1 ? $now : '';
         }
 
         return $this->db->update('action_plans', $updateData, 'id = ?', [$id]) > 0;
+    }
+
+    public function saveReport(string $id, string $reportText, string $reporterName = '', bool $markCompleted = true): ?array {
+        $current = $this->findById($id);
+        if (!$current) {
+            return null;
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $isCompleted = $markCompleted ? 1 : (int)$current['is_completed'];
+        $completedAt = $isCompleted === 1 ? (!empty($current['completed_at']) ? $current['completed_at'] : $now) : '';
+
+        $this->db->update('action_plans', [
+            'report_text' => $reportText,
+            'reporter_name' => $reporterName ?: ($current['assignee_name'] ?: ''),
+            'completed_by' => $reporterName ?: ($current['assignee_name'] ?: ''),
+            'is_completed' => $isCompleted,
+            'completed_at' => $completedAt,
+            'updated_at' => $now
+        ], 'id = ?', [$id]);
+
+        return $this->findById($id);
     }
 
     public function toggleComplete(string $id, ?int $forceStatus = null): ?array {
@@ -98,7 +132,7 @@ class ActionPlanRepository {
 
         $now = date('Y-m-d H:i:s');
         $newStatus = $forceStatus !== null ? (int)$forceStatus : ((int)$current['is_completed'] === 1 ? 0 : 1);
-        $completedAt = $newStatus === 1 ? $now : '';
+        $completedAt = $newStatus === 1 ? (!empty($current['completed_at']) ? $current['completed_at'] : $now) : '';
 
         $this->db->update('action_plans', [
             'is_completed' => $newStatus,

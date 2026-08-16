@@ -129,6 +129,12 @@ const ApiService = {
           method: 'POST',
           body: { id: args[0], isCompleted: args[1] }
         };
+      case 'reportActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=report',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0], reportText: args[1], reporterName: args[2], isCompleted: args[3] }
+        };
       case 'deleteActionPlanApi':
         return {
           url: '/api/action_plans.php?action=delete',

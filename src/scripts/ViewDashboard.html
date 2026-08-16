@@ -201,9 +201,9 @@
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
       const tr = document.createElement('tr');
 
-      const checkBtnHtml = isCompleted
-        ? `<button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlanFromDashboard('${p.id}', 0)" title="未完了に戻す"><i class="fa-solid fa-circle-check"></i></button>`
-        : `<button type="button" class="vd-ap-check-btn" onclick="toggleActionPlanFromDashboard('${p.id}', 1)" title="完了にする"><i class="fa-regular fa-circle-check"></i></button>`;
+      const statusBadgeHtml = isCompleted
+        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check"></i> 完了</span>`
+        : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`;
 
       const dateBadgeHtml = isCompleted
         ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
@@ -220,18 +220,35 @@
         </div>
       `;
 
-      const actionTextHtml = isCompleted
-        ? `<span class="vd-ap-text completed">${escapeHtml(p.action_text)}</span>`
-        : `<span class="vd-ap-text" style="font-size: 14px;">${escapeHtml(p.action_text)}</span>`;
+      const reportBoxHtml = p.report_text
+        ? `<div style="margin-top:4px; font-size:11px; color:#334155; background:#f8fafc; border-left:3px solid #20c997; padding:4px 8px; border-radius:4px; line-height:1.4;">
+             <strong style="color:#0ca678;"><i class="fa-regular fa-comment-dots"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span style="color:#64748b; margin-left:4px;">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
+           </div>`
+        : '';
+
+      const actionTextHtml = `
+        <div style="max-width: 320px;">
+          <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
+            ${escapeHtml(p.action_text)}
+          </div>
+          ${reportBoxHtml}
+        </div>
+      `;
 
       const actionBtnHtml = `
-        <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
-          詳細 <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
-        </button>
+        <div class="flex items-center justify-center gap-1.5">
+          <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+            <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
+          </button>
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
+            詳細
+          </button>
+        </div>
       `;
 
       tr.innerHTML = `
-        <td class="text-center">${checkBtnHtml}</td>
+        <td class="text-center">${statusBadgeHtml}</td>
         <td>${dateBadgeHtml}</td>
         <td>${userBadgeHtml}</td>
         <td>${visitorNameHtml}</td>
@@ -240,18 +257,6 @@
       `;
       tbody.appendChild(tr);
     });
-  }
-
-  function toggleActionPlanFromDashboard(planId, newStatus) {
-    showToast('アクションプランを更新中...');
-    ApiService.call('toggleActionPlanApi', { id: planId, is_completed: newStatus })
-      .then(res => {
-        if (res && res.success) {
-          showToast(newStatus === 1 ? '✅ アクションを完了にしました' : 'アクションを未完了に戻しました');
-          fetchDashboardData(true);
-        }
-      })
-      .catch(handleError);
   }
 
   function renderHotVisitorsTable(records) {

@@ -1,0 +1,116 @@
+<script>
+  /* --- Modal Action Report Controller --- */
+  let currentReportingPlan = null;
+
+  function openActionReportModal(planId, optVisitorId) {
+    let plan = null;
+    if (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) {
+      plan = currentDashboardActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && typeof currentVisitorActionPlans !== 'undefined' && Array.isArray(currentVisitorActionPlans)) {
+      plan = currentVisitorActionPlans.find(p => p.id === planId);
+    }
+
+    if (!plan) {
+      // Fallback
+      plan = {
+        id: planId,
+        visitor_id: optVisitorId || '',
+        action_text: '',
+        assignee_name: '',
+        due_date: '',
+        report_text: '',
+        reporter_name: '',
+        is_completed: 0
+      };
+    }
+
+    currentReportingPlan = plan;
+
+    document.getElementById('report-ap-id').value = plan.id;
+    document.getElementById('report-ap-visitor-id').value = plan.visitor_id || optVisitorId || '';
+    document.getElementById('report-ap-visitor-name').innerText = plan.visitor_name ? `${plan.visitor_name} 様` : (plan.visitor_id ? `ビジター No.${plan.visitor_id}` : '対象ビジター');
+    document.getElementById('report-ap-assignee').innerText = plan.assignee_name || '担当者未設定';
+    document.getElementById('report-ap-action-text').innerText = plan.action_text || '-';
+
+    const dueBadge = document.getElementById('report-ap-due-badge');
+    if (dueBadge) {
+      dueBadge.innerText = plan.due_date ? `期日: ${plan.due_date}` : '期日未設定';
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (plan.due_date && plan.due_date < todayStr && Number(plan.is_completed) === 0) {
+        dueBadge.classList.add('overdue');
+      } else {
+        dueBadge.classList.remove('overdue');
+      }
+    }
+
+    document.getElementById('report-ap-text').value = plan.report_text || '';
+    document.getElementById('report-ap-reporter').value = plan.reporter_name || plan.assignee_name || '';
+
+    const isCompCheckbox = document.getElementById('report-ap-is-completed');
+    if (isCompCheckbox) {
+      isCompCheckbox.checked = true; // Default to completed when submitting report
+      updateReportCompletedLabel();
+    }
+
+    const modal = document.getElementById('modal-action-report');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeActionReportModal() {
+    const modal = document.getElementById('modal-action-report');
+    if (modal) modal.style.display = 'none';
+    currentReportingPlan = null;
+  }
+
+  function updateReportCompletedLabel() {
+    const isComp = document.getElementById('report-ap-is-completed').checked;
+    const label = document.getElementById('report-ap-completed-label');
+    const saveBtn = document.getElementById('btn-save-action-report');
+    if (label) {
+      label.innerText = isComp ? '完了にする（達成）' : '途中経過として保存（未完了）';
+    }
+    if (saveBtn) {
+      saveBtn.innerHTML = isComp ? '<i class="fa-solid fa-check"></i> 報告を保存して完了' : '<i class="fa-solid fa-floppy-disk"></i> 途中経過を保存';
+    }
+  }
+
+  function submitActionReport() {
+    const id = document.getElementById('report-ap-id').value;
+    const visitorId = document.getElementById('report-ap-visitor-id').value;
+    const reportText = document.getElementById('report-ap-text').value.trim();
+    const reporterName = document.getElementById('report-ap-reporter').value.trim();
+    const isCompleted = document.getElementById('report-ap-is-completed').checked ? 1 : 0;
+
+    if (!reportText) {
+      alert('実施結果・報告内容を入力してください');
+      document.getElementById('report-ap-text').focus();
+      return;
+    }
+
+    showToast('報告を保存中...');
+    ApiService.call('reportActionPlanApi', {
+      id: id,
+      reportText: reportText,
+      reporterName: reporterName,
+      isCompleted: isCompleted
+    })
+      .then(res => {
+        if (res && res.success) {
+          showToast(isCompleted === 1 ? '✅ アクションを報告し、完了にしました！' : '💾 途中経過を保存しました');
+          closeActionReportModal();
+
+          // Refresh current views
+          if (typeof fetchDashboardData === 'function') {
+            fetchDashboardData(true);
+          }
+          if (visitorId && typeof fetchVisitorDetail === 'function') {
+            fetchVisitorDetail(visitorId);
+          }
+        } else {
+          showToast(res && res.message ? res.message : '保存に失敗しました');
+        }
+      })
+      .catch(handleError);
+  }
+</script>

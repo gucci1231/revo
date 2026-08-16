@@ -288,11 +288,14 @@
         const card = document.createElement('div');
         card.className = `vd-ap-card ${isOverdue ? 'is-overdue' : ''}`;
 
+        const reportSnippet = item.report_text ? `
+          <div style="font-size: 11px; color: #475569; background: #f8fafc; border-left: 3px solid #0ca678; padding: 4px 8px; border-radius: 4px; margin-top: 4px;">
+            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 途中経過:</strong> ${escapeHtml(item.report_text)}
+          </div>
+        ` : '';
+
         card.innerHTML = `
           <div class="vd-ap-left">
-            <button type="button" class="vd-ap-check-btn" onclick="toggleActionPlan('${item.id}', 1)" title="クリックして完了にする">
-              <i class="fa-regular fa-circle-check"></i>
-            </button>
             <div class="vd-ap-body">
               <div class="vd-ap-meta-row">
                 <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
@@ -305,11 +308,15 @@
               <div class="vd-ap-text">
                 ${escapeHtml(item.action_text)}
               </div>
+              ${reportSnippet}
             </div>
           </div>
-          <div class="vd-ap-actions">
+          <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')">
+              <i class="fa-solid fa-clipboard-check"></i> 報告して完了
+            </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
-              <i class="fa-solid fa-pen-to-square"></i>
+              <i class="fa-solid fa-pen"></i>
             </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" style="color: var(--danger-accent);" onclick="deleteActionPlan('${item.id}')" title="削除">
               <i class="fa-solid fa-trash-can"></i>
@@ -326,23 +333,33 @@
         const card = document.createElement('div');
         card.className = 'vd-ap-card is-completed';
 
+        const reportBox = item.report_text ? `
+          <div style="font-size: 11px; color: #1e293b; background: #e6fcf5; border-left: 3px solid #0ca678; padding: 6px 10px; border-radius: 6px; margin-top: 6px; line-height: 1.4;">
+            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 実施報告:</strong> ${escapeHtml(item.report_text)}
+            ${item.completed_by ? `<span style="color: #64748b; margin-left: 6px;">(確認者: ${escapeHtml(item.completed_by)})</span>` : ''}
+          </div>
+        ` : '';
+
         card.innerHTML = `
           <div class="vd-ap-left">
-            <button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlan('${item.id}', 0)" title="クリックして未完了に戻す">
-              <i class="fa-solid fa-circle-check"></i>
-            </button>
             <div class="vd-ap-body">
               <div class="vd-ap-text completed">
-                ${escapeHtml(item.action_text)}
+                <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> ${escapeHtml(item.action_text)}
               </div>
               <div class="vd-ap-submeta">
-                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了: ${item.completed_at}` : ''}
+                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了日時: ${item.completed_at}` : ''}
               </div>
+              ${reportBox}
             </div>
           </div>
-          <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+          <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')" title="報告確認・編集">
+              <i class="fa-solid fa-pen-to-square"></i> 報告確認
+            </button>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
         `;
         completedList.appendChild(card);
       });

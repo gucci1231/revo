@@ -371,6 +371,34 @@ function handleApiRequest(req, res, urlObj) {
         return res.end(JSON.stringify({ success: true, id: id, list: list }));
       }
 
+      if (action === 'report') {
+        const id = esc(input.id || '');
+        const curItem = runSqlJson(`SELECT * FROM action_plans WHERE id = '${id}';`)[0] || null;
+        if (!curItem) return res.end(JSON.stringify({ success: false, message: 'Not found' }));
+
+        const reportText = esc(input.reportText || input.report_text || '');
+        const reporterName = esc(input.reporterName || input.reporter_name || '');
+        const markCompleted = input.isCompleted !== undefined ? (Number(input.isCompleted) === 1) : true;
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        const isCompleted = markCompleted ? 1 : Number(curItem.is_completed);
+        const completedAt = isCompleted === 1 ? (curItem.completed_at || now) : '';
+
+        const sql = `
+          UPDATE action_plans SET
+            report_text = '${reportText}',
+            reporter_name = '${reporterName}',
+            completed_by = '${reporterName}',
+            is_completed = ${isCompleted},
+            completed_at = '${completedAt}',
+            updated_at = '${now}'
+          WHERE id = '${id}';
+        `;
+        runSqlExec(sql);
+        const list = runSqlJson(`SELECT * FROM action_plans WHERE visitor_id = '${curItem.visitor_id}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`);
+        const item = runSqlJson(`SELECT * FROM action_plans WHERE id = '${id}';`)[0] || null;
+        return res.end(JSON.stringify({ success: true, id: id, item: item, list: list }));
+      }
+
       if (action === 'delete') {
         const id = esc(input.id || '');
         const vId = esc(input.visitorId || '');

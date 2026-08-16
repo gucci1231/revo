@@ -104,6 +104,9 @@ class Database {
                 assignee_name TEXT DEFAULT '',
                 assignee_id TEXT DEFAULT '',
                 action_text TEXT NOT NULL,
+                report_text TEXT DEFAULT '',
+                reporter_name TEXT DEFAULT '',
+                completed_by TEXT DEFAULT '',
                 is_completed INTEGER DEFAULT 0,
                 completed_at TEXT DEFAULT '',
                 created_at TEXT,
@@ -112,6 +115,16 @@ class Database {
 
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
         ");
+
+        try {
+            $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN report_text TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN reporter_name TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN completed_by TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
     }
 
     public function fetchOne(string $sql, array $params = []): ?array {

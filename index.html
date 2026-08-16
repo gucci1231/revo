@@ -964,6 +964,79 @@ tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+  <!-- Modal: アクション報告・完了登録 -->
+<div id="modal-action-report" class="modal-overlay" style="display: none;">
+  <div class="modal-card max-w-lg">
+    <!-- Header -->
+    <div class="modal-header">
+      <h3 class="modal-title flex items-center gap-2">
+        <i class="fa-solid fa-clipboard-check text-blue-600"></i> アクション報告・完了登録
+      </h3>
+      <button type="button" class="modal-close-btn" onclick="closeActionReportModal()">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body space-y-4">
+      <input type="hidden" id="report-ap-id">
+      <input type="hidden" id="report-ap-visitor-id">
+
+      <!-- Target Action Plan Preview Box -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5 text-xs">
+        <div class="flex items-center justify-between text-slate-500 font-bold">
+          <span><i class="fa-regular fa-user mr-1"></i> <span id="report-ap-visitor-name" class="text-slate-800 text-sm font-extrabold">-</span></span>
+          <span id="report-ap-due-badge" class="vd-ap-badge-date">-</span>
+        </div>
+        <div class="text-slate-600">
+          <strong>担当者:</strong> <span id="report-ap-assignee" class="font-bold text-indigo-700">-</span>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-2 text-slate-800 font-bold text-xs" id="report-ap-action-text">
+          -
+        </div>
+      </div>
+
+      <!-- Report Input Form -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1" for="report-ap-text">
+          実施結果・報告内容 <span class="text-rose-500 font-normal">※必須</span>
+        </label>
+        <textarea id="report-ap-text" rows="4" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="例：電話にてフォロー連絡実施。次回8/20定例会への参加を前向きに検討とのこと。1to1日程を来週水曜で調整中。"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1" for="report-ap-reporter">
+            報告者 / 確認者
+          </label>
+          <input type="text" id="report-ap-reporter" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="担当者または確認者名">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">
+            完了ステータス
+          </label>
+          <div class="flex items-center gap-2 pt-2">
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="report-ap-is-completed" class="sr-only peer" checked onchange="updateReportCompletedLabel()">
+              <div class="w-10 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              <span class="ml-2 text-xs font-bold text-slate-800" id="report-ap-completed-label">完了にする</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer flex justify-between items-center">
+      <button type="button" class="btn-action-secondary text-xs" onclick="closeActionReportModal()">キャンセル</button>
+      <div class="flex gap-2">
+        <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5" id="btn-save-action-report" onclick="submitActionReport()">
+          <i class="fa-solid fa-check"></i> 報告を保存して完了
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Left Slide-over Drawer Navigation -->
   <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeLeftDrawer()"></div>
@@ -1972,6 +2045,12 @@ const ApiService = {
           method: 'POST',
           body: { id: args[0], isCompleted: args[1] }
         };
+      case 'reportActionPlanApi':
+        return {
+          url: '/api/action_plans.php?action=report',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0], reportText: args[1], reporterName: args[2], isCompleted: args[3] }
+        };
       case 'deleteActionPlanApi':
         return {
           url: '/api/action_plans.php?action=delete',
@@ -2093,16 +2172,25 @@ const ApiService = {
       const userBadge = ap.assignee_name ? `<span class="vd-ap-badge-user" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-user"></i> ${escapeHtml(ap.assignee_name)}</span>` : '';
       const textStyle = isCompleted ? 'color:#868e96; text-decoration:line-through;' : 'color:#1e293b; font-weight:700;';
 
+      const reportSnippet = ap.report_text
+        ? `<div style="font-size:11px; color:#0ca678; background:#e6fcf5; padding:2px 6px; border-radius:4px; margin-top:2px;">
+             <strong>報告:</strong> ${escapeHtml(ap.report_text)}
+           </div>`
+        : '';
+
       return `
         <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
           <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:11px; font-weight:800; color:#228be6;">🎯 次の一手:</span>
+            <span style="font-size:11px; font-weight:800; color:${isCompleted ? '#2b8a3e' : '#228be6'};">
+              ${isCompleted ? '✅ 完了アクション:' : '🎯 次の一手:'}
+            </span>
             ${dateBadge}
             ${userBadge}
           </div>
           <div style="font-size:12px; line-height:1.3; ${textStyle}" title="${escapeHtml(ap.action_text)}">
             ${escapeHtml(ap.action_text)}
           </div>
+          ${reportSnippet}
         </div>
       `;
     }
@@ -2780,9 +2868,9 @@ const ApiService = {
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
       const tr = document.createElement('tr');
 
-      const checkBtnHtml = isCompleted
-        ? `<button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlanFromDashboard('${p.id}', 0)" title="未完了に戻す"><i class="fa-solid fa-circle-check"></i></button>`
-        : `<button type="button" class="vd-ap-check-btn" onclick="toggleActionPlanFromDashboard('${p.id}', 1)" title="完了にする"><i class="fa-regular fa-circle-check"></i></button>`;
+      const statusBadgeHtml = isCompleted
+        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check"></i> 完了</span>`
+        : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`;
 
       const dateBadgeHtml = isCompleted
         ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
@@ -2799,18 +2887,35 @@ const ApiService = {
         </div>
       `;
 
-      const actionTextHtml = isCompleted
-        ? `<span class="vd-ap-text completed">${escapeHtml(p.action_text)}</span>`
-        : `<span class="vd-ap-text" style="font-size: 14px;">${escapeHtml(p.action_text)}</span>`;
+      const reportBoxHtml = p.report_text
+        ? `<div style="margin-top:4px; font-size:11px; color:#334155; background:#f8fafc; border-left:3px solid #20c997; padding:4px 8px; border-radius:4px; line-height:1.4;">
+             <strong style="color:#0ca678;"><i class="fa-regular fa-comment-dots"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span style="color:#64748b; margin-left:4px;">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
+           </div>`
+        : '';
+
+      const actionTextHtml = `
+        <div style="max-width: 320px;">
+          <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
+            ${escapeHtml(p.action_text)}
+          </div>
+          ${reportBoxHtml}
+        </div>
+      `;
 
       const actionBtnHtml = `
-        <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
-          詳細 <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
-        </button>
+        <div class="flex items-center justify-center gap-1.5">
+          <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+            <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
+          </button>
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
+            詳細
+          </button>
+        </div>
       `;
 
       tr.innerHTML = `
-        <td class="text-center">${checkBtnHtml}</td>
+        <td class="text-center">${statusBadgeHtml}</td>
         <td>${dateBadgeHtml}</td>
         <td>${userBadgeHtml}</td>
         <td>${visitorNameHtml}</td>
@@ -2819,18 +2924,6 @@ const ApiService = {
       `;
       tbody.appendChild(tr);
     });
-  }
-
-  function toggleActionPlanFromDashboard(planId, newStatus) {
-    showToast('アクションプランを更新中...');
-    ApiService.call('toggleActionPlanApi', { id: planId, is_completed: newStatus })
-      .then(res => {
-        if (res && res.success) {
-          showToast(newStatus === 1 ? '✅ アクションを完了にしました' : 'アクションを未完了に戻しました');
-          fetchDashboardData(true);
-        }
-      })
-      .catch(handleError);
   }
 
   function renderHotVisitorsTable(records) {
@@ -3702,11 +3795,14 @@ const ApiService = {
         const card = document.createElement('div');
         card.className = `vd-ap-card ${isOverdue ? 'is-overdue' : ''}`;
 
+        const reportSnippet = item.report_text ? `
+          <div style="font-size: 11px; color: #475569; background: #f8fafc; border-left: 3px solid #0ca678; padding: 4px 8px; border-radius: 4px; margin-top: 4px;">
+            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 途中経過:</strong> ${escapeHtml(item.report_text)}
+          </div>
+        ` : '';
+
         card.innerHTML = `
           <div class="vd-ap-left">
-            <button type="button" class="vd-ap-check-btn" onclick="toggleActionPlan('${item.id}', 1)" title="クリックして完了にする">
-              <i class="fa-regular fa-circle-check"></i>
-            </button>
             <div class="vd-ap-body">
               <div class="vd-ap-meta-row">
                 <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
@@ -3719,11 +3815,15 @@ const ApiService = {
               <div class="vd-ap-text">
                 ${escapeHtml(item.action_text)}
               </div>
+              ${reportSnippet}
             </div>
           </div>
-          <div class="vd-ap-actions">
+          <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')">
+              <i class="fa-solid fa-clipboard-check"></i> 報告して完了
+            </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
-              <i class="fa-solid fa-pen-to-square"></i>
+              <i class="fa-solid fa-pen"></i>
             </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" style="color: var(--danger-accent);" onclick="deleteActionPlan('${item.id}')" title="削除">
               <i class="fa-solid fa-trash-can"></i>
@@ -3740,23 +3840,33 @@ const ApiService = {
         const card = document.createElement('div');
         card.className = 'vd-ap-card is-completed';
 
+        const reportBox = item.report_text ? `
+          <div style="font-size: 11px; color: #1e293b; background: #e6fcf5; border-left: 3px solid #0ca678; padding: 6px 10px; border-radius: 6px; margin-top: 6px; line-height: 1.4;">
+            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 実施報告:</strong> ${escapeHtml(item.report_text)}
+            ${item.completed_by ? `<span style="color: #64748b; margin-left: 6px;">(確認者: ${escapeHtml(item.completed_by)})</span>` : ''}
+          </div>
+        ` : '';
+
         card.innerHTML = `
           <div class="vd-ap-left">
-            <button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlan('${item.id}', 0)" title="クリックして未完了に戻す">
-              <i class="fa-solid fa-circle-check"></i>
-            </button>
             <div class="vd-ap-body">
               <div class="vd-ap-text completed">
-                ${escapeHtml(item.action_text)}
+                <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> ${escapeHtml(item.action_text)}
               </div>
               <div class="vd-ap-submeta">
-                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了: ${item.completed_at}` : ''}
+                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了日時: ${item.completed_at}` : ''}
               </div>
+              ${reportBox}
             </div>
           </div>
-          <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+          <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')" title="報告確認・編集">
+              <i class="fa-solid fa-pen-to-square"></i> 報告確認
+            </button>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
         `;
         completedList.appendChild(card);
       });
@@ -4280,6 +4390,123 @@ const ApiService = {
         select.appendChild(opt);
       });
     });
+  }
+</script>
+
+<script>
+  /* --- Modal Action Report Controller --- */
+  let currentReportingPlan = null;
+
+  function openActionReportModal(planId, optVisitorId) {
+    let plan = null;
+    if (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) {
+      plan = currentDashboardActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && typeof currentVisitorActionPlans !== 'undefined' && Array.isArray(currentVisitorActionPlans)) {
+      plan = currentVisitorActionPlans.find(p => p.id === planId);
+    }
+
+    if (!plan) {
+      // Fallback
+      plan = {
+        id: planId,
+        visitor_id: optVisitorId || '',
+        action_text: '',
+        assignee_name: '',
+        due_date: '',
+        report_text: '',
+        reporter_name: '',
+        is_completed: 0
+      };
+    }
+
+    currentReportingPlan = plan;
+
+    document.getElementById('report-ap-id').value = plan.id;
+    document.getElementById('report-ap-visitor-id').value = plan.visitor_id || optVisitorId || '';
+    document.getElementById('report-ap-visitor-name').innerText = plan.visitor_name ? `${plan.visitor_name} 様` : (plan.visitor_id ? `ビジター No.${plan.visitor_id}` : '対象ビジター');
+    document.getElementById('report-ap-assignee').innerText = plan.assignee_name || '担当者未設定';
+    document.getElementById('report-ap-action-text').innerText = plan.action_text || '-';
+
+    const dueBadge = document.getElementById('report-ap-due-badge');
+    if (dueBadge) {
+      dueBadge.innerText = plan.due_date ? `期日: ${plan.due_date}` : '期日未設定';
+      const todayStr = new Date().toISOString().slice(0, 10);
+      if (plan.due_date && plan.due_date < todayStr && Number(plan.is_completed) === 0) {
+        dueBadge.classList.add('overdue');
+      } else {
+        dueBadge.classList.remove('overdue');
+      }
+    }
+
+    document.getElementById('report-ap-text').value = plan.report_text || '';
+    document.getElementById('report-ap-reporter').value = plan.reporter_name || plan.assignee_name || '';
+
+    const isCompCheckbox = document.getElementById('report-ap-is-completed');
+    if (isCompCheckbox) {
+      isCompCheckbox.checked = true; // Default to completed when submitting report
+      updateReportCompletedLabel();
+    }
+
+    const modal = document.getElementById('modal-action-report');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeActionReportModal() {
+    const modal = document.getElementById('modal-action-report');
+    if (modal) modal.style.display = 'none';
+    currentReportingPlan = null;
+  }
+
+  function updateReportCompletedLabel() {
+    const isComp = document.getElementById('report-ap-is-completed').checked;
+    const label = document.getElementById('report-ap-completed-label');
+    const saveBtn = document.getElementById('btn-save-action-report');
+    if (label) {
+      label.innerText = isComp ? '完了にする（達成）' : '途中経過として保存（未完了）';
+    }
+    if (saveBtn) {
+      saveBtn.innerHTML = isComp ? '<i class="fa-solid fa-check"></i> 報告を保存して完了' : '<i class="fa-solid fa-floppy-disk"></i> 途中経過を保存';
+    }
+  }
+
+  function submitActionReport() {
+    const id = document.getElementById('report-ap-id').value;
+    const visitorId = document.getElementById('report-ap-visitor-id').value;
+    const reportText = document.getElementById('report-ap-text').value.trim();
+    const reporterName = document.getElementById('report-ap-reporter').value.trim();
+    const isCompleted = document.getElementById('report-ap-is-completed').checked ? 1 : 0;
+
+    if (!reportText) {
+      alert('実施結果・報告内容を入力してください');
+      document.getElementById('report-ap-text').focus();
+      return;
+    }
+
+    showToast('報告を保存中...');
+    ApiService.call('reportActionPlanApi', {
+      id: id,
+      reportText: reportText,
+      reporterName: reporterName,
+      isCompleted: isCompleted
+    })
+      .then(res => {
+        if (res && res.success) {
+          showToast(isCompleted === 1 ? '✅ アクションを報告し、完了にしました！' : '💾 途中経過を保存しました');
+          closeActionReportModal();
+
+          // Refresh current views
+          if (typeof fetchDashboardData === 'function') {
+            fetchDashboardData(true);
+          }
+          if (visitorId && typeof fetchVisitorDetail === 'function') {
+            fetchVisitorDetail(visitorId);
+          }
+        } else {
+          showToast(res && res.message ? res.message : '保存に失敗しました');
+        }
+      })
+      .catch(handleError);
   }
 </script>
 

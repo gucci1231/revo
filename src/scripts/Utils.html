@@ -86,16 +86,25 @@
       const userBadge = ap.assignee_name ? `<span class="vd-ap-badge-user" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-user"></i> ${escapeHtml(ap.assignee_name)}</span>` : '';
       const textStyle = isCompleted ? 'color:#868e96; text-decoration:line-through;' : 'color:#1e293b; font-weight:700;';
 
+      const reportSnippet = ap.report_text
+        ? `<div style="font-size:11px; color:#0ca678; background:#e6fcf5; padding:2px 6px; border-radius:4px; margin-top:2px;">
+             <strong>報告:</strong> ${escapeHtml(ap.report_text)}
+           </div>`
+        : '';
+
       return `
         <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
           <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:11px; font-weight:800; color:#228be6;">🎯 次の一手:</span>
+            <span style="font-size:11px; font-weight:800; color:${isCompleted ? '#2b8a3e' : '#228be6'};">
+              ${isCompleted ? '✅ 完了アクション:' : '🎯 次の一手:'}
+            </span>
             ${dateBadge}
             ${userBadge}
           </div>
           <div style="font-size:12px; line-height:1.3; ${textStyle}" title="${escapeHtml(ap.action_text)}">
             ${escapeHtml(ap.action_text)}
           </div>
+          ${reportSnippet}
         </div>
       `;
     }

@@ -30,6 +30,9 @@ class ActionPlanController extends Controller {
             case 'toggle':
                 $this->toggle();
                 break;
+            case 'report':
+                $this->report();
+                break;
             case 'delete':
                 $this->delete();
                 break;
@@ -123,6 +126,29 @@ class ActionPlanController extends Controller {
         }
 
         $item = $this->actionPlanRepo->toggleComplete($id, $forceStatus);
+        if (!$item) {
+            Response::error('Action plan not found');
+        }
+
+        $vId = $item['visitor_id'];
+        Response::success([
+            'id' => $id,
+            'item' => $item,
+            'list' => $this->actionPlanRepo->getByVisitorId($vId)
+        ]);
+    }
+
+    private function report(): void {
+        $id = $this->getParam('id', '');
+        if (!$id) {
+            Response::error('id is required');
+        }
+
+        $reportText = trim($this->getParam('reportText', '') ?: $this->getParam('report_text', ''));
+        $reporterName = trim($this->getParam('reporterName', '') ?: $this->getParam('reporter_name', ''));
+        $isCompleted = $this->getParam('isCompleted', null) ?? $this->getParam('is_completed', 1);
+
+        $item = $this->actionPlanRepo->saveReport($id, $reportText, $reporterName, (int)$isCompleted === 1);
         if (!$item) {
             Response::error('Action plan not found');
         }
