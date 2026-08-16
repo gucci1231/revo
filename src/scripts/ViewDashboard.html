@@ -43,12 +43,24 @@
     const avgVisitorsEl = document.getElementById('val-avg-visitors');
     const feedbackRateEl = document.getElementById('val-feedback-rate');
     const hearingRateEl = document.getElementById('val-hearing-rate');
+    const pendingApValEl = document.getElementById('val-pending-action-plans');
 
     if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
     if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
     if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
     if (feedbackRateEl) feedbackRateEl.innerText = `${m.feedbackRate || 0}%`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
+
+    const allActionPlans = t.actionPlans || [];
+    if (pendingApValEl) {
+      const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
+      const overdueCount = m.overdueActionPlansCount || 0;
+      if (overdueCount > 0) {
+        pendingApValEl.innerHTML = `<span style="color:#e03131;">${pendingCount}件</span> <span style="font-size:11px; color:#e03131; font-weight:700;">(超過${overdueCount})</span>`;
+      } else {
+        pendingApValEl.innerText = `${pendingCount}件`;
+      }
+    }
 
     // Charts
     const chartLabels = c.labels || data.chartLabels || [];
@@ -59,6 +71,7 @@
     }
 
     // Tables
+    renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
     renderMonthlyStatsTable(t.monthlyStats || []);
     renderNextMeetingTable(t.nextMeeting || t.nextMeetingVisitors || []);
@@ -69,6 +82,121 @@
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
     }
+  }
+
+  let currentDashboardActionPlans = [];
+  let currentDashboardApFilter = 'pending';
+
+  function filterDashboardActionPlans(mode) {
+    currentDashboardApFilter = mode;
+    ['pending', 'all', 'completed'].forEach(m => {
+      const btn = document.getElementById(`dash-ap-filter-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-blue-600 text-white transition-all';
+        } else {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+        }
+      }
+    });
+    renderDashboardActionPlansTable(currentDashboardActionPlans);
+  }
+
+  function renderDashboardActionPlansTable(plans) {
+    currentDashboardActionPlans = plans || [];
+    const tbody = document.getElementById('table-dashboard-action-plans');
+    const badge = document.getElementById('dashboard-ap-badge');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const pendingCount = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0).length;
+    const overdueCount = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr).length;
+
+    if (badge) {
+      if (overdueCount > 0) {
+        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
+        badge.innerText = `未完了 ${pendingCount}件 (期限超過 ${overdueCount}件)`;
+      } else {
+        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800';
+        badge.innerText = `未完了 ${pendingCount}件`;
+      }
+    }
+
+    let filtered = currentDashboardActionPlans;
+    if (currentDashboardApFilter === 'pending') {
+      filtered = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0);
+    } else if (currentDashboardApFilter === 'completed') {
+      filtered = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 1);
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">
+            ${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    filtered.forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+      const tr = document.createElement('tr');
+
+      const checkBtnHtml = isCompleted
+        ? `<button type="button" class="vd-ap-check-btn checked" onclick="toggleActionPlanFromDashboard('${p.id}', 0)" title="未完了に戻す"><i class="fa-solid fa-circle-check"></i></button>`
+        : `<button type="button" class="vd-ap-check-btn" onclick="toggleActionPlanFromDashboard('${p.id}', 1)" title="完了にする"><i class="fa-regular fa-circle-check"></i></button>`;
+
+      const dateBadgeHtml = isCompleted
+        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
+        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日なし'} ${isOverdue ? '(期限超過)' : ''}</span>`;
+
+      const userBadgeHtml = `<span class="vd-ap-badge-user"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
+
+      const visitorNameHtml = `
+        <div>
+          <a href="#visitor/${p.visitor_id}" style="font-weight: 800; color: var(--primary-accent); text-decoration: none;" onclick="openVisitorDetailView('${p.visitor_id}'); return false;">
+            <i class="fa-solid fa-user-tag" style="font-size: 11px; margin-right: 4px;"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
+          </a>
+          ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+        </div>
+      `;
+
+      const actionTextHtml = isCompleted
+        ? `<span class="vd-ap-text completed">${escapeHtml(p.action_text)}</span>`
+        : `<span class="vd-ap-text" style="font-size: 14px;">${escapeHtml(p.action_text)}</span>`;
+
+      const actionBtnHtml = `
+        <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
+          詳細 <i class="fa-solid fa-chevron-right" style="font-size: 9px;"></i>
+        </button>
+      `;
+
+      tr.innerHTML = `
+        <td class="text-center">${checkBtnHtml}</td>
+        <td>${dateBadgeHtml}</td>
+        <td>${userBadgeHtml}</td>
+        <td>${visitorNameHtml}</td>
+        <td>${actionTextHtml}</td>
+        <td class="text-center">${actionBtnHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function toggleActionPlanFromDashboard(planId, newStatus) {
+    showToast('アクションプランを更新中...');
+    ApiService.call('toggleActionPlanApi', { id: planId, is_completed: newStatus })
+      .then(res => {
+        if (res && res.success) {
+          showToast(newStatus === 1 ? '✅ アクションを完了にしました' : 'アクションを未完了に戻しました');
+          fetchDashboardData(true);
+        }
+      })
+      .catch(handleError);
   }
 
   function renderHotVisitorsTable(records) {

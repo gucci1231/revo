@@ -471,6 +471,29 @@ function handleApiRequest(req, res, urlObj) {
       const meetingCount = Math.max(1, weeklyKeys.length);
       const avgVisitorCount = (totalApplyCount / meetingCount).toFixed(1);
 
+      const apSql = `
+        SELECT ap.*, 
+               COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+               COALESCE(v.company, '') as visitor_company, 
+               COALESCE(v.profession, '') as visitor_profession, 
+               COALESCE(v.inviter, '') as visitor_inviter, 
+               COALESCE(v.event_date, '') as visitor_event_date
+        FROM action_plans ap
+        LEFT JOIN visitors v ON ap.visitor_id = v.id
+        ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
+        LIMIT 50;
+      `;
+      const actionPlans = runSqlJson(apSql);
+      const todayStr = new Date().toISOString().slice(0, 10);
+      let pendingApCount = 0;
+      let overdueApCount = 0;
+      actionPlans.forEach(ap => {
+        if (Number(ap.is_completed) === 0) {
+          pendingApCount++;
+          if (ap.due_date && ap.due_date < todayStr) overdueApCount++;
+        }
+      });
+
       return res.end(JSON.stringify({
         success: true,
         nextThuStr: "08/13",
@@ -487,10 +510,13 @@ function handleApiRequest(req, res, urlObj) {
           avgVisitorCount: avgVisitorCount,
           feedbackRate: "85.0",
           hearingRate: totalApplyCount > 0 ? ((totalHearingCount / totalApplyCount) * 100).toFixed(1) : "0.0",
-          hotVisitorCount: hotVisitors.length
+          hotVisitorCount: hotVisitors.length,
+          pendingActionPlansCount: pendingApCount,
+          overdueActionPlansCount: overdueApCount
         },
         chart: { labels: chartLabels, data: chartData },
         tables: {
+          actionPlans: actionPlans,
           hotVisitors: hotVisitors,
           nextMeeting: nextMeetingVisitors,
           lastMeeting: lastMeetingVisitors,

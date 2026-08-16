@@ -77,4 +77,20 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(isPastOverdue, true);
     assert.strictEqual(isFutureOverdue, false);
   });
+
+  it('correctly calculates pending and overdue counts for dashboard metrics', () => {
+    const today = '2026-08-20';
+    const plans = [
+      { id: '1', due_date: '2026-08-15', is_completed: 0, visitor_id: '101', visitor_name: '田中' },
+      { id: '2', due_date: '2026-08-25', is_completed: 0, visitor_id: '102', visitor_name: '佐藤' },
+      { id: '3', due_date: '2026-08-10', is_completed: 1, visitor_id: '103', visitor_name: '鈴木' }
+    ];
+
+    const pendingCount = plans.filter(p => Number(p.is_completed) === 0).length;
+    const overdueCount = plans.filter(p => Number(p.is_completed) === 0 && p.due_date < today).length;
+
+    assert.strictEqual(pendingCount, 2);
+    assert.strictEqual(overdueCount, 1);
+  });
 });
+

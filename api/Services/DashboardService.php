@@ -3,17 +3,21 @@ namespace Api\Services;
 
 use Api\Repositories\VisitorRepository;
 use Api\Repositories\SettingRepository;
+use Api\Repositories\ActionPlanRepository;
 
 class DashboardService {
     private VisitorRepository $visitorRepo;
     private SettingRepository $settingRepo;
+    private ActionPlanRepository $actionPlanRepo;
 
     public function __construct(
         ?VisitorRepository $visitorRepo = null,
-        ?SettingRepository $settingRepo = null
+        ?SettingRepository $settingRepo = null,
+        ?ActionPlanRepository $actionPlanRepo = null
     ) {
         $this->visitorRepo = $visitorRepo ?? new VisitorRepository();
         $this->settingRepo = $settingRepo ?? new SettingRepository();
+        $this->actionPlanRepo = $actionPlanRepo ?? new ActionPlanRepository();
     }
 
     public function getDashboardData(?string $requestedStartDate = null): array {
@@ -130,6 +134,19 @@ class DashboardService {
         $joinRate = $totalApplyCount > 0 ? number_format(($totalJoinedCount / $totalApplyCount) * 100, 1) : '0.0';
         $hearingRate = $totalApplyCount > 0 ? number_format(($totalHearingCount / $totalApplyCount) * 100, 1) : '0.0';
 
+        $actionPlans = $this->actionPlanRepo->getAllWithVisitor(null, 50);
+        $todayStr = date('Y-m-d');
+        $pendingActionPlansCount = 0;
+        $overdueActionPlansCount = 0;
+        foreach ($actionPlans as $ap) {
+            if ((int)$ap['is_completed'] === 0) {
+                $pendingActionPlansCount++;
+                if (!empty($ap['due_date']) && $ap['due_date'] < $todayStr) {
+                    $overdueActionPlansCount++;
+                }
+            }
+        }
+
         $bniTermsList = [
             ['label' => '第2期 (2026/04/01〜)', 'value' => '2026/04/01'],
             ['label' => '第1期 (2025/10/01〜)', 'value' => '2025/10/01'],
@@ -154,13 +171,16 @@ class DashboardService {
                 'avgVisitorCount' => (string)$avgVisitorCount,
                 'feedbackRate' => '85.0',
                 'hearingRate' => (string)$hearingRate,
-                'hotVisitorCount' => count($hotVisitors)
+                'hotVisitorCount' => count($hotVisitors),
+                'pendingActionPlansCount' => $pendingActionPlansCount,
+                'overdueActionPlansCount' => $overdueActionPlansCount
             ],
             'chart' => [
                 'labels' => $chartLabels,
                 'data' => $chartData
             ],
             'tables' => [
+                'actionPlans' => $actionPlans,
                 'hotVisitors' => $hotVisitors,
                 'nextMeeting' => $nextMeetingVisitors,
                 'lastMeeting' => $lastMeetingVisitors,

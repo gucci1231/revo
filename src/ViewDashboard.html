@@ -45,8 +45,8 @@
       </div>
     </div>
 
-    <!-- 4行目: 率・平均カード群 (スマホで2列、タブレット3列、PC5列) -->
-    <div class="col-span-1 md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <!-- 4行目: 率・平均カード群 (スマホで2列、タブレット3列、PC6列) -->
+    <div class="col-span-1 md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
         <div class="text-[11px] font-semibold text-slate-500">入会率</div>
         <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-join-rate">-%</div>
@@ -63,10 +63,46 @@
         <div class="text-[11px] font-semibold text-slate-500">メール送信率</div>
         <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-feedback-rate">-%</div>
       </div>
-      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
         <div class="text-[11px] font-semibold text-slate-500">ヒアリング提出率</div>
         <div class="text-xl font-extrabold text-slate-900 mt-1" id="val-hearing-rate">-%</div>
       </div>
+      <div class="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm">
+        <div class="text-[11px] font-semibold text-slate-500">進行中アクション</div>
+        <div class="text-xl font-extrabold text-blue-600 mt-1" id="val-pending-action-plans">-</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: アクションプラン進捗管理 (いつ・誰が・どうする) -->
+  <section class="bg-white rounded-xl border border-slate-200 shadow-sm mb-6 overflow-hidden">
+    <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-bullseye text-blue-600"></i> アクションプラン進捗管理 (いつ・誰が・どうする)
+        </h2>
+        <span id="dashboard-ap-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">0件</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-blue-600 text-white transition-all" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
+        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">全件</button>
+        <button type="button" class="px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="w-full text-left text-xs sm:text-sm whitespace-nowrap">
+        <thead>
+          <tr class="bg-slate-50 text-slate-600 font-bold">
+            <th class="p-3 border-b-2 border-slate-200 w-12 text-center">状態</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">期日 (いつ)</th>
+            <th class="p-3 border-b-2 border-slate-200 w-28">担当 (誰が)</th>
+            <th class="p-3 border-b-2 border-slate-200">対象ビジター</th>
+            <th class="p-3 border-b-2 border-slate-200">アクション内容 (どうする)</th>
+            <th class="p-3 border-b-2 border-slate-200 w-20 text-center">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-dashboard-action-plans"></tbody>
+      </table>
     </div>
   </section>
 
