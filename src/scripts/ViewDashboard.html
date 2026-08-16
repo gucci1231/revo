@@ -260,7 +260,7 @@
     tbody.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       return;
     }
 
@@ -281,8 +281,6 @@
           </div>
         </td>
         <td>${renderCurrentStatusColumnHtml(r)}</td>
-        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
         <td class="text-center">
           <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
             詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>

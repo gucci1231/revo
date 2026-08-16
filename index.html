@@ -1171,8 +1171,6 @@ tr:last-child td { border-bottom: none; }
               <th>氏名 / 会社名</th>
               <th class="col-w-md">招待者 / 担当</th>
               <th>現在の状況・次の一手</th>
-              <th class="text-center col-w-sm">1to1</th>
-              <th class="text-center col-w-sm">入会</th>
               <th class="text-center col-w-sm">操作</th>
             </tr>
           </thead>
@@ -1280,8 +1278,7 @@ tr:last-child td { border-bottom: none; }
               <th class="col-w-md">招待者 / 担当</th>
               <th>現在の状況・次の一手</th>
               <th class="text-center col-w-sm">ランク</th>
-              <th class="text-center col-w-sm">1to1</th>
-              <th class="text-center col-w-sm">入会</th>
+              <th class="text-center col-w-sm">操作</th>
             </tr>
           </thead>
           <tbody id="table-one-month"></tbody>
@@ -2842,7 +2839,7 @@ const ApiService = {
     tbody.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       return;
     }
 
@@ -2863,8 +2860,6 @@ const ApiService = {
           </div>
         </td>
         <td>${renderCurrentStatusColumnHtml(r)}</td>
-        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
         <td class="text-center">
           <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
             詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
@@ -3257,7 +3252,7 @@ const ApiService = {
     if (!tbody) return;
     tbody.innerHTML = '';
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
       return;
     }
     records.forEach(r => {
@@ -3278,8 +3273,11 @@ const ApiService = {
         </td>
         <td>${renderCurrentStatusColumnHtml(r)}</td>
         <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td class="text-center">
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });

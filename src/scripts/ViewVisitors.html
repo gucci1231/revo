@@ -137,7 +137,7 @@
     if (!tbody) return;
     tbody.innerHTML = '';
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
       return;
     }
     records.forEach(r => {
@@ -158,8 +158,11 @@
         </td>
         <td>${renderCurrentStatusColumnHtml(r)}</td>
         <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td class="text-center">${render1to1ButtonHtml(r.id, r.is1to1)}</td>
-        <td class="text-center">${renderJoinedButtonHtml(r.id, r.isJoined)}</td>
+        <td class="text-center">
+          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
