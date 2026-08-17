@@ -1613,6 +1613,22 @@ tr:last-child td { border-bottom: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+@media (max-width: 640px) {
+  .seg-pill-group.w-full,
+  .dash-panel .seg-pill-group {
+    width: 100% !important;
+    display: flex !important;
+    box-sizing: border-box;
+  }
+  .seg-pill-group.w-full .seg-pill-btn,
+  .dash-panel .seg-pill-group .seg-pill-btn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}
+
 /* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible & 2-Col Hot/AP 50% 50%) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
@@ -2556,8 +2572,8 @@ tr:last-child td { border-bottom: none; }
           <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
             <i class="fa-solid fa-fire text-slate-400 mr-1"></i> 最優先フォロー (感触A)
           </h2>
-          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
-            全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('priority-follow')" title="最優先フォロー全件表示">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
           </button>
         </div>
 
@@ -2586,15 +2602,15 @@ tr:last-child td { border-bottom: none; }
     <div id="dash-panel-ap" class="dash-panel">
       <section class="section-card overflow-hidden">
         <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between w-full sm:w-auto gap-2">
             <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
               <i class="fa-solid fa-bullseye text-slate-400 mr-1"></i> アクションプラン
             </h2>
-            <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
-              管理ページ <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('actions')" title="アクションプラン管理ページ">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
           </div>
-          <div class="seg-pill-group">
+          <div class="seg-pill-group w-full sm:w-auto">
             <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
             <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
             <button type="button" class="seg-pill-btn" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>

@@ -1571,6 +1571,22 @@ tr:last-child td { border-bottom: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+@media (max-width: 640px) {
+  .seg-pill-group.w-full,
+  .dash-panel .seg-pill-group {
+    width: 100% !important;
+    display: flex !important;
+    box-sizing: border-box;
+  }
+  .seg-pill-group.w-full .seg-pill-btn,
+  .dash-panel .seg-pill-group .seg-pill-btn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: 12px;
+  }
+}
+
 /* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible & 2-Col Hot/AP 50% 50%) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }

@@ -121,8 +121,8 @@
           <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
             <i class="fa-solid fa-fire text-slate-400 mr-1"></i> 最優先フォロー (感触A)
           </h2>
-          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
-            全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('priority-follow')" title="最優先フォロー全件表示">
+            <i class="fa-solid fa-chevron-right text-xs"></i>
           </button>
         </div>
 
@@ -151,15 +151,15 @@
     <div id="dash-panel-ap" class="dash-panel">
       <section class="section-card overflow-hidden">
         <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between w-full sm:w-auto gap-2">
             <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
               <i class="fa-solid fa-bullseye text-slate-400 mr-1"></i> アクションプラン
             </h2>
-            <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
-              管理ページ <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('actions')" title="アクションプラン管理ページ">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
           </div>
-          <div class="seg-pill-group">
+          <div class="seg-pill-group w-full sm:w-auto">
             <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
             <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
             <button type="button" class="seg-pill-btn" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
