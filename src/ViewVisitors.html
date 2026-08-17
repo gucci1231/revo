@@ -1,9 +1,23 @@
 <!-- VIEW 2: ビジター全一覧 (CRUD統合管理) -->
 <div id="view-visitors" class="view-content">
   <section class="section-card">
-    <div class="section-header">
-      <h2 class="section-title"><i class="fa-solid fa-users"></i> 全ビジター統合管理名簿</h2>
+    <div class="section-header flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 md:p-5">
+      <div class="flex items-center justify-between gap-3 w-full sm:w-auto">
+        <div>
+          <h2 class="section-title text-base md:text-lg font-bold text-slate-800 m-0">
+            <i class="fa-solid fa-users text-blue-600"></i> 全ビジター統合管理名簿
+          </h2>
+          <div class="section-sub text-xs text-slate-500 mt-0.5">全ビジターのステータス・進捗管理と検索</div>
+        </div>
+        <button type="button" class="btn-create-visitor sm:hidden" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規追加
+        </button>
+      </div>
+
       <div class="table-filter-group">
+        <div class="w-full sm:w-64">
+          <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
+        </div>
         <div class="date-range-box">
           <i class="fa-solid fa-calendar-range date-range-icon"></i>
           <input type="date" id="visitors-date-from" class="date-range-input" onchange="filterAllVisitorsTable()" title="開始日">
@@ -11,8 +25,9 @@
           <input type="date" id="visitors-date-to" class="date-range-input" onchange="filterAllVisitorsTable()" title="終了日">
           <button type="button" onclick="clearVisitorsDateFilter()" class="date-range-clear" title="期間クリア"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
-        <button class="btn-create-visitor" onclick="openAddVisitorModal()"><i class="fa-solid fa-plus"></i> 新規追加</button>
+        <button type="button" class="btn-create-visitor hidden sm:inline-flex" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規追加
+        </button>
       </div>
     </div>
     <div class="dash-ap-table-wrap table-container">

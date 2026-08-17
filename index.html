@@ -375,6 +375,32 @@ tr:last-child td { border-bottom: none; }
 /* Reusable Table Filters & Pagination */
 .table-filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
+.btn-create-visitor {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--primary-accent, #2563eb);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm, 8px);
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+  transition: all 0.15s ease;
+}
+.btn-create-visitor:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+}
+.btn-create-visitor:active {
+  transform: translateY(0);
+}
+
 .date-range-box {
   display: flex; gap: 6px; align-items: center; background: #f1f5f9; padding: 6px 10px;
   border-radius: var(--radius-sm); border: 1px solid var(--border-color);
@@ -387,6 +413,27 @@ tr:last-child td { border-bottom: none; }
 .date-range-sep { color: #94a3b8; font-size: 13px; }
 .date-range-clear { border: none; background: none; cursor: pointer; color: #94a3b8; font-size: 12px; padding: 0 2px; }
 .date-range-clear:hover { color: #475569; }
+
+@media (max-width: 768px) {
+  .table-filter-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .search-box {
+    width: 100% !important;
+  }
+  .date-range-box {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .date-range-input {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+  }
+}
 
 .pagination-bar {
   display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
@@ -1670,9 +1717,23 @@ tr:last-child td { border-bottom: none; }
     <!-- VIEW 2: ビジター全一覧 (CRUD統合管理) -->
 <div id="view-visitors" class="view-content">
   <section class="section-card">
-    <div class="section-header">
-      <h2 class="section-title"><i class="fa-solid fa-users"></i> 全ビジター統合管理名簿</h2>
+    <div class="section-header flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 md:p-5">
+      <div class="flex items-center justify-between gap-3 w-full sm:w-auto">
+        <div>
+          <h2 class="section-title text-base md:text-lg font-bold text-slate-800 m-0">
+            <i class="fa-solid fa-users text-blue-600"></i> 全ビジター統合管理名簿
+          </h2>
+          <div class="section-sub text-xs text-slate-500 mt-0.5">全ビジターのステータス・進捗管理と検索</div>
+        </div>
+        <button type="button" class="btn-create-visitor sm:hidden" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規追加
+        </button>
+      </div>
+
       <div class="table-filter-group">
+        <div class="w-full sm:w-64">
+          <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
+        </div>
         <div class="date-range-box">
           <i class="fa-solid fa-calendar-range date-range-icon"></i>
           <input type="date" id="visitors-date-from" class="date-range-input" onchange="filterAllVisitorsTable()" title="開始日">
@@ -1680,8 +1741,9 @@ tr:last-child td { border-bottom: none; }
           <input type="date" id="visitors-date-to" class="date-range-input" onchange="filterAllVisitorsTable()" title="終了日">
           <button type="button" onclick="clearVisitorsDateFilter()" class="date-range-clear" title="期間クリア"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <input type="text" id="search-visitors-input" class="search-box" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterAllVisitorsTable()">
-        <button class="btn-create-visitor" onclick="openAddVisitorModal()"><i class="fa-solid fa-plus"></i> 新規追加</button>
+        <button type="button" class="btn-create-visitor hidden sm:inline-flex" onclick="openAddVisitorModal()">
+          <i class="fa-solid fa-plus"></i> 新規追加
+        </button>
       </div>
     </div>
     <div class="dash-ap-table-wrap table-container">
