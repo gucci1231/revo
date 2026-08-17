@@ -195,10 +195,16 @@
                     <div class="form-group mt-3 mb-0">
                       <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
                       <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
+                      <div class="vd-quick-chips mt-1.5">
+                        <button type="button" class="vd-quick-action-chip" onclick="setApActionTextQuick('1to1日程調整')">☕ 1to1日程調整</button>
+                        <button type="button" class="vd-quick-action-chip" onclick="setApActionTextQuick('次回定例会案内')">📅 次回定例会案内</button>
+                        <button type="button" class="vd-quick-action-chip" onclick="setApActionTextQuick('入会案内送付')">📩 入会案内送付</button>
+                        <button type="button" class="vd-quick-action-chip" onclick="setApActionTextQuick('電話フォロー実施')">📞 電話フォロー</button>
+                      </div>
                     </div>
 
-                    <div class="vd-form-actions mt-3">
-                      <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
+                    <div class="vd-form-actions mt-4">
+                      <button type="button" class="btn-cancel text-xs" onclick="closeActionPlanModal()">閉じる</button>
                       <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
                         <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
                       </button>

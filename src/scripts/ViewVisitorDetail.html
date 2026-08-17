@@ -544,9 +544,9 @@
       if (inviter && inviter !== '-') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'btn-action-secondary';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #d6336c;';
-        btn.innerHTML = `<i class="fa-solid fa-user-tag"></i> 招待者 (${inviter})`;
+        btn.className = 'seg-pill-btn';
+        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #be185d; background: #fdf2f8; border: 1px solid #fbcfe8;';
+        btn.innerHTML = `<i class="fa-solid fa-user-tag text-[10px] mr-1"></i> 招待者: ${escapeHtml(inviter)}`;
         btn.onclick = () => setApAssigneeQuick(inviter);
         quickContainer.appendChild(btn);
       }
@@ -554,9 +554,9 @@
       if (orientUser && orientUser !== '-' && orientUser !== '未設定') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'btn-action-secondary';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #1c7ed6;';
-        btn.innerHTML = `<i class="fa-solid fa-user-check"></i> オリエン担当 (${orientUser})`;
+        btn.className = 'seg-pill-btn';
+        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;';
+        btn.innerHTML = `<i class="fa-solid fa-user-check text-[10px] mr-1"></i> オリエン: ${escapeHtml(orientUser)}`;
         btn.onclick = () => setApAssigneeQuick(orientUser);
         quickContainer.appendChild(btn);
       }
@@ -565,6 +565,14 @@
     // デフォルト期日（3日後）
     setApDateQuick(3);
     cancelApEdit();
+  }
+
+  function setApActionTextQuick(text) {
+    const input = document.getElementById('vd-ap-action-text');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
   }
 
   function setApDateQuick(daysOffset) {
