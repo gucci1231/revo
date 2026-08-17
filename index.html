@@ -1169,6 +1169,9 @@ tr:last-child td { border-bottom: none; }
     <div class="modal-footer flex justify-between items-center">
       <button type="button" class="btn-action-secondary text-xs" onclick="closeActionReportModal()">キャンセル</button>
       <div class="flex gap-2">
+        <button type="button" class="btn-action-secondary text-xs flex items-center gap-1 text-slate-700" onclick="shareCurrentReportingPlan(event)" title="このアクションの共有URLをコピー">
+          <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有URL
+        </button>
         <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5" id="btn-save-action-report" onclick="submitActionReport()">
           <i class="fa-solid fa-check"></i> 報告を保存して完了
         </button>
@@ -2193,6 +2196,8 @@ const ApiService = {
         };
       case 'getActionPlansApi':
         return { url: '/api/action_plans.php?action=list&visitorId=' + (args[0] || ''), method: 'GET' };
+      case 'getActionPlanDetailApi':
+        return { url: '/api/action_plans.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
       case 'createActionPlanApi':
         return {
           url: '/api/action_plans.php?action=create',
@@ -2504,12 +2509,17 @@ const ApiService = {
     if (isProgrammaticHashChange) return;
     const rawHash = decodeURIComponent(window.location.hash || '');
     const hash = rawHash.replace(/^#+/, '');
-    if (hash.startsWith('visitor/')) {
+    if (hash.startsWith('action/')) {
+      const apId = hash.replace('action/', '').trim();
+      if (apId && typeof openActionReportDirectly === 'function') {
+        openActionReportDirectly(apId);
+      }
+    } else if (hash.startsWith('visitor/')) {
       const vid = hash.replace('visitor/', '').trim();
       if (vid && vid !== currentVdVisitorId) {
         openVisitorDetailView(vid, false);
       }
-    } else if (['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     }
   }
@@ -3079,6 +3089,9 @@ const ApiService = {
 
         const operationCellHtml = `
           <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="このアクションの共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+            </button>
             <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
               <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
             </button>
@@ -3114,9 +3127,14 @@ const ApiService = {
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+                <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
           </div>
 
           <div class="dash-ap-card-visitor">
@@ -4229,6 +4247,9 @@ const ApiService = {
             </div>
           </div>
           <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}', event)" title="このアクションの共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+            </button>
             <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')">
               <i class="fa-solid fa-clipboard-check"></i> 報告して完了
             </button>
@@ -4270,6 +4291,9 @@ const ApiService = {
             </div>
           </div>
           <div class="vd-ap-actions flex items-center gap-1.5">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}', event)" title="このアクションの共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+            </button>
             <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')" title="報告確認・編集">
               <i class="fa-solid fa-pen-to-square"></i> 報告確認
             </button>
@@ -4918,6 +4942,130 @@ const ApiService = {
       })
       .catch(handleError);
   }
+
+  function shareCurrentReportingPlan(event) {
+    if (currentReportingPlan && currentReportingPlan.id) {
+      shareActionPlan(currentReportingPlan.id, currentReportingPlan.visitor_id, event);
+    } else {
+      const id = document.getElementById('report-ap-id').value;
+      const vId = document.getElementById('report-ap-visitor-id').value;
+      if (id) shareActionPlan(id, vId, event);
+    }
+  }
+
+  function shareActionPlan(planId, optVisitorId, event) {
+    if (event) {
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+    }
+
+    let plan = null;
+    if (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) {
+      plan = currentDashboardActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && typeof currentVisitorActionPlans !== 'undefined' && Array.isArray(currentVisitorActionPlans)) {
+      plan = currentVisitorActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && currentReportingPlan && currentReportingPlan.id === planId) {
+      plan = currentReportingPlan;
+    }
+
+    const doShareWithPlan = (p) => {
+      const shareUrl = `${window.location.origin}${window.location.pathname}#action/${p.id}`;
+      const visitorName = p.visitor_name || (p.visitor_id ? `ビジター No.${p.visitor_id}` : '対象ビジター');
+      const companyPart = p.visitor_company ? ` (${p.visitor_company})` : '';
+      const assigneePart = p.assignee_name || '担当未定';
+      const duePart = p.due_date || '期日未定';
+
+      const shareText = `【REvo アクション共有・報告依頼】\n` +
+        `👤 対象: ${visitorName}${companyPart}\n` +
+        `📅 期日: ${duePart} / 担当: ${assigneePart}\n` +
+        `🎯 アクション内容:\n${p.action_text}\n\n` +
+        `👇 こちらから報告・確認できます\n${shareUrl}`;
+
+      if (navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+        navigator.share({
+          title: `【REvo】アクション共有: ${visitorName}`,
+          text: shareText,
+          url: shareUrl
+        }).catch(() => {
+          copyTextToClipboard(shareText, '✅ 共有用メッセージとURLをコピーしました！');
+        });
+      } else {
+        copyTextToClipboard(shareText, '✅ 共有用メッセージとURLをコピーしました！');
+      }
+    };
+
+    if (plan && plan.action_text) {
+      doShareWithPlan(plan);
+    } else {
+      showToast('アクション情報を取得中...');
+      ApiService.call('getActionPlanDetailApi', planId)
+        .then(res => {
+          if (res && res.success && res.item) {
+            doShareWithPlan(res.item);
+          } else {
+            const fallbackUrl = `${window.location.origin}${window.location.pathname}#action/${planId}`;
+            copyTextToClipboard(fallbackUrl, '✅ 共有URLをコピーしました！');
+          }
+        })
+        .catch(() => {
+          const fallbackUrl = `${window.location.origin}${window.location.pathname}#action/${planId}`;
+          copyTextToClipboard(fallbackUrl, '✅ 共有URLをコピーしました！');
+        });
+    }
+  }
+
+  function copyTextToClipboard(text, successMsg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg || '✅ コピーしました！');
+      }).catch(() => {
+        fallbackCopyText(text, successMsg);
+      });
+    } else {
+      fallbackCopyText(text, successMsg);
+    }
+  }
+
+  function fallbackCopyText(text, successMsg) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      showToast(successMsg || '✅ コピーしました！');
+    } catch (err) {
+      prompt('以下のURLをコピーしてください:', text);
+    }
+    document.body.removeChild(textArea);
+  }
+
+  function openActionReportDirectly(apId) {
+    showToast('アクションプランを読込中...');
+    ApiService.call('getActionPlanDetailApi', apId)
+      .then(res => {
+        if (res && res.success && res.item) {
+          const item = res.item;
+          if (typeof currentDashboardActionPlans !== 'undefined') {
+            const existingIdx = currentDashboardActionPlans.findIndex(p => p.id === item.id);
+            if (existingIdx >= 0) {
+              currentDashboardActionPlans[existingIdx] = item;
+            } else {
+              currentDashboardActionPlans.push(item);
+            }
+          }
+          openActionReportModal(item.id, item.visitor_id);
+        } else {
+          showToast('該当のアクションプランが見つかりませんでした');
+        }
+      })
+      .catch(handleError);
+  }
 </script>
 
 
@@ -4944,9 +5092,14 @@ const ApiService = {
     }
 
     const hash = (window.location.hash || '').replace(/^#/, '');
-    if (hash.startsWith('visitor/')) {
+    if (hash.startsWith('action/')) {
+      const apId = hash.replace('action/', '').trim();
+      if (apId && typeof openActionReportDirectly === 'function') {
+        setTimeout(() => openActionReportDirectly(apId), 150);
+      }
+    } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

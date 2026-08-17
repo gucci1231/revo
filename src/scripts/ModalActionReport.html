@@ -113,4 +113,128 @@
       })
       .catch(handleError);
   }
+
+  function shareCurrentReportingPlan(event) {
+    if (currentReportingPlan && currentReportingPlan.id) {
+      shareActionPlan(currentReportingPlan.id, currentReportingPlan.visitor_id, event);
+    } else {
+      const id = document.getElementById('report-ap-id').value;
+      const vId = document.getElementById('report-ap-visitor-id').value;
+      if (id) shareActionPlan(id, vId, event);
+    }
+  }
+
+  function shareActionPlan(planId, optVisitorId, event) {
+    if (event) {
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+    }
+
+    let plan = null;
+    if (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) {
+      plan = currentDashboardActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && typeof currentVisitorActionPlans !== 'undefined' && Array.isArray(currentVisitorActionPlans)) {
+      plan = currentVisitorActionPlans.find(p => p.id === planId);
+    }
+    if (!plan && currentReportingPlan && currentReportingPlan.id === planId) {
+      plan = currentReportingPlan;
+    }
+
+    const doShareWithPlan = (p) => {
+      const shareUrl = `${window.location.origin}${window.location.pathname}#action/${p.id}`;
+      const visitorName = p.visitor_name || (p.visitor_id ? `ビジター No.${p.visitor_id}` : '対象ビジター');
+      const companyPart = p.visitor_company ? ` (${p.visitor_company})` : '';
+      const assigneePart = p.assignee_name || '担当未定';
+      const duePart = p.due_date || '期日未定';
+
+      const shareText = `【REvo アクション共有・報告依頼】\n` +
+        `👤 対象: ${visitorName}${companyPart}\n` +
+        `📅 期日: ${duePart} / 担当: ${assigneePart}\n` +
+        `🎯 アクション内容:\n${p.action_text}\n\n` +
+        `👇 こちらから報告・確認できます\n${shareUrl}`;
+
+      if (navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+        navigator.share({
+          title: `【REvo】アクション共有: ${visitorName}`,
+          text: shareText,
+          url: shareUrl
+        }).catch(() => {
+          copyTextToClipboard(shareText, '✅ 共有用メッセージとURLをコピーしました！');
+        });
+      } else {
+        copyTextToClipboard(shareText, '✅ 共有用メッセージとURLをコピーしました！');
+      }
+    };
+
+    if (plan && plan.action_text) {
+      doShareWithPlan(plan);
+    } else {
+      showToast('アクション情報を取得中...');
+      ApiService.call('getActionPlanDetailApi', planId)
+        .then(res => {
+          if (res && res.success && res.item) {
+            doShareWithPlan(res.item);
+          } else {
+            const fallbackUrl = `${window.location.origin}${window.location.pathname}#action/${planId}`;
+            copyTextToClipboard(fallbackUrl, '✅ 共有URLをコピーしました！');
+          }
+        })
+        .catch(() => {
+          const fallbackUrl = `${window.location.origin}${window.location.pathname}#action/${planId}`;
+          copyTextToClipboard(fallbackUrl, '✅ 共有URLをコピーしました！');
+        });
+    }
+  }
+
+  function copyTextToClipboard(text, successMsg) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg || '✅ コピーしました！');
+      }).catch(() => {
+        fallbackCopyText(text, successMsg);
+      });
+    } else {
+      fallbackCopyText(text, successMsg);
+    }
+  }
+
+  function fallbackCopyText(text, successMsg) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      showToast(successMsg || '✅ コピーしました！');
+    } catch (err) {
+      prompt('以下のURLをコピーしてください:', text);
+    }
+    document.body.removeChild(textArea);
+  }
+
+  function openActionReportDirectly(apId) {
+    showToast('アクションプランを読込中...');
+    ApiService.call('getActionPlanDetailApi', apId)
+      .then(res => {
+        if (res && res.success && res.item) {
+          const item = res.item;
+          if (typeof currentDashboardActionPlans !== 'undefined') {
+            const existingIdx = currentDashboardActionPlans.findIndex(p => p.id === item.id);
+            if (existingIdx >= 0) {
+              currentDashboardActionPlans[existingIdx] = item;
+            } else {
+              currentDashboardActionPlans.push(item);
+            }
+          }
+          openActionReportModal(item.id, item.visitor_id);
+        } else {
+          showToast('該当のアクションプランが見つかりませんでした');
+        }
+      })
+      .catch(handleError);
+  }
 </script>

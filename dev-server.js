@@ -299,6 +299,24 @@ function handleApiRequest(req, res, urlObj) {
         return res.end(JSON.stringify({ success: true, visitorId: vId, list: list }));
       }
 
+      if (action === 'detail') {
+        const id = esc(urlObj.searchParams.get('id') || input.id || '');
+        const sql = `
+          SELECT ap.*, 
+                 COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                 COALESCE(v.company, '') as visitor_company, 
+                 COALESCE(v.profession, '') as visitor_profession, 
+                 COALESCE(v.inviter, '') as visitor_inviter, 
+                 COALESCE(v.event_date, '') as visitor_event_date
+          FROM action_plans ap
+          LEFT JOIN visitors v ON ap.visitor_id = v.id
+          WHERE ap.id = '${id}';
+        `;
+        const item = runSqlJson(sql)[0] || null;
+        if (!item) return res.end(JSON.stringify({ success: false, message: 'Not found' }));
+        return res.end(JSON.stringify({ success: true, id: id, item: item }));
+      }
+
       if (action === 'create' || action === 'add') {
         const vId = esc(input.visitorId || input.visitor_id || '');
         const actionText = esc(input.actionText || input.action_text || '');

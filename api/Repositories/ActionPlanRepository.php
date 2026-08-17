@@ -36,7 +36,16 @@ class ActionPlanRepository {
     }
 
     public function findById(string $id): ?array {
-        return $this->db->fetchOne("SELECT * FROM action_plans WHERE id = ?", [$id]);
+        $sql = "SELECT ap.*, 
+                       COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                       COALESCE(v.company, '') as visitor_company, 
+                       COALESCE(v.profession, '') as visitor_profession, 
+                       COALESCE(v.inviter, '') as visitor_inviter, 
+                       COALESCE(v.event_date, '') as visitor_event_date
+                FROM action_plans ap
+                LEFT JOIN visitors v ON ap.visitor_id = v.id
+                WHERE ap.id = ?";
+        return $this->db->fetchOne($sql, [$id]);
     }
 
     public function getPendingCountByVisitorId(string $visitorId): int {

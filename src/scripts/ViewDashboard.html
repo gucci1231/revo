@@ -246,6 +246,9 @@
 
         const operationCellHtml = `
           <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="このアクションの共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+            </button>
             <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
               <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
             </button>
@@ -281,9 +284,14 @@
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+                <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
           </div>
 
           <div class="dash-ap-card-visitor">

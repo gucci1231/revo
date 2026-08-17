@@ -111,6 +111,8 @@ const ApiService = {
         };
       case 'getActionPlansApi':
         return { url: '/api/action_plans.php?action=list&visitorId=' + (args[0] || ''), method: 'GET' };
+      case 'getActionPlanDetailApi':
+        return { url: '/api/action_plans.php?action=detail&id=' + (args[0] || ''), method: 'GET' };
       case 'createActionPlanApi':
         return {
           url: '/api/action_plans.php?action=create',

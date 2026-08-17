@@ -36,9 +36,14 @@
     }
 
     const hash = (window.location.hash || '').replace(/^#/, '');
-    if (hash.startsWith('visitor/')) {
+    if (hash.startsWith('action/')) {
+      const apId = hash.replace('action/', '').trim();
+      if (apId && typeof openActionReportDirectly === 'function') {
+        setTimeout(() => openActionReportDirectly(apId), 150);
+      }
+    } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

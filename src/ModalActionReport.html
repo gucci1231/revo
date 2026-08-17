@@ -63,6 +63,9 @@
     <div class="modal-footer flex justify-between items-center">
       <button type="button" class="btn-action-secondary text-xs" onclick="closeActionReportModal()">キャンセル</button>
       <div class="flex gap-2">
+        <button type="button" class="btn-action-secondary text-xs flex items-center gap-1 text-slate-700" onclick="shareCurrentReportingPlan(event)" title="このアクションの共有URLをコピー">
+          <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有URL
+        </button>
         <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5" id="btn-save-action-report" onclick="submitActionReport()">
           <i class="fa-solid fa-check"></i> 報告を保存して完了
         </button>

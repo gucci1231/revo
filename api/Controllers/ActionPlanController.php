@@ -20,6 +20,9 @@ class ActionPlanController extends Controller {
             case 'list':
                 $this->list();
                 break;
+            case 'detail':
+                $this->detail();
+                break;
             case 'create':
             case 'add':
                 $this->create();
@@ -51,6 +54,23 @@ class ActionPlanController extends Controller {
         Response::success([
             'visitorId' => $visitorId,
             'list' => $list
+        ]);
+    }
+
+    private function detail(): void {
+        $id = $this->getParam('id', '');
+        if (!$id) {
+            Response::error('id is required');
+        }
+
+        $item = $this->actionPlanRepo->findById($id);
+        if (!$item) {
+            Response::error('Action plan not found');
+        }
+
+        Response::success([
+            'id' => $id,
+            'item' => $item
         ]);
     }
 

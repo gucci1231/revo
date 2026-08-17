@@ -21,12 +21,17 @@
     if (isProgrammaticHashChange) return;
     const rawHash = decodeURIComponent(window.location.hash || '');
     const hash = rawHash.replace(/^#+/, '');
-    if (hash.startsWith('visitor/')) {
+    if (hash.startsWith('action/')) {
+      const apId = hash.replace('action/', '').trim();
+      if (apId && typeof openActionReportDirectly === 'function') {
+        openActionReportDirectly(apId);
+      }
+    } else if (hash.startsWith('visitor/')) {
       const vid = hash.replace('visitor/', '').trim();
       if (vid && vid !== currentVdVisitorId) {
         openVisitorDetailView(vid, false);
       }
-    } else if (['dashboard', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     }
   }
