@@ -1679,7 +1679,7 @@ tr:last-child td { border-bottom: none; }
         <button class="btn-create-visitor" onclick="openAddVisitorModal()"><i class="fa-solid fa-plus"></i> 新規追加</button>
       </div>
     </div>
-    <div class="table-container">
+    <div class="dash-ap-table-wrap table-container">
       <table>
         <thead>
           <tr>
@@ -1698,6 +1698,9 @@ tr:last-child td { border-bottom: none; }
         <tbody id="table-all-visitors"></tbody>
       </table>
     </div>
+
+    <!-- スマホ用カード一覧 -->
+    <div id="cards-all-visitors" class="dash-ap-grid dash-ap-cards-wrap"></div>
     <div class="pagination-bar">
       <div class="pagination-info" id="visitors-pagination-info">全 0 件中 0 - 0 件を表示</div>
       <div class="pagination-controls">
@@ -1715,7 +1718,7 @@ tr:last-child td { border-bottom: none; }
     <div class="section-header">
       <h2 class="section-title"><i class="fa-solid fa-file-lines"></i> ヒアリングシート回答・管理一覧</h2>
     </div>
-    <div class="table-container">
+    <div class="dash-ap-table-wrap table-container">
       <table>
         <thead>
           <tr>
@@ -1734,6 +1737,9 @@ tr:last-child td { border-bottom: none; }
         <tbody id="table-hearing-list"></tbody>
       </table>
     </div>
+
+    <!-- スマホ用カード一覧 -->
+    <div id="cards-hearing-list" class="dash-ap-grid dash-ap-cards-wrap"></div>
   </section>
 </div>
 
@@ -3550,12 +3556,14 @@ const ApiService = {
 
   function renderVisitorsCurrentPage() {
     const tbody = document.getElementById('table-all-visitors');
+    const cardsContainer = document.getElementById('cards-all-visitors');
     const infoEl = document.getElementById('visitors-pagination-info');
-    const prevBtn = document.getElementById('visitors-btn-prev');
-    const nextBtn = document.getElementById('visitors-btn-next');
-    if (!tbody) return;
+    const pageNumEl = document.getElementById('visitors-pagination-page-num');
+    const prevBtn = document.getElementById('btn-visitors-prev-page') || document.getElementById('visitors-btn-prev');
+    const nextBtn = document.getElementById('btn-visitors-next-page') || document.getElementById('visitors-btn-next');
 
-    tbody.innerHTML = '';
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
 
     const total = filteredVisitors.length;
     const totalPages = Math.ceil(total / VISITORS_PAGE_SIZE) || 1;
@@ -3564,39 +3572,113 @@ const ApiService = {
     const startIdx = (visitorsCurrentPage - 1) * VISITORS_PAGE_SIZE;
     const pageItems = filteredVisitors.slice(startIdx, startIdx + VISITORS_PAGE_SIZE);
 
-    if (infoEl) infoEl.innerText = `${total}件中 ${startIdx + 1}〜${Math.min(startIdx + VISITORS_PAGE_SIZE, total)}件 (${visitorsCurrentPage}/${totalPages}ページ)`;
+    if (infoEl) infoEl.innerText = `全 ${total} 件中 ${total === 0 ? 0 : startIdx + 1} - ${Math.min(startIdx + VISITORS_PAGE_SIZE, total)} 件を表示`;
+    if (pageNumEl) pageNumEl.innerText = `${visitorsCurrentPage} / ${totalPages}`;
     if (prevBtn) prevBtn.disabled = (visitorsCurrentPage <= 1);
     if (nextBtn) nextBtn.disabled = (visitorsCurrentPage >= totalPages);
 
     if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">条件に合致するビジターはいません</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 24px;">条件に合致するビジターはいません</td></tr>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-users text-2xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">条件に合致するビジターはいません</div>
+          </div>
+        `;
+      }
       return;
     }
 
     pageItems.forEach(v => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatTruncatedCell(v.eventDate, 10)}</td>
-        <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
-        <td>${formatTruncatedCell(v.company, 12)}</td>
-        <td>${formatTruncatedCell(v.profession, 12)}</td>
-        <td>${formatTruncatedCell(v.inviter, 10)}</td>
-        <td>${renderRankBadgeHtml(v.feelAbc)}</td>
-        <td>${renderAttendButtonHtml(v.id, v.isAttended)}</td>
-        <td>${render1to1ButtonHtml(v.id, v.is1to1)}</td>
-        <td>${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
-        <td>
-          <button class="btn-icon-action" onclick="openEditVisitorModal('${v.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn-icon-action btn-icon-danger" onclick="deleteVisitor('${v.id}', '${escapeJsParam(v.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(v.id);
+        };
+
+        tr.innerHTML = `
+          <td>${formatTruncatedCell(v.eventDate, 10)}</td>
+          <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+          <td>${formatTruncatedCell(v.company, 12)}</td>
+          <td>${formatTruncatedCell(v.profession, 12)}</td>
+          <td>${formatTruncatedCell(v.inviter, 10)}</td>
+          <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
+          <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+          <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>
+          <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button class="btn-icon-action" onclick="event.stopPropagation(); openEditVisitorModal('${v.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-icon-action btn-icon-danger" onclick="event.stopPropagation(); deleteVisitor('${v.id}', '${escapeJsParam(v.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = 'dash-ap-card';
+        card.onclick = function() {
+          openVisitorDetailView(v.id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges flex-wrap gap-1">
+              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; font-size:10px; padding:2px 6px;">${escapeHtml(v.eventDate || '-')}</span>
+              ${renderRankBadgeHtml(v.feelAbc)}
+              ${renderAttendButtonHtml(v.id, v.isAttended)}
+              ${render1to1ButtonHtml(v.id, v.is1to1)}
+              ${renderJoinedButtonHtml(v.id, v.isJoined)}
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openEditVisitorModal('${v.id}')" title="編集">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${v.id}')">
+                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <span>${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+          </div>
+
+          <div style="font-size: 11px; color: #64748b;">
+            ${escapeHtml(v.company || '-')} ${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+          </div>
+
+          <div style="font-size: 11px; color: #475569;">
+            <span><strong>招待者:</strong> ${escapeHtml(v.inviter || '-')}</span>
+          </div>
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> タップして詳細・カルテを開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 
   function filterAllVisitorsTable() {
-    const search = (document.getElementById('search-visitor-input')?.value || '').toLowerCase().trim();
-    const dateVal = (document.getElementById('filter-visitor-date')?.value || '').trim();
+    const search = (
+      document.getElementById('search-visitors-input')?.value || 
+      document.getElementById('search-visitor-input')?.value || ''
+    ).toLowerCase().trim();
+
+    const dateFrom = (document.getElementById('visitors-date-from')?.value || '').trim();
+    const dateTo = (document.getElementById('visitors-date-to')?.value || '').trim();
+    const legacyDate = (document.getElementById('filter-visitor-date')?.value || '').trim();
 
     const rawList = cachedAllVisitors || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
@@ -3610,7 +3692,11 @@ const ApiService = {
       const eventDate = (v.eventDate || '').replace(/\//g, '-');
 
       const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search);
-      const matchDate = !dateVal || eventDate === dateVal;
+      
+      let matchDate = true;
+      if (dateFrom && eventDate < dateFrom) matchDate = false;
+      if (dateTo && eventDate > dateTo) matchDate = false;
+      if (legacyDate && eventDate !== legacyDate) matchDate = false;
 
       return matchSearch && matchDate;
     });
@@ -3620,8 +3706,12 @@ const ApiService = {
   }
 
   function clearVisitorsDateFilter() {
-    const input = document.getElementById('filter-visitor-date');
-    if (input) input.value = '';
+    const fromEl = document.getElementById('visitors-date-from');
+    const toEl = document.getElementById('visitors-date-to');
+    const legacyEl = document.getElementById('filter-visitor-date');
+    if (fromEl) fromEl.value = '';
+    if (toEl) toEl.value = '';
+    if (legacyEl) legacyEl.value = '';
     filterAllVisitorsTable();
   }
 
@@ -3841,32 +3931,110 @@ const ApiService = {
   /* --- VIEW 4: Hearing Sheets List View Controller --- */
   function renderHearingListTable(records) {
     const tbody = document.getElementById('table-hearing-list') || document.getElementById('table-hearings');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const cardsContainer = document.getElementById('cards-hearing-list');
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 20px;">登録されているヒアリングシートはありません</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #868e96; padding: 24px;">登録されているヒアリングシートはありません</td></tr>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-file-lines text-2xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">登録されているヒアリングシートはありません</div>
+          </div>
+        `;
+      }
       return;
     }
 
     records.forEach((h, idx) => {
       const vid = h.id || h.visitorId;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
-        <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
-        <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
-        <td>${formatTruncatedCell(h.inviter, 10)}</td>
-        <td>${formatTruncatedCell(h.orientUser, 10)}</td>
-        <td>${renderRankBadgeHtml(h.feelAbc)}</td>
-        <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.q1, 30)}</div></td>
-        <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.orientMemo || h.followMemo, 30)}</div></td>
-        <td>
-          <button class="btn-icon-action" onclick="openHearingFormModal('${vid}')" title="編集"><i class="fa-solid fa-pen"></i></button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(vid);
+        };
+
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><strong style="color:#2b8a3e;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
+          <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
+          <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
+          <td>${formatTruncatedCell(h.inviter, 10)}</td>
+          <td>${formatTruncatedCell(h.orientUser, 10)}</td>
+          <td class="text-center">${renderRankBadgeHtml(h.feelAbc)}</td>
+          <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.q1, 30)}</div></td>
+          <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.orientMemo || h.followMemo, 30)}</div></td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <button class="btn-icon-action" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">詳細</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = 'dash-ap-card';
+        card.onclick = function() {
+          openVisitorDetailView(vid);
+        };
+
+        const memoSnippet = h.orientMemo || h.followMemo || h.q1 || '';
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges flex-wrap gap-1">
+              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:800; font-size:10px; padding:2px 6px;">No.${idx + 1}</span>
+              <span class="badge" style="background:#e6fcf5; color:#0ca678; font-weight:800; font-size:10px; padding:2px 6px;">${escapeHtml(h.eventDate || '-')}</span>
+              ${renderRankBadgeHtml(h.feelAbc)}
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">
+                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-emerald-600 text-xs"></i>
+            <span>${escapeHtml(h.name || 'ビジター No.' + vid)}</span>
+          </div>
+
+          <div style="font-size: 11px; color: #64748b;">
+            ${escapeHtml(h.company || '-')} ${h.profession ? ` / ${escapeHtml(h.profession)}` : ''}
+          </div>
+
+          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
+            <span><strong>招待:</strong> ${escapeHtml(h.inviter || '-')}</span>
+            ${h.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(h.orientUser)}</span></span>` : ''}
+          </div>
+
+          ${memoSnippet ? `
+            <div style="font-size: 11px; color: #334155; background: #fff9db; border-left: 3px solid #fab005; padding: 6px 10px; border-radius: 6px; line-height: 1.4;">
+              ${escapeHtml(memoSnippet)}
+            </div>
+          ` : ''}
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> タップしてヒアリング回答・詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 </script>
