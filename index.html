@@ -830,41 +830,38 @@ tr:last-child td { border-bottom: none; }
   color: #64748b;
 }
 
-/* Inset Grouped Specs Grid (Apple Settings Style) */
-.vd-specs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  background: #f8fafc;
-  padding: 14px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  border: 1px solid #f1f5f9;
-}
-.vd-spec-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #f1f5f9;
-}
-.vd-spec-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.vd-spec-val {
+.vd-profile-submeta {
   font-size: 13px;
-  font-weight: 700;
-  color: #1e293b;
-  word-break: break-all;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
 }
-.vd-spec-val.accent {
-  color: #e11d48;
+
+/* Compact Meta Chips Bar (Ultra Space-Saving Apple Style) */
+.vd-compact-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border: 1px solid #f1f5f9;
+  font-size: 12px;
+}
+.vd-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
 }
 
 /* iOS Segmented Control for Visitor Tabs */
@@ -2248,8 +2245,15 @@ tr:last-child td { border-bottom: none; }
   <div class="vd-profile-card">
     <div class="vd-profile-header">
       <div class="vd-profile-title-area">
-        <h1 id="vd-name" class="vd-profile-name">-</h1>
-        <span id="vd-furigana" class="vd-profile-furigana">-</span>
+        <div class="flex items-baseline gap-2 flex-wrap">
+          <h1 id="vd-name" class="vd-profile-name">-</h1>
+          <span id="vd-furigana" class="vd-profile-furigana">-</span>
+        </div>
+        <div class="vd-profile-submeta">
+          <span id="vd-company" class="font-bold text-slate-800">-</span>
+          <span class="text-slate-300">/</span>
+          <span id="vd-profession" class="text-slate-600">-</span>
+        </div>
       </div>
 
       <!-- ステータス概要 (iOS Picker Style) -->
@@ -2280,14 +2284,21 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- 基本スペック (Apple Inset Grid) -->
-    <div class="vd-specs-grid">
-      <div class="vd-spec-item"><span class="vd-spec-label">会社名</span> <span id="vd-company" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><span class="vd-spec-label">専門分野</span> <span id="vd-profession" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><span class="vd-spec-label">招待者</span> <span id="vd-inviter" class="vd-spec-val accent">-</span></div>
-      <div class="vd-spec-item"><span class="vd-spec-label">参加日</span> <span id="vd-event-date" class="vd-spec-val bold">-</span></div>
-      <div class="vd-spec-item"><span class="vd-spec-label">メール</span> <span id="vd-email" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><span class="vd-spec-label">参加区分</span> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
+    <!-- 超省スペース・スリムメタインフォバー -->
+    <div class="vd-compact-meta-bar">
+      <div class="vd-meta-chip">
+        <i class="fa-solid fa-user-plus text-rose-500"></i>
+        <span>招待:</span> <strong id="vd-inviter" class="text-rose-600">-</strong>
+      </div>
+      <div class="vd-meta-chip">
+        <i class="fa-regular fa-calendar-check text-blue-500"></i>
+        <span>参加日:</span> <strong id="vd-event-date" class="text-slate-800">-</strong>
+        <span id="vd-attendance-count" class="text-[11px] text-slate-400 font-normal">(-)</span>
+      </div>
+      <div class="vd-meta-chip">
+        <i class="fa-regular fa-envelope text-slate-400"></i>
+        <span id="vd-email" class="text-slate-600 select-all">-</span>
+      </div>
     </div>
 
     <!-- セグメントコントロール -->
@@ -4963,7 +4974,7 @@ const ApiService = {
         document.getElementById('vd-inviter').innerText = v.inviter || '-';
         document.getElementById('vd-event-date').innerText = v.eventDate || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
-        document.getElementById('vd-attendance-count').innerText = v.attendanceCount || '初めて';
+        document.getElementById('vd-attendance-count').innerText = v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)';
 
         // 自由メモ
         document.getElementById('vd-free-memo').value = v.remarks || '';

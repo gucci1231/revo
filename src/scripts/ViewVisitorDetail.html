@@ -47,7 +47,7 @@
         document.getElementById('vd-inviter').innerText = v.inviter || '-';
         document.getElementById('vd-event-date').innerText = v.eventDate || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
-        document.getElementById('vd-attendance-count').innerText = v.attendanceCount || '初めて';
+        document.getElementById('vd-attendance-count').innerText = v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)';
 
         // 自由メモ
         document.getElementById('vd-free-memo').value = v.remarks || '';

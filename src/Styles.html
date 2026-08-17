@@ -788,41 +788,38 @@ tr:last-child td { border-bottom: none; }
   color: #64748b;
 }
 
-/* Inset Grouped Specs Grid (Apple Settings Style) */
-.vd-specs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 10px;
-  background: #f8fafc;
-  padding: 14px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  border: 1px solid #f1f5f9;
-}
-.vd-spec-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 10px;
-  background: #ffffff;
-  border-radius: 10px;
-  border: 1px solid #f1f5f9;
-}
-.vd-spec-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.vd-spec-val {
+.vd-profile-submeta {
   font-size: 13px;
-  font-weight: 700;
-  color: #1e293b;
-  word-break: break-all;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
 }
-.vd-spec-val.accent {
-  color: #e11d48;
+
+/* Compact Meta Chips Bar (Ultra Space-Saving Apple Style) */
+.vd-compact-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  border: 1px solid #f1f5f9;
+  font-size: 12px;
+}
+.vd-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
 }
 
 /* iOS Segmented Control for Visitor Tabs */
