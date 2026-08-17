@@ -7,17 +7,17 @@
     <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon gold"><i class="fa-solid fa-trophy"></i></div>
+          <div class="dash-hero-icon"><i class="fa-solid fa-trophy"></i></div>
           <span class="dash-hero-title">入会数</span>
         </div>
-        <span class="badge" style="background:#edf2ff; color:#3b5bdb; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="val-achievement-rate">0%</span>
+        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="val-achievement-rate">0%</span>
       </div>
       <div class="dash-hero-val">
-        <span id="val-joined-count" style="color: #2b8a3e;">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">/ <span id="val-target-goal">12</span>名</span>
+        <span id="val-joined-count">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #86868b;">/ <span id="val-target-goal">12</span>名</span>
       </div>
       <div class="dash-hero-sub">
-        <span>入会率 <strong id="val-join-rate" style="color: #334155;">-%</strong></span>
+        <span>入会率 <strong id="val-join-rate" style="color: #1d1d1f;">-%</strong></span>
         <span>今期目標</span>
       </div>
     </div>
@@ -26,18 +26,18 @@
     <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon blue"><i class="fa-solid fa-users"></i></div>
+          <div class="dash-hero-icon"><i class="fa-solid fa-users"></i></div>
           <span class="dash-hero-title">申込ビジター</span>
         </div>
-        <span class="badge" style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">今期累計</span>
+        <span class="badge" style="background:#f2f2f7; color:#86868b; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">今期累計</span>
       </div>
       <div class="dash-hero-val">
         <span id="val-apply-count">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">名</span>
+        <span style="font-size: 14px; font-weight: 600; color: #86868b;">名</span>
       </div>
       <div class="dash-hero-sub">
-        <span>平均 <strong id="val-avg-visitors" style="color: #334155;">-</strong>名/回</span>
-        <span>提出 <strong id="val-hearing-rate" style="color: #334155;">-%</strong></span>
+        <span>平均 <strong id="val-avg-visitors" style="color: #1d1d1f;">-</strong>名/回</span>
+        <span>提出 <strong id="val-hearing-rate" style="color: #1d1d1f;">-%</strong></span>
       </div>
     </div>
 
@@ -45,18 +45,18 @@
     <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+          <div class="dash-hero-icon"><i class="fa-solid fa-calendar-check"></i></div>
           <span class="dash-hero-title">次回定例会</span>
         </div>
-        <span class="badge" style="background:#ebfbee; color:#2b8a3e; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="date-next-thu">--/--</span>
+        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="date-next-thu">--/--</span>
       </div>
       <div class="dash-hero-val">
-        <span id="val-next-thu-count" style="color: #2b8a3e;">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">名予定</span>
+        <span id="val-next-thu-count">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #86868b;">名予定</span>
       </div>
       <div class="dash-hero-sub">
         <span>次々回 (<span id="date-after-next-thu">--/--</span>)</span>
-        <span><strong id="val-after-next-thu-count" style="color: #334155;">-</strong>名</span>
+        <span><strong id="val-after-next-thu-count" style="color: #1d1d1f;">-</strong>名</span>
       </div>
     </div>
 
@@ -64,18 +64,18 @@
     <div class="dash-hero-card" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon rose"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="dash-hero-icon"><i class="fa-solid fa-bullseye"></i></div>
           <span class="dash-hero-title">要対応アクション</span>
         </div>
-        <span class="badge" style="background:#fff5f5; color:#e03131; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="badge-overdue-summary">進行中</span>
+        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="badge-overdue-summary">進行中</span>
       </div>
       <div class="dash-hero-val">
-        <span id="val-pending-action-plans" style="color: #e03131;">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+        <span id="val-pending-action-plans">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #86868b;">件</span>
       </div>
       <div class="dash-hero-sub">
-        <span>HOT <strong id="val-hot-count" style="color: #e03131;">-</strong>名</span>
-        <span>超過 <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
+        <span>HOT <strong id="val-hot-count" style="color: #1d1d1f;">-</strong>名</span>
+        <span>超過 <strong id="val-overdue-action-plans" style="color: #ff3b30;">0</strong>件</span>
       </div>
     </div>
   </div>
@@ -83,19 +83,19 @@
   <!-- 2. セグメントコントロール -->
   <div class="dash-nav-wrap">
     <button type="button" class="dash-nav-btn active" id="dash-tab-btn-hot" onclick="switchDashboardPanel('hot')">
-      <i class="fa-solid fa-fire text-rose-500"></i> 最優先 <span class="dash-nav-badge danger" id="dash-tab-badge-hot">0</span>
+      <i class="fa-solid fa-fire text-slate-400"></i> 最優先 <span class="dash-nav-badge" id="dash-tab-badge-hot">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-ap" onclick="switchDashboardPanel('ap')">
-      <i class="fa-solid fa-bullseye text-blue-500"></i> アクション <span class="dash-nav-badge" id="dash-tab-badge-ap">0</span>
+      <i class="fa-solid fa-bullseye text-slate-400"></i> アクション <span class="dash-nav-badge" id="dash-tab-badge-ap">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-meeting" onclick="switchDashboardPanel('meeting')">
-      <i class="fa-solid fa-calendar-days text-emerald-500"></i> 定例会 <span class="dash-nav-badge" id="dash-tab-badge-meeting">-</span>
+      <i class="fa-solid fa-calendar-days text-slate-400"></i> 定例会 <span class="dash-nav-badge" id="dash-tab-badge-meeting">-</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-onemonth" onclick="switchDashboardPanel('onemonth')">
-      <i class="fa-solid fa-comments text-indigo-500"></i> 1ヶ月フォロー <span class="dash-nav-badge" id="dash-tab-badge-onemonth">0</span>
+      <i class="fa-solid fa-comments text-slate-400"></i> 1ヶ月フォロー <span class="dash-nav-badge" id="dash-tab-badge-onemonth">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-stats" onclick="switchDashboardPanel('stats')">
-      <i class="fa-solid fa-chart-line text-slate-500"></i> 推移・集計
+      <i class="fa-solid fa-chart-line text-slate-400"></i> 推移・集計
     </button>
   </div>
 
@@ -105,8 +105,8 @@
     <div id="dash-panel-hot" class="dash-panel active">
       <section class="section-card overflow-hidden">
         <div class="section-header flex justify-between items-center py-3 px-4">
-          <h2 class="section-title text-rose-600 font-bold text-sm sm:text-base m-0">
-            <i class="fa-solid fa-fire mr-1"></i> 最優先フォロー (感触A)
+          <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+            <i class="fa-solid fa-fire text-slate-400 mr-1"></i> 最優先フォロー (感触A)
           </h2>
           <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
             全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
@@ -139,8 +139,8 @@
       <section class="section-card overflow-hidden">
         <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
           <div class="flex items-center gap-2">
-            <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
-              <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+            <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+              <i class="fa-solid fa-bullseye text-slate-400 mr-1"></i> アクションプラン
             </h2>
             <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
               管理ページ <i class="fa-solid fa-chevron-right text-[9px]"></i>
@@ -181,8 +181,8 @@
     <!-- 次回定例会 -->
     <section class="section-card overflow-hidden mb-4">
       <div class="section-header py-3 px-4">
-        <h2 class="section-title text-emerald-600 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-calendar-check mr-1"></i> <span id="title-next-meeting-date">次回</span> 定例会参加予定
+        <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-calendar-check text-slate-400 mr-1"></i> <span id="title-next-meeting-date">次回</span> 定例会参加予定
         </h2>
       </div>
 
@@ -211,8 +211,8 @@
     <!-- 直近定例会 -->
     <section class="section-card overflow-hidden">
       <div class="section-header py-3 px-4">
-        <h2 class="section-title text-slate-700 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-calendar-days mr-1"></i> <span id="title-last-meeting-date">今週</span> 定例会参加者
+        <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-calendar-days text-slate-400 mr-1"></i> <span id="title-last-meeting-date">今週</span> 定例会参加者
         </h2>
       </div>
 
@@ -243,8 +243,8 @@
   <div id="dash-panel-onemonth" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-        <h2 class="section-title text-indigo-600 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-comments mr-1"></i> 1ヶ月フォロー
+        <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-comments text-slate-400 mr-1"></i> 1ヶ月フォロー
         </h2>
         <div class="seg-pill-group">
           <button type="button" class="seg-pill-btn active" id="dash-onemonth-filter-pending" onclick="filterDashboardOneMonth('pending')">要対応</button>
