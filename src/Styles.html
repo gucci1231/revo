@@ -1153,9 +1153,8 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  height: 100%;
 }
 
 /* Left side: Icon, Title, Sub-meta */
@@ -1180,26 +1179,12 @@ tr:last-child td { border-bottom: none; }
   justify-content: center;
   font-size: 14px;
   flex-shrink: 0;
+  background: #eff6ff;
+  color: #2563eb;
   transition: transform 0.2s ease;
 }
 .dash-hero-card:hover .dash-hero-icon {
   transform: scale(1.08);
-}
-.dash-hero-icon.gold {
-  background: #fef3c7;
-  color: #d97706;
-}
-.dash-hero-icon.blue {
-  background: #e0e7ff;
-  color: #3b82f6;
-}
-.dash-hero-icon.green {
-  background: #dcfce7;
-  color: #10b981;
-}
-.dash-hero-icon.rose {
-  background: #ffe4e6;
-  color: #f43f5e;
 }
 
 .dash-hero-title {
@@ -1236,13 +1221,18 @@ tr:last-child td { border-bottom: none; }
   white-space: nowrap;
 }
 
-/* Right side: Giant Numbers & Units */
+/* Right side: Giant Numbers & Ring Charts */
+.dash-hero-right-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
 .dash-hero-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
-  flex-shrink: 0;
   text-align: right;
 }
 .dash-hero-val-container {
@@ -1252,7 +1242,7 @@ tr:last-child td { border-bottom: none; }
   gap: 2px;
 }
 .dash-hero-number {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 900;
   color: #0f172a;
   line-height: 1;
@@ -1260,28 +1250,16 @@ tr:last-child td { border-bottom: none; }
   font-variant-numeric: tabular-nums;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-.dash-hero-card.card-kpi-joined .dash-hero-number {
-  color: #d97706;
-}
-.dash-hero-card.card-kpi-visitors .dash-hero-number {
-  color: #2563eb;
-}
-.dash-hero-card.card-kpi-meeting .dash-hero-number {
-  color: #059669;
-}
-.dash-hero-card.card-kpi-actions .dash-hero-number {
-  color: #6366f1;
-}
 
 .dash-hero-goal-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #94a3b8;
-  margin-left: 4px;
+  margin-left: 3px;
   letter-spacing: -0.02em;
 }
 .dash-hero-unit-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #94a3b8;
   margin-left: 2px;
@@ -1291,39 +1269,59 @@ tr:last-child td { border-bottom: none; }
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  margin-top: 4px;
+  margin-top: 3px;
   letter-spacing: -0.01em;
 }
 
-/* KPI Sparkline & Mini Chart Area */
-.dash-hero-sparkline {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
-  width: 100%;
+/* 🔵 Blue Donut / Ring Progress Chart */
+.kpi-ring-wrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.dash-hero-progress-bg {
+.kpi-ring-svg {
   width: 100%;
-  height: 6px;
-  border-radius: 9999px;
-  background-color: #f1f5f9;
-  overflow: hidden;
-}
-.dash-hero-progress-fill {
   height: 100%;
-  border-radius: 9999px;
-  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: rotate(-90deg);
 }
-.dash-hero-sparkline-svg {
+.kpi-ring-bg {
+  stroke: #e2e8f0;
+}
+.kpi-ring-val {
+  stroke: #2563eb;
+  transition: stroke-dasharray 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.kpi-ring-center-text {
+  position: absolute;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #2563eb;
+  text-align: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* 🔵 Blue Sparkline Area Chart */
+.kpi-spark-wrap {
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.kpi-spark-svg {
   width: 100%;
-  height: 20px;
+  height: 100%;
   display: block;
-  overflow: visible;
 }
 
 @media (max-width: 640px) {
   .dash-hero-card {
-    padding: 10px 12px;
+    padding: 11px 12px;
     border-radius: 14px;
   }
   .dash-hero-split {
@@ -1355,8 +1353,11 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-sub-text {
     font-size: 9.5px;
   }
+  .dash-hero-right-group {
+    gap: 6px;
+  }
   .dash-hero-number {
-    font-size: 26px;
+    font-size: 24px;
   }
   .dash-hero-goal-text {
     font-size: 11px;
@@ -1369,6 +1370,17 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-caption {
     font-size: 9.5px;
     margin-top: 1px;
+  }
+  .kpi-ring-wrap {
+    width: 32px;
+    height: 32px;
+  }
+  .kpi-ring-center-text {
+    font-size: 8px;
+  }
+  .kpi-spark-wrap {
+    width: 38px;
+    height: 22px;
   }
 }
 
