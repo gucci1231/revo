@@ -23,28 +23,65 @@
     return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">-</span>';
   }
 
+  function changeVisitorStatus(id, field, value) {
+    const fieldLabels = {
+      'isAttended': '出欠',
+      'is1to1': '1to1',
+      'isJoined': '入会'
+    };
+    const fieldName = fieldLabels[field] || field;
+    showToast(`${fieldName}を【${value}】に変更中...`);
+
+    ApiService.call('updateVisitorStatusApi', id, field, value)
+      .then(res => {
+        showToast(`✅ ${fieldName}を【${value}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
   function renderAttendButtonHtml(id, rawStatus) {
-    const isAttended = (rawStatus === '参加' || rawStatus === true);
-    const nextStatus = isAttended ? '不参加' : '参加';
-    const label = isAttended ? '参加' : '不参加';
-    const cssClass = isAttended ? 'btn-status-done' : 'btn-status-todo';
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggleAttend('${id}', '${nextStatus}')">${label}</button>`;
+    const isAttended = (rawStatus === '参加' || rawStatus === '済' || rawStatus === true);
+    const isAbsent = (rawStatus === '不参加');
+    const val = isAttended ? '参加' : (isAbsent ? '不参加' : '未');
+    const stateClass = isAttended ? 'state-attended' : (isAbsent ? 'state-absent' : '');
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>出欠: 未</option>
+        <option value="参加" ${val === '参加' ? 'selected' : ''}>出欠: 参加</option>
+        <option value="不参加" ${val === '不参加' ? 'selected' : ''}>出欠: 不参加</option>
+      </select>
+    `;
   }
 
   function render1to1ButtonHtml(id, rawStatus) {
-    const is11Done = (rawStatus === '済' || rawStatus === true);
-    const label = is11Done ? '1to1 済' : '1to1 未';
-    const cssClass = is11Done ? 'btn-status-done' : 'btn-status-todo';
-    const param = escapeJsParam(rawStatus || '未');
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggle1to1('${id}', '${param}')">${label}</button>`;
+    const isDone = (rawStatus === '済' || rawStatus === true);
+    const isProgress = (rawStatus === '調整中');
+    const val = isDone ? '済' : (isProgress ? '調整中' : '未');
+    const stateClass = isDone ? 'state-done' : (isProgress ? 'state-progress' : '');
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>1to1: 未</option>
+        <option value="済" ${val === '済' ? 'selected' : ''}>1to1: 済</option>
+        <option value="調整中" ${val === '調整中' ? 'selected' : ''}>1to1: 調整中</option>
+      </select>
+    `;
   }
 
   function renderJoinedButtonHtml(id, rawStatus) {
-    const isJoined = (rawStatus === '入会済' || rawStatus === true);
-    const label = isJoined ? '入会済' : '未入会';
-    const cssClass = isJoined ? 'btn-status-joined' : 'btn-status-todo';
-    const param = escapeJsParam(rawStatus || '未');
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggleJoined('${id}', '${param}')">${label}</button>`;
+    const isJoined = (rawStatus === '入会済' || rawStatus === '済' || rawStatus === '入会' || rawStatus === true);
+    const isConsidering = (rawStatus === '検討中');
+    const isRejected = (rawStatus === '見送り');
+    const val = isJoined ? '入会済' : (isConsidering ? '検討中' : (isRejected ? '見送り' : '未'));
+    const stateClass = isJoined ? 'state-joined' : (isConsidering ? 'state-considering' : (isRejected ? 'state-rejected' : ''));
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>入会: 未</option>
+        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
+        <option value="検討中" ${val === '検討中' ? 'selected' : ''}>入会: 検討中</option>
+        <option value="見送り" ${val === '見送り' ? 'selected' : ''}>入会: 見送り</option>
+      </select>
+    `;
   }
 
   function renderVisitorNameLinkHtml(id, name) {

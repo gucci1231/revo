@@ -22,11 +22,30 @@
         <span id="vd-furigana" class="vd-profile-furigana">-</span>
       </div>
 
-      <!-- ステータス概要バッジ (クリックで直感切替) -->
-      <div class="vd-badges-wrap">
-        <div id="vd-badge-attended" class="vd-badge" title="タップで出欠状況を変更 (参加 / 不参加)">出欠: -</div>
-        <div id="vd-badge-1to1" class="vd-badge" title="タップで1to1ステータスを変更 (済 / 未)">1to1: -</div>
-        <div id="vd-badge-joined" class="vd-badge" title="タップで入会状況を変更 (入会済 / 未)">入会: -</div>
+      <!-- ステータス概要 (セレクトボックスで直感変更) -->
+      <div class="vd-badges-wrap flex items-center flex-wrap gap-2">
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況を選択">
+            <option value="未">出欠: 未</option>
+            <option value="参加">出欠: 参加</option>
+            <option value="不参加">出欠: 不参加</option>
+          </select>
+        </div>
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1ステータスを選択">
+            <option value="未">1to1: 未</option>
+            <option value="済">1to1: 済</option>
+            <option value="調整中">1to1: 調整中</option>
+          </select>
+        </div>
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会ステータスを選択">
+            <option value="未">入会: 未</option>
+            <option value="入会済">入会: 済</option>
+            <option value="検討中">入会: 検討中</option>
+            <option value="見送り">入会: 見送り</option>
+          </select>
+        </div>
         <div id="vd-badge-feel" class="vd-badge-static">感触評価: 未</div>
       </div>
     </div>

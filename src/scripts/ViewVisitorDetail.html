@@ -50,28 +50,31 @@
         // 自由メモ
         document.getElementById('vd-free-memo').value = v.remarks || '';
 
-        // ステータスバッジ (クリックで参加/不参加トグル)
-        const badgeAtt = document.getElementById('vd-badge-attended');
-        const isAttended = st.isAttended === '参加';
-        badgeAtt.innerText = isAttended ? '出欠: 参加' : '出欠: 不参加';
-        badgeAtt.style.background = isAttended ? '#dcfce7' : '#fee2e2';
-        badgeAtt.style.color = isAttended ? '#15803d' : '#b91c1c';
-        badgeAtt.onclick = () => {
-          const next = isAttended ? '不参加' : '参加';
-          toggleAttend(id, next);
-        };
+        // ステータスセレクトボックスの反映
+        const selectAtt = document.getElementById('vd-select-attended');
+        if (selectAtt) {
+          const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
+          const isAbs = (st.isAttended === '不参加');
+          selectAtt.value = isAtt ? '参加' : (isAbs ? '不参加' : '未');
+          selectAtt.className = 'vd-status-select ' + (isAtt ? 'state-attended' : (isAbs ? 'state-absent' : ''));
+        }
 
-        const badge1to1 = document.getElementById('vd-badge-1to1');
-        badge1to1.innerText = `1to1: ${st.is1to1 || '未'}`;
-        badge1to1.style.background = st.is1to1 === '済' ? '#dcfce7' : '#f1f5f9';
-        badge1to1.style.color = st.is1to1 === '済' ? '#15803d' : '#64748b';
-        badge1to1.onclick = () => toggle1to1InDetail(id, st.is1to1);
+        const select11 = document.getElementById('vd-select-1to1');
+        if (select11) {
+          const is11 = (st.is1to1 === '済');
+          const isProg = (st.is1to1 === '調整中');
+          select11.value = is11 ? '済' : (isProg ? '調整中' : '未');
+          select11.className = 'vd-status-select ' + (is11 ? 'state-done' : (isProg ? 'state-progress' : ''));
+        }
 
-        const badgeJoined = document.getElementById('vd-badge-joined');
-        badgeJoined.innerText = `入会: ${st.isJoined || '未'}`;
-        badgeJoined.style.background = st.isJoined === '入会済' ? '#dcfce7' : '#f1f5f9';
-        badgeJoined.style.color = st.isJoined === '入会済' ? '#15803d' : '#64748b';
-        badgeJoined.onclick = () => toggleJoinedInDetail(id, st.isJoined);
+        const selectJoin = document.getElementById('vd-select-joined');
+        if (selectJoin) {
+          const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
+          const isCons = (st.isJoined === '検討中');
+          const isRej = (st.isJoined === '見送り');
+          selectJoin.value = isJ ? '入会済' : (isCons ? '検討中' : (isRej ? '見送り' : '未'));
+          selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
+        }
 
         const badgeFeel = document.getElementById('vd-badge-feel');
         badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
@@ -511,24 +514,12 @@
   }
 
   function toggleAttend(id, newStatus) {
-    showToast(`出欠を【${newStatus}】に変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
-      .then(res => {
-        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'isAttended', newStatus);
   }
 
   function toggle1to1(id, current) {
     const next = (current === '済' || current === true) ? '未' : '済';
-    showToast(`1to1ステータスを変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
-      .then(res => {
-        showToast(`✅ 1to1を【${next}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'is1to1', next);
   }
 
   function toggle1to1InDetail(id, current) {
@@ -538,13 +529,7 @@
   function toggleJoined(id, current) {
     const isJoinedBool = (current === '入会済' || current === '済' || current === '入会' || current === true);
     const next = isJoinedBool ? '未' : '入会済';
-    showToast(`入会ステータスを変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
-      .then(res => {
-        showToast(`✅ 入会状況を【${next}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'isJoined', next);
   }
 
   function toggleJoinedInDetail(id, current) {

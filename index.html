@@ -320,6 +320,112 @@ tr:last-child td { border-bottom: none; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
 .badge-toggle.none { background: #f1f5f9; color: #64748b; }
 
+/* Status Select Dropdowns (List & Mobile Cards) */
+.status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #f1f5f9;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 9px 9px;
+  padding: 3px 18px 3px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  outline: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  line-height: 1.3;
+}
+.status-select:hover {
+  border-color: #94a3b8;
+}
+.status-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.status-select.state-attended,
+.status-select.state-done,
+.status-select.state-joined {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.status-select.state-absent,
+.status-select.state-rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.status-select.state-progress,
+.status-select.state-considering {
+  background-color: #fef3c7;
+  color: #d97706;
+  border-color: #fde68a;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+/* Detail Profile Status Selects */
+.vd-status-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.vd-status-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #f8fafc;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 11px 11px;
+  padding: 5px 24px 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  outline: none;
+  transition: all 0.15s ease;
+}
+.vd-status-select:hover {
+  border-color: #94a3b8;
+}
+.vd-status-select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+.vd-status-select.state-attended,
+.vd-status-select.state-done,
+.vd-status-select.state-joined {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-absent,
+.vd-status-select.state-rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-progress,
+.vd-status-select.state-considering {
+  background-color: #fef3c7;
+  color: #d97706;
+  border-color: #fde68a;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
 .btn-attend, .select-attend { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); white-space: nowrap; outline: none; transition: all 0.15s ease; }
 .btn-attend.attended, .select-attend.attended { background: #dcfce7; color: #15803d; border-color: #86efac; }
 .btn-attend.absent, .select-attend.absent { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
@@ -1868,11 +1974,30 @@ tr:last-child td { border-bottom: none; }
         <span id="vd-furigana" class="vd-profile-furigana">-</span>
       </div>
 
-      <!-- ステータス概要バッジ (クリックで直感切替) -->
-      <div class="vd-badges-wrap">
-        <div id="vd-badge-attended" class="vd-badge" title="タップで出欠状況を変更 (参加 / 不参加)">出欠: -</div>
-        <div id="vd-badge-1to1" class="vd-badge" title="タップで1to1ステータスを変更 (済 / 未)">1to1: -</div>
-        <div id="vd-badge-joined" class="vd-badge" title="タップで入会状況を変更 (入会済 / 未)">入会: -</div>
+      <!-- ステータス概要 (セレクトボックスで直感変更) -->
+      <div class="vd-badges-wrap flex items-center flex-wrap gap-2">
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況を選択">
+            <option value="未">出欠: 未</option>
+            <option value="参加">出欠: 参加</option>
+            <option value="不参加">出欠: 不参加</option>
+          </select>
+        </div>
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1ステータスを選択">
+            <option value="未">1to1: 未</option>
+            <option value="済">1to1: 済</option>
+            <option value="調整中">1to1: 調整中</option>
+          </select>
+        </div>
+        <div class="vd-status-select-wrap">
+          <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会ステータスを選択">
+            <option value="未">入会: 未</option>
+            <option value="入会済">入会: 済</option>
+            <option value="検討中">入会: 検討中</option>
+            <option value="見送り">入会: 見送り</option>
+          </select>
+        </div>
         <div id="vd-badge-feel" class="vd-badge-static">感触評価: 未</div>
       </div>
     </div>
@@ -2419,28 +2544,65 @@ const ApiService = {
     return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">-</span>';
   }
 
+  function changeVisitorStatus(id, field, value) {
+    const fieldLabels = {
+      'isAttended': '出欠',
+      'is1to1': '1to1',
+      'isJoined': '入会'
+    };
+    const fieldName = fieldLabels[field] || field;
+    showToast(`${fieldName}を【${value}】に変更中...`);
+
+    ApiService.call('updateVisitorStatusApi', id, field, value)
+      .then(res => {
+        showToast(`✅ ${fieldName}を【${value}】に変更しました`);
+        refreshAllActiveViews();
+      })
+      .catch(handleError);
+  }
+
   function renderAttendButtonHtml(id, rawStatus) {
-    const isAttended = (rawStatus === '参加' || rawStatus === true);
-    const nextStatus = isAttended ? '不参加' : '参加';
-    const label = isAttended ? '参加' : '不参加';
-    const cssClass = isAttended ? 'btn-status-done' : 'btn-status-todo';
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggleAttend('${id}', '${nextStatus}')">${label}</button>`;
+    const isAttended = (rawStatus === '参加' || rawStatus === '済' || rawStatus === true);
+    const isAbsent = (rawStatus === '不参加');
+    const val = isAttended ? '参加' : (isAbsent ? '不参加' : '未');
+    const stateClass = isAttended ? 'state-attended' : (isAbsent ? 'state-absent' : '');
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>出欠: 未</option>
+        <option value="参加" ${val === '参加' ? 'selected' : ''}>出欠: 参加</option>
+        <option value="不参加" ${val === '不参加' ? 'selected' : ''}>出欠: 不参加</option>
+      </select>
+    `;
   }
 
   function render1to1ButtonHtml(id, rawStatus) {
-    const is11Done = (rawStatus === '済' || rawStatus === true);
-    const label = is11Done ? '1to1 済' : '1to1 未';
-    const cssClass = is11Done ? 'btn-status-done' : 'btn-status-todo';
-    const param = escapeJsParam(rawStatus || '未');
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggle1to1('${id}', '${param}')">${label}</button>`;
+    const isDone = (rawStatus === '済' || rawStatus === true);
+    const isProgress = (rawStatus === '調整中');
+    const val = isDone ? '済' : (isProgress ? '調整中' : '未');
+    const stateClass = isDone ? 'state-done' : (isProgress ? 'state-progress' : '');
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>1to1: 未</option>
+        <option value="済" ${val === '済' ? 'selected' : ''}>1to1: 済</option>
+        <option value="調整中" ${val === '調整中' ? 'selected' : ''}>1to1: 調整中</option>
+      </select>
+    `;
   }
 
   function renderJoinedButtonHtml(id, rawStatus) {
-    const isJoined = (rawStatus === '入会済' || rawStatus === true);
-    const label = isJoined ? '入会済' : '未入会';
-    const cssClass = isJoined ? 'btn-status-joined' : 'btn-status-todo';
-    const param = escapeJsParam(rawStatus || '未');
-    return `<button class="btn-sm-action ${cssClass}" onclick="toggleJoined('${id}', '${param}')">${label}</button>`;
+    const isJoined = (rawStatus === '入会済' || rawStatus === '済' || rawStatus === '入会' || rawStatus === true);
+    const isConsidering = (rawStatus === '検討中');
+    const isRejected = (rawStatus === '見送り');
+    const val = isJoined ? '入会済' : (isConsidering ? '検討中' : (isRejected ? '見送り' : '未'));
+    const stateClass = isJoined ? 'state-joined' : (isConsidering ? 'state-considering' : (isRejected ? 'state-rejected' : ''));
+    return `
+      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+        <option value="未" ${val === '未' ? 'selected' : ''}>入会: 未</option>
+        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
+        <option value="検討中" ${val === '検討中' ? 'selected' : ''}>入会: 検討中</option>
+        <option value="見送り" ${val === '見送り' ? 'selected' : ''}>入会: 見送り</option>
+      </select>
+    `;
   }
 
   function renderVisitorNameLinkHtml(id, name) {
@@ -4407,28 +4569,31 @@ const ApiService = {
         // 自由メモ
         document.getElementById('vd-free-memo').value = v.remarks || '';
 
-        // ステータスバッジ (クリックで参加/不参加トグル)
-        const badgeAtt = document.getElementById('vd-badge-attended');
-        const isAttended = st.isAttended === '参加';
-        badgeAtt.innerText = isAttended ? '出欠: 参加' : '出欠: 不参加';
-        badgeAtt.style.background = isAttended ? '#dcfce7' : '#fee2e2';
-        badgeAtt.style.color = isAttended ? '#15803d' : '#b91c1c';
-        badgeAtt.onclick = () => {
-          const next = isAttended ? '不参加' : '参加';
-          toggleAttend(id, next);
-        };
+        // ステータスセレクトボックスの反映
+        const selectAtt = document.getElementById('vd-select-attended');
+        if (selectAtt) {
+          const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
+          const isAbs = (st.isAttended === '不参加');
+          selectAtt.value = isAtt ? '参加' : (isAbs ? '不参加' : '未');
+          selectAtt.className = 'vd-status-select ' + (isAtt ? 'state-attended' : (isAbs ? 'state-absent' : ''));
+        }
 
-        const badge1to1 = document.getElementById('vd-badge-1to1');
-        badge1to1.innerText = `1to1: ${st.is1to1 || '未'}`;
-        badge1to1.style.background = st.is1to1 === '済' ? '#dcfce7' : '#f1f5f9';
-        badge1to1.style.color = st.is1to1 === '済' ? '#15803d' : '#64748b';
-        badge1to1.onclick = () => toggle1to1InDetail(id, st.is1to1);
+        const select11 = document.getElementById('vd-select-1to1');
+        if (select11) {
+          const is11 = (st.is1to1 === '済');
+          const isProg = (st.is1to1 === '調整中');
+          select11.value = is11 ? '済' : (isProg ? '調整中' : '未');
+          select11.className = 'vd-status-select ' + (is11 ? 'state-done' : (isProg ? 'state-progress' : ''));
+        }
 
-        const badgeJoined = document.getElementById('vd-badge-joined');
-        badgeJoined.innerText = `入会: ${st.isJoined || '未'}`;
-        badgeJoined.style.background = st.isJoined === '入会済' ? '#dcfce7' : '#f1f5f9';
-        badgeJoined.style.color = st.isJoined === '入会済' ? '#15803d' : '#64748b';
-        badgeJoined.onclick = () => toggleJoinedInDetail(id, st.isJoined);
+        const selectJoin = document.getElementById('vd-select-joined');
+        if (selectJoin) {
+          const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
+          const isCons = (st.isJoined === '検討中');
+          const isRej = (st.isJoined === '見送り');
+          selectJoin.value = isJ ? '入会済' : (isCons ? '検討中' : (isRej ? '見送り' : '未'));
+          selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
+        }
 
         const badgeFeel = document.getElementById('vd-badge-feel');
         badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
@@ -4868,24 +5033,12 @@ const ApiService = {
   }
 
   function toggleAttend(id, newStatus) {
-    showToast(`出欠を【${newStatus}】に変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isAttended', newStatus)
-      .then(res => {
-        showToast(`✅ 出欠を【${newStatus}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'isAttended', newStatus);
   }
 
   function toggle1to1(id, current) {
     const next = (current === '済' || current === true) ? '未' : '済';
-    showToast(`1to1ステータスを変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'is1to1', next)
-      .then(res => {
-        showToast(`✅ 1to1を【${next}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'is1to1', next);
   }
 
   function toggle1to1InDetail(id, current) {
@@ -4895,13 +5048,7 @@ const ApiService = {
   function toggleJoined(id, current) {
     const isJoinedBool = (current === '入会済' || current === '済' || current === '入会' || current === true);
     const next = isJoinedBool ? '未' : '入会済';
-    showToast(`入会ステータスを変更中...`);
-    ApiService.call('updateVisitorStatusApi', id, 'isJoined', next)
-      .then(res => {
-        showToast(`✅ 入会状況を【${next}】に変更しました`);
-        refreshAllActiveViews();
-      })
-      .catch(handleError);
+    changeVisitorStatus(id, 'isJoined', next);
   }
 
   function toggleJoinedInDetail(id, current) {
