@@ -103,6 +103,94 @@
       mobileNextBtn.disabled = !next;
       mobileNextBtn.innerHTML = next ? `次へ (${escapeHtml(next.name || 'No.' + next.id)}) <i class="fa-solid fa-chevron-right"></i>` : `次のビジター <i class="fa-solid fa-chevron-right"></i>`;
     }
+
+    // PC用左カラムサイドバー一覧を更新
+    renderVdSidebarList();
+  }
+
+  /* --- 💻 PC Left Sidebar List Controller --- */
+  let vdSidebarSearchQuery = "";
+
+  function handleVdSidebarSearch(val) {
+    vdSidebarSearchQuery = (val || '').toLowerCase().trim();
+    renderVdSidebarList();
+  }
+
+  function renderVdSidebarList() {
+    const listContainer = document.getElementById('vd-sidebar-list');
+    const countEl = document.getElementById('vd-sidebar-count');
+    if (!listContainer) return;
+
+    const fullList = getVisitorNavSequence();
+    let displayList = fullList;
+
+    if (vdSidebarSearchQuery) {
+      displayList = fullList.filter(v => {
+        if (!v) return false;
+        const q = vdSidebarSearchQuery;
+        const name = (v.name || '').toLowerCase();
+        const furigana = (v.furigana || '').toLowerCase();
+        const company = (v.company || '').toLowerCase();
+        const profession = (v.profession || '').toLowerCase();
+        const inviter = (v.inviter || '').toLowerCase();
+        return name.includes(q) || furigana.includes(q) || company.includes(q) || profession.includes(q) || inviter.includes(q);
+      });
+    }
+
+    if (countEl) {
+      countEl.innerText = `${displayList.length}件`;
+    }
+
+    if (displayList.length === 0) {
+      listContainer.innerHTML = `
+        <div style="padding: 24px 12px; text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600;">
+          <i class="fa-solid fa-user-slash" style="display:block; font-size: 18px; margin-bottom: 6px;"></i>
+          一致するビジターはいません
+        </div>
+      `;
+      return;
+    }
+
+    const currentIdStr = String(currentVdVisitorId || '');
+    let html = '';
+
+    displayList.forEach(v => {
+      const isSelected = (String(v.id) === currentIdStr) || (v.allIds && Array.isArray(v.allIds) && v.allIds.some(id => String(id) === currentIdStr));
+      const feel = (v.feelAbc || '').toUpperCase().trim();
+      const rankChar = feel || '-';
+      const rankClass = feel ? `rank-${feel}` : '';
+      const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
+      const repeatTag = (typeof count === 'number' && count > 1) ? `<span style="font-size:10px; color:#d97706; background:#fef3c7; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${count}回</span>` : '';
+
+      const subInfo = [v.company, v.profession].filter(Boolean).join(' · ') || (v.inviter ? `紹介: ${v.inviter}` : '-');
+
+      html += `
+        <div class="vd-sidebar-item ${isSelected ? 'is-selected' : ''}" onclick="openVisitorDetailView('${v.id}', true, false)">
+          <div class="vd-sidebar-item-rank ${rankClass}">
+            ${rankChar}
+          </div>
+          <div class="vd-sidebar-item-info">
+            <div class="vd-sidebar-item-top">
+              <span class="vd-sidebar-item-name">${escapeHtml(v.name || 'ビジター No.' + v.id)}${repeatTag}</span>
+              <span class="vd-sidebar-item-date">${escapeHtml(v.eventDate || '')}</span>
+            </div>
+            <div class="vd-sidebar-item-sub">
+              ${escapeHtml(subInfo)}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    listContainer.innerHTML = html;
+
+    // 選択中のアイテムを可視領域へスクロール
+    setTimeout(() => {
+      const activeEl = listContainer.querySelector('.vd-sidebar-item.is-selected');
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }, 50);
   }
 
   function navigateVisitorDetail(direction) {
