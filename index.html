@@ -2785,6 +2785,42 @@ tr:last-child td { border-bottom: none; }
   gap: 8px;
 }
 
+/* --- Email Templates Styles --- */
+.et-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.et-tag-chip:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.08);
+}
+.et-tag-chip code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.08);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.et-filter-btn.active {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+}
 
 </style>
 </head>
@@ -3122,6 +3158,9 @@ tr:last-child td { border-bottom: none; }
       <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
         <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
       </button>
+      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
+        <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
+      </button>
       <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
         <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
@@ -3178,6 +3217,9 @@ tr:last-child td { border-bottom: none; }
       </button>
       <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
         <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-email-templates" onclick="switchTab('email-templates')">
+        <i class="fa-solid fa-envelope-open-text"></i> メールテンプレート
       </button>
       <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
         <i class="fa-solid fa-gear"></i> 設定
@@ -4285,6 +4327,371 @@ tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+    <!-- VIEW 7: メールテンプレート管理ビュー (一覧 > 編集 > バリデーション > サンプル確認 > OK) -->
+<div id="view-email-templates" class="view-content">
+
+  <!-- ==================== SUBVIEW 1: メールテンプレートタイプ一覧 ==================== -->
+  <div id="et-view-list" class="space-y-6">
+    <!-- Header & Info Banner -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-blue-600 font-bold text-xs tracking-wider uppercase mb-1">
+          <i class="fa-solid fa-envelope-open-text"></i>
+          <span>Email Template Management</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">メールテンプレート管理</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          ビジターへ送信する各種ステップメールの定型文を編集できます。編集内容は即時SQLiteに保存され、Googleスプレッドシート（<code>FollowMail_template</code>）へも自動同期されます。
+        </p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl transition flex items-center gap-2 border border-slate-200" onclick="fetchEmailTemplatesData(true)">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>テンプレート再読込</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+      <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition shrink-0" data-category="all" onclick="filterEmailTemplates('all')">
+        すべて <span id="et-count-all" class="ml-1 text-xs opacity-80">(0)</span>
+      </button>
+      <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="welcome" onclick="filterEmailTemplates('welcome')">
+        参加案内・Welcome <span id="et-count-welcome" class="ml-1 text-xs opacity-80">(0)</span>
+      </button>
+      <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="remind" onclick="filterEmailTemplates('remind')">
+        リマインド <span id="et-count-remind" class="ml-1 text-xs opacity-80">(0)</span>
+      </button>
+      <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="thanks" onclick="filterEmailTemplates('thanks')">
+        御礼・欠席 <span id="et-count-thanks" class="ml-1 text-xs opacity-80">(0)</span>
+      </button>
+      <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="follow" onclick="filterEmailTemplates('follow')">
+        中長期フォロー <span id="et-count-follow" class="ml-1 text-xs opacity-80">(0)</span>
+      </button>
+    </div>
+
+    <!-- Template Card Grid -->
+    <div id="et-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Loading Skeleton -->
+      <div class="col-span-full py-12 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
+        <p class="text-xs">メールテンプレートを読み込み中...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SUBVIEW 2: テンプレート編集ウィザード ==================== -->
+  <div id="et-view-editor" class="space-y-6" style="display: none;">
+    <!-- Step Wizard Bar -->
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm">
+      <div class="flex items-center justify-between gap-2 max-w-3xl mx-auto">
+        <!-- Step 1 (Completed / Nav) -->
+        <button type="button" onclick="cancelEmailTemplateEdit()" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition group text-left">
+          <div class="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 text-slate-600 group-hover:text-blue-600 flex items-center justify-center font-bold text-xs border border-slate-200 group-hover:border-blue-300">
+            <i class="fa-solid fa-arrow-left"></i>
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 1</div>
+            <div class="text-xs font-bold text-slate-700 group-hover:text-blue-600">一覧に戻る</div>
+          </div>
+        </button>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 2: 編集 -->
+        <div id="et-step-indicator-edit" class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-blue-500/20">
+            2
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-blue-600 uppercase font-extrabold tracking-wider">Step 2</div>
+            <div class="text-xs font-black text-slate-900">文面編集</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 3: 検証 -->
+        <div id="et-step-indicator-validate" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            3
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 3</div>
+            <div class="text-xs font-bold text-slate-700">バリデーション</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 4: サンプル確認 -->
+        <div id="et-step-indicator-preview" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            4
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 4</div>
+            <div class="text-xs font-bold text-slate-700">サンプル確認</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 5: 保存 -->
+        <div id="et-step-indicator-save" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 5</div>
+            <div class="text-xs font-bold text-slate-700">完了・同期</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Main Form Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left Column: Edit Inputs (8 cols on lg) -->
+      <div class="lg:col-span-8 space-y-5">
+        <div class="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/80 shadow-sm space-y-5">
+          <!-- Template Title & Key Badge -->
+          <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <span id="et-edit-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">WELCOME</span>
+              <h3 id="et-edit-name" class="text-lg sm:text-xl font-black text-slate-900 mt-1.5">新規ビジター参加案内 (Welcome)</h3>
+              <p id="et-edit-desc" class="text-xs text-slate-500 mt-0.5">初めてお申し込みいただいたビジター様へ送信する初回案内メールです。</p>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[10px] text-slate-400 block font-mono">Template Key</span>
+              <code id="et-edit-key" class="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">EMAIL_VISITOR_INTRO</code>
+            </div>
+          </div>
+
+          <!-- Subject Input -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="et-edit-subject" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-heading text-blue-600"></i>
+                <span>メール件名 (Subject)</span>
+                <span class="text-red-500 font-bold text-xs">*</span>
+              </label>
+              <span id="et-subject-len" class="text-[11px] text-slate-400 font-mono">0 文字</span>
+            </div>
+            <input type="text" id="et-edit-subject" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium text-slate-900 transition" placeholder="件名を入力してください..." oninput="onTemplateInputChange()">
+          </div>
+
+          <!-- Body Textarea -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="et-edit-body" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-align-left text-blue-600"></i>
+                <span>メール本文 (Body)</span>
+                <span class="text-red-500 font-bold text-xs">*</span>
+              </label>
+              <div class="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+                <span id="et-body-lines">0 行</span>
+                <span>•</span>
+                <span id="et-body-chars">0 文字</span>
+              </div>
+            </div>
+            <textarea id="et-edit-body" rows="14" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-xs sm:text-sm font-mono text-slate-800 leading-relaxed transition" placeholder="メール本文を入力してください..." oninput="onTemplateInputChange()"></textarea>
+          </div>
+
+          <!-- Validation Warning / Error Box -->
+          <div id="et-validation-box" class="rounded-xl p-4 border transition-all" style="display: none;">
+            <div class="flex items-start gap-3">
+              <div id="et-val-icon" class="text-base shrink-0 mt-0.5"></div>
+              <div class="space-y-1 flex-1">
+                <h4 id="et-val-title" class="text-xs font-bold"></h4>
+                <ul id="et-val-list" class="text-xs space-y-0.5 list-disc list-inside"></ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+            <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold transition flex items-center justify-center gap-2" onclick="cancelEmailTemplateEdit()">
+              <i class="fa-solid fa-xmark"></i>
+              <span>キャンセルして一覧へ戻る</span>
+            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-et-validate-preview" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-extrabold shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2" onclick="runValidationAndProceedToPreview()">
+                <span>バリデーション ＆ メールサンプル確認へ</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Placeholder Tag Palette (4 cols on lg) -->
+      <div class="lg:col-span-4 space-y-5">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 sticky top-20">
+          <div class="flex items-center gap-2 text-slate-800 font-black text-sm">
+            <i class="fa-solid fa-tags text-blue-600"></i>
+            <span>差し込みタグパレット</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            クリックすると、現在カーソルがある位置（件名または本文）にタグが自動挿入されます。
+          </p>
+
+          <div class="space-y-3">
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">👤 ビジター基本情報</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$name}')" title="ビジター氏名">
+                  <code>{$name}</code>
+                  <span>氏名</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$event_date}')" title="定例会参加日">
+                  <code>{$event_date}</code>
+                  <span>参加日</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$profession}')" title="専門分野・業種">
+                  <code>{$profession}</code>
+                  <span>専門分野</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$company}')" title="会社名・屋号">
+                  <code>{$company}</code>
+                  <span>会社名</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$inviter}')" title="ご紹介者様氏名">
+                  <code>{$inviter}</code>
+                  <span>紹介者</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">🏛 定例会・メインプレゼン</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$main_presenter}')" title="メインプレゼンター氏名">
+                  <code>{$main_presenter}</code>
+                  <span>メインプレゼンター</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$wanted}')" title="求めている紹介・リファーラル">
+                  <code>{$wanted}</code>
+                  <span>求める紹介</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">🌟 動的カスタムブロック</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$matching_status}')" title="マッチング要望案内ブロック (要望記入時のみ表示)">
+                  <code>{$matching_status}</code>
+                  <span>マッチング要望</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 rounded-xl p-3 border border-amber-200/70 text-[11px] text-amber-800 flex items-start gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-600 mt-0.5 shrink-0"></i>
+            <span>タグは <code>{$...}</code> の形式で本文中に直接記述することも可能です。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Sample Preview Modal / Overlay Section -->
+    <div id="et-preview-section" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
+      <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        
+        <!-- Preview Modal Header -->
+        <div class="p-5 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-blue-100 text-blue-700 uppercase">Step 4: サンプル確認</span>
+                <span id="et-preview-tmpl-key" class="text-xs font-mono text-slate-500">EMAIL_VISITOR_INTRO</span>
+              </div>
+              <h3 class="text-base sm:text-lg font-black text-slate-900 mt-0.5">メール送信サンプルプレビュー</h3>
+            </div>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition" onclick="closeEmailSamplePreview()">
+            <i class="fa-solid fa-xmark text-base"></i>
+          </button>
+        </div>
+
+        <!-- Preview Modal Content -->
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-slate-50/50">
+          
+          <!-- Sample Visitor Selector Toolbar -->
+          <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+              <i class="fa-solid fa-user-gear text-blue-600"></i>
+              <span>サンプルデータ切替:</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="et-sample-selector" class="text-xs font-bold bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500" onchange="updateEmailSamplePreview()">
+                <option value="first_time">1. 初回ビジター (マッチング要望あり)</option>
+                <option value="first_time_no_req">2. 初回ビジター (マッチング要望なし)</option>
+                <option value="repeater">3. 再参加リピーター</option>
+                <option value="guest">4. 他チャプターゲスト</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Email Client Mockup Frame -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
+            <!-- Mail Client Header -->
+            <div class="bg-slate-100/90 border-b border-slate-200 p-3.5 sm:p-4 space-y-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-14 text-slate-400 font-bold shrink-0">差出人:</span>
+                <span class="font-bold text-slate-800">BNIレボリューション ビジターホストチーム &lt;visitorhost@revo.k-d-o.biz&gt;</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-14 text-slate-400 font-bold shrink-0">宛先:</span>
+                <span id="et-preview-recipient" class="font-bold text-slate-800">山田 太郎 様 &lt;yamada@example.com&gt;</span>
+              </div>
+              <div class="flex items-start gap-2 pt-1 border-t border-slate-200/60">
+                <span class="w-14 text-slate-400 font-bold shrink-0 mt-0.5">件名:</span>
+                <span id="et-preview-subject" class="font-black text-slate-900 text-sm leading-snug">【BNIレボリューション】定例会ご参加のお申し込みありがとうございます（09/04開催）</span>
+              </div>
+            </div>
+
+            <!-- Mail Client Body Area -->
+            <div class="p-5 sm:p-6 text-xs sm:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap select-text" id="et-preview-body">
+            </div>
+          </div>
+
+          <!-- Synchronize Alert Note -->
+          <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200/80 flex items-start gap-3 text-xs text-blue-900">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-600 text-base mt-0.5 shrink-0"></i>
+            <div class="space-y-0.5">
+              <div class="font-black">保存時の自動連携について</div>
+              <div class="text-blue-800">「OK」をクリックすると、SQLiteデータベースおよびGoogleスプレッドシート（<code>FollowMail_template</code>）の文面が即座に更新されます。次回以降のメール送信時にこの文面が使用されます。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Modal Footer -->
+        <div class="p-4 sm:p-5 border-t border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2" onclick="closeEmailSamplePreview()">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>修正に戻る (Step 2)</span>
+          </button>
+          
+          <button type="button" id="btn-et-save-confirm" class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-black shadow-lg shadow-green-600/20 transition flex items-center justify-center gap-2" onclick="saveEmailTemplateConfirm()">
+            <i class="fa-solid fa-check"></i>
+            <span>OK (この内容で保存してスプレッドシートに同期)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
 
   </div>
 
@@ -5370,6 +5777,7 @@ window.CelebrationEffect = (function() {
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
+    'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
     'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
     'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
   };
@@ -5391,7 +5799,7 @@ window.CelebrationEffect = (function() {
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -5429,6 +5837,8 @@ window.CelebrationEffect = (function() {
       fetchHearingListData(true);
     } else if (tabName === 'email-schedule') {
       fetchScheduledEmailsData(true);
+    } else if (tabName === 'email-templates') {
+      fetchEmailTemplatesData(true);
     } else if (tabName === 'settings') {
       fetchMembersMasterData();
     }
@@ -9069,6 +9479,491 @@ window.CelebrationEffect = (function() {
       })
       .catch(handleError);
   }
+
+  /* ==========================================================================
+     📧 Email Template Management Controller (一覧 > 編集 > 検証 > サンプル確認 > OK)
+     ========================================================================== */
+  let rawEmailTemplates = [];
+  let currentEditingTemplate = null;
+  let activeTemplateCategory = 'all';
+  let lastActiveInputTarget = 'body'; // 'subject' or 'body'
+
+  const SAMPLE_VISITOR_PRESETS = {
+    first_time: {
+      name: '山田 太郎',
+      eventDate: '09/04',
+      profession: '税理士・事業承継コンサルティング',
+      company: '山田総合会計事務所',
+      inviter: '高橋 健一',
+      email: 'yamada@example.com',
+      matchingReq: 'IT企業の経営者やWeb制作会社の方と協業したいと考えております。',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    first_time_no_req: {
+      name: '田中 幸子',
+      eventDate: '09/04',
+      profession: 'パーソナルスタイリスト',
+      company: 'Style Grace',
+      inviter: '鈴木 恵子',
+      email: 'tanaka.grace@example.com',
+      matchingReq: '',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    repeater: {
+      name: '渡辺 健二',
+      eventDate: '09/04',
+      profession: '不動産売買仲介・リノベーション',
+      company: '株式会社リノベエステート',
+      inviter: '小林 大介',
+      email: 'watanabe@renove-estate.jp',
+      matchingReq: '士業（司法書士・弁護士）の方と連携パートナーになりたい。',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    guest: {
+      name: '木村 慎一',
+      eventDate: '09/04',
+      profession: 'サイバーセキュリティ・ネットワーク構築',
+      company: 'セキュアネット合同会社 (BNIサンライズチャプター)',
+      inviter: '伊藤 拓也',
+      email: 'kimura@secure-net.co.jp',
+      matchingReq: 'クロスチャプターで協業できるITコンサルタント',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    }
+  };
+
+  function fetchEmailTemplatesData(force = false) {
+    const cardsGrid = document.getElementById('et-cards-grid');
+    if (cardsGrid && rawEmailTemplates.length === 0) {
+      cardsGrid.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400">
+          <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
+          <p class="text-xs">メールテンプレートを読み込み中...</p>
+        </div>
+      `;
+    }
+
+    ApiService.call('getEmailTemplatesApi')
+      .then(res => {
+        if (res && res.success && Array.isArray(res.templates)) {
+          rawEmailTemplates = res.templates;
+          renderEmailTemplatesList();
+          updateEmailTemplateCategoryCounts();
+        } else {
+          showToast('メールテンプレートの取得に失敗しました');
+        }
+      })
+      .catch(err => {
+        console.error('Fetch email templates error:', err);
+        handleError(err);
+      });
+  }
+
+  function updateEmailTemplateCategoryCounts() {
+    const counts = { all: rawEmailTemplates.length, welcome: 0, remind: 0, thanks: 0, follow: 0 };
+    rawEmailTemplates.forEach(t => {
+      const cat = t.category || 'welcome';
+      if (counts[cat] !== undefined) counts[cat]++;
+    });
+
+    ['all', 'welcome', 'remind', 'thanks', 'follow'].forEach(c => {
+      const el = document.getElementById(`et-count-${c}`);
+      if (el) el.innerText = `(${counts[c] || 0})`;
+    });
+  }
+
+  function filterEmailTemplates(category) {
+    activeTemplateCategory = category;
+    document.querySelectorAll('.et-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-category') === category) {
+        btn.className = 'et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition shrink-0 active';
+      } else {
+        btn.className = 'et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0';
+      }
+    });
+    renderEmailTemplatesList();
+  }
+
+  function renderEmailTemplatesList() {
+    const cardsGrid = document.getElementById('et-cards-grid');
+    if (!cardsGrid) return;
+
+    const filtered = activeTemplateCategory === 'all'
+      ? rawEmailTemplates
+      : rawEmailTemplates.filter(t => t.category === activeTemplateCategory);
+
+    if (filtered.length === 0) {
+      cardsGrid.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200/80">
+          <i class="fa-solid fa-envelope-open text-3xl mb-2 text-slate-300"></i>
+          <p class="text-xs font-bold text-slate-500">該当するメールテンプレートがありません</p>
+        </div>
+      `;
+      return;
+    }
+
+    const badgeConfig = {
+      welcome: { label: 'WELCOME', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: 'fa-user-plus' },
+      remind: { label: 'REMIND', bg: 'bg-blue-50 text-blue-700 border-blue-200', icon: 'fa-clock' },
+      thanks: { label: 'THANKS', bg: 'bg-amber-50 text-amber-700 border-amber-200', icon: 'fa-heart' },
+      follow: { label: 'FOLLOW', bg: 'bg-purple-50 text-purple-700 border-purple-200', icon: 'fa-arrows-rotate' }
+    };
+
+    cardsGrid.innerHTML = filtered.map(t => {
+      const b = badgeConfig[t.category] || { label: 'STEP', bg: 'bg-slate-100 text-slate-700 border-slate-200', icon: 'fa-envelope' };
+      const safeSubject = escapeHtml(t.subject || '');
+      const bodySnippet = escapeHtml((t.body || '').slice(0, 140) + ((t.body || '').length > 140 ? '...' : ''));
+      const safeDesc = escapeHtml(t.description || '');
+      const updatedAt = t.updated_at ? escapeHtml(t.updated_at) : '未設定';
+
+      return `
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group">
+          <div class="space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase border ${b.bg}">
+                <i class="fa-solid ${b.icon}"></i>
+                <span>${b.label}</span>
+              </span>
+              <code class="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(t.id)}</code>
+            </div>
+
+            <div>
+              <h3 class="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">${escapeHtml(t.name)}</h3>
+              ${safeDesc ? `<p class="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">${safeDesc}</p>` : ''}
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1.5">
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-heading text-blue-500"></i>
+                <span>件名</span>
+              </div>
+              <div class="text-xs font-bold text-slate-800 line-clamp-2 leading-snug">${safeSubject}</div>
+            </div>
+
+            <div class="bg-slate-50/60 rounded-xl p-3 border border-slate-100/80 space-y-1">
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-align-left text-slate-400"></i>
+                <span>本文抜粋</span>
+              </div>
+              <div class="text-[11px] text-slate-600 font-mono whitespace-pre-wrap leading-relaxed line-clamp-3">${bodySnippet}</div>
+            </div>
+          </div>
+
+          <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+            <span class="text-[10px] text-slate-400 flex items-center gap-1">
+              <i class="fa-regular fa-clock"></i>
+              <span>${updatedAt}</span>
+            </span>
+            <button type="button" class="px-4 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white text-xs font-extrabold transition-all border border-blue-200 hover:border-blue-600 shadow-sm flex items-center gap-1.5" onclick="startEditEmailTemplate('${escapeHtml(t.id)}')">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>編集する</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function startEditEmailTemplate(tmplId) {
+    const tmpl = rawEmailTemplates.find(t => t.id === tmplId);
+    if (!tmpl) {
+      showToast('テンプレートが見つかりません');
+      return;
+    }
+
+    currentEditingTemplate = JSON.parse(JSON.stringify(tmpl));
+
+    // Fill Form Inputs
+    document.getElementById('et-edit-name').innerText = tmpl.name;
+    document.getElementById('et-edit-key').innerText = tmpl.id;
+    document.getElementById('et-edit-desc').innerText = tmpl.description || '';
+    document.getElementById('et-edit-subject').value = tmpl.subject || '';
+    document.getElementById('et-edit-body').value = tmpl.body || '';
+
+    // Update Badge
+    const badgeEl = document.getElementById('et-edit-badge');
+    if (badgeEl) {
+      badgeEl.innerText = (tmpl.category || 'STEP').toUpperCase();
+    }
+
+    // Reset Validation Box
+    const valBox = document.getElementById('et-validation-box');
+    if (valBox) valBox.style.display = 'none';
+
+    // Track Focus Target
+    const subjInput = document.getElementById('et-edit-subject');
+    const bodyInput = document.getElementById('et-edit-body');
+    subjInput.onfocus = () => { lastActiveInputTarget = 'subject'; };
+    bodyInput.onfocus = () => { lastActiveInputTarget = 'body'; };
+
+    onTemplateInputChange();
+
+    // Switch View from List to Editor
+    document.getElementById('et-view-list').style.display = 'none';
+    document.getElementById('et-view-editor').style.display = 'block';
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEmailTemplateEdit() {
+    currentEditingTemplate = null;
+    document.getElementById('et-view-editor').style.display = 'none';
+    document.getElementById('et-view-list').style.display = 'block';
+  }
+
+  function onTemplateInputChange() {
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const subjLenEl = document.getElementById('et-subject-len');
+    if (subjLenEl) subjLenEl.innerText = `${subject.length} 文字`;
+
+    const bodyLines = body ? body.split('\n').length : 0;
+    const bodyChars = body ? body.length : 0;
+
+    const linesEl = document.getElementById('et-body-lines');
+    const charsEl = document.getElementById('et-body-chars');
+    if (linesEl) linesEl.innerText = `${bodyLines} 行`;
+    if (charsEl) charsEl.innerText = `${bodyChars} 文字`;
+
+    // Hide validation box on typing
+    const valBox = document.getElementById('et-validation-box');
+    if (valBox) valBox.style.display = 'none';
+  }
+
+  function insertTagToTemplate(tag) {
+    const targetInput = lastActiveInputTarget === 'subject'
+      ? document.getElementById('et-edit-subject')
+      : document.getElementById('et-edit-body');
+
+    if (!targetInput) return;
+
+    const startPos = targetInput.selectionStart || targetInput.value.length;
+    const endPos = targetInput.selectionEnd || targetInput.value.length;
+    const beforeText = targetInput.value.substring(0, startPos);
+    const afterText = targetInput.value.substring(endPos, targetInput.value.length);
+
+    targetInput.value = beforeText + tag + afterText;
+    targetInput.focus();
+    targetInput.selectionStart = startPos + tag.length;
+    targetInput.selectionEnd = startPos + tag.length;
+
+    onTemplateInputChange();
+    showToast(`タグ ${tag} を挿入しました`);
+  }
+
+  function validateEmailTemplate(subject, body) {
+    const errors = [];
+    const warnings = [];
+
+    if (!subject || subject.trim() === '') {
+      errors.push('件名 (Subject) を入力してください。');
+    }
+    if (!body || body.trim() === '') {
+      errors.push('本文 (Body) を入力してください。');
+    }
+
+    // Check for unmatched {$
+    const combined = (subject || '') + '\n' + (body || '');
+    const tagMatches = combined.match(/\{\$[a-zA-Z0-9_]+/g) || [];
+    const fullTagMatches = combined.match(/\{\$[a-zA-Z0-9_]+\}/g) || [];
+
+    if (tagMatches.length !== fullTagMatches.length) {
+      warnings.push('閉じ括弧 "}" が抜けているタグが存在する可能性があります。');
+    }
+
+    // Check valid known tags
+    const validTags = [
+      'name', 'visitor_name', 'event_date', 'date', 'profession',
+      'company', 'inviter', 'main_presenter', 'wanted', 'matching_status',
+      'ras_message', 'referral_message'
+    ];
+    const extractedTags = [];
+    const tagRegex = /\{\$([a-zA-Z0-9_]+)\}/g;
+    let match;
+    while ((match = tagRegex.exec(combined)) !== null) {
+      extractedTags.push(match[1]);
+      if (!validTags.includes(match[1])) {
+        warnings.push(`未定義の差し込みタグ "{$${match[1]}}" が含まれています。`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings,
+      extractedTags: [...new Set(extractedTags)]
+    };
+  }
+
+  function runValidationAndProceedToPreview() {
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const valResult = validateEmailTemplate(subject, body);
+    const valBox = document.getElementById('et-validation-box');
+    const valTitle = document.getElementById('et-val-title');
+    const valList = document.getElementById('et-val-list');
+    const valIcon = document.getElementById('et-val-icon');
+
+    if (!valResult.isValid) {
+      valBox.style.display = 'block';
+      valBox.className = 'rounded-xl p-4 border bg-red-50 border-red-200 text-red-900 transition-all';
+      valIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-red-600"></i>';
+      valTitle.innerText = 'バリデーションエラー: 入力内容をご確認ください';
+      valList.innerHTML = valResult.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
+      showToast('❌ 入力エラーがあります');
+      return;
+    }
+
+    if (valResult.warnings.length > 0) {
+      valBox.style.display = 'block';
+      valBox.className = 'rounded-xl p-4 border bg-amber-50 border-amber-200 text-amber-900 transition-all';
+      valIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-600"></i>';
+      valTitle.innerText = 'バリデーション警告（確認後、そのまま進むことができます）';
+      valList.innerHTML = valResult.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
+    } else {
+      valBox.style.display = 'none';
+    }
+
+    // Step 4: Open Sample Preview
+    openEmailSamplePreview();
+  }
+
+  function renderTemplateTextWithVisitor(text, visitor) {
+    if (!text) return '';
+    let res = text;
+    const vName = visitor.name || '';
+    const vDate = visitor.eventDate || '';
+    const vProf = visitor.profession || '';
+    const vComp = visitor.company || '';
+    const vInviter = visitor.inviter || '';
+    const mainPresenter = visitor.mainPresenter || '未定';
+    const wanted = visitor.wanted || 'なし';
+
+    let matchingBlock = '';
+    if (visitor.matchingReq && visitor.matchingReq !== '') {
+      matchingBlock =
+        "\n━━━━━━━━━━━━━━━━━━━━\n" +
+        "🌟 マッチングのご要望について\n" +
+        "「" + visitor.matchingReq + "」に関するご要望、承知いたしました！\n" +
+        "当日、最適なメンバーとお繋ぎできるよう現在調整を進めております。楽しみにしていてくださいね！\n" +
+        "━━━━━━━━━━━━━━━━━━━━\n";
+    }
+
+    res = res.replace(/\{\$(name|visitor_name)\}/g, vName)
+             .replace(/\{\$(event_date|date)\}/g, vDate)
+             .replace(/\{\$profession\}/g, vProf)
+             .replace(/\{\$company\}/g, vComp)
+             .replace(/\{\$inviter\}/g, vInviter)
+             .replace(/\{\$main_presenter\}/g, mainPresenter)
+             .replace(/\{\$wanted\}/g, wanted)
+             .replace(/\{\$matching_status\}/g, matchingBlock);
+
+    return res;
+  }
+
+  function openEmailSamplePreview() {
+    if (!currentEditingTemplate) return;
+
+    document.getElementById('et-preview-tmpl-key').innerText = currentEditingTemplate.id;
+    updateEmailSamplePreview();
+
+    const previewSec = document.getElementById('et-preview-section');
+    if (previewSec) {
+      previewSec.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeEmailSamplePreview() {
+    const previewSec = document.getElementById('et-preview-section');
+    if (previewSec) {
+      previewSec.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function updateEmailSamplePreview() {
+    const selector = document.getElementById('et-sample-selector');
+    const selectedKey = selector ? selector.value : 'first_time';
+    const visitor = SAMPLE_VISITOR_PRESETS[selectedKey] || SAMPLE_VISITOR_PRESETS.first_time;
+
+    const rawSubject = document.getElementById('et-edit-subject').value;
+    const rawBody = document.getElementById('et-edit-body').value;
+
+    const renderedSubject = renderTemplateTextWithVisitor(rawSubject, visitor);
+    const renderedBody = renderTemplateTextWithVisitor(rawBody, visitor);
+
+    const recipientEl = document.getElementById('et-preview-recipient');
+    if (recipientEl) {
+      recipientEl.innerText = `${visitor.name} 様 <${visitor.email}>`;
+    }
+
+    const subjectEl = document.getElementById('et-preview-subject');
+    if (subjectEl) {
+      subjectEl.innerText = renderedSubject;
+    }
+
+    const bodyEl = document.getElementById('et-preview-body');
+    if (bodyEl) {
+      bodyEl.innerText = renderedBody;
+    }
+  }
+
+  function saveEmailTemplateConfirm() {
+    if (!currentEditingTemplate) return;
+
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const valResult = validateEmailTemplate(subject, body);
+    if (!valResult.isValid) {
+      closeEmailSamplePreview();
+      runValidationAndProceedToPreview();
+      return;
+    }
+
+    const saveBtn = document.getElementById('btn-et-save-confirm');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>保存＆同期中...</span>';
+
+    ApiService.call('updateEmailTemplateApi', currentEditingTemplate.id, subject, body)
+      .then(res => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+
+        if (res && res.success) {
+          closeEmailSamplePreview();
+          showToast('✅ メールテンプレートを保存し、スプレッドシートへ同期しました！');
+
+          // Update local cache
+          const idx = rawEmailTemplates.findIndex(t => t.id === currentEditingTemplate.id);
+          if (idx >= 0) {
+            rawEmailTemplates[idx].subject = subject;
+            rawEmailTemplates[idx].body = body;
+            rawEmailTemplates[idx].updated_at = new Date().toISOString().slice(0, 16).replace('T', ' ');
+          }
+
+          // Return to list view
+          cancelEmailTemplateEdit();
+          renderEmailTemplatesList();
+        } else {
+          showToast('❌ 保存に失敗しました: ' + (res.error || '不明なエラー'));
+        }
+      })
+      .catch(err => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        console.error('Save email template error:', err);
+        handleError(err);
+      });
+  }
 </script>
 
 
@@ -9110,7 +10005,7 @@ window.CelebrationEffect = (function() {
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

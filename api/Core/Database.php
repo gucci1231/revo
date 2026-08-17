@@ -113,8 +113,20 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS email_templates (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT DEFAULT 'welcome',
+                subject TEXT NOT NULL,
+                body TEXT NOT NULL,
+                description TEXT DEFAULT '',
+                updated_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
         ");
+
+        $this->seedDefaultEmailTemplates();
 
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN report_text TEXT DEFAULT ''");
@@ -125,6 +137,99 @@ class Database {
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN completed_by TEXT DEFAULT ''");
         } catch (\PDOException $e) {}
+    }
+
+    private function seedDefaultEmailTemplates(): void {
+        $count = $this->fetchColumn("SELECT COUNT(*) FROM email_templates");
+        if ($count > 0) return;
+
+        $now = date('Y/m/d H:i');
+        $defaults = [
+            [
+                'id' => 'EMAIL_VISITOR_INTRO',
+                'name' => '新規ビジター参加案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '初めてお申し込みいただいたビジター様へ送信する初回案内メールです。',
+                'subject' => '【BNIレボリューション】定例会ご参加のお申し込みありがとうございます（{$event_date}開催）',
+                'body' => "{$name} 様\n\nはじめまして！BNIレボリューションチャプター ビジターホストチームです。\nこの度は、{$event_date} 開催の定例会へのお申し込みをいただき誠にありがとうございます！\n\n【ご紹介者様】{$inviter} 様\n【ご参加日】{$event_date}\n\n当日は、{$name} 様のビジネス（{$profession}）の発展に繋がる素晴らしい出会いをご提供できるよう、メンバー一同心より歓迎いたします。\n\n{$matching_status}\n\n何かご不明点やご質問などございましたら、お気軽にこのメールへご返信ください。\nそれでは当日お会いできますことを楽しみにしております！"
+            ],
+            [
+                'id' => 'EMAIL_GUEST_INTRO',
+                'name' => '他チャプターゲスト参加案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '他チャプターからゲスト参加されるメンバー様向けの参加案内メールです。',
+                'subject' => '【BNIレボリューション】ゲスト参加のお申し込みありがとうございます（{$event_date}開催）',
+                'body' => "{$name} 様\n\nBNIレボリューションチャプター ビジターホストチームです。\nこの度は、{$event_date} 開催のレボリューションチャプター定例会へゲスト参加のお申し込みをいただきありがとうございます！\n\n【ご紹介者様】{$inviter} 様\n【ご参加日】{$event_date}\n\n他チャプター様との活発なビジネス交流ができる場をご用意してお待ちしております。\n\n{$matching_status}\n\n当日どうぞよろしくお願いいたします！"
+            ],
+            [
+                'id' => 'EMAIL_REPEATER_INTRO',
+                'name' => '再参加リピーター案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '2回目以降の参加となるリピータービジター様への参加案内メールです。',
+                'subject' => '【BNIレボリューション】再度のご参加お申し込みありがとうございます（{$event_date}開催）',
+                'body' => "{$name} 様\n\nいつも大変お世話になっております！BNIレボリューションチャプター ビジターホストチームです。\n{$event_date} の定例会に再びご参加いただけるとのこと、大変嬉しく思っております！\n\n【ご参加日】{$event_date}\n\n前回に引き続き、{$name} 様のビジネス発展に繋がる有意義な時間となるよう努めてまいります。\n\n{$matching_status}\n\n当日お会いできることをメンバー一同心よりお待ちしております！"
+            ],
+            [
+                'id' => 'EMAIL_REMIND_2DAYS',
+                'name' => '定例会 2日前リマインド',
+                'category' => 'remind',
+                'description' => '定例会開催の2日前に事前準備や日程のリマインドとして送信するメールです。',
+                'subject' => '【リマインド】定例会開催まであと2日となりました（{$event_date}）',
+                'body' => "{$name} 様\n\nBNIレボリューションチャプター ビジターホストチームです。\n{$event_date} 開催の定例会が、いよいよ明後日となりました！\n\n【開催日時】{$event_date} 6:45受付開始 / 7:00開会\n【メインプレゼンター】{$main_presenter} 様\n【求めている紹介】{$wanted}\n\n当日は名刺・筆記用具をご準備の上、お気をつけてお越しくださいませ。\n皆様とお会いできるのを楽しみにしております。"
+            ],
+            [
+                'id' => 'EMAIL_REMIND_1DAY',
+                'name' => '定例会 前日リマインド',
+                'category' => 'remind',
+                'description' => '定例会開催の前日に最終確認として送信するメールです。',
+                'subject' => '【明日開催】BNIレボリューション定例会のご案内（{$event_date}）',
+                'body' => "{$name} 様\n\nBNIレボリューションチャプター ビジターホストチームです。\nいよいよ明日 {$event_date}、定例会が開催されます！\n\n【開催日時】明日 {$event_date} 6:45受付開始 / 7:00開会\n\n朝早い時間帯となりますが、充実したビジネス交流の場となるよう準備を整えております。\n道中どうぞお気をつけてお越しください。\n明日お会いできることを楽しみにしております！"
+            ],
+            [
+                'id' => 'EMAIL_THANKS_ATTENDED',
+                'name' => '定例会ご参加御礼メール',
+                'category' => 'thanks',
+                'description' => '定例会に参加いただいたビジター様へ当日に送信するお礼メールです。',
+                'subject' => '【御礼】本日のBNIレボリューション定例会にご参加いただきありがとうございました',
+                'body' => "{$name} 様\n\n本日は朝早くからBNIレボリューションチャプターの定例会にご参加いただき、誠にありがとうございました！\n\n{$name} 様とお話しでき、素晴らしいご縁をいただけましたこと、メンバー一同大変嬉しく思っております。\n本日のミーティングはいかがでしたでしょうか？\n\n定例会を通じて気になったメンバーや、さらに詳しく話してみたい業種がございましたら、ぜひお気軽に1to1（個別面談）をお申し付けください。\n\nまたお会いできることを楽しみにしております！"
+            ],
+            [
+                'id' => 'EMAIL_THANKS_ABSENT',
+                'name' => '定例会欠席フォローメール',
+                'category' => 'thanks',
+                'description' => '定例会を欠席されたビジター様へお見舞いと次回案内を兼ねて送信するメールです。',
+                'subject' => '【BNIレボリューション】本日の定例会について（次回日程のご案内）',
+                'body' => "{$name} 様\n\nBNIレボリューションチャプター ビジターホストチームです。\n本日はご都合がつかず残念でしたが、体調やお仕事の状況はいかがでしょうか？\n\nまたご都合の良い日程がございましたら、いつでも振替参加を歓迎しております！\n次回以降の定例会日程についてもお気軽にお問い合わせください。\n\n{$name} 様にお会いできる日をメンバー一同心待ちにしております。"
+            ],
+            [
+                'id' => 'EMAIL_FOLLOW_7DAYS',
+                'name' => '参加1週間後フォローメール',
+                'category' => 'follow',
+                'description' => '参加から1週間が経過したタイミングでビジネスの進捗や1to1の確認を行うフォローメールです。',
+                'subject' => '【その後いかがでしょうか？】BNIレボリューションよりご挨拶',
+                'body' => "{$name} 様\n\n先週は定例会にご参加いただきありがとうございました！ビジターホストチームです。\n\n定例会から1週間が経ちましたが、その後お仕事の状況はいかがでしょうか？\n当チャプターのメンバーとの繋がりや、ビジネスに関するご相談など、何かお役に立てることがあればいつでもお声がけください。\n\nまた次回の定例会へのご参加も大歓迎です！"
+            ],
+            [
+                'id' => 'EMAIL_FOLLOW_30DAYS',
+                'name' => '参加1ヶ月後フォローメール',
+                'category' => 'follow',
+                'description' => '参加から1ヶ月が経過したタイミングでの定期フォロー・リコネクトメールです。',
+                'subject' => '【定期フォロー】BNIレボリューションより近況のお伺い',
+                'body' => "{$name} 様\n\n先月は当チャプター定例会へご参加いただき誠にありがとうございました。\n早いもので定例会から1ヶ月が経過いたしました。\n\n{$name} 様のビジネス（{$profession}）において、新たなリファーラル（紹介）やビジネスマッチングのお手伝いができる機会がございましたら幸いです。\n\nぜひまたチャプター定例会へも遊びにいらしてください！"
+            ]
+        ];
+
+        foreach ($defaults as $tmpl) {
+            $this->upsert('email_templates', [
+                'id' => $tmpl['id'],
+                'name' => $tmpl['name'],
+                'category' => $tmpl['category'],
+                'description' => $tmpl['description'],
+                'subject' => $tmpl['subject'],
+                'body' => $tmpl['body'],
+                'updated_at' => $now
+            ], ['id']);
+        }
     }
 
     public function fetchOne(string $sql, array $params = []): ?array {
