@@ -251,7 +251,7 @@
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') && e.target.closest('button').innerText.includes('詳細')) return;
+          if (e.target.closest('button')) return;
           openActionReportModal(p.id, p.visitor_id);
         };
 
@@ -274,12 +274,9 @@
         `;
 
         const operationCellHtml = `
-          <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation();">
-            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+          <div class="flex items-center justify-center" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 8px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
               ${isCompleted ? '確認' : '報告'}
-            </button>
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openVisitorDetailView('${p.visitor_id}')">
-              カルテ
             </button>
           </div>
         `;
