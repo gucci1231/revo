@@ -915,138 +915,187 @@ tr:last-child td { border-bottom: none; }
     margin-bottom: 16px;
   }
 }
+/* --- 🍏 Apple-Inspired Dashboard UI --- */
+.dash-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+@media (max-width: 1024px) {
+  .dash-hero-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
 @media (max-width: 640px) {
   .dash-hero-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .dash-hero-card {
-    padding: 10px 10px;
-    border-radius: 10px;
-    min-width: 0;
-  }
-  .dash-hero-title {
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
   }
   .dash-hero-val {
-    font-size: 22px;
-  }
-  .dash-hero-sub {
-    font-size: 10px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
+    font-size: 24px !important;
   }
 }
+
 .dash-hero-card {
   background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
   padding: 16px 18px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
   user-select: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
 }
 .dash-hero-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: #94a3b8;
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
 }
 .dash-hero-card:active {
-  transform: translateY(0);
+  transform: scale(0.98);
 }
+
 .dash-hero-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-.dash-hero-title {
-  font-size: 12px;
-  font-weight: 800;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.dash-hero-icon-title {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+.dash-hero-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+.dash-hero-icon.gold { background: #fff9db; color: #f59f00; }
+.dash-hero-icon.blue { background: #edf2ff; color: #3b5bdb; }
+.dash-hero-icon.green { background: #ebfbee; color: #2b8a3e; }
+.dash-hero-icon.rose { background: #fff5f5; color: #e03131; }
+
+.dash-hero-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: -0.01em;
 }
 .dash-hero-val {
   font-size: 28px;
-  font-weight: 900;
-  color: var(--text-main);
-  line-height: 1.1;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.03em;
   display: flex;
   align-items: baseline;
   gap: 4px;
 }
 .dash-hero-sub {
   font-size: 11px;
-  font-weight: 700;
-  color: #64748b;
-  margin-top: 6px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* iOS-Style Segmented Navigation */
 .dash-nav-wrap {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   background: #f1f5f9;
-  padding: 5px;
-  border-radius: 12px;
-  margin-bottom: 16px;
+  padding: 4px;
+  border-radius: 14px;
+  margin-bottom: 18px;
   overflow-x: auto;
-  border: 1px solid #e2e8f0;
+  -webkit-overflow-scrolling: touch;
 }
 .dash-nav-btn {
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   color: #64748b;
   border: none;
   background: transparent;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dash-nav-btn:hover {
-  color: #1e293b;
-  background: rgba(255, 255, 255, 0.6);
+  color: #0f172a;
 }
 .dash-nav-btn.active {
   background: #ffffff;
-  color: var(--primary-accent);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .dash-nav-badge {
   font-size: 10px;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 1px 7px;
   border-radius: 10px;
   background: #e2e8f0;
-  color: #475569;
+  color: #64748b;
+  transition: all 0.15s ease;
 }
 .dash-nav-btn.active .dash-nav-badge {
-  background: #e7f5ff;
-  color: #1c7ed6;
+  background: #f1f5f9;
+  color: #0f172a;
 }
 .dash-nav-badge.danger {
-  background: #ffe3e3 !important;
-  color: #e03131 !important;
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+/* Segmented Control Pill Group for Filters */
+.seg-pill-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 10px;
+  gap: 2px;
+}
+.seg-pill-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.seg-pill-btn:hover {
+  color: #0f172a;
+}
+.seg-pill-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .dash-panel { display: none; }
@@ -1545,111 +1594,122 @@ tr:last-child td { border-bottom: none; }
     </nav>
 
     <!-- Views -->
-    <!-- VIEW 1: ダッシュボード (直感・要約型エグゼクティブデザイン) -->
+    <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. トップ4大主要KPIサマリー (一目で状況把握) -->
+  <!-- 1. 4大主要KPIサマリー -->
   <div class="dash-hero-grid">
-    <!-- KPI 1: 入会目標達成 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="タップして定例会推移・集計グラフを表示">
+    <!-- KPI 1: 入会数 / 目標 -->
+    <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
       <div class="dash-hero-header">
-        <span class="dash-hero-title"><i class="fa-solid fa-trophy" style="color: #f59f00;"></i> 入会数 / 目標</span>
-        <span class="badge" style="background:#e7f5ff; color:#1864ab; font-size:11px; font-weight:800;" id="val-achievement-rate">0%達成</span>
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon gold"><i class="fa-solid fa-trophy"></i></div>
+          <span class="dash-hero-title">入会数</span>
+        </div>
+        <span class="badge" style="background:#edf2ff; color:#3b5bdb; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="val-achievement-rate">0%</span>
       </div>
       <div class="dash-hero-val">
         <span id="val-joined-count" style="color: #2b8a3e;">-</span>
-        <span style="font-size: 15px; font-weight: 700; color: #64748b;">/ <span id="val-target-goal">12</span>名</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">/ <span id="val-target-goal">12</span>名</span>
       </div>
       <div class="dash-hero-sub">
-        <span>入会率: <strong id="val-join-rate" style="color: #334155;">-%</strong></span>
-        <span style="font-size: 10px; color: #2563eb; font-weight: 700;"><i class="fa-solid fa-chart-line mr-1"></i>推移を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+        <span>入会率 <strong id="val-join-rate" style="color: #334155;">-%</strong></span>
+        <span>今期目標</span>
       </div>
     </div>
 
-    <!-- KPI 2: ビジター総数 & 平均 -->
-    <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="タップして全ビジター統合管理名簿を表示">
+    <!-- KPI 2: 申込ビジター総数 -->
+    <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
       <div class="dash-hero-header">
-        <span class="dash-hero-title"><i class="fa-solid fa-users" style="color: #364fc7;"></i> 申込ビジター総数</span>
-        <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:800;">今期累計</span>
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon blue"><i class="fa-solid fa-users"></i></div>
+          <span class="dash-hero-title">申込ビジター</span>
+        </div>
+        <span class="badge" style="background:#f1f5f9; color:#64748b; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">今期累計</span>
       </div>
       <div class="dash-hero-val">
-        <span id="val-apply-count" style="color: #1e293b;">-</span>
-        <span style="font-size: 15px; font-weight: 700; color: #64748b;">名</span>
+        <span id="val-apply-count">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">名</span>
       </div>
       <div class="dash-hero-sub">
-        <span>平均: <strong id="val-avg-visitors" style="color: #334155;">-</strong></span>
-        <span style="font-size: 10px; color: #2563eb; font-weight: 700;"><i class="fa-solid fa-users mr-1"></i>全名簿を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+        <span>平均 <strong id="val-avg-visitors" style="color: #334155;">-</strong>名/回</span>
+        <span>提出 <strong id="val-hearing-rate" style="color: #334155;">-%</strong></span>
       </div>
     </div>
 
-    <!-- KPI 3: 次回・次々回定例会 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="タップして次回定例会ビジター名簿を表示">
+    <!-- KPI 3: 次回定例会 -->
+    <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-header">
-        <span class="dash-hero-title"><i class="fa-solid fa-calendar-check" style="color: #0ca678;"></i> 次回定例会</span>
-        <span class="badge" style="background:#e6fcf5; color:#0ca678; font-size:11px; font-weight:800;" id="date-next-thu">--/--</span>
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+          <span class="dash-hero-title">次回定例会</span>
+        </div>
+        <span class="badge" style="background:#ebfbee; color:#2b8a3e; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="date-next-thu">--/--</span>
       </div>
       <div class="dash-hero-val">
-        <span id="val-next-thu-count" style="color: #0ca678;">-</span>
-        <span style="font-size: 15px; font-weight: 700; color: #64748b;">名参加予定</span>
+        <span id="val-next-thu-count" style="color: #2b8a3e;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">名予定</span>
       </div>
       <div class="dash-hero-sub">
-        <span>次々回 (<span id="date-after-next-thu">--/--</span>): <strong id="val-after-next-thu-count" style="color: #334155;">-</strong>名</span>
-        <span style="font-size: 10px; color: #0ca678; font-weight: 700;"><i class="fa-solid fa-list mr-1"></i>名簿を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+        <span>次々回 (<span id="date-after-next-thu">--/--</span>)</span>
+        <span><strong id="val-after-next-thu-count" style="color: #334155;">-</strong>名</span>
       </div>
     </div>
 
-    <!-- KPI 4: 進行中アクション & HOTビジター -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('ap', true)" title="タップして進行中アクションプラン一覧を表示">
+    <!-- KPI 4: 要対応アクション -->
+    <div class="dash-hero-card" onclick="switchDashboardPanel('ap', true)" title="進行中アクションプラン一覧を表示">
       <div class="dash-hero-header">
-        <span class="dash-hero-title"><i class="fa-solid fa-bullseye" style="color: #e03131;"></i> 要対応アクション</span>
-        <span class="badge" style="background:#ffe3e3; color:#e03131; font-size:11px; font-weight:800;" id="badge-overdue-summary">進行中</span>
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon rose"><i class="fa-solid fa-bullseye"></i></div>
+          <span class="dash-hero-title">要対応アクション</span>
+        </div>
+        <span class="badge" style="background:#fff5f5; color:#e03131; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;" id="badge-overdue-summary">進行中</span>
       </div>
       <div class="dash-hero-val">
         <span id="val-pending-action-plans" style="color: #e03131;">-</span>
-        <span style="font-size: 15px; font-weight: 700; color: #64748b;">件</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
       </div>
       <div class="dash-hero-sub">
-        <span>HOT: <strong id="val-hot-count" style="color: #e03131;">-</strong>名 | 超過: <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
-        <span style="font-size: 10px; color: #e03131; font-weight: 700;"><i class="fa-solid fa-bullseye mr-1"></i>対応一覧 <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
+        <span>HOT <strong id="val-hot-count" style="color: #e03131;">-</strong>名</span>
+        <span>超過 <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
       </div>
     </div>
   </div>
 
-  <!-- 2. 直感セグメントタブ (見たい情報を1タップで切替) -->
+  <!-- 2. セグメントコントロール -->
   <div class="dash-nav-wrap">
     <button type="button" class="dash-nav-btn active" id="dash-tab-btn-hot" onclick="switchDashboardPanel('hot')">
-      <i class="fa-solid fa-fire text-rose-500"></i> 最優先フォロー <span class="dash-nav-badge danger" id="dash-tab-badge-hot">0</span>
+      <i class="fa-solid fa-fire text-rose-500"></i> 最優先 <span class="dash-nav-badge danger" id="dash-tab-badge-hot">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-ap" onclick="switchDashboardPanel('ap')">
-      <i class="fa-solid fa-bullseye text-blue-500"></i> 進行中アクション <span class="dash-nav-badge" id="dash-tab-badge-ap">0</span>
+      <i class="fa-solid fa-bullseye text-blue-500"></i> アクション <span class="dash-nav-badge" id="dash-tab-badge-ap">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-meeting" onclick="switchDashboardPanel('meeting')">
-      <i class="fa-solid fa-calendar-days text-emerald-500"></i> 定例会ビジター名簿 <span class="dash-nav-badge" id="dash-tab-badge-meeting">-</span>
+      <i class="fa-solid fa-calendar-days text-emerald-500"></i> 定例会 <span class="dash-nav-badge" id="dash-tab-badge-meeting">-</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-onemonth" onclick="switchDashboardPanel('onemonth')">
       <i class="fa-solid fa-comments text-indigo-500"></i> 1ヶ月フォロー <span class="dash-nav-badge" id="dash-tab-badge-onemonth">0</span>
     </button>
     <button type="button" class="dash-nav-btn" id="dash-tab-btn-stats" onclick="switchDashboardPanel('stats')">
-      <i class="fa-solid fa-chart-line text-slate-500"></i> 定例会推移 ＆ 集計
+      <i class="fa-solid fa-chart-line text-slate-500"></i> 推移・集計
     </button>
   </div>
 
-  <!-- 3. セグメント別コンテンツパネル群 -->
+  <!-- 3. セグメント別コンテンツ -->
 
-  <!-- パネル 1: 最優先フォロー (HOT Aランクビジター) -->
+  <!-- パネル 1: 最優先フォロー -->
   <div id="dash-panel-hot" class="dash-panel active">
     <section class="section-card overflow-hidden">
-      <div class="section-header flex-wrap">
-        <div>
-          <h2 class="section-title text-rose-600"><i class="fa-solid fa-fire"></i> 最優先フォロー (感触Aビジター)</h2>
-          <div class="section-sub">成約・入会可能性が最も高いビジターの最新状況と次の一手</div>
-        </div>
+      <div class="section-header flex justify-between items-center py-3 px-4">
+        <h2 class="section-title text-rose-600 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-fire mr-1"></i> 最優先フォロー (感触A)
+        </h2>
         <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
-          最優先フォロー管理で全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
         </button>
       </div>
 
-      <!-- 🖥️ PC表示用: テーブルビュー -->
+      <!-- PCテーブル -->
       <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
@@ -1657,42 +1717,41 @@ tr:last-child td { border-bottom: none; }
               <th class="col-w-sm">参加日</th>
               <th>氏名 / 会社名</th>
               <th class="col-w-md">招待者 / 担当</th>
-              <th>現在の状況・次の一手</th>
-              <th class="text-center col-w-sm">操作</th>
+              <th>最新状況・次の一手</th>
+              <th class="text-center col-w-sm">カルテ</th>
             </tr>
           </thead>
           <tbody id="table-hot-visitors"></tbody>
         </table>
       </div>
 
-      <!-- 📱 スマホ表示用: カードグリッド -->
+      <!-- スマホカード -->
       <div id="cards-hot-visitors" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
-  <!-- パネル 2: アクションプラン進捗管理 (PC: 表 / スマホ: カード のレスポンシブ自動切替) -->
+  <!-- パネル 2: アクションプラン進捗 -->
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
-      <div class="section-header flex-wrap">
-        <div>
-          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン</h2>
-          <div class="section-sub">PCでは一覧表、スマホではカード形式で直感的に報告・確認できます</div>
-        </div>
-        <div class="flex gap-1.5">
-          <button type="button" class="btn-action-primary text-xs" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
-          <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">全件</button>
-          <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
+      <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
+        <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+        </h2>
+        <div class="seg-pill-group">
+          <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
+          <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
+          <button type="button" class="seg-pill-btn" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
         </div>
       </div>
 
-      <!-- 🖥️ PC表示用: テーブルビュー (横幅が広い画面) -->
+      <!-- PCテーブル -->
       <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
             <tr>
               <th class="text-center col-w-sm">状態</th>
-              <th class="col-w-md">期日 (いつ)</th>
-              <th class="col-w-md">担当 (誰が)</th>
+              <th class="col-w-md">期日</th>
+              <th class="col-w-md">担当</th>
               <th>対象ビジター</th>
               <th>アクション内容 ＆ 実施報告</th>
               <th class="text-center col-w-md">操作</th>
@@ -1702,20 +1761,22 @@ tr:last-child td { border-bottom: none; }
         </table>
       </div>
 
-      <!-- 📱 スマホ表示用: カードグリッド (スマートフォン画面) -->
+      <!-- スマホカード -->
       <div id="dashboard-action-plans-cards" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
-  <!-- パネル 3: 定例会ビジター名簿 (次回 & 直近) -->
+  <!-- パネル 3: 定例会ビジター名簿 -->
   <div id="dash-panel-meeting" class="dash-panel">
     <!-- 次回定例会 -->
     <section class="section-card overflow-hidden mb-4">
-      <div class="section-header">
-        <h2 class="section-title"><i class="fa-solid fa-calendar-days text-blue-600"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿</h2>
+      <div class="section-header py-3 px-4">
+        <h2 class="section-title text-emerald-600 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-calendar-check mr-1"></i> <span id="title-next-meeting-date">次回</span> 定例会参加予定
+        </h2>
       </div>
 
-      <!-- 🖥️ PC表示用 -->
+      <!-- PCテーブル -->
       <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
@@ -1726,24 +1787,26 @@ tr:last-child td { border-bottom: none; }
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
               <th class="text-center col-w-sm">出欠</th>
-              <th class="text-center col-w-sm">操作</th>
+              <th class="text-center col-w-sm">カルテ</th>
             </tr>
           </thead>
           <tbody id="table-next-meeting"></tbody>
         </table>
       </div>
 
-      <!-- 📱 スマホ表示用 -->
+      <!-- スマホカード -->
       <div id="cards-next-meeting" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
 
     <!-- 直近定例会 -->
     <section class="section-card overflow-hidden">
-      <div class="section-header">
-        <h2 class="section-title"><i class="fa-solid fa-calendar-check text-slate-500"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿</h2>
+      <div class="section-header py-3 px-4">
+        <h2 class="section-title text-slate-700 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-calendar-days mr-1"></i> <span id="title-last-meeting-date">今週</span> 定例会参加者
+        </h2>
       </div>
 
-      <!-- 🖥️ PC表示用 -->
+      <!-- PCテーブル -->
       <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
@@ -1754,14 +1817,14 @@ tr:last-child td { border-bottom: none; }
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
               <th class="text-center col-w-sm">出欠</th>
-              <th class="text-center col-w-sm">操作</th>
+              <th class="text-center col-w-sm">カルテ</th>
             </tr>
           </thead>
           <tbody id="table-last-meeting"></tbody>
         </table>
       </div>
 
-      <!-- 📱 スマホ表示用 -->
+      <!-- スマホカード -->
       <div id="cards-last-meeting" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
@@ -1769,19 +1832,18 @@ tr:last-child td { border-bottom: none; }
   <!-- パネル 4: 1ヶ月フォローアップ名簿 -->
   <div id="dash-panel-onemonth" class="dash-panel">
     <section class="section-card overflow-hidden">
-      <div class="section-header flex-wrap">
-        <div>
-          <h2 class="section-title text-indigo-600"><i class="fa-solid fa-comments"></i> 1ヶ月フォローアップ名簿</h2>
-          <div class="section-sub">定例会参加から30日以内のビジター進捗と次の一手</div>
-        </div>
-        <div class="flex gap-1.5">
-          <button type="button" class="btn-action-primary text-xs" id="dash-onemonth-filter-pending" onclick="filterDashboardOneMonth('pending')">要対応のみ</button>
-          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-all" onclick="filterDashboardOneMonth('all')">全件</button>
-          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-completed" onclick="filterDashboardOneMonth('completed')">完了済</button>
+      <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
+        <h2 class="section-title text-indigo-600 font-bold text-sm sm:text-base m-0">
+          <i class="fa-solid fa-comments mr-1"></i> 1ヶ月フォロー
+        </h2>
+        <div class="seg-pill-group">
+          <button type="button" class="seg-pill-btn active" id="dash-onemonth-filter-pending" onclick="filterDashboardOneMonth('pending')">要対応</button>
+          <button type="button" class="seg-pill-btn" id="dash-onemonth-filter-all" onclick="filterDashboardOneMonth('all')">すべて</button>
+          <button type="button" class="seg-pill-btn" id="dash-onemonth-filter-completed" onclick="filterDashboardOneMonth('completed')">完了済</button>
         </div>
       </div>
 
-      <!-- 🖥️ PC表示用 -->
+      <!-- PCテーブル -->
       <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
@@ -1789,26 +1851,26 @@ tr:last-child td { border-bottom: none; }
               <th class="col-w-sm">参加日</th>
               <th>氏名 / 会社・専門分野</th>
               <th class="col-w-md">招待者 / 担当</th>
-              <th>現在の状況・次の一手</th>
+              <th>最新状況・次の一手</th>
               <th class="text-center col-w-sm">ランク</th>
-              <th class="text-center col-w-sm">操作</th>
+              <th class="text-center col-w-sm">カルテ</th>
             </tr>
           </thead>
           <tbody id="table-one-month"></tbody>
         </table>
       </div>
 
-      <!-- 📱 スマホ表示用 -->
+      <!-- スマホカード -->
       <div id="cards-one-month" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
-  <!-- パネル 5: 推移チャート ＆ 週別月別集計 -->
+  <!-- パネル 5: 推移チャート ＆ 集計 -->
   <div id="dash-panel-stats" class="dash-panel">
     <!-- 推移グラフ -->
-    <section class="section-card p-4 mb-4">
-      <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">定例会別ビジター推移</div>
-      <div class="relative w-full h-44">
+    <section class="section-card p-4 md:p-6 mb-4">
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">ビジター来訪推移</div>
+      <div class="relative w-full h-48">
         <canvas id="lineChart"></canvas>
       </div>
     </section>
@@ -1817,15 +1879,15 @@ tr:last-child td { border-bottom: none; }
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- 週別 -->
       <section class="section-card overflow-hidden">
-        <div class="section-header py-2.5">
+        <div class="section-header py-3 px-4">
           <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-blue-500 mr-1.5"></i> 定例会別（週別）</span>
-          <span class="text-[11px] text-slate-500">直近順</span>
+          <span class="text-[11px] text-slate-400">直近順</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
           <table>
             <thead>
               <tr>
-                <th>定例会日付</th>
+                <th>日付</th>
                 <th class="text-center">申込</th>
                 <th class="text-center">参加</th>
                 <th class="text-center">入会</th>
@@ -1838,15 +1900,15 @@ tr:last-child td { border-bottom: none; }
 
       <!-- 月別 -->
       <section class="section-card overflow-hidden">
-        <div class="section-header py-2.5">
+        <div class="section-header py-3 px-4">
           <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-days text-emerald-500 mr-1.5"></i> 月別集計</span>
-          <span class="text-[11px] text-slate-500">全期間</span>
+          <span class="text-[11px] text-slate-400">全期間</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
           <table>
             <thead>
               <tr>
-                <th>対象年月</th>
+                <th>年月</th>
                 <th class="text-center">申込</th>
                 <th class="text-center">参加</th>
                 <th class="text-center">入会</th>
@@ -3425,9 +3487,9 @@ const ApiService = {
       const btn = document.getElementById(`dash-onemonth-filter-${m}`);
       if (btn) {
         if (m === mode) {
-          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-indigo-600 text-white transition-all';
+          btn.classList.add('active');
         } else {
-          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+          btn.classList.remove('active');
         }
       }
     });
@@ -3443,9 +3505,9 @@ const ApiService = {
       const btn = document.getElementById(`dash-ap-filter-${m}`);
       if (btn) {
         if (m === mode) {
-          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-blue-600 text-white transition-all';
+          btn.classList.add('active');
         } else {
-          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+          btn.classList.remove('active');
         }
       }
     });
@@ -3800,22 +3862,49 @@ const ApiService = {
       data: {
         labels: labels,
         datasets: [{
-          label: 'ビジター来訪数',
+          label: 'ビジター数',
           data: values,
-          borderColor: '#4c6ef5',
-          backgroundColor: 'rgba(76, 110, 245, 0.1)',
+          borderColor: '#2563eb',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#2563eb',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          backgroundColor: 'rgba(37, 99, 235, 0.06)',
           fill: true,
-          tension: 0.3
+          tension: 0.35
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { stepSize: 1, color: '#94a3b8', font: { size: 11, weight: '600' } }
+          }
         },
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 12, weight: 'bold' },
+            bodyFont: { size: 12, weight: 'bold' },
+            padding: 10,
+            cornerRadius: 8,
+            displayColors: false,
+            callbacks: {
+              label: function(context) {
+                return `${context.parsed.y}名 申込`;
+              }
+            }
+          }
         }
       }
     });
