@@ -3,6 +3,7 @@
 <?!= include('scripts/Router'); ?>
 <?!= include('scripts/StateService'); ?>
 <?!= include('scripts/ViewDashboard'); ?>
+<?!= include('scripts/ViewActions'); ?>
 <?!= include('scripts/ViewPriorityFollow'); ?>
 <?!= include('scripts/ViewVisitors'); ?>
 <?!= include('scripts/ViewHearings'); ?>
@@ -43,7 +44,7 @@
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

@@ -42,8 +42,8 @@
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
-      switchTab(hash, false);
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }
 
@@ -77,7 +77,7 @@
       previousTabBeforeDetail = tabName;
       currentVdVisitorId = null;
     }
-    ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const view = document.getElementById('view-' + t);
@@ -101,7 +101,9 @@
       updateUrlHash(tabName, { tab: tabName });
     }
 
-    if (tabName === 'priority-follow') {
+    if (tabName === 'actions') {
+      if (typeof fetchActionsManagementData === 'function') fetchActionsManagementData(true);
+    } else if (tabName === 'priority-follow') {
       fetchPriorityFollowData(true);
     } else if (tabName === 'visitors') {
       fetchAllVisitorsData(true);

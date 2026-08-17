@@ -1,0 +1,116 @@
+<!-- VIEW: アクションプラン統合管理 (Apple-Style Actions Management) -->
+<div id="view-actions" class="view-content">
+
+  <!-- 1. トップサマリーKPIカード -->
+  <div class="dash-hero-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+    <!-- KPI 1: 進行中 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('pending')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon blue"><i class="fa-solid fa-bullseye"></i></div>
+          <span class="dash-hero-title">進行中アクション</span>
+        </div>
+        <span class="badge" style="background:#edf2ff; color:#3b5bdb; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">要対応</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-pending" style="color: #2563eb;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>未完了プラン</span>
+        <span class="text-xs text-blue-600 font-bold">絞り込み</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: 期限超過 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('overdue')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <span class="dash-hero-title">期限超過</span>
+        </div>
+        <span class="badge" style="background:#fff5f5; color:#e03131; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">最優先</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-overdue" style="color: #e03131;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>期日遅れ</span>
+        <span class="text-xs text-rose-600 font-bold">早急対応</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: 完了済 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('completed')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <span class="dash-hero-title">完了実績</span>
+        </div>
+        <span class="badge" style="background:#ebfbee; color:#2b8a3e; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">達成</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-completed" style="color: #2b8a3e;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>報告完了済</span>
+        <span class="text-xs text-emerald-600 font-bold">実績一覧</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section-card overflow-hidden">
+    <!-- ヘッダー ＆ 検索フィルターバー -->
+    <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- セグメントタブ -->
+      <div class="seg-pill-group">
+        <button type="button" class="seg-pill-btn active" id="actions-filter-btn-pending" onclick="setActionsStatusFilter('pending')">
+          進行中 <span id="actions-badge-pending" class="dash-nav-badge">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-overdue" onclick="setActionsStatusFilter('overdue')">
+          ⚠️ 期限超過 <span id="actions-badge-overdue" class="dash-nav-badge danger">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-all" onclick="setActionsStatusFilter('all')">
+          すべて <span id="actions-badge-all" class="dash-nav-badge">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-completed" onclick="setActionsStatusFilter('completed')">
+          ✅ 完了済 <span id="actions-badge-completed" class="dash-nav-badge">0</span>
+        </button>
+      </div>
+
+      <!-- 担当者＆検索 -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="actions-assignee-filter" class="form-input text-xs py-1.5 px-2.5 rounded-lg border-slate-200 bg-slate-50" onchange="filterActionsList()" style="width: auto; font-weight: 700;">
+          <option value="">担当者: 全員</option>
+        </select>
+        <div class="relative flex-1 sm:w-48">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="actions-search-input" class="form-input text-xs py-1.5 pl-8 pr-3 rounded-lg border-slate-200 bg-slate-50 w-full" placeholder="検索..." oninput="filterActionsList()">
+        </div>
+      </div>
+    </div>
+
+    <!-- 🖥️ PC表示用: テーブルビュー -->
+    <div class="table-container dash-ap-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="text-center col-w-sm">状態</th>
+            <th class="col-w-md">期日</th>
+            <th class="col-w-md">担当者</th>
+            <th>対象ビジター</th>
+            <th>アクション内容 ＆ 実施報告</th>
+            <th class="text-center col-w-md">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-actions-all"></tbody>
+      </table>
+    </div>
+
+    <!-- 📱 スマホ表示用: カードグリッド -->
+    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4"></div>
+  </section>
+
+</div>

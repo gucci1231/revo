@@ -294,7 +294,23 @@ function handleApiRequest(req, res, urlObj) {
 
       if (action === 'list') {
         const vId = esc(urlObj.searchParams.get('visitorId') || input.visitorId || '');
-        const sql = `SELECT * FROM action_plans WHERE visitor_id = '${vId}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
+        let sql = '';
+        if (vId) {
+          sql = `SELECT * FROM action_plans WHERE visitor_id = '${vId}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
+        } else {
+          sql = `
+            SELECT ap.*, 
+                   COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                   COALESCE(v.company, '') as visitor_company, 
+                   COALESCE(v.profession, '') as visitor_profession, 
+                   COALESCE(v.inviter, '') as visitor_inviter, 
+                   COALESCE(v.event_date, '') as visitor_event_date
+            FROM action_plans ap
+            LEFT JOIN visitors v ON ap.visitor_id = v.id
+            ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
+            LIMIT 300;
+          `;
+        }
         const list = runSqlJson(sql);
         return res.end(JSON.stringify({ success: true, visitorId: vId, list: list }));
       }

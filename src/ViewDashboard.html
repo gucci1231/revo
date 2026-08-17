@@ -61,7 +61,7 @@
     </div>
 
     <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('ap', true)" title="進行中アクションプラン一覧を表示">
+    <div class="dash-hero-card" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
           <div class="dash-hero-icon rose"><i class="fa-solid fa-bullseye"></i></div>
@@ -138,9 +138,14 @@
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-        <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
-        </h2>
+        <div class="flex items-center gap-2">
+          <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
+            <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+          </h2>
+          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
+            管理ページを開く <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          </button>
+        </div>
         <div class="seg-pill-group">
           <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
           <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>

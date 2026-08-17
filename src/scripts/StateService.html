@@ -206,6 +206,7 @@
     cachedHearingList = [];
     cachedScheduledEmails = [];
     cachedPriorityFollowList = [];
+    if (typeof cachedAllActionPlans !== 'undefined') cachedAllActionPlans = [];
 
     ApiService.call('checkAndRepairDataFormatApi')
       .then(res => {
@@ -215,7 +216,8 @@
         const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
         if (activeTab) {
           const tabId = activeTab.id.replace('tab-btn-', '');
-          if (tabId === 'visitors') fetchAllVisitorsData(true);
+          if (tabId === 'actions' && typeof fetchActionsManagementData === 'function') fetchActionsManagementData(true);
+          else if (tabId === 'visitors') fetchAllVisitorsData(true);
           else if (tabId === 'hearings') fetchHearingListData(true);
           else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
           else if (tabId === 'priority-follow') fetchPriorityFollowData(true);
@@ -228,6 +230,9 @@
     fetchDashboardData(true);
     if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
     if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
+    if (typeof cachedAllActionPlans !== 'undefined' && cachedAllActionPlans.length > 0 && typeof fetchActionsManagementData === 'function') {
+      fetchActionsManagementData(true);
+    }
 
     const detailView = document.getElementById('view-visitor-detail');
     if (detailView && detailView.classList.contains('active') && currentVdVisitorId) {

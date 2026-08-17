@@ -1708,6 +1708,9 @@ tr:last-child td { border-bottom: none; }
       <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
         <i class="fa-solid fa-chart-pie"></i> ダッシュボード
       </button>
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')">
+        <i class="fa-solid fa-bullseye" style="color: #2563eb;"></i> アクション管理
+      </button>
       <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロー
       </button>
@@ -1760,6 +1763,9 @@ tr:last-child td { border-bottom: none; }
     <nav class="main-tab-bar" style="display: none;">
       <button class="tab-btn active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
         <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      </button>
+      <button class="tab-btn" id="tab-btn-actions" onclick="switchTab('actions')">
+        <i class="fa-solid fa-bullseye"></i> アクション管理
       </button>
       <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire"></i> 最優先フォロー
@@ -1842,7 +1848,7 @@ tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('ap', true)" title="進行中アクションプラン一覧を表示">
+    <div class="dash-hero-card" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-header">
         <div class="dash-hero-icon-title">
           <div class="dash-hero-icon rose"><i class="fa-solid fa-bullseye"></i></div>
@@ -1919,9 +1925,14 @@ tr:last-child td { border-bottom: none; }
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-        <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
-        </h2>
+        <div class="flex items-center gap-2">
+          <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
+            <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+          </h2>
+          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
+            管理ページを開く <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          </button>
+        </div>
         <div class="seg-pill-group">
           <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
           <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
@@ -2106,6 +2117,123 @@ tr:last-child td { border-bottom: none; }
       </section>
     </div>
   </div>
+
+</div>
+
+    <!-- VIEW: アクションプラン統合管理 (Apple-Style Actions Management) -->
+<div id="view-actions" class="view-content">
+
+  <!-- 1. トップサマリーKPIカード -->
+  <div class="dash-hero-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+    <!-- KPI 1: 進行中 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('pending')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon blue"><i class="fa-solid fa-bullseye"></i></div>
+          <span class="dash-hero-title">進行中アクション</span>
+        </div>
+        <span class="badge" style="background:#edf2ff; color:#3b5bdb; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">要対応</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-pending" style="color: #2563eb;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>未完了プラン</span>
+        <span class="text-xs text-blue-600 font-bold">絞り込み</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: 期限超過 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('overdue')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon rose"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <span class="dash-hero-title">期限超過</span>
+        </div>
+        <span class="badge" style="background:#fff5f5; color:#e03131; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">最優先</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-overdue" style="color: #e03131;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>期日遅れ</span>
+        <span class="text-xs text-rose-600 font-bold">早急対応</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: 完了済 -->
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('completed')">
+      <div class="dash-hero-header">
+        <div class="dash-hero-icon-title">
+          <div class="dash-hero-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <span class="dash-hero-title">完了実績</span>
+        </div>
+        <span class="badge" style="background:#ebfbee; color:#2b8a3e; font-size:11px; font-weight:800; padding:2px 8px; border-radius:10px;">達成</span>
+      </div>
+      <div class="dash-hero-val">
+        <span id="actions-kpi-completed" style="color: #2b8a3e;">-</span>
+        <span style="font-size: 14px; font-weight: 600; color: #94a3b8;">件</span>
+      </div>
+      <div class="dash-hero-sub">
+        <span>報告完了済</span>
+        <span class="text-xs text-emerald-600 font-bold">実績一覧</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="section-card overflow-hidden">
+    <!-- ヘッダー ＆ 検索フィルターバー -->
+    <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <!-- セグメントタブ -->
+      <div class="seg-pill-group">
+        <button type="button" class="seg-pill-btn active" id="actions-filter-btn-pending" onclick="setActionsStatusFilter('pending')">
+          進行中 <span id="actions-badge-pending" class="dash-nav-badge">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-overdue" onclick="setActionsStatusFilter('overdue')">
+          ⚠️ 期限超過 <span id="actions-badge-overdue" class="dash-nav-badge danger">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-all" onclick="setActionsStatusFilter('all')">
+          すべて <span id="actions-badge-all" class="dash-nav-badge">0</span>
+        </button>
+        <button type="button" class="seg-pill-btn" id="actions-filter-btn-completed" onclick="setActionsStatusFilter('completed')">
+          ✅ 完了済 <span id="actions-badge-completed" class="dash-nav-badge">0</span>
+        </button>
+      </div>
+
+      <!-- 担当者＆検索 -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <select id="actions-assignee-filter" class="form-input text-xs py-1.5 px-2.5 rounded-lg border-slate-200 bg-slate-50" onchange="filterActionsList()" style="width: auto; font-weight: 700;">
+          <option value="">担当者: 全員</option>
+        </select>
+        <div class="relative flex-1 sm:w-48">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="actions-search-input" class="form-input text-xs py-1.5 pl-8 pr-3 rounded-lg border-slate-200 bg-slate-50 w-full" placeholder="検索..." oninput="filterActionsList()">
+        </div>
+      </div>
+    </div>
+
+    <!-- 🖥️ PC表示用: テーブルビュー -->
+    <div class="table-container dash-ap-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="text-center col-w-sm">状態</th>
+            <th class="col-w-md">期日</th>
+            <th class="col-w-md">担当者</th>
+            <th>対象ビジター</th>
+            <th>アクション内容 ＆ 実施報告</th>
+            <th class="text-center col-w-md">操作</th>
+          </tr>
+        </thead>
+        <tbody id="table-actions-all"></tbody>
+      </table>
+    </div>
+
+    <!-- 📱 スマホ表示用: カードグリッド -->
+    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4"></div>
+  </section>
 
 </div>
 
@@ -3192,8 +3320,8 @@ const ApiService = {
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
-      switchTab(hash, false);
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+      switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }
 
@@ -3227,7 +3355,7 @@ const ApiService = {
       previousTabBeforeDetail = tabName;
       currentVdVisitorId = null;
     }
-    ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const view = document.getElementById('view-' + t);
@@ -3251,7 +3379,9 @@ const ApiService = {
       updateUrlHash(tabName, { tab: tabName });
     }
 
-    if (tabName === 'priority-follow') {
+    if (tabName === 'actions') {
+      if (typeof fetchActionsManagementData === 'function') fetchActionsManagementData(true);
+    } else if (tabName === 'priority-follow') {
       fetchPriorityFollowData(true);
     } else if (tabName === 'visitors') {
       fetchAllVisitorsData(true);
@@ -3487,6 +3617,7 @@ const ApiService = {
     cachedHearingList = [];
     cachedScheduledEmails = [];
     cachedPriorityFollowList = [];
+    if (typeof cachedAllActionPlans !== 'undefined') cachedAllActionPlans = [];
 
     ApiService.call('checkAndRepairDataFormatApi')
       .then(res => {
@@ -3496,7 +3627,8 @@ const ApiService = {
         const activeTab = document.querySelector('.main-tab-bar .tab-btn.active');
         if (activeTab) {
           const tabId = activeTab.id.replace('tab-btn-', '');
-          if (tabId === 'visitors') fetchAllVisitorsData(true);
+          if (tabId === 'actions' && typeof fetchActionsManagementData === 'function') fetchActionsManagementData(true);
+          else if (tabId === 'visitors') fetchAllVisitorsData(true);
           else if (tabId === 'hearings') fetchHearingListData(true);
           else if (tabId === 'email-schedule') fetchScheduledEmailsData(true);
           else if (tabId === 'priority-follow') fetchPriorityFollowData(true);
@@ -3509,6 +3641,9 @@ const ApiService = {
     fetchDashboardData(true);
     if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
     if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
+    if (typeof cachedAllActionPlans !== 'undefined' && cachedAllActionPlans.length > 0 && typeof fetchActionsManagementData === 'function') {
+      fetchActionsManagementData(true);
+    }
 
     const detailView = document.getElementById('view-visitor-detail');
     if (detailView && detailView.classList.contains('active') && currentVdVisitorId) {
@@ -4114,6 +4249,276 @@ const ApiService = {
         }
       })
       .catch(handleError);
+  }
+</script>
+
+<script>
+  /* --- VIEW: Actions Management Controller --- */
+  let cachedAllActionPlans = [];
+  let currentActionsFilter = 'pending';
+
+  function fetchActionsManagementData(forceRefresh = false) {
+    if (!forceRefresh && cachedAllActionPlans && cachedAllActionPlans.length > 0) {
+      filterActionsList();
+      return;
+    }
+    showTableSkeleton('table-actions-all', 6, 5);
+    ApiService.call('getActionPlansApi', '')
+      .then(res => {
+        if (res && res.success) {
+          cachedAllActionPlans = res.list || [];
+          populateActionsAssigneeFilter();
+          updateActionsKpisAndBadges();
+          filterActionsList();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function updateActionsKpisAndBadges() {
+    const list = cachedAllActionPlans || [];
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    const pendingList = list.filter(p => Number(p.is_completed) === 0);
+    const overdueList = list.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+    const completedList = list.filter(p => Number(p.is_completed) === 1);
+
+    const elPendingKpi = document.getElementById('actions-kpi-pending');
+    const elOverdueKpi = document.getElementById('actions-kpi-overdue');
+    const elCompletedKpi = document.getElementById('actions-kpi-completed');
+
+    if (elPendingKpi) elPendingKpi.innerText = pendingList.length;
+    if (elOverdueKpi) elOverdueKpi.innerText = overdueList.length;
+    if (elCompletedKpi) elCompletedKpi.innerText = completedList.length;
+
+    const bPending = document.getElementById('actions-badge-pending');
+    const bOverdue = document.getElementById('actions-badge-overdue');
+    const bAll = document.getElementById('actions-badge-all');
+    const bCompleted = document.getElementById('actions-badge-completed');
+
+    if (bPending) bPending.innerText = pendingList.length;
+    if (bOverdue) bOverdue.innerText = overdueList.length;
+    if (bAll) bAll.innerText = list.length;
+    if (bCompleted) bCompleted.innerText = completedList.length;
+  }
+
+  function populateActionsAssigneeFilter() {
+    const select = document.getElementById('actions-assignee-filter');
+    if (!select) return;
+
+    const currentVal = select.value;
+    const assignees = new Set();
+    (cachedAllActionPlans || []).forEach(p => {
+      if (p.assignee_name && p.assignee_name.trim()) {
+        assignees.add(p.assignee_name.trim());
+      }
+    });
+
+    let html = '<option value="">担当者: 全員</option>';
+    Array.from(assignees).sort().forEach(name => {
+      html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    });
+    select.innerHTML = html;
+    select.value = currentVal;
+  }
+
+  function setActionsStatusFilter(mode) {
+    currentActionsFilter = mode;
+    ['pending', 'overdue', 'all', 'completed'].forEach(m => {
+      const btn = document.getElementById(`actions-filter-btn-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+    filterActionsList();
+  }
+
+  function filterActionsList() {
+    const list = cachedAllActionPlans || [];
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const search = (document.getElementById('actions-search-input')?.value || '').toLowerCase().trim();
+    const assigneeFilter = (document.getElementById('actions-assignee-filter')?.value || '').trim();
+
+    let filtered = list;
+
+    // 1. Status Filter
+    if (currentActionsFilter === 'pending') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 0);
+    } else if (currentActionsFilter === 'overdue') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+    } else if (currentActionsFilter === 'completed') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 1);
+    }
+
+    // 2. Assignee Filter
+    if (assigneeFilter) {
+      filtered = filtered.filter(p => (p.assignee_name || '').trim() === assigneeFilter);
+    }
+
+    // 3. Search Query
+    if (search) {
+      filtered = filtered.filter(p => {
+        const text = (p.action_text || '').toLowerCase();
+        const vName = (p.visitor_name || '').toLowerCase();
+        const vCompany = (p.visitor_company || '').toLowerCase();
+        const assignee = (p.assignee_name || '').toLowerCase();
+        const report = (p.report_text || '').toLowerCase();
+        return text.includes(search) || vName.includes(search) || vCompany.includes(search) || assignee.includes(search) || report.includes(search);
+      });
+    }
+
+    renderActionsTableAndCards(filtered);
+  }
+
+  function renderActionsTableAndCards(list) {
+    const tbody = document.getElementById('table-actions-all');
+    const cardsContainer = document.getElementById('cards-actions-all');
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      const emptyMsg = currentActionsFilter === 'overdue'
+        ? '期限超過のアクションプランはありません（すべて順調です）'
+        : (currentActionsFilter === 'completed' ? '完了済みのアクションプランはありません' : '該当するアクションプランはありません');
+
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 36px 16px;">${emptyMsg}</td></tr>`;
+      }
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-clipboard-check text-3xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    list.forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+
+      const statusBadgeHtml = isCompleted
+        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
+        : (isOverdue
+            ? `<span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>超過</span>`
+            : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`
+          );
+
+      const dateBadgeHtml = isCompleted
+        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8; font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
+        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日未定'}</span>`;
+
+      const userBadgeHtml = `<span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
+
+      const reportBoxHtml = p.report_text
+        ? `<div class="dash-ap-card-report">
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
+           </div>`
+        : '';
+
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(p.visitor_id);
+        };
+        tr.innerHTML = `
+          <td class="text-center">${statusBadgeHtml}</td>
+          <td>${dateBadgeHtml}</td>
+          <td>${userBadgeHtml}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
+              ${p.visitor_company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+            </div>
+          </td>
+          <td>
+            <div style="font-size:13px; font-weight:700; color:#1e293b; white-space:normal;">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+              ${!isCompleted ? `
+                <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-eye mr-1"></i> 確認
+                </button>
+              `}
+              <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+                カルテ <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = `dash-ap-card ${isOverdue ? 'border-rose-300' : ''}`;
+        card.onclick = function() {
+          openVisitorDetailView(p.visitor_id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              ${statusBadgeHtml}
+              ${dateBadgeHtml}
+            </div>
+            <div class="flex gap-1" onclick="event.stopPropagation()">
+              ${!isCompleted ? `
+                <button type="button" class="btn-action-primary text-xs" style="font-size:11px; padding:3px 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="btn-action-secondary text-xs" style="font-size:10px; padding:2px 6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  確認
+                </button>
+              `}
+            </div>
+          </div>
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
+          </div>
+
+          <div style="font-size: 12px; color: #475569; display: flex; gap: 8px;">
+            ${userBadgeHtml}
+          </div>
+
+          <div class="dash-ap-card-action">
+            ${escapeHtml(p.action_text)}
+          </div>
+          ${reportBoxHtml}
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> カルテ・詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
+    });
   }
 </script>
 
@@ -6158,7 +6563,7 @@ const ApiService = {
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

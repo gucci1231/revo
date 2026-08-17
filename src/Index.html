@@ -83,6 +83,9 @@
       <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
         <i class="fa-solid fa-chart-pie"></i> ダッシュボード
       </button>
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')">
+        <i class="fa-solid fa-bullseye" style="color: #2563eb;"></i> アクション管理
+      </button>
       <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire" style="color: #e63946;"></i> 最優先フォロー
       </button>
@@ -136,6 +139,9 @@
       <button class="tab-btn active" id="tab-btn-dashboard" onclick="switchTab('dashboard')">
         <i class="fa-solid fa-chart-pie"></i> ダッシュボード
       </button>
+      <button class="tab-btn" id="tab-btn-actions" onclick="switchTab('actions')">
+        <i class="fa-solid fa-bullseye"></i> アクション管理
+      </button>
       <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire"></i> 最優先フォロー
       </button>
@@ -155,6 +161,7 @@
 
     <!-- Views -->
     <?!= include('ViewDashboard'); ?>
+    <?!= include('ViewActions'); ?>
     <?!= include('ViewPriorityFollow'); ?>
     <?!= include('ViewVisitors'); ?>
     <?!= include('ViewHearings'); ?>

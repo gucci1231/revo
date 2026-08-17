@@ -47,7 +47,12 @@ class ActionPlanController extends Controller {
     private function list(): void {
         $visitorId = $this->getParam('visitorId', '');
         if (!$visitorId) {
-            Response::error('visitorId is required');
+            $list = $this->actionPlanRepo->getAllWithVisitor(null, 300);
+            Response::success([
+                'visitorId' => '',
+                'list' => $list
+            ]);
+            return;
         }
 
         $list = $this->actionPlanRepo->getByVisitorId($visitorId);

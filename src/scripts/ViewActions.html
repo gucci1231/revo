@@ -1,0 +1,269 @@
+<script>
+  /* --- VIEW: Actions Management Controller --- */
+  let cachedAllActionPlans = [];
+  let currentActionsFilter = 'pending';
+
+  function fetchActionsManagementData(forceRefresh = false) {
+    if (!forceRefresh && cachedAllActionPlans && cachedAllActionPlans.length > 0) {
+      filterActionsList();
+      return;
+    }
+    showTableSkeleton('table-actions-all', 6, 5);
+    ApiService.call('getActionPlansApi', '')
+      .then(res => {
+        if (res && res.success) {
+          cachedAllActionPlans = res.list || [];
+          populateActionsAssigneeFilter();
+          updateActionsKpisAndBadges();
+          filterActionsList();
+        }
+      })
+      .catch(handleError);
+  }
+
+  function updateActionsKpisAndBadges() {
+    const list = cachedAllActionPlans || [];
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    const pendingList = list.filter(p => Number(p.is_completed) === 0);
+    const overdueList = list.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+    const completedList = list.filter(p => Number(p.is_completed) === 1);
+
+    const elPendingKpi = document.getElementById('actions-kpi-pending');
+    const elOverdueKpi = document.getElementById('actions-kpi-overdue');
+    const elCompletedKpi = document.getElementById('actions-kpi-completed');
+
+    if (elPendingKpi) elPendingKpi.innerText = pendingList.length;
+    if (elOverdueKpi) elOverdueKpi.innerText = overdueList.length;
+    if (elCompletedKpi) elCompletedKpi.innerText = completedList.length;
+
+    const bPending = document.getElementById('actions-badge-pending');
+    const bOverdue = document.getElementById('actions-badge-overdue');
+    const bAll = document.getElementById('actions-badge-all');
+    const bCompleted = document.getElementById('actions-badge-completed');
+
+    if (bPending) bPending.innerText = pendingList.length;
+    if (bOverdue) bOverdue.innerText = overdueList.length;
+    if (bAll) bAll.innerText = list.length;
+    if (bCompleted) bCompleted.innerText = completedList.length;
+  }
+
+  function populateActionsAssigneeFilter() {
+    const select = document.getElementById('actions-assignee-filter');
+    if (!select) return;
+
+    const currentVal = select.value;
+    const assignees = new Set();
+    (cachedAllActionPlans || []).forEach(p => {
+      if (p.assignee_name && p.assignee_name.trim()) {
+        assignees.add(p.assignee_name.trim());
+      }
+    });
+
+    let html = '<option value="">担当者: 全員</option>';
+    Array.from(assignees).sort().forEach(name => {
+      html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+    });
+    select.innerHTML = html;
+    select.value = currentVal;
+  }
+
+  function setActionsStatusFilter(mode) {
+    currentActionsFilter = mode;
+    ['pending', 'overdue', 'all', 'completed'].forEach(m => {
+      const btn = document.getElementById(`actions-filter-btn-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+    filterActionsList();
+  }
+
+  function filterActionsList() {
+    const list = cachedAllActionPlans || [];
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const search = (document.getElementById('actions-search-input')?.value || '').toLowerCase().trim();
+    const assigneeFilter = (document.getElementById('actions-assignee-filter')?.value || '').trim();
+
+    let filtered = list;
+
+    // 1. Status Filter
+    if (currentActionsFilter === 'pending') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 0);
+    } else if (currentActionsFilter === 'overdue') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+    } else if (currentActionsFilter === 'completed') {
+      filtered = filtered.filter(p => Number(p.is_completed) === 1);
+    }
+
+    // 2. Assignee Filter
+    if (assigneeFilter) {
+      filtered = filtered.filter(p => (p.assignee_name || '').trim() === assigneeFilter);
+    }
+
+    // 3. Search Query
+    if (search) {
+      filtered = filtered.filter(p => {
+        const text = (p.action_text || '').toLowerCase();
+        const vName = (p.visitor_name || '').toLowerCase();
+        const vCompany = (p.visitor_company || '').toLowerCase();
+        const assignee = (p.assignee_name || '').toLowerCase();
+        const report = (p.report_text || '').toLowerCase();
+        return text.includes(search) || vName.includes(search) || vCompany.includes(search) || assignee.includes(search) || report.includes(search);
+      });
+    }
+
+    renderActionsTableAndCards(filtered);
+  }
+
+  function renderActionsTableAndCards(list) {
+    const tbody = document.getElementById('table-actions-all');
+    const cardsContainer = document.getElementById('cards-actions-all');
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
+
+    if (!list || list.length === 0) {
+      const emptyMsg = currentActionsFilter === 'overdue'
+        ? '期限超過のアクションプランはありません（すべて順調です）'
+        : (currentActionsFilter === 'completed' ? '完了済みのアクションプランはありません' : '該当するアクションプランはありません');
+
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 36px 16px;">${emptyMsg}</td></tr>`;
+      }
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-clipboard-check text-3xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    list.forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+
+      const statusBadgeHtml = isCompleted
+        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
+        : (isOverdue
+            ? `<span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>超過</span>`
+            : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`
+          );
+
+      const dateBadgeHtml = isCompleted
+        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8; font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
+        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日未定'}</span>`;
+
+      const userBadgeHtml = `<span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
+
+      const reportBoxHtml = p.report_text
+        ? `<div class="dash-ap-card-report">
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
+           </div>`
+        : '';
+
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(p.visitor_id);
+        };
+        tr.innerHTML = `
+          <td class="text-center">${statusBadgeHtml}</td>
+          <td>${dateBadgeHtml}</td>
+          <td>${userBadgeHtml}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
+              ${p.visitor_company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+            </div>
+          </td>
+          <td>
+            <div style="font-size:13px; font-weight:700; color:#1e293b; white-space:normal;">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+              ${!isCompleted ? `
+                <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-eye mr-1"></i> 確認
+                </button>
+              `}
+              <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+                カルテ <i class="fa-solid fa-chevron-right text-[8px]"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = `dash-ap-card ${isOverdue ? 'border-rose-300' : ''}`;
+        card.onclick = function() {
+          openVisitorDetailView(p.visitor_id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              ${statusBadgeHtml}
+              ${dateBadgeHtml}
+            </div>
+            <div class="flex gap-1" onclick="event.stopPropagation()">
+              ${!isCompleted ? `
+                <button type="button" class="btn-action-primary text-xs" style="font-size:11px; padding:3px 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="btn-action-secondary text-xs" style="font-size:10px; padding:2px 6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  確認
+                </button>
+              `}
+            </div>
+          </div>
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
+          </div>
+
+          <div style="font-size: 12px; color: #475569; display: flex; gap: 8px;">
+            ${userBadgeHtml}
+          </div>
+
+          <div class="dash-ap-card-action">
+            ${escapeHtml(p.action_text)}
+          </div>
+          ${reportBoxHtml}
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> カルテ・詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
+    });
+  }
+</script>
