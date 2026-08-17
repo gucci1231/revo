@@ -241,18 +241,20 @@ body {
 /* Tables */
 .table-container {
   width: 100%;
+  max-width: 100%;
   max-height: calc(100vh - 200px);
   overflow-x: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13px; white-space: nowrap; }
 th {
   position: sticky; top: 0; background: #ffffff; color: #86868b; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.04em; padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+  text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 12px; border-bottom: 1px solid var(--border-color);
   white-space: nowrap; word-break: keep-all; z-index: 10;
 }
-td { padding: 14px 16px; border-bottom: 1px solid #f2f2f7; color: #1d1d1f; vertical-align: middle; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
+td { padding: 10px 12px; border-bottom: 1px solid #f2f2f7; color: #1d1d1f; vertical-align: middle; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
 tr:hover td { background-color: #f8fafc; }
 tr:last-child td { border-bottom: none; }
 
@@ -1353,19 +1355,26 @@ tr:last-child td { border-bottom: none; }
   }
 }
 
-/* Responsive Table vs Cards Switching (PC: Table only, Mobile: Cards only) */
+/* Responsive Table vs Cards Switching (PC >= 1024px: Table, Mobile/Tablet < 1024px: Cards) */
 .dash-ap-table-wrap {
   display: block !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 .dash-ap-cards-wrap,
 .dash-ap-grid {
   display: none !important;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
-  padding: 14px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .dash-ap-table-wrap {
     display: none !important;
   }
@@ -1377,23 +1386,28 @@ tr:last-child td { border-bottom: none; }
     gap: 10px !important;
   }
 }
+
 .dash-ap-card {
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   box-shadow: var(--shadow-xs);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .dash-ap-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-md);
-  border-color: #3b82f6;
+  border-color: #0071e3;
 }
 .dash-ap-card.is-overdue {
   border-color: #ffc9c9;
@@ -1408,61 +1422,75 @@ tr:last-child td { border-bottom: none; }
 /* Card Main Row (Top / Middle: Left-align rank & name, Right-align date & chevron) */
 .dash-card-main-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .dash-card-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 .dash-card-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 .dash-card-name-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 .dash-card-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: #1d1d1f;
   letter-spacing: -0.02em;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 .dash-card-company {
-  font-size: 12px;
+  font-size: 11px;
   color: #86868b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 .dash-card-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 .dash-card-date-badge {
   background: #f2f2f7;
   color: #1d1d1f;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 8px;
+  padding: 2px 6px;
+  border-radius: 6px;
   white-space: nowrap;
 }
 .dash-card-chevron {
   color: #c7c7cc;
-  font-size: 14px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* Card Bottom Row (Left: Inviter/Assignee, Right: Status Selects) */
@@ -1473,21 +1501,27 @@ tr:last-child td { border-bottom: none; }
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid #f2f2f7;
-  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .dash-card-meta-left {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .dash-card-status-right {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .dash-ap-card-action {

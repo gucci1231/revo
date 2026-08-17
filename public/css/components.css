@@ -40,18 +40,20 @@
 /* Tables */
 .table-container {
   width: 100%;
+  max-width: 100%;
   max-height: calc(100vh - 200px);
   overflow-x: auto;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13px; white-space: nowrap; }
 th {
   position: sticky; top: 0; background: #ffffff; color: #86868b; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.04em; padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+  text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 12px; border-bottom: 1px solid var(--border-color);
   white-space: nowrap; word-break: keep-all; z-index: 10;
 }
-td { padding: 14px 16px; border-bottom: 1px solid #f2f2f7; color: #1d1d1f; vertical-align: middle; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
+td { padding: 10px 12px; border-bottom: 1px solid #f2f2f7; color: #1d1d1f; vertical-align: middle; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
 tr:hover td { background-color: #f8fafc; }
 tr:last-child td { border-bottom: none; }
 
