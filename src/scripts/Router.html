@@ -79,45 +79,10 @@
     if (backdrop) backdrop.classList.remove('open');
   }
 
-  function toggleSidebarCollapse() {
-    if (window.innerWidth < 1024) {
-      // On mobile/tablet, open/close drawer instead
-      toggleLeftDrawer();
-      return;
-    }
-    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
-    if (document.documentElement) {
-      if (isCollapsed) {
-        document.documentElement.classList.add('sidebar-collapsed');
-      } else {
-        document.documentElement.classList.remove('sidebar-collapsed');
-      }
-    }
-    try {
-      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
-    } catch (e) {}
-
-    // Dispatch resize event so charts or custom grids adjust immediately
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 260);
-  }
-
-  function initSidebarState() {
-    try {
-      const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-      if (isCollapsed && window.innerWidth >= 1024) {
-        document.body.classList.add('sidebar-collapsed');
-        if (document.documentElement) document.documentElement.classList.add('sidebar-collapsed');
-      }
-    } catch (e) {}
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSidebarState);
-  } else {
-    initSidebarState();
-  }
+  // Ensure sidebar is always clean in normal expanded state
+  try {
+    localStorage.removeItem('sidebar_collapsed');
+  } catch (e) {}
 
   const PAGE_NAV_INFO = {
     'dashboard': { title: 'ダッシュボード', icon: 'fa-solid fa-chart-pie' },

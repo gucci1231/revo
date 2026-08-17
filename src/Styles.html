@@ -99,26 +99,6 @@ body {
   color: var(--primary-accent);
 }
 
-.btn-sidebar-toggle-pc {
-  background: #f1f5f9;
-  border: 1px solid var(--border-color);
-  color: #475569;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  font-size: 15px;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  margin-right: 8px;
-}
-.btn-sidebar-toggle-pc:hover {
-  background: #e2e8f0;
-  color: var(--primary-accent);
-}
-
 .drawer-backdrop {
   position: fixed;
   top: 0;
@@ -314,11 +294,10 @@ body {
   text-overflow: ellipsis;
 }
 
-/* --- PC Responsive & Collapsed Mode --- */
+/* --- PC Responsive --- */
 @media (min-width: 1024px) {
   body {
     padding-left: 276px;
-    transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .left-drawer {
     transform: translateX(0) !important;
@@ -326,105 +305,7 @@ body {
     border-right: 1px solid var(--border-color);
   }
   .drawer-backdrop, .btn-drawer-trigger, .btn-drawer-close { display: none !important; }
-  .btn-sidebar-collapse { display: inline-flex; }
-  .btn-sidebar-toggle-pc { display: inline-flex; }
   .container { max-width: 1380px; margin: 0 auto; }
-
-  /* Collapsed Mode (Icons Only) */
-  body.sidebar-collapsed {
-    padding-left: 90px;
-  }
-  body.sidebar-collapsed .left-drawer {
-    width: 74px;
-  }
-  body.sidebar-collapsed .drawer-header {
-    padding: 0 10px;
-    justify-content: center;
-    position: relative;
-  }
-  body.sidebar-collapsed .drawer-brand-text {
-    display: none;
-  }
-  body.sidebar-collapsed .drawer-brand {
-    gap: 0;
-    justify-content: center;
-  }
-  body.sidebar-collapsed .btn-sidebar-collapse {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-  }
-  body.sidebar-collapsed .btn-sidebar-collapse i {
-    transform: rotate(180deg);
-  }
-  body.sidebar-collapsed .drawer-action-wrap {
-    padding: 0 0 10px 0;
-  }
-  body.sidebar-collapsed .drawer-action-btn {
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border-radius: 10px;
-    font-size: 16px;
-  }
-  body.sidebar-collapsed .drawer-action-btn .nav-label {
-    display: none;
-  }
-  body.sidebar-collapsed .drawer-action-btn i {
-    margin: 0 !important;
-  }
-  body.sidebar-collapsed .drawer-nav-list {
-    padding: 12px 8px;
-    gap: 6px;
-  }
-  body.sidebar-collapsed .drawer-nav-item {
-    padding: 11px 0;
-    justify-content: center;
-    border-radius: 8px;
-  }
-  body.sidebar-collapsed .drawer-nav-item .nav-label {
-    display: none;
-  }
-  body.sidebar-collapsed .drawer-nav-item i {
-    font-size: 18px;
-    width: auto;
-    margin: 0;
-  }
-  body.sidebar-collapsed .drawer-footer {
-    padding: 8px;
-    justify-content: center;
-  }
-  body.sidebar-collapsed .drawer-footer-text {
-    display: none;
-  }
-
-  /* Floating Tooltips on Collapsed Mode Hover */
-  body.sidebar-collapsed .drawer-nav-item:hover::after,
-  body.sidebar-collapsed .drawer-action-btn:hover::after {
-    content: attr(data-tooltip);
-    position: fixed;
-    left: 82px;
-    background: #0f172a;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    z-index: 10000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    pointer-events: none;
-    animation: fadeInTooltip 0.15s ease-out;
-  }
-
-  @keyframes fadeInTooltip {
-    from { opacity: 0; transform: translateX(-4px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
 }
 
 @media (max-width: 1023px) {
