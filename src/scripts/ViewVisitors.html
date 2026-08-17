@@ -72,8 +72,6 @@
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
-          <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>
-          <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -108,7 +106,7 @@
             </div>
           </div>
 
-          <!-- 下段: 左側に招待者、右側に出欠・1to1・入金ステータス -->
+          <!-- 下段: 左側に招待者・担当者、右側に出欠ステータス -->
           <div class="dash-card-bottom-row">
             <div class="dash-card-meta-left">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
@@ -116,8 +114,6 @@
             </div>
             <div class="dash-card-status-right">
               ${renderAttendButtonHtml(v.id, v.isAttended)}
-              ${render1to1ButtonHtml(v.id, v.is1to1)}
-              ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
           </div>
         `;

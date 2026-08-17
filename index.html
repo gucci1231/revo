@@ -2454,7 +2454,7 @@ tr:last-child td { border-bottom: none; }
             <th style="width: 120px;">招待者</th>
             <th style="width: 120px;">オリエン担当</th>
             <th>ヒアリングメモ (Q7 / 直後メモ)</th>
-            <th style="width: 160px;">シート / 1to1 / 操作</th>
+            <th style="width: 90px;" class="text-center">詳細</th>
           </tr>
         </thead>
         <tbody id="table-priority-follow-page"></tbody>
@@ -2538,8 +2538,6 @@ tr:last-child td { border-bottom: none; }
             <th>招待者</th>
             <th class="text-center">ランク</th>
             <th class="text-center">出欠</th>
-            <th class="text-center">1to1</th>
-            <th class="text-center">入会</th>
           </tr>
         </thead>
         <tbody id="table-all-visitors"></tbody>
@@ -4862,12 +4860,10 @@ const ApiService = {
           <td>
             <div style="font-size:12px; max-width:260px; white-space:normal;">${formatTruncatedCell(v.q7 || v.orientMemo || v.followMemo, 40)}</div>
           </td>
-          <td>
-            <div style="display:flex; gap:4px; align-items:center;">
-              ${render1to1ButtonHtml(vid, v.is1to1)}
-              ${renderJoinedButtonHtml(vid, v.isJoined)}
-              <button class="btn-icon-action" onclick="openHearingFormModal('${vid}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
-            </div>
+          <td class="text-center">
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${vid}')">
+              カルテ
+            </button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -4908,8 +4904,7 @@ const ApiService = {
               ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
             </div>
             <div class="dash-card-status-right">
-              ${render1to1ButtonHtml(vid, v.is1to1)}
-              ${renderJoinedButtonHtml(vid, v.isJoined)}
+              <span class="text-xs text-slate-400 font-semibold">詳細カルテ <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
             </div>
           </div>
         `;
@@ -4993,8 +4988,6 @@ const ApiService = {
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
-          <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>
-          <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -5029,7 +5022,7 @@ const ApiService = {
             </div>
           </div>
 
-          <!-- 下段: 左側に招待者、右側に出欠・1to1・入金ステータス -->
+          <!-- 下段: 左側に招待者・担当者、右側に出欠ステータス -->
           <div class="dash-card-bottom-row">
             <div class="dash-card-meta-left">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
@@ -5037,8 +5030,6 @@ const ApiService = {
             </div>
             <div class="dash-card-status-right">
               ${renderAttendButtonHtml(v.id, v.isAttended)}
-              ${render1to1ButtonHtml(v.id, v.is1to1)}
-              ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
           </div>
         `;
