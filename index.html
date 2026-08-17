@@ -4184,6 +4184,7 @@ const ApiService = {
 <script>
   /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
   let currentVdVisitorId = null;
+  let currentVisitorDetail = null;
   let previousTabBeforeDetail = "dashboard";
   let currentVdWebAppUrl = "";
   let currentVdActionPlans = [];
@@ -4214,6 +4215,7 @@ const ApiService = {
 
         currentVdWebAppUrl = res.webAppUrl || "";
         const v = res.visitor || {};
+        currentVisitorDetail = v;
         const st = res.status || {};
         const h = res.hearing || {};
         currentVdActionPlans = res.actionPlans || [];
@@ -4495,10 +4497,10 @@ const ApiService = {
             </div>
           </div>
           <div class="vd-ap-actions flex items-center gap-1.5">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}', event)" title="このアクションの共有URLをコピー">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="このアクションの共有URLをコピー">
               <i class="fa-solid fa-share-nodes text-blue-600"></i>
             </button>
-            <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')">
               <i class="fa-solid fa-clipboard-check"></i> 報告して完了
             </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
@@ -4539,10 +4541,10 @@ const ApiService = {
             </div>
           </div>
           <div class="vd-ap-actions flex items-center gap-1.5">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}', event)" title="このアクションの共有URLをコピー">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="このアクションの共有URLをコピー">
               <i class="fa-solid fa-share-nodes text-blue-600"></i>
             </button>
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVisitorDetail ? currentVisitorDetail.id : ''}')" title="報告確認・編集">
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')" title="報告確認・編集">
               <i class="fa-solid fa-pen-to-square"></i> 報告確認
             </button>
             <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
