@@ -803,10 +803,12 @@ function syncFormResponsesToRdbInternal() {
 
       const eventDateStr = DateUtil.formatCompact(eventDate);
 
-      // 重複チェック (氏名重複、氏名+参加日、メール+参加日)
-      const isDuplicate = existingNameSet.has(name) ||
-                          existingKeySet.has(`${name}_${eventDateStr}`) ||
-                          (email && existingKeySet.has(`${email}_${eventDateStr}`));
+      const cleanName = name.replace(/[\s　]+/g, ' ').trim();
+      const cleanEmail = email.replace(/＠/g, '@').trim();
+
+      // 重複チェック (同一参加日での重複のみスキップ。リピーターは別日程なので許可)
+      const isDuplicate = existingKeySet.has(`${cleanName}_${eventDateStr}`) ||
+                          (cleanEmail && existingKeySet.has(`${cleanEmail}_${eventDateStr}`));
 
       if (isDuplicate) {
         continue;

@@ -132,6 +132,7 @@ class SyncService {
         $statusRaw = $this->fetchSheetCsv($spreadsheetId, 'visitors_status');
         $hearingsRaw = $this->fetchSheetCsv($spreadsheetId, 'hearing_sheets');
         $membersRaw = $this->fetchSheetCsv($spreadsheetId, 'members');
+        $listRaw = $this->fetchSheetCsv($spreadsheetId, 'List');
 
         $statusMap = [];
         foreach ($statusRaw as $st) {
@@ -142,9 +143,24 @@ class SyncService {
         }
 
         $visitors = [];
+        $existingKeys = [];
+        $maxId = 0;
+
         foreach ($visitorsRaw as $v) {
             $vId = (string)($v['id'] ?? '');
             if ($vId === '') continue;
+
+            $numId = (int)$vId;
+            if ($numId > $maxId) {
+                $maxId = $numId;
+            }
+
+            $vName = $this->normalizeName($v['visitor_name'] ?? '');
+            $vDate = $this->normalizeDate($v['event_date'] ?? '');
+            $vEmail = $this->normalizeEmail($v['email'] ?? '');
+
+            if ($vName && $vDate) $existingKeys["{$vName}_{$vDate}"] = true;
+            if ($vEmail && $vDate) $existingKeys["{$vEmail}_{$vDate}"] = true;
 
             $st = $statusMap[$vId] ?? [];
             $visitors[] = [
@@ -165,6 +181,64 @@ class SyncService {
                 'is_matched' => $st['is_matched'] ?? '未',
                 'matching_note' => $st['matching_note'] ?? ''
             ];
+        }
+
+        // Listシート（フォーム回答）から、visitorsシートにまだ入っていない新規ビジターを差分取り込み
+        if (!empty($listRaw)) {
+            foreach ($listRaw as $row) {
+                $name = $this->normalizeName($row['氏名'] ?? $row['お名前'] ?? '');
+                $rawDate = $row['参加日'] ?? $row['参加予定日'] ?? $row['日程'] ?? '';
+                $eventDate = $this->normalizeDate($rawDate);
+                $email = $this->normalizeEmail($row['メールアドレス'] ?? '');
+
+                if (!$name || $name === 'テスト' || str_contains($name, '氏名') || str_contains($name, 'タイムスタンプ')) {
+                    continue;
+                }
+                if (!$eventDate) {
+                    continue;
+                }
+
+                $keyName = "{$name}_{$eventDate}";
+                $keyEmail = $email ? "{$email}_{$eventDate}" : '';
+
+                if (isset($existingKeys[$keyName]) || ($keyEmail && isset($existingKeys[$keyEmail]))) {
+                    continue;
+                }
+
+                $maxId++;
+                $newId = (string)$maxId;
+
+                $existingKeys[$keyName] = true;
+                if ($keyEmail) $existingKeys[$keyEmail] = true;
+
+                $rawTs = $row['タイムスタンプ'] ?? '';
+                $createdAt = $this->normalizeTimestamp($rawTs);
+
+                $inviter = trim((string)($row['招待者'] ?? $row['ご紹介者'] ?? ''));
+                $furigana = trim((string)($row['ふりがな'] ?? $row['フリガナ'] ?? ''));
+                $profession = trim((string)($row['お仕事の専門分野'] ?? $row['専門分野'] ?? $row['業種'] ?? ''));
+                $company = trim((string)($row['会社名'] ?? $row['屋号'] ?? ''));
+                $attendanceCount = trim((string)($row['定例会へのビジター参加回数'] ?? $row['参加回数'] ?? '初めて'));
+
+                $visitors[] = [
+                    'id' => $newId,
+                    'created_at' => $createdAt,
+                    'inviter' => $inviter,
+                    'event_date' => $eventDate,
+                    'visitor_name' => $name,
+                    'furigana' => $furigana,
+                    'profession' => $profession,
+                    'company' => $company,
+                    'email' => $email,
+                    'attendance_count' => $attendanceCount ?: '初めて',
+                    'remarks' => '',
+                    'is_attended' => '未',
+                    'is_joined' => '未',
+                    'is_1to1' => '未',
+                    'is_matched' => '未',
+                    'matching_note' => ''
+                ];
+            }
         }
 
         $hearings = [];
@@ -201,6 +275,47 @@ class SyncService {
             'hearings' => $hearings,
             'members' => $members
         ];
+    }
+
+    private function normalizeName(string $name): string {
+        $n = preg_replace('/[\s　]+/u', ' ', $name);
+        return trim($n);
+    }
+
+    private function normalizeEmail(string $email): string {
+        $e = str_replace('＠', '@', $email);
+        return trim($e);
+    }
+
+    private function normalizeDate(string $rawDate): string {
+        $rawDate = trim($rawDate);
+        if (!$rawDate) return '';
+        if (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/', $rawDate, $m)) {
+            return sprintf('%04d/%02d/%02d', $m[1], $m[2], $m[3]);
+        }
+        if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})/', $rawDate, $m)) {
+            $year = date('Y');
+            return sprintf('%04d/%02d/%02d', $year, $m[1], $m[2]);
+        }
+        $ts = strtotime($rawDate);
+        if ($ts !== false && (int)date('Y', $ts) >= 2020) {
+            return date('Y/m/d', $ts);
+        }
+        return $rawDate;
+    }
+
+    private function normalizeTimestamp(string $rawTs): string {
+        $rawTs = trim($rawTs);
+        if (!$rawTs) return date('Y/m/d H:i');
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{1,2})/', $rawTs, $m)) {
+            $year = date('Y');
+            return sprintf('%04d/%02d/%02d %02d:%02d', $year, $m[1], $m[2], $m[3], $m[4]);
+        }
+        $ts = strtotime($rawTs);
+        if ($ts !== false && (int)date('Y', $ts) >= 2020) {
+            return date('Y/m/d H:i', $ts);
+        }
+        return date('Y/m/d H:i');
     }
 
     private function fetchSheetCsv(string $spreadsheetId, string $sheetName): array {
