@@ -785,11 +785,17 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 .dash-hero-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  border-color: #94a3b8;
+}
+.dash-hero-card:active {
+  transform: translateY(0);
 }
 .dash-hero-header {
   display: flex;
@@ -1379,7 +1385,7 @@ tr:last-child td { border-bottom: none; }
   <!-- 1. トップ4大主要KPIサマリー (一目で状況把握) -->
   <div class="dash-hero-grid">
     <!-- KPI 1: 入会目標達成 -->
-    <div class="dash-hero-card">
+    <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="タップして定例会推移・集計グラフを表示">
       <div class="dash-hero-header">
         <span class="dash-hero-title"><i class="fa-solid fa-trophy" style="color: #f59f00;"></i> 入会数 / 目標</span>
         <span class="badge" style="background:#e7f5ff; color:#1864ab; font-size:11px; font-weight:800;" id="val-achievement-rate">0%達成</span>
@@ -1390,12 +1396,12 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="dash-hero-sub">
         <span>入会率: <strong id="val-join-rate" style="color: #334155;">-%</strong></span>
-        <span style="font-size: 10px; color: #94a3b8;">今期目標</span>
+        <span style="font-size: 10px; color: #2563eb; font-weight: 700;"><i class="fa-solid fa-chart-line mr-1"></i>推移を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
       </div>
     </div>
 
     <!-- KPI 2: ビジター総数 & 平均 -->
-    <div class="dash-hero-card">
+    <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="タップして全ビジター統合管理名簿を表示">
       <div class="dash-hero-header">
         <span class="dash-hero-title"><i class="fa-solid fa-users" style="color: #364fc7;"></i> 申込ビジター総数</span>
         <span class="badge" style="background:#f1f5f9; color:#475569; font-size:11px; font-weight:800;">今期累計</span>
@@ -1406,12 +1412,12 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="dash-hero-sub">
         <span>平均: <strong id="val-avg-visitors" style="color: #334155;">-</strong></span>
-        <span>ヒアリング提出: <strong id="val-hearing-rate" style="color: #334155;">-%</strong></span>
+        <span style="font-size: 10px; color: #2563eb; font-weight: 700;"><i class="fa-solid fa-users mr-1"></i>全名簿を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
       </div>
     </div>
 
     <!-- KPI 3: 次回・次々回定例会 -->
-    <div class="dash-hero-card">
+    <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="タップして次回定例会ビジター名簿を表示">
       <div class="dash-hero-header">
         <span class="dash-hero-title"><i class="fa-solid fa-calendar-check" style="color: #0ca678;"></i> 次回定例会</span>
         <span class="badge" style="background:#e6fcf5; color:#0ca678; font-size:11px; font-weight:800;" id="date-next-thu">--/--</span>
@@ -1422,12 +1428,12 @@ tr:last-child td { border-bottom: none; }
       </div>
       <div class="dash-hero-sub">
         <span>次々回 (<span id="date-after-next-thu">--/--</span>): <strong id="val-after-next-thu-count" style="color: #334155;">-</strong>名</span>
-        <span style="font-size: 10px; color: #94a3b8;">木曜開催</span>
+        <span style="font-size: 10px; color: #0ca678; font-weight: 700;"><i class="fa-solid fa-list mr-1"></i>名簿を見る <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
       </div>
     </div>
 
     <!-- KPI 4: 進行中アクション & HOTビジター -->
-    <div class="dash-hero-card">
+    <div class="dash-hero-card" onclick="switchDashboardPanel('ap', true)" title="タップして進行中アクションプラン一覧を表示">
       <div class="dash-hero-header">
         <span class="dash-hero-title"><i class="fa-solid fa-bullseye" style="color: #e03131;"></i> 要対応アクション</span>
         <span class="badge" style="background:#ffe3e3; color:#e03131; font-size:11px; font-weight:800;" id="badge-overdue-summary">進行中</span>
@@ -1437,8 +1443,8 @@ tr:last-child td { border-bottom: none; }
         <span style="font-size: 15px; font-weight: 700; color: #64748b;">件</span>
       </div>
       <div class="dash-hero-sub">
-        <span>HOTビジター: <strong id="val-hot-count" style="color: #e03131;">-</strong>名</span>
-        <span>期限超過: <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
+        <span>HOT: <strong id="val-hot-count" style="color: #e03131;">-</strong>名 | 超過: <strong id="val-overdue-action-plans" style="color: #e03131;">0</strong>件</span>
+        <span style="font-size: 10px; color: #e03131; font-weight: 700;"><i class="fa-solid fa-bullseye mr-1"></i>対応一覧 <i class="fa-solid fa-chevron-right text-[8px]"></i></span>
       </div>
     </div>
   </div>
@@ -2986,7 +2992,7 @@ const ApiService = {
   let lineChartInstance = null;
   let currentDashboardActivePanel = 'hot';
 
-  function switchDashboardPanel(panelName) {
+  function switchDashboardPanel(panelName, scrollToPanel = false) {
     currentDashboardActivePanel = panelName;
     ['hot', 'ap', 'meeting', 'onemonth', 'stats'].forEach(p => {
       const btn = document.getElementById(`dash-tab-btn-${p}`);
@@ -3010,6 +3016,15 @@ const ApiService = {
     if (panelName === 'stats' && lineChartInstance) {
       setTimeout(() => {
         try { lineChartInstance.resize(); } catch(e){}
+      }, 50);
+    }
+
+    if (scrollToPanel) {
+      setTimeout(() => {
+        const nav = document.querySelector('.dash-nav-wrap');
+        if (nav) {
+          nav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }, 50);
     }
   }

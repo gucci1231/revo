@@ -4,7 +4,7 @@
   let lineChartInstance = null;
   let currentDashboardActivePanel = 'hot';
 
-  function switchDashboardPanel(panelName) {
+  function switchDashboardPanel(panelName, scrollToPanel = false) {
     currentDashboardActivePanel = panelName;
     ['hot', 'ap', 'meeting', 'onemonth', 'stats'].forEach(p => {
       const btn = document.getElementById(`dash-tab-btn-${p}`);
@@ -28,6 +28,15 @@
     if (panelName === 'stats' && lineChartInstance) {
       setTimeout(() => {
         try { lineChartInstance.resize(); } catch(e){}
+      }, 50);
+    }
+
+    if (scrollToPanel) {
+      setTimeout(() => {
+        const nav = document.querySelector('.dash-nav-wrap');
+        if (nav) {
+          nav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }, 50);
     }
   }
