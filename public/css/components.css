@@ -65,13 +65,52 @@ tr:last-child td { border-bottom: none; }
 .feel-B { background: #fef3c7; color: #d97706; }
 .feel-C { background: #f1f5f9; color: #64748b; }
 
-.badge-abc {
-  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
-  border-radius: 8px; font-size: 16px; font-weight: 900; line-height: 1; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+/* Apple Minimal Rank Emblem (Tables & Cards) */
+.badge-rank-emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1;
+  border: 1.5px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  user-select: none;
+  flex-shrink: 0;
 }
-.badge-abc.A { background: #ffe3e3; color: #d6336c; border: 1.5px solid #ff8787; }
-.badge-abc.B { background: #fff9db; color: #d97706; border: 1.5px solid #ffe066; }
-.badge-abc.C { background: #f1f5f9; color: #64748b; border: 1.5px solid #cbd5e1; }
+.badge-rank-emblem.emblem-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.badge-rank-emblem.rank-A {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.08);
+}
+.badge-rank-emblem.rank-B {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.06);
+}
+.badge-rank-emblem.rank-C {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+.badge-rank-emblem.rank-none {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  font-size: 12px;
+}
 
 .badge-toggle { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; background: #f1f5f9; color: #64748b; user-select: none; white-space: nowrap; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }

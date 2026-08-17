@@ -401,32 +401,34 @@
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              <span class="badge" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
-                HOT A
-              </span>
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(r.feelAbc || 'A', 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+                  ${renderRepeatBadgeHtml(r)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
               ${formatEventDateWithElapsed(r.eventDate)}
-            </div>
-            <div class="text-slate-300 text-sm">
-              <i class="fa-solid fa-chevron-right"></i>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
-            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-            ${renderRepeatBadgeHtml(r)}
-            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#86868b;">(${escapeHtml(r.company)})</span>` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #86868b; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
-            ${r.orientUser ? `<span><strong>担当:</strong> ${escapeHtml(r.orientUser)}</span>` : ''}
-          </div>
-
-          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
-            ${renderCurrentStatusColumnHtml(r)}
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+              ${r.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
+              ${renderCurrentStatusColumnHtml(r)}
+            </div>
           </div>
         `;
         cardsContainer.appendChild(card);

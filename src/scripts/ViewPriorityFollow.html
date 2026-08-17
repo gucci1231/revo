@@ -143,39 +143,36 @@
           openVisitorDetailView(vid);
         };
 
-        const memoText = v.q7 || v.orientMemo || v.followMemo;
-
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges flex-wrap gap-1">
-              ${renderRankBadgeHtml(v.feelAbc)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(v.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + vid)}</span>
+                  ${renderRepeatBadgeHtml(v)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
               ${formatEventDateWithElapsed(v.eventDate)}
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
+              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
               ${render1to1ButtonHtml(vid, v.is1to1)}
               ${renderJoinedButtonHtml(vid, v.isJoined)}
             </div>
-            <div class="flex items-center gap-1">
-              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリングシート">
-                <i class="fa-solid fa-file-lines text-xs text-indigo-600"></i>
-              </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-rose-600 text-xs"></i>
-            <span>${escapeHtml(v.name || 'ビジター No.' + vid)}</span>
-            ${v.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(v.company)})</span>` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(v.inviter || '-')}</span>
-            ${v.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(v.orientUser)}</span></span>` : ''}
-          </div>
-
-          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
-            ${renderCurrentStatusColumnHtml(v)}
           </div>
         `;
         cardsContainer.appendChild(card);

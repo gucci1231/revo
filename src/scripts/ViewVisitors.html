@@ -87,31 +87,38 @@
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges flex-wrap gap-1">
-              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; font-size:10px; padding:2px 6px;">${escapeHtml(v.eventDate || '-')}</span>
-              ${renderRankBadgeHtml(v.feelAbc)}
+          <!-- 上段: 左側に大型ランク＋大きめ名前＋会社名、右側に参加日＋シェブロン -->
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(v.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+                  ${renderRepeatBadgeHtml(v)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
+              <span class="dash-card-date-badge">${escapeHtml(v.eventDate || '-')}</span>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- 下段: 左側に招待者、右側に出欠・1to1・入金ステータス -->
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
+              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
               ${renderAttendButtonHtml(v.id, v.isAttended)}
               ${render1to1ButtonHtml(v.id, v.is1to1)}
               ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
-            <div class="text-slate-300 text-sm">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
-            <span>${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
-            ${renderRepeatBadgeHtml(v)}
-          </div>
-
-          <div style="font-size: 11px; color: #64748b;">
-            ${escapeHtml(v.company || '-')} ${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569;">
-            <span><strong>招待者:</strong> ${escapeHtml(v.inviter || '-')}</span>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -298,28 +305,33 @@
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:800; font-size:10px; padding:2px 6px;">No.${idx + 1}</span>
-              ${renderRankBadgeHtml(r.feelAbc)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(r.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+                  ${renderRepeatBadgeHtml(r)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
+              <span class="dash-card-date-badge">No.${idx + 1}</span>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+            </div>
+            <div class="dash-card-status-right">
               ${renderAttendButtonHtml(r.id, r.isAttended)}
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-          </div>
-
-          <div style="font-size: 11px; color: #64748b;">
-            ${escapeHtml(r.company || '-')} ${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569;">
-            <span><strong>招待者:</strong> ${escapeHtml(r.inviter || '-')}</span>
           </div>
         `;
         cardsContainer.appendChild(card);

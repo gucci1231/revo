@@ -308,13 +308,52 @@ tr:last-child td { border-bottom: none; }
 .feel-B { background: #fef3c7; color: #d97706; }
 .feel-C { background: #f1f5f9; color: #64748b; }
 
-.badge-abc {
-  display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px;
-  border-radius: 8px; font-size: 16px; font-weight: 900; line-height: 1; text-align: center; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+/* Apple Minimal Rank Emblem (Tables & Cards) */
+.badge-rank-emblem {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1;
+  border: 1.5px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  user-select: none;
+  flex-shrink: 0;
 }
-.badge-abc.A { background: #ffe3e3; color: #d6336c; border: 1.5px solid #ff8787; }
-.badge-abc.B { background: #fff9db; color: #d97706; border: 1.5px solid #ffe066; }
-.badge-abc.C { background: #f1f5f9; color: #64748b; border: 1.5px solid #cbd5e1; }
+.badge-rank-emblem.emblem-lg {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.badge-rank-emblem.rank-A {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.08);
+}
+.badge-rank-emblem.rank-B {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.06);
+}
+.badge-rank-emblem.rank-C {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+.badge-rank-emblem.rank-none {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  font-size: 12px;
+}
 
 .badge-toggle { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; background: #f1f5f9; color: #64748b; user-select: none; white-space: nowrap; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
@@ -1383,14 +1422,13 @@ tr:last-child td { border-bottom: none; }
 .dash-ap-card {
   background: #ffffff;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px 16px;
   box-shadow: var(--shadow-xs);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
 }
@@ -1408,27 +1446,92 @@ tr:last-child td { border-bottom: none; }
   border-color: #e2e8f0;
   opacity: 0.88;
 }
-.dash-ap-card-header {
+
+/* Card Main Row (Top / Middle: Left-align rank & name, Right-align date & chevron) */
+.dash-card-main-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dash-card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.dash-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.dash-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dash-card-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1d1d1f;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+.dash-card-company {
+  font-size: 12px;
+  color: #86868b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-card-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.dash-card-date-badge {
+  background: #f2f2f7;
+  color: #1d1d1f;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.dash-card-chevron {
+  color: #c7c7cc;
+  font-size: 14px;
+}
+
+/* Card Bottom Row (Left: Inviter/Assignee, Right: Status Selects) */
+.dash-card-bottom-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f2f2f7;
   flex-wrap: wrap;
-  gap: 6px;
 }
-.dash-ap-card-badges {
+.dash-card-meta-left {
+  font-size: 12px;
+  color: #64748b;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   flex-wrap: wrap;
 }
-.dash-ap-card-visitor {
-  font-size: 13px;
-  font-weight: 800;
-  color: #1e293b;
+.dash-card-status-right {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
 }
+
 .dash-ap-card-action {
   font-size: 14px;
   font-weight: 800;
@@ -1447,17 +1550,6 @@ tr:last-child td { border-bottom: none; }
   padding: 6px 10px;
   border-radius: 6px;
   line-height: 1.4;
-  margin-top: 2px;
-}
-.dash-ap-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11px;
-  font-weight: 700;
-  color: #2563eb;
-  padding-top: 6px;
-  border-top: 1px solid #f1f5f9;
   margin-top: 2px;
 }
 
@@ -3113,18 +3205,19 @@ const ApiService = {
     return '';
   }
 
-  function renderRankBadgeHtml(val) {
+  function renderRankBadgeHtml(val, size = 'default') {
     const feel = parseFeelAbc(val);
+    const sizeClass = (size === 'large' || size === 'lg') ? 'emblem-lg' : '';
     if (feel === 'A') {
-      return '<span style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">A</span>';
+      return `<div class="badge-rank-emblem rank-A ${sizeClass}" title="感触ランク A">A</div>`;
     }
     if (feel === 'B') {
-      return '<span style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">B</span>';
+      return `<div class="badge-rank-emblem rank-B ${sizeClass}" title="感触ランク B">B</div>`;
     }
     if (feel === 'C') {
-      return '<span style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:700; font-size:11px;">C</span>';
+      return `<div class="badge-rank-emblem rank-C ${sizeClass}" title="感触ランク C">C</div>`;
     }
-    return '<span style="background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:600; font-size:11px;">-</span>';
+    return `<div class="badge-rank-emblem rank-none ${sizeClass}" title="感触ランク 未設定">-</div>`;
   }
 
   function changeVisitorStatus(id, field, value) {
@@ -4186,32 +4279,34 @@ const ApiService = {
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              <span class="badge" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
-                HOT A
-              </span>
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(r.feelAbc || 'A', 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+                  ${renderRepeatBadgeHtml(r)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
               ${formatEventDateWithElapsed(r.eventDate)}
-            </div>
-            <div class="text-slate-300 text-sm">
-              <i class="fa-solid fa-chevron-right"></i>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
-            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-            ${renderRepeatBadgeHtml(r)}
-            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#86868b;">(${escapeHtml(r.company)})</span>` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #86868b; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
-            ${r.orientUser ? `<span><strong>担当:</strong> ${escapeHtml(r.orientUser)}</span>` : ''}
-          </div>
-
-          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
-            ${renderCurrentStatusColumnHtml(r)}
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+              ${r.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
+              ${renderCurrentStatusColumnHtml(r)}
+            </div>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -4786,39 +4881,36 @@ const ApiService = {
           openVisitorDetailView(vid);
         };
 
-        const memoText = v.q7 || v.orientMemo || v.followMemo;
-
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges flex-wrap gap-1">
-              ${renderRankBadgeHtml(v.feelAbc)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(v.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + vid)}</span>
+                  ${renderRepeatBadgeHtml(v)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
               ${formatEventDateWithElapsed(v.eventDate)}
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
+              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
               ${render1to1ButtonHtml(vid, v.is1to1)}
               ${renderJoinedButtonHtml(vid, v.isJoined)}
             </div>
-            <div class="flex items-center gap-1">
-              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリングシート">
-                <i class="fa-solid fa-file-lines text-xs text-indigo-600"></i>
-              </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-rose-600 text-xs"></i>
-            <span>${escapeHtml(v.name || 'ビジター No.' + vid)}</span>
-            ${v.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(v.company)})</span>` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(v.inviter || '-')}</span>
-            ${v.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(v.orientUser)}</span></span>` : ''}
-          </div>
-
-          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
-            ${renderCurrentStatusColumnHtml(v)}
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -4916,31 +5008,38 @@ const ApiService = {
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges flex-wrap gap-1">
-              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700; font-size:10px; padding:2px 6px;">${escapeHtml(v.eventDate || '-')}</span>
-              ${renderRankBadgeHtml(v.feelAbc)}
+          <!-- 上段: 左側に大型ランク＋大きめ名前＋会社名、右側に参加日＋シェブロン -->
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(v.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+                  ${renderRepeatBadgeHtml(v)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
+              <span class="dash-card-date-badge">${escapeHtml(v.eventDate || '-')}</span>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <!-- 下段: 左側に招待者、右側に出欠・1to1・入金ステータス -->
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
+              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
               ${renderAttendButtonHtml(v.id, v.isAttended)}
               ${render1to1ButtonHtml(v.id, v.is1to1)}
               ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
-            <div class="text-slate-300 text-sm">
-              <i class="fa-solid fa-chevron-right"></i>
-            </div>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
-            <span>${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
-            ${renderRepeatBadgeHtml(v)}
-          </div>
-
-          <div style="font-size: 11px; color: #64748b;">
-            ${escapeHtml(v.company || '-')} ${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569;">
-            <span><strong>招待者:</strong> ${escapeHtml(v.inviter || '-')}</span>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -5127,28 +5226,33 @@ const ApiService = {
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:800; font-size:10px; padding:2px 6px;">No.${idx + 1}</span>
-              ${renderRankBadgeHtml(r.feelAbc)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(r.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+                  ${renderRepeatBadgeHtml(r)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-card-right">
+              <span class="dash-card-date-badge">No.${idx + 1}</span>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
+          </div>
+
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+            </div>
+            <div class="dash-card-status-right">
               ${renderAttendButtonHtml(r.id, r.isAttended)}
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
-          </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-          </div>
-
-          <div style="font-size: 11px; color: #64748b;">
-            ${escapeHtml(r.company || '-')} ${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569;">
-            <span><strong>招待者:</strong> ${escapeHtml(r.inviter || '-')}</span>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -5341,38 +5445,39 @@ const ApiService = {
         const memoSnippet = h.orientMemo || h.followMemo || h.q1 || '';
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges flex-wrap gap-1">
-              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:800; font-size:10px; padding:2px 6px;">No.${idx + 1}</span>
-              <span class="badge" style="background:#e6fcf5; color:#0ca678; font-weight:800; font-size:10px; padding:2px 6px;">${escapeHtml(h.eventDate || '-')}</span>
-              ${renderRankBadgeHtml(h.feelAbc)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(h.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(h.name || 'ビジター No.' + vid)}</span>
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(h.company || '-')}${h.profession ? ` / ${escapeHtml(h.profession)}` : ''}
+                </div>
+              </div>
             </div>
-            <div class="flex items-center gap-1">
-              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集">
-                <i class="fa-solid fa-pen text-xs"></i>
-              </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
+
+            <div class="dash-card-right">
+              <span class="dash-card-date-badge">${escapeHtml(h.eventDate || '-')}</span>
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-emerald-600 text-xs"></i>
-            <span>${escapeHtml(h.name || 'ビジター No.' + vid)}</span>
-          </div>
-
-          <div style="font-size: 11px; color: #64748b;">
-            ${escapeHtml(h.company || '-')} ${h.profession ? ` / ${escapeHtml(h.profession)}` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(h.inviter || '-')}</span>
-            ${h.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(h.orientUser)}</span></span>` : ''}
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(h.inviter || '-')}</span>
+              ${h.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(h.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
+              <button type="button" class="btn-icon-action" style="padding:3px 8px; font-size:11px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集">
+                <i class="fa-solid fa-pen mr-1"></i> 編集
+              </button>
+            </div>
           </div>
 
           ${memoSnippet ? `
-            <div style="font-size: 11px; color: #334155; background: #fff9db; border-left: 3px solid #fab005; padding: 6px 10px; border-radius: 6px; line-height: 1.4;">
+            <div style="font-size: 11px; color: #334155; background: #fff9db; border-left: 3px solid #fab005; padding: 6px 10px; border-radius: 6px; line-height: 1.4; margin-top:2px;">
               ${escapeHtml(memoSnippet)}
             </div>
           ` : ''}

@@ -9,18 +9,19 @@
     return '';
   }
 
-  function renderRankBadgeHtml(val) {
+  function renderRankBadgeHtml(val, size = 'default') {
     const feel = parseFeelAbc(val);
+    const sizeClass = (size === 'large' || size === 'lg') ? 'emblem-lg' : '';
     if (feel === 'A') {
-      return '<span style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">A</span>';
+      return `<div class="badge-rank-emblem rank-A ${sizeClass}" title="感触ランク A">A</div>`;
     }
     if (feel === 'B') {
-      return '<span style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">B</span>';
+      return `<div class="badge-rank-emblem rank-B ${sizeClass}" title="感触ランク B">B</div>`;
     }
     if (feel === 'C') {
-      return '<span style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:700; font-size:11px;">C</span>';
+      return `<div class="badge-rank-emblem rank-C ${sizeClass}" title="感触ランク C">C</div>`;
     }
-    return '<span style="background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:600; font-size:11px;">-</span>';
+    return `<div class="badge-rank-emblem rank-none ${sizeClass}" title="感触ランク 未設定">-</div>`;
   }
 
   function changeVisitorStatus(id, field, value) {
