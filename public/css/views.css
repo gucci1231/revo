@@ -330,7 +330,7 @@
 .vd-tab-badge {
   font-size: 10px;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 10px;
   background: #e2e8f0;
   color: #64748b;
@@ -338,6 +338,42 @@
 .vd-tab-btn.active .vd-tab-badge {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+/* Tab Pane & 2-Column Responsive Layout (Mobile: Tabs, PC: 2-Columns) */
+.vd-desktop-2col {
+  display: block;
+}
+.vd-col-left, .vd-col-right {
+  display: block;
+}
+.vd-tab-pane {
+  display: none;
+}
+.vd-tab-pane.active {
+  display: block;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@media (min-width: 1024px) {
+  .vd-tab-nav {
+    display: none !important;
+  }
+  .vd-desktop-2col {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .vd-col-left, .vd-col-right {
+    display: flex !important;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .vd-tab-pane {
+    display: block !important;
+    animation: none;
+  }
 }
 
 .vd-box {
@@ -660,8 +696,20 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
+
+@media (min-width: 1024px) {
+  .dash-nav-wrap {
+    display: none !important;
+  }
+  .dash-panel {
+    display: block !important;
+    margin-bottom: 24px;
+    animation: none;
+  }
+}
 
 /* Responsive Table vs Cards Switching (PC: Table only, Mobile: Cards only) */
 .dash-ap-table-wrap {

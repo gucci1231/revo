@@ -154,15 +154,12 @@
   }
 
   function switchVdTab(tab) {
-    document.getElementById('vd-tab-btn-action-plan').classList.toggle('active', tab === 'action-plan');
-    document.getElementById('vd-tab-btn-hearing').classList.toggle('active', tab === 'hearing');
-    document.getElementById('vd-tab-btn-memo').classList.toggle('active', tab === 'memo');
-    document.getElementById('vd-tab-btn-mail').classList.toggle('active', tab === 'mail');
-
-    document.getElementById('vd-tab-content-action-plan').style.display = tab === 'action-plan' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-hearing').style.display = tab === 'hearing' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-memo').style.display = tab === 'memo' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-mail').style.display = tab === 'mail' ? 'block' : 'none';
+    ['action-plan', 'hearing', 'memo', 'mail'].forEach(t => {
+      const btn = document.getElementById(`vd-tab-btn-${t}`);
+      const pane = document.getElementById(`vd-tab-content-${t}`);
+      if (btn) btn.classList.toggle('active', t === tab);
+      if (pane) pane.classList.toggle('active', t === tab);
+    });
   }
 
   /* --- 🎯 Action Plan Specific Controls --- */

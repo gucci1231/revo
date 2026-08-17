@@ -953,7 +953,7 @@ tr:last-child td { border-bottom: none; }
 .vd-tab-badge {
   font-size: 10px;
   font-weight: 800;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 10px;
   background: #e2e8f0;
   color: #64748b;
@@ -961,6 +961,42 @@ tr:last-child td { border-bottom: none; }
 .vd-tab-btn.active .vd-tab-badge {
   background: #f1f5f9;
   color: #0f172a;
+}
+
+/* Tab Pane & 2-Column Responsive Layout (Mobile: Tabs, PC: 2-Columns) */
+.vd-desktop-2col {
+  display: block;
+}
+.vd-col-left, .vd-col-right {
+  display: block;
+}
+.vd-tab-pane {
+  display: none;
+}
+.vd-tab-pane.active {
+  display: block;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+@media (min-width: 1024px) {
+  .vd-tab-nav {
+    display: none !important;
+  }
+  .vd-desktop-2col {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .vd-col-left, .vd-col-right {
+    display: flex !important;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .vd-tab-pane {
+    display: block !important;
+    animation: none;
+  }
 }
 
 .vd-box {
@@ -1283,8 +1319,20 @@ tr:last-child td { border-bottom: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
+/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
+
+@media (min-width: 1024px) {
+  .dash-nav-wrap {
+    display: none !important;
+  }
+  .dash-panel {
+    display: block !important;
+    margin-bottom: 24px;
+    animation: none;
+  }
+}
 
 /* Responsive Table vs Cards Switching (PC: Table only, Mobile: Cards only) */
 .dash-ap-table-wrap {
@@ -2487,7 +2535,7 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- セグメントコントロール -->
+    <!-- セグメントコントロール (スマホ用) -->
     <div class="vd-tab-nav">
       <button type="button" class="vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
         🎯 アクション <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
@@ -2503,132 +2551,141 @@ tr:last-child td { border-bottom: none; }
       </button>
     </div>
 
-    <!-- Tab Content 0: アクションプラン -->
-    <div id="vd-tab-content-action-plan">
-      <!-- 登録カード -->
-      <div class="vd-box">
-        <div class="vd-box-header">
-          <h3 class="vd-box-title text-blue-600">
-            <i class="fa-solid fa-plus-circle"></i> アクション登録
-          </h3>
-        </div>
+    <!-- コンテンツエリア (PC: 2カラム常時全表示, スマホ: タブ切り替え) -->
+    <div class="vd-desktop-2col">
+      <!-- 左カラム: アクションプラン & 共有メモ -->
+      <div class="vd-col-left">
+        <!-- Tab Content 0: アクションプラン -->
+        <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
+          <!-- 登録カード -->
+          <div class="vd-box">
+            <div class="vd-box-header">
+              <h3 class="vd-box-title text-blue-600">
+                <i class="fa-solid fa-plus-circle"></i> アクション登録
+              </h3>
+            </div>
 
-        <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
-          <input type="hidden" id="vd-ap-edit-id" value="">
+            <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
+              <input type="hidden" id="vd-ap-edit-id" value="">
 
-          <div class="vd-form-grid">
-            <!-- 期日 -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-bold text-slate-500">期日</label>
-              <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
-              <div class="vd-quick-chips">
-                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
-                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
-                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
-                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+              <div class="vd-form-grid">
+                <!-- 期日 -->
+                <div class="form-group mb-0">
+                  <label class="form-label text-xs font-bold text-slate-500">期日</label>
+                  <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
+                  <div class="vd-quick-chips">
+                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
+                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
+                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
+                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+                  </div>
+                </div>
+
+                <!-- 担当者 -->
+                <div class="form-group mb-0">
+                  <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
+                  <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
+                    <option value="">-- 選択してください --</option>
+                  </select>
+                  <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
+                </div>
               </div>
+
+              <!-- アクション内容 -->
+              <div class="form-group mt-3 mb-0">
+                <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
+                <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
+              </div>
+
+              <div class="vd-form-actions mt-3">
+                <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
+                <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
+                  <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- 一覧 -->
+          <div class="vd-box">
+            <div class="vd-box-header">
+              <h3 class="vd-box-title">
+                <i class="fa-solid fa-list-check text-emerald-600"></i> プラン一覧
+              </h3>
+              <span id="vd-ap-summary-text" class="text-xs text-slate-400 font-bold">0件</span>
             </div>
 
-            <!-- 担当者 -->
-            <div class="form-group mb-0">
-              <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
-              <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
-                <option value="">-- 選択してください --</option>
-              </select>
-              <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
+            <!-- 未完了 -->
+            <div class="mb-4">
+              <div class="vd-ap-section-header font-bold text-xs text-slate-600 mb-2">
+                <span class="vd-ap-dot pending"></span> 未完了
+              </div>
+              <div id="vd-ap-pending-list" class="vd-ap-list"></div>
+            </div>
+
+            <!-- 完了済 -->
+            <div>
+              <div class="vd-ap-section-header font-bold text-xs text-slate-400 mb-2">
+                <span class="vd-ap-dot completed"></span> 完了済
+              </div>
+              <div id="vd-ap-completed-list" class="vd-ap-list"></div>
             </div>
           </div>
+        </div>
 
-          <!-- アクション内容 -->
-          <div class="form-group mt-3 mb-0">
-            <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
-            <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
+        <!-- Tab Content 2: 自由メモ -->
+        <div id="vd-tab-content-memo" class="vd-tab-pane">
+          <div class="vd-box">
+            <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+            <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+            <div class="vd-form-actions mt-3">
+              <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+              </button>
+            </div>
           </div>
-
-          <div class="vd-form-actions mt-3">
-            <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
-            <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
-              <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
 
-      <!-- 一覧 -->
-      <div class="vd-box">
-        <div class="vd-box-header">
-          <h3 class="vd-box-title">
-            <i class="fa-solid fa-list-check text-emerald-600"></i> プラン一覧
-          </h3>
-          <span id="vd-ap-summary-text" class="text-xs text-slate-400 font-bold">0件</span>
-        </div>
+      <!-- 右カラム: ヒアリングシート & メール履歴 -->
+      <div class="vd-col-right">
+        <!-- Tab Content 1: ヒアリングシート -->
+        <div id="vd-tab-content-hearing" class="vd-tab-pane">
+          <div class="vd-box">
+            <div class="vd-box-header py-1 pb-3 border-b border-slate-100 mb-3">
+              <h3 class="vd-box-title text-slate-800">
+                <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
+              </h3>
+              <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
+                <i class="fa-solid fa-pen-to-square"></i> 編集
+              </button>
+            </div>
 
-        <!-- 未完了 -->
-        <div class="mb-4">
-          <div class="vd-ap-section-header font-bold text-xs text-slate-600 mb-2">
-            <span class="vd-ap-dot pending"></span> 未完了
+            <div class="vd-hearing-list">
+              <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
+                <span class="vd-spec-label">担当者</span>
+                <span id="vd-orient-user" class="font-bold text-sm text-slate-800">-</span>
+              </div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">お礼と感想</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">仕事内容</div> <p id="vd-q2" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">目標・計画 (Goal)</div> <p id="vd-q3" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">課題・悩み (Reality)</div> <p id="vd-q4" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">解決策・アイディア (Options)</div> <p id="vd-q5" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">力になれそうなメンバー (Way Forward)</div> <p id="vd-q6" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">次回促し・クロージング</div> <p id="vd-q7" class="vd-hearing-a">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">オリエンメモ</div> <p id="vd-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
+              <div class="vd-hearing-item"><div class="vd-hearing-q">追跡メモ</div> <p id="vd-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
+            </div>
           </div>
-          <div id="vd-ap-pending-list" class="vd-ap-list"></div>
         </div>
 
-        <!-- 完了済 -->
-        <div>
-          <div class="vd-ap-section-header font-bold text-xs text-slate-400 mb-2">
-            <span class="vd-ap-dot completed"></span> 完了済
+        <!-- Tab Content 3: メール履歴 -->
+        <div id="vd-tab-content-mail" class="vd-tab-pane">
+          <div class="vd-box">
+            <h3 class="vd-box-title mb-3"><i class="fa-solid fa-envelope text-blue-500 mr-1.5"></i> メール送信履歴</h3>
+            <div id="vd-mail-history-list" class="vd-mail-list"></div>
           </div>
-          <div id="vd-ap-completed-list" class="vd-ap-list"></div>
         </div>
-      </div>
-    </div>
-
-    <!-- Tab Content 1: ヒアリングシート -->
-    <div id="vd-tab-content-hearing">
-      <div class="vd-box">
-        <div class="vd-box-header py-1 pb-3 border-b border-slate-100 mb-3">
-          <h3 class="vd-box-title text-slate-800">
-            <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
-          </h3>
-          <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
-            <i class="fa-solid fa-pen-to-square"></i> 編集
-          </button>
-        </div>
-
-        <div class="vd-hearing-list">
-          <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
-            <span class="vd-spec-label">担当者</span>
-            <span id="vd-orient-user" class="font-bold text-sm text-slate-800">-</span>
-          </div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">お礼と感想</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">仕事内容</div> <p id="vd-q2" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">目標・計画 (Goal)</div> <p id="vd-q3" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">課題・悩み (Reality)</div> <p id="vd-q4" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">解決策・アイディア (Options)</div> <p id="vd-q5" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">力になれそうなメンバー (Way Forward)</div> <p id="vd-q6" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">次回促し・クロージング</div> <p id="vd-q7" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">オリエンメモ</div> <p id="vd-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">追跡メモ</div> <p id="vd-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab Content 2: 自由メモ -->
-    <div id="vd-tab-content-memo" style="display:none;">
-      <div class="vd-box">
-        <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
-        <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
-        <div class="vd-form-actions mt-3">
-          <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tab Content 3: メール履歴 -->
-    <div id="vd-tab-content-mail" style="display:none;">
-      <div class="vd-box">
-        <h3 class="vd-box-title mb-3"><i class="fa-solid fa-envelope text-blue-500 mr-1.5"></i> メール送信履歴</h3>
-        <div id="vd-mail-history-list" class="vd-mail-list"></div>
       </div>
     </div>
 
@@ -5544,15 +5601,12 @@ const ApiService = {
   }
 
   function switchVdTab(tab) {
-    document.getElementById('vd-tab-btn-action-plan').classList.toggle('active', tab === 'action-plan');
-    document.getElementById('vd-tab-btn-hearing').classList.toggle('active', tab === 'hearing');
-    document.getElementById('vd-tab-btn-memo').classList.toggle('active', tab === 'memo');
-    document.getElementById('vd-tab-btn-mail').classList.toggle('active', tab === 'mail');
-
-    document.getElementById('vd-tab-content-action-plan').style.display = tab === 'action-plan' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-hearing').style.display = tab === 'hearing' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-memo').style.display = tab === 'memo' ? 'block' : 'none';
-    document.getElementById('vd-tab-content-mail').style.display = tab === 'mail' ? 'block' : 'none';
+    ['action-plan', 'hearing', 'memo', 'mail'].forEach(t => {
+      const btn = document.getElementById(`vd-tab-btn-${t}`);
+      const pane = document.getElementById(`vd-tab-content-${t}`);
+      if (btn) btn.classList.toggle('active', t === tab);
+      if (pane) pane.classList.toggle('active', t === tab);
+    });
   }
 
   /* --- 🎯 Action Plan Specific Controls --- */
