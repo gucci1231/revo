@@ -136,6 +136,9 @@
       initLineChart(chartLabels, chartValues);
     }
 
+    // KPI Mini Visuals (Sparkline, Gauges, Progress Bars)
+    updateKpiMiniVisuals(m, c, t, allActionPlans);
+
     // Tables
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
@@ -147,6 +150,73 @@
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
+    }
+  }
+
+  function updateKpiMiniVisuals(m, c, t, allActionPlans) {
+    // 1. 入会数 プログレスバー
+    const joinedProgressBar = document.getElementById('kpi-progress-joined');
+    if (joinedProgressBar) {
+      const achRate = Number(m.achievementRate) || 0;
+      const safePct = Math.min(100, Math.max(0, achRate));
+      joinedProgressBar.style.width = `${safePct}%`;
+    }
+
+    // 2. 申込ビジター スパークライン (SVG)
+    const sparkArea = document.getElementById('kpi-sparkline-area-visitors');
+    const sparkLine = document.getElementById('kpi-sparkline-line-visitors');
+    if (sparkArea && sparkLine) {
+      const values = (c && Array.isArray(c.data) && c.data.length > 0) 
+        ? c.data.slice(-7).map(v => Number(v) || 0)
+        : [2, 4, 3, 5, 4, 6];
+      
+      const maxVal = Math.max(...values, 1);
+      const minVal = Math.min(...values, 0);
+      const range = (maxVal - minVal) || 1;
+      const count = values.length;
+      
+      const pts = values.map((v, idx) => {
+        const x = count > 1 ? (idx / (count - 1)) * 100 : 50;
+        const y = 18 - ((v - minVal) / range) * 14;
+        return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) };
+      });
+
+      const lineD = pts.reduce((acc, pt, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`, '');
+      const areaD = `${lineD} L 100 20 L 0 20 Z`;
+
+      sparkLine.setAttribute('d', lineD);
+      sparkArea.setAttribute('d', areaD);
+    }
+
+    // 3. 次回定例会 ミニバー (直近 vs 次回 vs 次々回)
+    const barLast = document.getElementById('kpi-bar-meeting-last');
+    const barNext = document.getElementById('kpi-bar-meeting-next');
+    const barAfter = document.getElementById('kpi-bar-meeting-after');
+    const lastCnt = (t.lastMeeting || []).length || 1;
+    const nextCnt = (m.nextThuCount !== undefined ? m.nextThuCount : (t.nextMeeting || []).length) || 0;
+    const afterCnt = (m.afterNextThuCount !== undefined ? Number(m.afterNextThuCount) : 0) || 0;
+    const maxMeeting = Math.max(lastCnt, nextCnt, afterCnt, 4);
+
+    if (barLast) barLast.style.width = `${Math.min(100, Math.max(15, (lastCnt / maxMeeting) * 100))}%`;
+    if (barNext) barNext.style.width = `${Math.min(100, Math.max(15, (nextCnt / maxMeeting) * 100))}%`;
+    if (barAfter) barAfter.style.width = `${Math.min(100, Math.max(15, (afterCnt / maxMeeting) * 100))}%`;
+
+    // 4. 要対応アクション スタックバー (完了 vs 進行中 vs 超過)
+    const apCompleted = document.getElementById('kpi-ap-bar-completed');
+    const apPending = document.getElementById('kpi-ap-bar-pending');
+    const apOverdue = document.getElementById('kpi-ap-bar-overdue');
+    if (apCompleted && apPending && apOverdue) {
+      const totalAp = allActionPlans.length || 1;
+      const completedCount = allActionPlans.filter(p => Number(p.is_completed) === 1).length;
+      const overdueCount = (m.overdueActionPlansCount !== undefined) ? m.overdueActionPlansCount : 0;
+
+      const compPct = Math.round((completedCount / totalAp) * 100);
+      const overPct = Math.round((overdueCount / totalAp) * 100);
+      const pendPct = Math.max(0, 100 - compPct - overPct);
+
+      apCompleted.style.width = `${compPct}%`;
+      apPending.style.width = `${pendPct}%`;
+      apOverdue.style.width = `${overPct}%`;
     }
   }
 

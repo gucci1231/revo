@@ -24,6 +24,12 @@
           <span class="dash-hero-caption">今期目標</span>
         </div>
       </div>
+      <!-- ミニプログレスバー -->
+      <div class="dash-hero-sparkline">
+        <div class="dash-hero-progress-bg bg-amber-100/70">
+          <div id="kpi-progress-joined" class="dash-hero-progress-fill bg-amber-500" style="width: 0%;"></div>
+        </div>
+      </div>
     </div>
 
     <!-- KPI 2: 申込ビジター総数 -->
@@ -46,6 +52,19 @@
           </div>
           <span class="dash-hero-caption">累計申込</span>
         </div>
+      </div>
+      <!-- ミニスパークライン -->
+      <div class="dash-hero-sparkline">
+        <svg id="kpi-sparkline-visitors" class="dash-hero-sparkline-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="spark-blue-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0"/>
+            </linearGradient>
+          </defs>
+          <path id="kpi-sparkline-area-visitors" fill="url(#spark-blue-grad)" d="M0,20 L100,20 Z" />
+          <path id="kpi-sparkline-line-visitors" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M0,10 L100,10" />
+        </svg>
       </div>
     </div>
 
@@ -70,6 +89,20 @@
           <span class="dash-hero-caption">参加予定</span>
         </div>
       </div>
+      <!-- 次回/次々回ミニバー -->
+      <div class="dash-hero-sparkline">
+        <div class="flex items-center gap-1.5 w-full">
+          <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden" title="直近実績">
+            <div id="kpi-bar-meeting-last" class="h-full bg-slate-300 rounded-full" style="width: 50%;"></div>
+          </div>
+          <div class="flex-1 h-1.5 bg-emerald-100 rounded-full overflow-hidden" title="次回予定">
+            <div id="kpi-bar-meeting-next" class="h-full bg-emerald-500 rounded-full" style="width: 75%;"></div>
+          </div>
+          <div class="flex-1 h-1.5 bg-emerald-50 rounded-full overflow-hidden" title="次々回予定">
+            <div id="kpi-bar-meeting-after" class="h-full bg-emerald-300 rounded-full" style="width: 30%;"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- KPI 4: 要対応アクション -->
@@ -91,6 +124,14 @@
             <span class="dash-hero-unit-text">件</span>
           </div>
           <span class="dash-hero-caption">進行中タスク</span>
+        </div>
+      </div>
+      <!-- アクション進捗スタックバー -->
+      <div class="dash-hero-sparkline">
+        <div class="dash-hero-progress-bg bg-slate-100 flex overflow-hidden">
+          <div id="kpi-ap-bar-completed" class="h-full bg-emerald-500 transition-all duration-500" style="width: 50%;" title="完了"></div>
+          <div id="kpi-ap-bar-pending" class="h-full bg-indigo-500 transition-all duration-500" style="width: 35%;" title="進行中"></div>
+          <div id="kpi-ap-bar-overdue" class="h-full bg-rose-500 transition-all duration-500" style="width: 15%;" title="超過"></div>
         </div>
       </div>
     </div>
