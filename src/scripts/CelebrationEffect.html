@@ -1,0 +1,288 @@
+<script>
+/**
+ * CelebrationEffect - Minimalist Game-Clear Style Reward & Animation Engine
+ * 提供機能:
+ * 1. Web Audio API による澄んだクリスタルクリアチャイム（和音アルペジオ）
+ * 2. Canvas ベースの軽量ゴールド＆エメラルド幾何学スターパーティクル
+ * 3. 洗練されたミニマルHUDスタイルの承認オーバーレイ演出
+ */
+window.CelebrationEffect = (function() {
+  let audioCtx = null;
+
+  // Web Audio 初期化 & サウンド再生 (C5 -> E5 -> G5 -> C6 のクリアファンファーレ)
+  function playClearChime() {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+      // ノート周波数: C5(523.25), E5(659.25), G5(783.99), B5(987.77), C6(1046.50)
+      const notes = [
+        { freq: 523.25, time: 0.00, dur: 0.4, gain: 0.15 },
+        { freq: 659.25, time: 0.08, dur: 0.4, gain: 0.18 },
+        { freq: 783.99, time: 0.16, dur: 0.45, gain: 0.20 },
+        { freq: 1046.50, time: 0.25, dur: 0.7, gain: 0.25 }
+      ];
+
+      notes.forEach(n => {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        // 澄んだサイン波 + 少しの倍音感
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(n.freq, now + n.time);
+
+        gainNode.gain.setValueAtTime(0.0001, now + n.time);
+        gainNode.gain.exponentialRampToValueAtTime(n.gain, now + n.time + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + n.time + n.dur);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start(now + n.time);
+        osc.stop(now + n.time + n.dur + 0.05);
+      });
+    } catch (e) {
+      console.warn('Web Audio error (skipped):', e);
+    }
+  }
+
+  // Canvas パーティクルアニメーション
+  function runParticles(canvas) {
+    const ctx = canvas.getContext('2d');
+    const width = (canvas.width = window.innerWidth);
+    const height = (canvas.height = window.innerHeight);
+
+    const particles = [];
+    const colors = [
+      '#F59E0B', // Amber Gold
+      '#FBBF24', // Bright Gold
+      '#10B981', // Emerald
+      '#3B82F6', // Blue
+      '#6366F1', // Indigo
+      '#EC4899', // Pink
+      '#FFFFFF'  // White Diamond
+    ];
+
+    const particleCount = 45;
+    const originX = width / 2;
+    const originY = height / 2 - 20;
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+      const speed = Math.random() * 8 + 4;
+      particles.push({
+        x: originX,
+        y: originY,
+        vx: Math.cos(angle) * speed * (Math.random() * 0.8 + 0.6),
+        vy: Math.sin(angle) * speed * (Math.random() * 0.8 + 0.6) - 2.5, // 少し上方向にバイアス
+        size: Math.random() * 5 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.2,
+        shape: Math.random() > 0.4 ? 'star' : 'diamond',
+        alpha: 1,
+        decay: Math.random() * 0.015 + 0.012,
+        gravity: 0.18,
+        friction: 0.96
+      });
+    }
+
+    let animId = null;
+
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+      let aliveCount = 0;
+
+      for (let p of particles) {
+        if (p.alpha <= 0) continue;
+        aliveCount++;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= p.friction;
+        p.vy = p.vy * p.friction + p.gravity;
+        p.rotation += p.vRot;
+        p.alpha -= p.decay;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.globalAlpha = Math.max(0, p.alpha);
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 6;
+
+        if (p.shape === 'star') {
+          // 4点スター描画
+          ctx.beginPath();
+          const r = p.size;
+          ctx.moveTo(0, -r * 1.5);
+          ctx.quadraticCurveTo(0, 0, r * 1.5, 0);
+          ctx.quadraticCurveTo(0, 0, 0, r * 1.5);
+          ctx.quadraticCurveTo(0, 0, -r * 1.5, 0);
+          ctx.quadraticCurveTo(0, 0, 0, -r * 1.5);
+          ctx.fill();
+        } else {
+          // ダイヤモンド描画
+          ctx.beginPath();
+          const r = p.size;
+          ctx.moveTo(0, -r);
+          ctx.lineTo(r, 0);
+          ctx.lineTo(0, r);
+          ctx.lineTo(-r, 0);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.restore();
+      }
+
+      if (aliveCount > 0) {
+        animId = requestAnimationFrame(render);
+      }
+    }
+
+    render();
+
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }
+
+  /**
+   * メイン演出トリガー: ゲームクリア風クエスト完了HUD
+   * @param {Object} options
+   *   - title: string (例: 'ACTION COMPLETE')
+   *   - subtitle: string (例: '川口 陽平さん、ナイスフォロー！')
+   *   - detail: string (例: '事前連絡と1to1日程調整完了')
+   *   - badgeText: string (例: '+100 EXP / 達成')
+   */
+  function triggerQuestClear(options = {}) {
+    const title = options.title || 'ACTION COMPLETED';
+    const subtitle = options.subtitle || 'ナイスアクション！';
+    const detail = options.detail || '';
+    const badgeText = options.badgeText || 'STATUS: COMPLETED';
+
+    // 既存のエフェクトがあれば削除
+    const existing = document.getElementById('revo-quest-clear-overlay');
+    if (existing) existing.remove();
+
+    // 音声再生
+    playClearChime();
+
+    // オーバーレイDOM作成
+    const overlay = document.createElement('div');
+    overlay.id = 'revo-quest-clear-overlay';
+    overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none';
+    overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.45)';
+    overlay.style.backdropFilter = 'blur(4px)';
+    overlay.style.webkitBackdropFilter = 'blur(4px)';
+    overlay.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+    overlay.style.opacity = '0';
+
+    overlay.innerHTML = `
+      <canvas id="revo-celebration-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+      
+      <!-- Minimalist Game Clear HUD Card -->
+      <div id="revo-quest-card" class="relative z-10 mx-4 max-w-sm w-full bg-slate-900/90 text-white border border-amber-400/40 rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden" style="box-shadow: 0 0 35px rgba(245, 158, 11, 0.25), 0 20px 40px -15px rgba(0, 0, 0, 0.5); transform: scale(0.85); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;">
+        
+        <!-- Ambient Top Glow Light -->
+        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-24 bg-gradient-to-b from-amber-400/30 to-transparent blur-xl pointer-events-none rounded-full"></div>
+
+        <!-- Top Clear Badge -->
+        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[10px] font-extrabold tracking-widest uppercase mb-3 shadow-sm">
+          <i class="fa-solid fa-crown text-amber-400 animate-pulse text-xs"></i>
+          <span>${badgeText}</span>
+        </div>
+
+        <!-- Animated Center Icon -->
+        <div class="relative my-1 flex items-center justify-center">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-slate-950 text-2xl shadow-lg shadow-amber-500/40 transform -rotate-3 hover:rotate-0 transition-transform">
+            <i class="fa-solid fa-check text-slate-950 font-black text-3xl"></i>
+          </div>
+          <!-- Sparkle accents -->
+          <i class="fa-solid fa-star absolute -top-1.5 -right-2 text-yellow-300 text-xs animate-spin" style="animation-duration: 4s;"></i>
+          <i class="fa-solid fa-sparkles absolute -bottom-1 -left-2 text-amber-300 text-xs"></i>
+        </div>
+
+        <!-- Main Quest Clear Title -->
+        <h2 class="mt-3.5 text-lg font-black tracking-wider bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm font-sans uppercase">
+          ${title}
+        </h2>
+
+        <!-- Personalized Subtitle -->
+        <p class="mt-1 text-sm font-bold text-white/95 leading-snug">
+          ${subtitle}
+        </p>
+
+        <!-- Detail Action Snippet -->
+        ${detail ? `
+          <div class="mt-3.5 w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-300 font-medium truncate shadow-inner">
+            <span class="text-amber-400 mr-1">✦</span> ${detail}
+          </div>
+        ` : ''}
+
+        <!-- Interactive Dismiss Hint -->
+        <div class="mt-4 text-[10px] text-slate-400 font-medium flex items-center gap-1.5 opacity-70">
+          <span>タップして閉じる</span>
+          <span class="text-slate-500">•</span>
+          <span class="text-slate-400">✨ NICE JOB!</span>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Canvas パーティクル起動
+    const canvas = document.getElementById('revo-celebration-canvas');
+    let cleanupParticles = null;
+    if (canvas) {
+      cleanupParticles = runParticles(canvas);
+    }
+
+    // スムーズインアニメーション
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      const card = document.getElementById('revo-quest-card');
+      if (card) {
+        card.style.transform = 'scale(1)';
+      }
+    });
+
+    // 破棄タイマー & クリック解除
+    let dismissed = false;
+    function dismiss() {
+      if (dismissed) return;
+      dismissed = true;
+      overlay.style.opacity = '0';
+      const card = document.getElementById('revo-quest-card');
+      if (card) {
+        card.style.transform = 'scale(0.9) translateY(10px)';
+      }
+      setTimeout(() => {
+        if (cleanupParticles) cleanupParticles();
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 350);
+    }
+
+    overlay.onclick = dismiss;
+
+    // 2.6秒後に自動フェードアウト
+    setTimeout(dismiss, 2600);
+  }
+
+  return {
+    triggerQuestClear: triggerQuestClear,
+    playClearChime: playClearChime
+  };
+})();
+</script>

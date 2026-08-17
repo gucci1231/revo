@@ -97,8 +97,30 @@
     })
       .then(res => {
         if (res && res.success) {
-          showToast(isCompleted === 1 ? '✅ アクションを報告し、完了にしました！' : '💾 途中経過を保存しました');
+          const vName = document.getElementById('report-ap-visitor-name')?.innerText || '';
+          const actionTxt = document.getElementById('report-ap-action-text')?.innerText || '';
+          const reporterOrAssignee = reporterName || document.getElementById('report-ap-assignee')?.innerText || '';
+
           closeActionReportModal();
+
+          if (isCompleted === 1 && window.CelebrationEffect) {
+            const actorGreeting = reporterOrAssignee && reporterOrAssignee !== '-' && reporterOrAssignee !== '担当者未設定'
+              ? `${reporterOrAssignee}さん、ナイスアクション！`
+              : 'ナイスアクション！目標達成！';
+            
+            const detailSnippet = vName && vName !== '-'
+              ? `${vName} へのフォローを達成`
+              : (actionTxt && actionTxt !== '-' ? actionTxt : 'アクションを完了しました');
+
+            CelebrationEffect.triggerQuestClear({
+              title: 'QUEST CLEAR !',
+              subtitle: actorGreeting,
+              detail: detailSnippet,
+              badgeText: 'ACTION COMPLETED ✨'
+            });
+          } else {
+            showToast('💾 途中経過を保存しました');
+          }
 
           // Refresh current views
           if (typeof fetchDashboardData === 'function') {

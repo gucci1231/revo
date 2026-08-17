@@ -828,9 +828,32 @@
 
   function toggleActionPlan(id, newStatus) {
     if (!id) return;
+    const planItem = Array.isArray(currentVdActionPlans) ? currentVdActionPlans.find(p => String(p.id) === String(id)) : null;
+
     ApiService.call('toggleActionPlanApi', id, newStatus)
       .then(res => {
-        showToast(newStatus === 1 ? '🎉 アクションプランを完了にしました！' : 'アクションプランを未完了に戻しました');
+        if (newStatus === 1 && window.CelebrationEffect) {
+          const assignee = planItem ? planItem.assignee_name : '';
+          const actionTxt = planItem ? planItem.action_text : '';
+          const visitorName = currentVisitorDetail ? currentVisitorDetail.visitor_name : '';
+          
+          const actorGreeting = assignee
+            ? `${assignee}さん、ナイスアクション！`
+            : 'ナイスアクション！目標達成！';
+          
+          const detailSnippet = visitorName
+            ? `${visitorName}様へのアクションを達成`
+            : (actionTxt || 'アクションを完了しました');
+
+          CelebrationEffect.triggerQuestClear({
+            title: 'QUEST CLEAR !',
+            subtitle: actorGreeting,
+            detail: detailSnippet,
+            badgeText: 'ACTION COMPLETED ✨'
+          });
+        } else {
+          showToast(newStatus === 1 ? '🎉 アクションプランを完了にしました！' : 'アクションプランを未完了に戻しました');
+        }
         if (res.list) renderActionPlansList(res.list);
       })
       .catch(handleError);
