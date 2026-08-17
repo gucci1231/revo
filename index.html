@@ -3790,11 +3790,11 @@ tr:last-child td { border-bottom: none; }
         <thead>
           <tr>
             <th>参加日</th>
+            <th class="text-center">ランク</th>
             <th>氏名</th>
             <th>会社名</th>
             <th>専門分野</th>
             <th>招待者</th>
-            <th class="text-center">ランク</th>
             <th class="text-center">出欠</th>
           </tr>
         </thead>
@@ -7352,6 +7352,7 @@ window.CelebrationEffect = (function() {
 
         tr.innerHTML = `
           <td>${formatEventDateWithElapsed(v.eventDate)}</td>
+          <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td>
             <div>
               ${renderVisitorNameLinkHtml(v.id, v.name, v)}
@@ -7361,7 +7362,6 @@ window.CelebrationEffect = (function() {
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
-          <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
         `;
         tbody.appendChild(tr);
