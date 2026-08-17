@@ -2315,7 +2315,175 @@ tr:last-child td { border-bottom: none; }
   box-sizing: border-box;
 }
 
+/* --- 📌 Actions Kanban Board (PC Layout) --- */
+.actions-kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 18px;
+  background: #f8fafc;
+  border-radius: 16px;
+  min-height: 520px;
+  align-items: start;
+}
+
+.kanban-column {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 480px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.kanban-col-overdue {
+  background: #fff8f8;
+  border-color: #fee2e2;
+}
+.kanban-col-pending {
+  background: #f8faff;
+  border-color: #dbeafe;
+}
+.kanban-col-completed {
+  background: #f6fbf8;
+  border-color: #dcfce7;
+}
+
+.kanban-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid #e2e8f0;
+}
+.kanban-col-overdue .kanban-column-header { border-bottom-color: #fecaca; }
+.kanban-col-pending .kanban-column-header { border-bottom-color: #bfdbfe; }
+.kanban-col-completed .kanban-column-header { border-bottom-color: #bbf7d0; }
+
+.kanban-col-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: -0.01em;
+}
+.kanban-col-count {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.kanban-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.kanban-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08);
+  border-color: #cbd5e1;
+}
+
+.kanban-card.is-overdue {
+  border-left: 4px solid #ef4444;
+  background: #ffffff;
+}
+.kanban-card.is-pending {
+  border-left: 4px solid #2563eb;
+}
+.kanban-card.is-completed {
+  border-left: 4px solid #10b981;
+  opacity: 0.94;
+}
+
+.kanban-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kanban-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+.kanban-card-sub {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.kanban-card-action-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.kanban-card-action-text.completed {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+.kanban-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+.kanban-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kanban-empty-placeholder {
+  text-align: center;
+  padding: 32px 12px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 @media (max-width: 1023px) {
+  .actions-kanban-board {
+    display: none !important;
+  }
   .dash-ap-table-wrap {
     display: none !important;
   }
@@ -3519,23 +3687,47 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- 🖥️ PC表示用: テーブルビュー -->
-    <div class="table-container dash-ap-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-w-md" style="width: 130px; min-width: 115px;">期日 / 担当</th>
-            <th style="width: 180px; min-width: 140px;">対象ビジター</th>
-            <th>アクション内容 ＆ 実施報告</th>
-            <th class="text-center col-w-md" style="width: 85px;">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-actions-all"></tbody>
-      </table>
+    <!-- 🖥️ PC表示用: 看板ボード (Kanban Board) -->
+    <div class="actions-kanban-board hidden lg:grid">
+      <!-- レーン 1: ⚠️ 期限超過 -->
+      <div class="kanban-column kanban-col-overdue">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-rose-700">
+            <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+            <span>期限超過</span>
+          </div>
+          <span class="kanban-col-count bg-rose-100 text-rose-700" id="kanban-count-overdue">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-overdue"></div>
+      </div>
+
+      <!-- レーン 2: 🎯 進行中・予定 -->
+      <div class="kanban-column kanban-col-pending">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-blue-700">
+            <i class="fa-solid fa-bullseye text-blue-600"></i>
+            <span>進行中 / 本日予定</span>
+          </div>
+          <span class="kanban-col-count bg-blue-100 text-blue-700" id="kanban-count-pending">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-pending"></div>
+      </div>
+
+      <!-- レーン 3: ✅ 完了実績 -->
+      <div class="kanban-column kanban-col-completed">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-emerald-700">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <span>完了実績</span>
+          </div>
+          <span class="kanban-col-count bg-emerald-100 text-emerald-700" id="kanban-count-completed">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-completed"></div>
+      </div>
     </div>
 
     <!-- 📱 スマホ表示用: カードグリッド -->
-    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4"></div>
+    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4 lg:hidden"></div>
   </section>
 
 </div>
@@ -6267,7 +6459,7 @@ window.CelebrationEffect = (function() {
       filterActionsList();
       return;
     }
-    showTableSkeleton('table-actions-all', 6, 5);
+    showKanbanSkeleton();
     ApiService.call('getActionPlansApi', '')
       .then(res => {
         if (res && res.success) {
@@ -6278,6 +6470,25 @@ window.CelebrationEffect = (function() {
         }
       })
       .catch(handleError);
+  }
+
+  function showKanbanSkeleton() {
+    ['overdue', 'pending', 'completed'].forEach(col => {
+      const container = document.getElementById(`kanban-list-${col}`);
+      if (container) {
+        container.innerHTML = `
+          <div class="skeleton skeleton-card" style="min-height: 100px; border-radius: 14px; margin-bottom: 10px;"></div>
+          <div class="skeleton skeleton-card" style="min-height: 100px; border-radius: 14px; margin-bottom: 10px;"></div>
+        `;
+      }
+    });
+    const cardsContainer = document.getElementById('cards-actions-all');
+    if (cardsContainer) {
+      cardsContainer.innerHTML = `
+        <div class="skeleton skeleton-card" style="min-height: 110px; border-radius: 14px; margin-bottom: 10px;"></div>
+        <div class="skeleton skeleton-card" style="min-height: 110px; border-radius: 14px; margin-bottom: 10px;"></div>
+      `;
+    }
   }
 
   function updateActionsKpisAndBadges() {
@@ -6350,59 +6561,183 @@ window.CelebrationEffect = (function() {
 
     let filtered = list;
 
-    // 1. Status Filter
+    // 1. Status Filter (Mobile tabs or KPI click)
+    let mobileFiltered = list;
     if (currentActionsFilter === 'pending') {
-      filtered = filtered.filter(p => Number(p.is_completed) === 0);
+      mobileFiltered = mobileFiltered.filter(p => Number(p.is_completed) === 0);
     } else if (currentActionsFilter === 'overdue') {
-      filtered = filtered.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+      mobileFiltered = mobileFiltered.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
     } else if (currentActionsFilter === 'completed') {
-      filtered = filtered.filter(p => Number(p.is_completed) === 1);
+      mobileFiltered = mobileFiltered.filter(p => Number(p.is_completed) === 1);
     }
 
     // 2. Assignee Filter
     if (assigneeFilter) {
       filtered = filtered.filter(p => (p.assignee_name || '').trim() === assigneeFilter);
+      mobileFiltered = mobileFiltered.filter(p => (p.assignee_name || '').trim() === assigneeFilter);
     }
 
     // 3. Search Query
     if (search) {
-      filtered = filtered.filter(p => {
+      const matcher = p => {
         const text = (p.action_text || '').toLowerCase();
         const vName = (p.visitor_name || '').toLowerCase();
         const vCompany = (p.visitor_company || '').toLowerCase();
         const assignee = (p.assignee_name || '').toLowerCase();
         const report = (p.report_text || '').toLowerCase();
         return text.includes(search) || vName.includes(search) || vCompany.includes(search) || assignee.includes(search) || report.includes(search);
-      });
+      };
+      filtered = filtered.filter(matcher);
+      mobileFiltered = mobileFiltered.filter(matcher);
     }
 
-    renderActionsTableAndCards(filtered);
+    renderActionsKanbanAndCards(filtered, mobileFiltered);
   }
 
-  function renderActionsTableAndCards(list) {
-    const tbody = document.getElementById('table-actions-all');
-    const cardsContainer = document.getElementById('cards-actions-all');
+  function renderActionsKanbanAndCards(allFilteredList, mobileFilteredList) {
     const todayStr = new Date().toISOString().slice(0, 10);
 
-    if (tbody) tbody.innerHTML = '';
-    if (cardsContainer) cardsContainer.innerHTML = '';
+    // Grouping for Kanban Columns
+    const overdueItems = [];
+    const pendingItems = [];
+    const completedItems = [];
+
+    (allFilteredList || []).forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+      if (isCompleted) {
+        completedItems.push(p);
+      } else if (isOverdue) {
+        overdueItems.push(p);
+      } else {
+        pendingItems.push(p);
+      }
+    });
+
+    // Update Kanban Column Counts
+    const countOverdueEl = document.getElementById('kanban-count-overdue');
+    const countPendingEl = document.getElementById('kanban-count-pending');
+    const countCompletedEl = document.getElementById('kanban-count-completed');
+    if (countOverdueEl) countOverdueEl.innerText = overdueItems.length;
+    if (countPendingEl) countPendingEl.innerText = pendingItems.length;
+    if (countCompletedEl) countCompletedEl.innerText = completedItems.length;
+
+    // Render Kanban Columns (PC)
+    renderKanbanColumnList('kanban-list-overdue', overdueItems, 'overdue', '期限超過のアクションはありません');
+    renderKanbanColumnList('kanban-list-pending', pendingItems, 'pending', '進行中のアクションはありません');
+    renderKanbanColumnList('kanban-list-completed', completedItems, 'completed', '完了済みのアクションはありません');
+
+    // Render Mobile Cards List
+    renderMobileActionCards(mobileFilteredList);
+  }
+
+  function renderKanbanColumnList(containerId, items, columnType, emptyMsg) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div class="kanban-empty-placeholder">
+          <i class="fa-solid ${columnType === 'overdue' ? 'fa-circle-check text-emerald-500' : 'fa-clipboard-list text-slate-300'} text-lg mb-1"></i>
+          <div>${emptyMsg}</div>
+        </div>
+      `;
+      return;
+    }
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    items.forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+      const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
+
+      let scheduleBadgeHtml = '';
+      if (isCompleted) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+      } else if (isOverdue) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-rose-700"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+      } else if (isDueToday) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-amber-700"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${p.due_date})</span></span>`;
+      } else {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-700"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+      }
+
+      const reportBoxHtml = p.report_text
+        ? `<div class="dash-ap-card-report">
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(${escapeHtml(p.completed_by)})</span>` : ''}
+           </div>`
+        : '';
+
+      const card = document.createElement('div');
+      card.className = `kanban-card is-${columnType}`;
+      card.onclick = function(e) {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        openVisitorDetailView(p.visitor_id);
+      };
+
+      card.innerHTML = `
+        <div class="kanban-card-top">
+          <div class="min-w-0 flex-1">
+            <div class="kanban-card-title truncate">
+              ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
+            </div>
+            ${p.visitor_company ? `<div class="kanban-card-sub truncate">${escapeHtml(p.visitor_company)}</div>` : ''}
+          </div>
+          ${renderRankBadgeHtml(p.feelAbc || '', 'small')}
+        </div>
+
+        <div class="kanban-card-action-text ${isCompleted ? 'completed' : ''}">
+          ${escapeHtml(p.action_text)}
+        </div>
+        ${reportBoxHtml}
+
+        <div class="kanban-card-footer" onclick="event.stopPropagation()">
+          <div class="kanban-card-meta">
+            ${scheduleBadgeHtml}
+            <span class="vd-ap-badge-user text-[10.5px] py-0.5 px-2"><i class="fa-regular fa-user text-[9px]"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" class="btn-action-secondary vd-quick-chip text-[11px] px-2 py-1" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+            </button>
+            ${!isCompleted ? `
+              <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size:11.5px; font-weight:700; border-radius:6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+              </button>
+            ` : `
+              <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px; font-weight:600; border-radius:6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-check mr-1 text-emerald-600"></i> 確認
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  function renderMobileActionCards(list) {
+    const cardsContainer = document.getElementById('cards-actions-all');
+    if (!cardsContainer) return;
+    cardsContainer.innerHTML = '';
+
+    const todayStr = new Date().toISOString().slice(0, 10);
 
     if (!list || list.length === 0) {
       const emptyMsg = currentActionsFilter === 'overdue'
         ? '期限超過のアクションプランはありません（すべて順調です）'
         : (currentActionsFilter === 'completed' ? '完了済みのアクションプランはありません' : '該当するアクションプランはありません');
 
-      if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 36px 16px;">${emptyMsg}</td></tr>`;
-      }
-      if (cardsContainer) {
-        cardsContainer.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
-            <i class="fa-solid fa-clipboard-check text-3xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
-          </div>
-        `;
-      }
+      cardsContainer.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 16px; border: 1px dashed #cbd5e1;">
+          <i class="fa-solid fa-clipboard-check text-3xl text-slate-300 mb-2"></i>
+          <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
+        </div>
+      `;
       return;
     }
 
@@ -6411,7 +6746,6 @@ window.CelebrationEffect = (function() {
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
-      // 期日 ＆ 進行中・超過・完了ステータス (丸だけに色をつける)
       let scheduleBadgeHtml = '';
       if (isCompleted) {
         scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
@@ -6423,16 +6757,6 @@ window.CelebrationEffect = (function() {
         scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
       }
 
-      const scheduleAndAssigneeHtml = `
-        <div class="flex flex-col items-start justify-center">
-          ${scheduleBadgeHtml}
-          <div class="flex items-center gap-1 text-[11px] text-slate-500 font-semibold mt-0.5 pl-0.5">
-            <i class="fa-regular fa-user text-[10px] text-slate-400"></i>
-            <span class="truncate max-w-[120px]">${escapeHtml(p.assignee_name || '担当未定')}</span>
-          </div>
-        </div>
-      `;
-
       const reportBoxHtml = p.report_text
         ? `<div class="dash-ap-card-report">
              <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
@@ -6440,102 +6764,55 @@ window.CelebrationEffect = (function() {
            </div>`
         : '';
 
-      // 1. PCテーブル行
-      if (tbody) {
-        const tr = document.createElement('tr');
-        tr.style.cursor = 'pointer';
-        tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
-          openVisitorDetailView(p.visitor_id);
-        };
-        tr.innerHTML = `
-          <td>${scheduleAndAssigneeHtml}</td>
-          <td>
-            <div>
-              <div style="font-weight: 800; font-size: 14px; color: #0f172a;">
-                ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
-              </div>
-              ${p.visitor_company ? `<div style="font-size:11px; color:#64748b; margin-top:1px;">${escapeHtml(p.visitor_company)}</div>` : ''}
-            </div>
-          </td>
-          <td>
-            <div style="font-size:13px; font-weight:700; color:#1e293b; white-space:normal;">
-              ${escapeHtml(p.action_text)}
-            </div>
-            ${reportBoxHtml}
-          </td>
-          <td class="text-center">
-            <div class="flex items-center justify-center gap-1.5 flex-wrap" onclick="event.stopPropagation();">
-              ${!isCompleted ? `
-                <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size:12px; font-weight:700; white-space:nowrap; border-radius:8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
-                </button>
-              ` : `
-                <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size:11px; font-weight:600; white-space:nowrap; border-radius:8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-check mr-1 text-emerald-600"></i> 確認
-                </button>
-              `}
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      }
+      const card = document.createElement('div');
+      card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
+      card.onclick = function() {
+        openVisitorDetailView(p.visitor_id);
+      };
 
-      // 2. スマホカード
-      if (cardsContainer) {
-        const card = document.createElement('div');
-        card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
-        card.onclick = function() {
-          openVisitorDetailView(p.visitor_id);
-        };
-
-        card.innerHTML = `
-          <!-- 上段: 左側にビジター名（大きく太字）＋会社、右側に大きな報告ボタン -->
-          <div class="dash-ap-card-top-row">
-            <div class="dash-ap-card-visitor-left">
-              <div class="dash-ap-card-visitor-name">
-                <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
-                <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
-              </div>
-              ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
+      card.innerHTML = `
+        <div class="dash-ap-card-top-row">
+          <div class="dash-ap-card-visitor-left">
+            <div class="dash-ap-card-visitor-name">
+              <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
+              <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
             </div>
-            <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
-              ${!isCompleted ? `
-                <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-clipboard-check"></i> 報告
-                </button>
-              ` : `
-                <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-check text-emerald-600"></i> 確認
-                </button>
-              `}
-            </div>
+            ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
-
-          <!-- 中段: アクション内容と実施報告 -->
-          <div class="dash-ap-card-body">
-            <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-              ${escapeHtml(p.action_text)}
-            </div>
-            ${reportBoxHtml}
-          </div>
-
-          <!-- 下段: 左側に期日(状態付)・担当者バッジ、右側に共有・詳細ナビ -->
-          <div class="dash-ap-card-bottom-row">
-            <div class="dash-ap-card-badges-left">
-              ${scheduleBadgeHtml}
-              <span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
-            </div>
-            <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
-                <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
+          <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
+            ${!isCompleted ? `
+              <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-clipboard-check"></i> 報告
               </button>
-              <span class="text-slate-300 text-sm ml-0.5"><i class="fa-solid fa-chevron-right"></i></span>
-            </div>
+            ` : `
+              <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-check text-emerald-600"></i> 確認
+              </button>
+            `}
           </div>
-        `;
-        cardsContainer.appendChild(card);
-      }
+        </div>
+
+        <div class="dash-ap-card-body">
+          <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+            ${escapeHtml(p.action_text)}
+          </div>
+          ${reportBoxHtml}
+        </div>
+
+        <div class="dash-ap-card-bottom-row">
+          <div class="dash-ap-card-badges-left">
+            ${scheduleBadgeHtml}
+            <span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
+          </div>
+          <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+              <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
+            </button>
+            <span class="text-slate-300 text-sm ml-0.5"><i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+        </div>
+      `;
+      cardsContainer.appendChild(card);
     });
   }
 </script>

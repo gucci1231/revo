@@ -90,23 +90,47 @@
       </div>
     </div>
 
-    <!-- 🖥️ PC表示用: テーブルビュー -->
-    <div class="table-container dash-ap-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-w-md" style="width: 130px; min-width: 115px;">期日 / 担当</th>
-            <th style="width: 180px; min-width: 140px;">対象ビジター</th>
-            <th>アクション内容 ＆ 実施報告</th>
-            <th class="text-center col-w-md" style="width: 85px;">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-actions-all"></tbody>
-      </table>
+    <!-- 🖥️ PC表示用: 看板ボード (Kanban Board) -->
+    <div class="actions-kanban-board hidden lg:grid">
+      <!-- レーン 1: ⚠️ 期限超過 -->
+      <div class="kanban-column kanban-col-overdue">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-rose-700">
+            <i class="fa-solid fa-triangle-exclamation text-rose-500"></i>
+            <span>期限超過</span>
+          </div>
+          <span class="kanban-col-count bg-rose-100 text-rose-700" id="kanban-count-overdue">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-overdue"></div>
+      </div>
+
+      <!-- レーン 2: 🎯 進行中・予定 -->
+      <div class="kanban-column kanban-col-pending">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-blue-700">
+            <i class="fa-solid fa-bullseye text-blue-600"></i>
+            <span>進行中 / 本日予定</span>
+          </div>
+          <span class="kanban-col-count bg-blue-100 text-blue-700" id="kanban-count-pending">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-pending"></div>
+      </div>
+
+      <!-- レーン 3: ✅ 完了実績 -->
+      <div class="kanban-column kanban-col-completed">
+        <div class="kanban-column-header">
+          <div class="kanban-col-title text-emerald-700">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+            <span>完了実績</span>
+          </div>
+          <span class="kanban-col-count bg-emerald-100 text-emerald-700" id="kanban-count-completed">0</span>
+        </div>
+        <div class="kanban-card-list" id="kanban-list-completed"></div>
+      </div>
     </div>
 
     <!-- 📱 スマホ表示用: カードグリッド -->
-    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4"></div>
+    <div id="cards-actions-all" class="dash-ap-grid dash-ap-cards-wrap p-3 sm:p-4 lg:hidden"></div>
   </section>
 
 </div>

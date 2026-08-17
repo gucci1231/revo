@@ -121,6 +121,41 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(completedList.length, 1);
     assert.strictEqual(completedList[0].id, '3');
   });
+
+  it('correctly partitions items into Kanban board columns (Overdue, Pending, Completed)', () => {
+    const today = '2026-08-20';
+    const plans = [
+      { id: '1', due_date: '2026-08-15', is_completed: 0, action_text: '超過タスク' },
+      { id: '2', due_date: '2026-08-20', is_completed: 0, action_text: '本日タスク' },
+      { id: '3', due_date: '2026-08-25', is_completed: 0, action_text: '未来タスク' },
+      { id: '4', due_date: '2026-08-10', is_completed: 1, action_text: '完了タスク' }
+    ];
+
+    const overdueItems = [];
+    const pendingItems = [];
+    const completedItems = [];
+
+    plans.forEach(p => {
+      const isCompleted = Number(p.is_completed) === 1;
+      const isOverdue = !isCompleted && p.due_date && p.due_date < today;
+      if (isCompleted) {
+        completedItems.push(p);
+      } else if (isOverdue) {
+        overdueItems.push(p);
+      } else {
+        pendingItems.push(p);
+      }
+    });
+
+    assert.strictEqual(overdueItems.length, 1);
+    assert.strictEqual(overdueItems[0].id, '1');
+
+    assert.strictEqual(pendingItems.length, 2);
+    assert.deepStrictEqual(pendingItems.map(p => p.id), ['2', '3']);
+
+    assert.strictEqual(completedItems.length, 1);
+    assert.strictEqual(completedItems[0].id, '4');
+  });
 });
 
 
