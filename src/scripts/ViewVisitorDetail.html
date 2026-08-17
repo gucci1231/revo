@@ -6,12 +6,214 @@
   let currentVdWebAppUrl = "";
   let currentVdActionPlans = [];
   let cachedMemberCategories = [];
+  let currentVisitorNavList = null;
+  let currentVdActiveTab = "action-plan";
+  let isVdNavigating = false;
 
   function openVisitorDetailModal(id) {
     openVisitorDetailView(id);
   }
 
-  function openVisitorDetailView(id, updateHash = true, scrollToTop = true) {
+  /* --- 🔄 Visitor Sequence Navigation Helpers --- */
+  function getVisitorNavSequence() {
+    if (currentVisitorNavList && currentVisitorNavList.length > 0) {
+      const exists = currentVisitorNavList.some(v => v && (String(v.id) === String(currentVdVisitorId) || (v.allIds && v.allIds.some(id => String(id) === String(currentVdVisitorId)))));
+      if (exists) return currentVisitorNavList;
+    }
+    if (typeof filteredVisitors !== 'undefined' && filteredVisitors && filteredVisitors.length > 0) {
+      const exists = filteredVisitors.some(v => v && (String(v.id) === String(currentVdVisitorId) || (v.allIds && v.allIds.some(id => String(id) === String(currentVdVisitorId)))));
+      if (exists) return filteredVisitors;
+    }
+    if (typeof cachedAllVisitors !== 'undefined' && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      return cachedAllVisitors;
+    }
+    if (typeof currentDashboardData !== 'undefined' && currentDashboardData && currentDashboardData.hotVisitors && currentDashboardData.hotVisitors.length > 0) {
+      return currentDashboardData.hotVisitors;
+    }
+    if (typeof cachedPriorityFollowList !== 'undefined' && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      return cachedPriorityFollowList;
+    }
+    if (typeof cachedHearingList !== 'undefined' && cachedHearingList && cachedHearingList.length > 0) {
+      return cachedHearingList;
+    }
+    // バックグラウンドで一覧を取得してナビゲーションを準備
+    if (typeof fetchAllVisitorsData === 'function') {
+      fetchAllVisitorsData(false);
+    }
+    return [];
+  }
+
+  function getAdjacentVisitors() {
+    const list = getVisitorNavSequence();
+    if (!list || list.length === 0 || !currentVdVisitorId) {
+      return { prev: null, next: null, currentIndex: -1, total: 0 };
+    }
+    const currentIdStr = String(currentVdVisitorId);
+    const idx = list.findIndex(v => {
+      if (!v) return false;
+      if (String(v.id) === currentIdStr) return true;
+      if (v.allIds && Array.isArray(v.allIds)) {
+        return v.allIds.some(id => String(id) === currentIdStr);
+      }
+      return false;
+    });
+
+    if (idx === -1) {
+      return { prev: null, next: null, currentIndex: -1, total: list.length };
+    }
+    const prev = idx > 0 ? list[idx - 1] : null;
+    const next = idx < list.length - 1 ? list[idx + 1] : null;
+    return { prev, next, currentIndex: idx, total: list.length };
+  }
+
+  function updateVisitorNavUI() {
+    const { prev, next, currentIndex, total } = getAdjacentVisitors();
+
+    // トップバーのボタン & カウンター
+    const topPrevBtn = document.getElementById('vd-nav-prev-btn');
+    const topNextBtn = document.getElementById('vd-nav-next-btn');
+    const topCounter = document.getElementById('vd-nav-counter');
+
+    if (topPrevBtn) {
+      topPrevBtn.disabled = !prev;
+      topPrevBtn.title = prev ? `前のビジター: ${prev.name || 'No.' + prev.id} (← キー / 右スワイプ)` : '前のビジターはありません';
+    }
+    if (topNextBtn) {
+      topNextBtn.disabled = !next;
+      topNextBtn.title = next ? `次のビジター: ${next.name || 'No.' + next.id} (→ キー / 左スワイプ)` : '次のビジターはありません';
+    }
+    if (topCounter) {
+      if (currentIndex >= 0 && total > 0) {
+        topCounter.innerText = `${currentIndex + 1} / ${total}`;
+      } else if (total > 0) {
+        topCounter.innerText = `- / ${total}`;
+      } else {
+        topCounter.innerText = '- / -';
+      }
+    }
+
+    // スマホ用フッターボタン
+    const mobilePrevBtn = document.getElementById('vd-mobile-prev-btn');
+    const mobileNextBtn = document.getElementById('vd-mobile-next-btn');
+    if (mobilePrevBtn) {
+      mobilePrevBtn.disabled = !prev;
+      mobilePrevBtn.innerHTML = prev ? `<i class="fa-solid fa-chevron-left"></i> 前へ (${escapeHtml(prev.name || 'No.' + prev.id)})` : `<i class="fa-solid fa-chevron-left"></i> 前のビジター`;
+    }
+    if (mobileNextBtn) {
+      mobileNextBtn.disabled = !next;
+      mobileNextBtn.innerHTML = next ? `次へ (${escapeHtml(next.name || 'No.' + next.id)}) <i class="fa-solid fa-chevron-right"></i>` : `次のビジター <i class="fa-solid fa-chevron-right"></i>`;
+    }
+  }
+
+  function navigateVisitorDetail(direction) {
+    if (isVdNavigating) return;
+    const adj = getAdjacentVisitors();
+    const targetVisitor = direction === 'next' ? adj.next : adj.prev;
+
+    if (!targetVisitor || !targetVisitor.id) {
+      if (direction === 'next' && adj.currentIndex >= 0 && adj.currentIndex === adj.total - 1) {
+        showToast('最後のビジターです');
+      } else if (direction === 'prev' && adj.currentIndex === 0) {
+        showToast('最初のビジターです');
+      } else if (adj.total === 0) {
+        showToast('ビジター一覧を読み込み中です...');
+        if (typeof fetchAllVisitorsData === 'function') {
+          fetchAllVisitorsData(true);
+        }
+      }
+      return;
+    }
+
+    isVdNavigating = true;
+    const card = document.querySelector('#view-visitor-detail .vd-profile-card');
+    if (card) {
+      card.classList.remove('vd-slide-in-left', 'vd-slide-in-right', 'vd-slide-out-left', 'vd-slide-out-right');
+      card.classList.add(direction === 'next' ? 'vd-slide-out-left' : 'vd-slide-out-right');
+    }
+
+    setTimeout(() => {
+      openVisitorDetailView(targetVisitor.id, true, false, direction);
+    }, 100);
+  }
+
+  /* --- 📱 Touch Swipe & Keyboard Handler --- */
+  let vdTouchStartX = 0;
+  let vdTouchStartY = 0;
+  let vdTouchStartTime = 0;
+  let isVdSwiping = false;
+
+  function initVisitorDetailSwipeHandlers() {
+    const container = document.getElementById('view-visitor-detail');
+    if (!container || container.dataset.swipeInitialized === 'true') return;
+    container.dataset.swipeInitialized = 'true';
+
+    container.addEventListener('touchstart', function(e) {
+      if (!e.touches || e.touches.length !== 1) {
+        isVdSwiping = false;
+        return;
+      }
+      const target = e.target;
+      // 入力フォーム、モーダル、タブ切り替えバー等はスワイプ対象外
+      if (target.closest('input, textarea, select, button, a, .vd-tab-nav, .vd-quick-chips, #vd-ap-form-modal.is-open, .modal')) {
+        isVdSwiping = false;
+        return;
+      }
+      vdTouchStartX = e.touches[0].clientX;
+      vdTouchStartY = e.touches[0].clientY;
+      vdTouchStartTime = Date.now();
+      isVdSwiping = true;
+    }, { passive: true });
+
+    container.addEventListener('touchend', function(e) {
+      if (!isVdSwiping || !e.changedTouches || e.changedTouches.length === 0) {
+        isVdSwiping = false;
+        return;
+      }
+      isVdSwiping = false;
+
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const deltaX = endX - vdTouchStartX;
+      const deltaY = endY - vdTouchStartY;
+      const elapsed = Date.now() - vdTouchStartTime;
+
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      // 横スワイプ判定: 45px以上の移動、縦より1.2倍以上横優位、0.8秒以内
+      if (absX > 45 && absX > absY * 1.2 && elapsed < 800) {
+        if (deltaX < 0) {
+          // 左スワイプ -> 次へ
+          navigateVisitorDetail('next');
+        } else {
+          // 右スワイプ -> 前へ
+          navigateVisitorDetail('prev');
+        }
+      }
+    }, { passive: true });
+
+    // PCキーボード (← / →) ショートカット
+    document.addEventListener('keydown', function(e) {
+      const vdView = document.getElementById('view-visitor-detail');
+      if (!vdView || !vdView.classList.contains('active')) return;
+
+      const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      const modal = document.getElementById('vd-ap-form-modal');
+      if (modal && modal.classList.contains('is-open')) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateVisitorDetail('prev');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateVisitorDetail('next');
+      }
+    });
+  }
+
+  function openVisitorDetailView(id, updateHash = true, scrollToTop = true, navDirection = null) {
     if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
       return;
     }
@@ -19,7 +221,7 @@
     if (updateHash) {
       updateUrlHash('visitor/' + id, { visitorId: id });
     }
-    if (scrollToTop) {
+    if (scrollToTop && !navDirection) {
       document.getElementById('loading').style.display = 'flex';
     }
 
@@ -146,12 +348,36 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-visitor-detail').classList.add('active');
 
-        if (scrollToTop) {
-          switchVdTab('action-plan');
+        // ナビゲーションUIの更新とスワイプハンドラ初期化
+        updateVisitorNavUI();
+        initVisitorDetailSwipeHandlers();
+
+        // スライドアニメーションの適用
+        const card = document.querySelector('#view-visitor-detail .vd-profile-card');
+        if (card) {
+          card.classList.remove('vd-slide-out-left', 'vd-slide-out-right', 'vd-slide-in-left', 'vd-slide-in-right');
+          if (navDirection === 'next') {
+            card.classList.add('vd-slide-in-right');
+          } else if (navDirection === 'prev') {
+            card.classList.add('vd-slide-in-left');
+          }
+        }
+
+        // サブタブ状態を維持
+        switchVdTab(currentVdActiveTab || 'action-plan');
+
+        if (scrollToTop && !navDirection) {
           window.scrollTo(0, 0);
         }
+
+        setTimeout(() => {
+          isVdNavigating = false;
+        }, 220);
       })
-      .catch(handleError);
+      .catch(err => {
+        isVdNavigating = false;
+        handleError(err);
+      });
   }
 
   function shareHearingFormForCurrentVisitor() {
@@ -176,6 +402,7 @@
 
   function closeVisitorDetailView() {
     currentVdVisitorId = null;
+    currentVisitorNavList = null;
     switchTab(previousTabBeforeDetail || 'dashboard', true);
   }
 
@@ -189,6 +416,7 @@
   }
 
   function switchVdTab(tab) {
+    currentVdActiveTab = tab;
     ['action-plan', 'hearing', 'memo', 'mail'].forEach(t => {
       const btn = document.getElementById(`vd-tab-btn-${t}`);
       const pane = document.getElementById(`vd-tab-content-${t}`);

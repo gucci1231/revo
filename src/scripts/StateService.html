@@ -108,6 +108,9 @@
         if (res && res.success) {
           const d = res.data || res;
           renderDashboard(d);
+          if (typeof updateVisitorNavUI === 'function') {
+            updateVisitorNavUI();
+          }
         }
       })
       .catch(handleError);
@@ -116,6 +119,9 @@
   function fetchAllVisitorsData(forceRefresh = false) {
     if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
       filterAllVisitorsTable();
+      if (typeof updateVisitorNavUI === 'function') {
+        updateVisitorNavUI();
+      }
       return;
     }
     showTableSkeleton('table-all-visitors', 9, 5);
@@ -124,6 +130,9 @@
         if (res && res.success) {
           cachedAllVisitors = res.visitors || res.list || [];
           filterAllVisitorsTable();
+          if (typeof updateVisitorNavUI === 'function') {
+            updateVisitorNavUI();
+          }
         }
       })
       .catch(handleError);

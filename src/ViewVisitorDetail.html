@@ -1,9 +1,18 @@
 <!-- VIEW 4: ビジター詳細カルテ (Apple-Style Minimal & Refined) -->
 <div id="view-visitor-detail" class="view-content">
   <div class="vd-top-bar">
-    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="戻る">
-      <i class="fa-solid fa-chevron-left"></i>
+    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="一覧に戻る">
+      <i class="fa-solid fa-chevron-left"></i> 戻る
     </button>
+    <div class="vd-top-nav-group">
+      <button type="button" id="vd-nav-prev-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('prev')" title="前のビジター (← キー / 右スワイプ)" disabled>
+        <i class="fa-solid fa-chevron-left"></i> 前へ
+      </button>
+      <span id="vd-nav-counter" class="vd-nav-counter">- / -</span>
+      <button type="button" id="vd-nav-next-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('next')" title="次のビジター (→ キー / 左スワイプ)" disabled>
+        次へ <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
     <div class="vd-header-buttons">
       <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
@@ -262,6 +271,19 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- スマホ用スワイプ / 前後ナビゲーションフッター -->
+    <div class="vd-mobile-swipe-footer">
+      <button type="button" id="vd-mobile-prev-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('prev')" disabled>
+        <i class="fa-solid fa-chevron-left"></i> 前のビジター
+      </button>
+      <div class="vd-swipe-indicator-hint">
+        ‹ スワイプで移動 ›
+      </div>
+      <button type="button" id="vd-mobile-next-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('next')" disabled>
+        次のビジター <i class="fa-solid fa-chevron-right"></i>
+      </button>
     </div>
 
   </div>

@@ -900,6 +900,58 @@ tr:last-child td { border-bottom: none; }
   transform: scale(0.97);
 }
 
+/* --- 🔄 Visitor Navigation Widget --- */
+.vd-top-nav-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 3px 4px;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.vd-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.vd-nav-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.vd-nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.vd-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.vd-nav-counter {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  padding: 0 8px;
+  min-width: 48px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  border-left: 1px solid #f1f5f9;
+  border-right: 1px solid #f1f5f9;
+}
+
 .vd-header-buttons {
   display: flex;
   gap: 8px;
@@ -932,11 +984,96 @@ tr:last-child td { border-bottom: none; }
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+  position: relative;
+  will-change: transform, opacity;
+  touch-action: pan-y;
 }
 @media (max-width: 640px) {
   .vd-profile-card {
     padding: 16px;
     border-radius: 16px;
+  }
+}
+
+/* --- Slide Animations for Visitor Detail Transitions --- */
+.vd-slide-out-left {
+  animation: vdSlideOutLeft 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.vd-slide-out-right {
+  animation: vdSlideOutRight 0.18s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.vd-slide-in-right {
+  animation: vdSlideInRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.vd-slide-in-left {
+  animation: vdSlideInLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes vdSlideOutLeft {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-40px); opacity: 0; }
+}
+
+@keyframes vdSlideOutRight {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(40px); opacity: 0; }
+}
+
+@keyframes vdSlideInRight {
+  0% { transform: translateX(40px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes vdSlideInLeft {
+  0% { transform: translateX(-40px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+/* --- Mobile Swipe Navigation Footer --- */
+.vd-mobile-swipe-footer {
+  display: none;
+}
+@media (max-width: 640px) {
+  .vd-mobile-swipe-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2e8f0;
+    gap: 8px;
+  }
+  .vd-mobile-nav-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .vd-mobile-nav-btn:active:not(:disabled) {
+    background: #e2e8f0;
+    transform: scale(0.97);
+  }
+  .vd-mobile-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .vd-swipe-indicator-hint {
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    font-weight: 600;
+    user-select: none;
+    padding: 4px 0;
   }
 }
 
@@ -3181,9 +3318,18 @@ tr:last-child td { border-bottom: none; }
     <!-- VIEW 4: ビジター詳細カルテ (Apple-Style Minimal & Refined) -->
 <div id="view-visitor-detail" class="view-content">
   <div class="vd-top-bar">
-    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="戻る">
-      <i class="fa-solid fa-chevron-left"></i>
+    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="一覧に戻る">
+      <i class="fa-solid fa-chevron-left"></i> 戻る
     </button>
+    <div class="vd-top-nav-group">
+      <button type="button" id="vd-nav-prev-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('prev')" title="前のビジター (← キー / 右スワイプ)" disabled>
+        <i class="fa-solid fa-chevron-left"></i> 前へ
+      </button>
+      <span id="vd-nav-counter" class="vd-nav-counter">- / -</span>
+      <button type="button" id="vd-nav-next-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('next')" title="次のビジター (→ キー / 左スワイプ)" disabled>
+        次へ <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
     <div class="vd-header-buttons">
       <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
         <i class="fa-solid fa-arrow-up-from-bracket"></i>
@@ -3442,6 +3588,19 @@ tr:last-child td { border-bottom: none; }
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- スマホ用スワイプ / 前後ナビゲーションフッター -->
+    <div class="vd-mobile-swipe-footer">
+      <button type="button" id="vd-mobile-prev-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('prev')" disabled>
+        <i class="fa-solid fa-chevron-left"></i> 前のビジター
+      </button>
+      <div class="vd-swipe-indicator-hint">
+        ‹ スワイプで移動 ›
+      </div>
+      <button type="button" id="vd-mobile-next-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('next')" disabled>
+        次のビジター <i class="fa-solid fa-chevron-right"></i>
+      </button>
     </div>
 
   </div>
@@ -4380,6 +4539,9 @@ const ApiService = {
         if (res && res.success) {
           const d = res.data || res;
           renderDashboard(d);
+          if (typeof updateVisitorNavUI === 'function') {
+            updateVisitorNavUI();
+          }
         }
       })
       .catch(handleError);
@@ -4388,6 +4550,9 @@ const ApiService = {
   function fetchAllVisitorsData(forceRefresh = false) {
     if (!forceRefresh && cachedAllVisitors && cachedAllVisitors.length > 0) {
       filterAllVisitorsTable();
+      if (typeof updateVisitorNavUI === 'function') {
+        updateVisitorNavUI();
+      }
       return;
     }
     showTableSkeleton('table-all-visitors', 9, 5);
@@ -4396,6 +4561,9 @@ const ApiService = {
         if (res && res.success) {
           cachedAllVisitors = res.visitors || res.list || [];
           filterAllVisitorsTable();
+          if (typeof updateVisitorNavUI === 'function') {
+            updateVisitorNavUI();
+          }
         }
       })
       .catch(handleError);
@@ -6290,12 +6458,214 @@ const ApiService = {
   let currentVdWebAppUrl = "";
   let currentVdActionPlans = [];
   let cachedMemberCategories = [];
+  let currentVisitorNavList = null;
+  let currentVdActiveTab = "action-plan";
+  let isVdNavigating = false;
 
   function openVisitorDetailModal(id) {
     openVisitorDetailView(id);
   }
 
-  function openVisitorDetailView(id, updateHash = true, scrollToTop = true) {
+  /* --- 🔄 Visitor Sequence Navigation Helpers --- */
+  function getVisitorNavSequence() {
+    if (currentVisitorNavList && currentVisitorNavList.length > 0) {
+      const exists = currentVisitorNavList.some(v => v && (String(v.id) === String(currentVdVisitorId) || (v.allIds && v.allIds.some(id => String(id) === String(currentVdVisitorId)))));
+      if (exists) return currentVisitorNavList;
+    }
+    if (typeof filteredVisitors !== 'undefined' && filteredVisitors && filteredVisitors.length > 0) {
+      const exists = filteredVisitors.some(v => v && (String(v.id) === String(currentVdVisitorId) || (v.allIds && v.allIds.some(id => String(id) === String(currentVdVisitorId)))));
+      if (exists) return filteredVisitors;
+    }
+    if (typeof cachedAllVisitors !== 'undefined' && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      return cachedAllVisitors;
+    }
+    if (typeof currentDashboardData !== 'undefined' && currentDashboardData && currentDashboardData.hotVisitors && currentDashboardData.hotVisitors.length > 0) {
+      return currentDashboardData.hotVisitors;
+    }
+    if (typeof cachedPriorityFollowList !== 'undefined' && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      return cachedPriorityFollowList;
+    }
+    if (typeof cachedHearingList !== 'undefined' && cachedHearingList && cachedHearingList.length > 0) {
+      return cachedHearingList;
+    }
+    // バックグラウンドで一覧を取得してナビゲーションを準備
+    if (typeof fetchAllVisitorsData === 'function') {
+      fetchAllVisitorsData(false);
+    }
+    return [];
+  }
+
+  function getAdjacentVisitors() {
+    const list = getVisitorNavSequence();
+    if (!list || list.length === 0 || !currentVdVisitorId) {
+      return { prev: null, next: null, currentIndex: -1, total: 0 };
+    }
+    const currentIdStr = String(currentVdVisitorId);
+    const idx = list.findIndex(v => {
+      if (!v) return false;
+      if (String(v.id) === currentIdStr) return true;
+      if (v.allIds && Array.isArray(v.allIds)) {
+        return v.allIds.some(id => String(id) === currentIdStr);
+      }
+      return false;
+    });
+
+    if (idx === -1) {
+      return { prev: null, next: null, currentIndex: -1, total: list.length };
+    }
+    const prev = idx > 0 ? list[idx - 1] : null;
+    const next = idx < list.length - 1 ? list[idx + 1] : null;
+    return { prev, next, currentIndex: idx, total: list.length };
+  }
+
+  function updateVisitorNavUI() {
+    const { prev, next, currentIndex, total } = getAdjacentVisitors();
+
+    // トップバーのボタン & カウンター
+    const topPrevBtn = document.getElementById('vd-nav-prev-btn');
+    const topNextBtn = document.getElementById('vd-nav-next-btn');
+    const topCounter = document.getElementById('vd-nav-counter');
+
+    if (topPrevBtn) {
+      topPrevBtn.disabled = !prev;
+      topPrevBtn.title = prev ? `前のビジター: ${prev.name || 'No.' + prev.id} (← キー / 右スワイプ)` : '前のビジターはありません';
+    }
+    if (topNextBtn) {
+      topNextBtn.disabled = !next;
+      topNextBtn.title = next ? `次のビジター: ${next.name || 'No.' + next.id} (→ キー / 左スワイプ)` : '次のビジターはありません';
+    }
+    if (topCounter) {
+      if (currentIndex >= 0 && total > 0) {
+        topCounter.innerText = `${currentIndex + 1} / ${total}`;
+      } else if (total > 0) {
+        topCounter.innerText = `- / ${total}`;
+      } else {
+        topCounter.innerText = '- / -';
+      }
+    }
+
+    // スマホ用フッターボタン
+    const mobilePrevBtn = document.getElementById('vd-mobile-prev-btn');
+    const mobileNextBtn = document.getElementById('vd-mobile-next-btn');
+    if (mobilePrevBtn) {
+      mobilePrevBtn.disabled = !prev;
+      mobilePrevBtn.innerHTML = prev ? `<i class="fa-solid fa-chevron-left"></i> 前へ (${escapeHtml(prev.name || 'No.' + prev.id)})` : `<i class="fa-solid fa-chevron-left"></i> 前のビジター`;
+    }
+    if (mobileNextBtn) {
+      mobileNextBtn.disabled = !next;
+      mobileNextBtn.innerHTML = next ? `次へ (${escapeHtml(next.name || 'No.' + next.id)}) <i class="fa-solid fa-chevron-right"></i>` : `次のビジター <i class="fa-solid fa-chevron-right"></i>`;
+    }
+  }
+
+  function navigateVisitorDetail(direction) {
+    if (isVdNavigating) return;
+    const adj = getAdjacentVisitors();
+    const targetVisitor = direction === 'next' ? adj.next : adj.prev;
+
+    if (!targetVisitor || !targetVisitor.id) {
+      if (direction === 'next' && adj.currentIndex >= 0 && adj.currentIndex === adj.total - 1) {
+        showToast('最後のビジターです');
+      } else if (direction === 'prev' && adj.currentIndex === 0) {
+        showToast('最初のビジターです');
+      } else if (adj.total === 0) {
+        showToast('ビジター一覧を読み込み中です...');
+        if (typeof fetchAllVisitorsData === 'function') {
+          fetchAllVisitorsData(true);
+        }
+      }
+      return;
+    }
+
+    isVdNavigating = true;
+    const card = document.querySelector('#view-visitor-detail .vd-profile-card');
+    if (card) {
+      card.classList.remove('vd-slide-in-left', 'vd-slide-in-right', 'vd-slide-out-left', 'vd-slide-out-right');
+      card.classList.add(direction === 'next' ? 'vd-slide-out-left' : 'vd-slide-out-right');
+    }
+
+    setTimeout(() => {
+      openVisitorDetailView(targetVisitor.id, true, false, direction);
+    }, 100);
+  }
+
+  /* --- 📱 Touch Swipe & Keyboard Handler --- */
+  let vdTouchStartX = 0;
+  let vdTouchStartY = 0;
+  let vdTouchStartTime = 0;
+  let isVdSwiping = false;
+
+  function initVisitorDetailSwipeHandlers() {
+    const container = document.getElementById('view-visitor-detail');
+    if (!container || container.dataset.swipeInitialized === 'true') return;
+    container.dataset.swipeInitialized = 'true';
+
+    container.addEventListener('touchstart', function(e) {
+      if (!e.touches || e.touches.length !== 1) {
+        isVdSwiping = false;
+        return;
+      }
+      const target = e.target;
+      // 入力フォーム、モーダル、タブ切り替えバー等はスワイプ対象外
+      if (target.closest('input, textarea, select, button, a, .vd-tab-nav, .vd-quick-chips, #vd-ap-form-modal.is-open, .modal')) {
+        isVdSwiping = false;
+        return;
+      }
+      vdTouchStartX = e.touches[0].clientX;
+      vdTouchStartY = e.touches[0].clientY;
+      vdTouchStartTime = Date.now();
+      isVdSwiping = true;
+    }, { passive: true });
+
+    container.addEventListener('touchend', function(e) {
+      if (!isVdSwiping || !e.changedTouches || e.changedTouches.length === 0) {
+        isVdSwiping = false;
+        return;
+      }
+      isVdSwiping = false;
+
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const deltaX = endX - vdTouchStartX;
+      const deltaY = endY - vdTouchStartY;
+      const elapsed = Date.now() - vdTouchStartTime;
+
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      // 横スワイプ判定: 45px以上の移動、縦より1.2倍以上横優位、0.8秒以内
+      if (absX > 45 && absX > absY * 1.2 && elapsed < 800) {
+        if (deltaX < 0) {
+          // 左スワイプ -> 次へ
+          navigateVisitorDetail('next');
+        } else {
+          // 右スワイプ -> 前へ
+          navigateVisitorDetail('prev');
+        }
+      }
+    }, { passive: true });
+
+    // PCキーボード (← / →) ショートカット
+    document.addEventListener('keydown', function(e) {
+      const vdView = document.getElementById('view-visitor-detail');
+      if (!vdView || !vdView.classList.contains('active')) return;
+
+      const tag = (document.activeElement && document.activeElement.tagName) ? document.activeElement.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      const modal = document.getElementById('vd-ap-form-modal');
+      if (modal && modal.classList.contains('is-open')) return;
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateVisitorDetail('prev');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateVisitorDetail('next');
+      }
+    });
+  }
+
+  function openVisitorDetailView(id, updateHash = true, scrollToTop = true, navDirection = null) {
     if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
       return;
     }
@@ -6303,7 +6673,7 @@ const ApiService = {
     if (updateHash) {
       updateUrlHash('visitor/' + id, { visitorId: id });
     }
-    if (scrollToTop) {
+    if (scrollToTop && !navDirection) {
       document.getElementById('loading').style.display = 'flex';
     }
 
@@ -6430,12 +6800,36 @@ const ApiService = {
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-visitor-detail').classList.add('active');
 
-        if (scrollToTop) {
-          switchVdTab('action-plan');
+        // ナビゲーションUIの更新とスワイプハンドラ初期化
+        updateVisitorNavUI();
+        initVisitorDetailSwipeHandlers();
+
+        // スライドアニメーションの適用
+        const card = document.querySelector('#view-visitor-detail .vd-profile-card');
+        if (card) {
+          card.classList.remove('vd-slide-out-left', 'vd-slide-out-right', 'vd-slide-in-left', 'vd-slide-in-right');
+          if (navDirection === 'next') {
+            card.classList.add('vd-slide-in-right');
+          } else if (navDirection === 'prev') {
+            card.classList.add('vd-slide-in-left');
+          }
+        }
+
+        // サブタブ状態を維持
+        switchVdTab(currentVdActiveTab || 'action-plan');
+
+        if (scrollToTop && !navDirection) {
           window.scrollTo(0, 0);
         }
+
+        setTimeout(() => {
+          isVdNavigating = false;
+        }, 220);
       })
-      .catch(handleError);
+      .catch(err => {
+        isVdNavigating = false;
+        handleError(err);
+      });
   }
 
   function shareHearingFormForCurrentVisitor() {
@@ -6460,6 +6854,7 @@ const ApiService = {
 
   function closeVisitorDetailView() {
     currentVdVisitorId = null;
+    currentVisitorNavList = null;
     switchTab(previousTabBeforeDetail || 'dashboard', true);
   }
 
@@ -6473,6 +6868,7 @@ const ApiService = {
   }
 
   function switchVdTab(tab) {
+    currentVdActiveTab = tab;
     ['action-plan', 'hearing', 'memo', 'mail'].forEach(t => {
       const btn = document.getElementById(`vd-tab-btn-${t}`);
       const pane = document.getElementById(`vd-tab-content-${t}`);
