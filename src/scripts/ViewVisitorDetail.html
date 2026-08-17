@@ -878,18 +878,23 @@
 
     const titleEl = document.getElementById('vd-ap-form-title');
     if (titleEl) titleEl.innerText = 'アクション編集';
-    document.getElementById('vd-ap-btn-submit-label').innerText = '変更を保存する';
-    document.getElementById('vd-ap-btn-cancel-edit').style.display = 'inline-block';
+    const submitLabel = document.getElementById('vd-ap-btn-submit-label');
+    if (submitLabel) submitLabel.innerText = '変更を保存する';
+    const cancelBtn = document.getElementById('vd-ap-btn-cancel-edit');
+    if (cancelBtn) cancelBtn.style.display = 'inline-block';
 
     openActionPlanModal();
   }
 
   function cancelApEdit() {
-    document.getElementById('vd-ap-edit-id').value = '';
+    const editIdInput = document.getElementById('vd-ap-edit-id');
+    if (editIdInput) editIdInput.value = '';
     const titleEl = document.getElementById('vd-ap-form-title');
     if (titleEl) titleEl.innerText = 'アクション登録';
-    document.getElementById('vd-ap-btn-submit-label').innerText = '保存';
-    document.getElementById('vd-ap-btn-cancel-edit').style.display = 'none';
+    const submitLabel = document.getElementById('vd-ap-btn-submit-label');
+    if (submitLabel) submitLabel.innerText = '保存';
+    const cancelBtn = document.getElementById('vd-ap-btn-cancel-edit');
+    if (cancelBtn) cancelBtn.style.display = 'inline-block';
     const modal = document.getElementById('vd-ap-form-modal');
     if (modal) modal.classList.remove('is-open');
   }
