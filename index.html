@@ -659,18 +659,40 @@ tr:last-child td { border-bottom: none; }
 
 .vd-ap-list { display: flex; flex-direction: column; gap: 10px; }
 .vd-ap-card {
-  padding: 14px 16px; background: #ffffff; border: 1px solid #e9ecef;
-  border-left: 5px solid #228be6; border-radius: 8px; display: flex;
-  align-items: center; justify-content: space-between; gap: 12px;
-  box-shadow: var(--shadow-sm); transition: all 0.15s ease;
+  padding: 14px 16px; background: #ffffff; border: 1px solid #e2e8f0;
+  border-left: 5px solid #2563eb; border-radius: 12px; display: flex;
+  flex-direction: column; gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); transition: all 0.15s ease;
 }
-.vd-ap-card.is-overdue { border-color: #ffa8a8; border-left-color: #fa5252; }
+.vd-ap-card.is-overdue { border-color: #fecaca; border-left-color: #ef4444; background: #fffbfb; }
 .vd-ap-card.is-completed {
-  padding: 10px 16px; background: #f8f9fa; border-left-color: #40c057; opacity: 0.85;
+  padding: 12px 16px; background: #f8fafc; border-left-color: #10b981; opacity: 0.92;
 }
+.vd-ap-card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+}
+.vd-ap-card-tools {
+  display: flex; align-items: center; gap: 4px;
+}
+.vd-ap-card-bottom {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  margin-top: 4px; padding-top: 8px; border-top: 1px solid #f1f5f9;
+}
+.vd-ap-btn-report {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #2563eb; color: #ffffff; font-size: 12px; font-weight: 700;
+  padding: 6px 14px; border-radius: 8px; border: none; cursor: pointer;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2); transition: all 0.15s ease;
+}
+.vd-ap-btn-report:hover { background: #1d4ed8; }
+.vd-ap-report-snippet {
+  font-size: 11px; color: #1e293b; background: #f0fdf4; border-left: 3px solid #10b981;
+  padding: 6px 10px; border-radius: 6px; line-height: 1.4;
+}
+.vd-ap-report-snippet.completed { background: #e6fcf5; }
 .vd-ap-left { display: flex; align-items: center; gap: 12px; flex: 1; }
 .vd-ap-body { flex: 1; }
-.vd-ap-meta-row { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+.vd-ap-meta-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .vd-ap-badge-date {
   font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px;
   background: #e7f5ff; color: #1864ab;
@@ -680,15 +702,13 @@ tr:last-child td { border-bottom: none; }
   font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 6px;
   background: #f3f0ff; color: #5f3dc4;
 }
-.vd-ap-text { font-size: 15px; font-weight: 800; color: #212529; line-height: 1.4; }
-.vd-ap-text.completed { font-size: 14px; font-weight: 700; color: #868e96; text-decoration: line-through; }
-.vd-ap-submeta { font-size: 11px; color: #adb5bd; margin-top: 2px; }
+.vd-ap-text { font-size: 14px; font-weight: 800; color: #1e293b; line-height: 1.4; }
+.vd-ap-text.completed { font-size: 13px; font-weight: 700; color: #868e96; text-decoration: line-through; }
+.vd-ap-submeta { font-size: 11px; color: #64748b; margin-top: 2px; }
 .vd-ap-actions { display: flex; gap: 6px; }
-.vd-ap-check-btn { background: none; border: none; font-size: 22px; color: #ced4da; cursor: pointer; padding: 0; }
-.vd-ap-check-btn.checked { font-size: 20px; color: #2b8a3e; }
 .vd-ap-empty {
-  padding: 18px; background: #f8f9fa; border-radius: 8px; text-align: center;
-  color: #868e96; font-size: 13px; border: 1px dashed #dee2e6;
+  padding: 24px 16px; background: #f8fafc; border-radius: 12px; text-align: center;
+  color: #64748b; font-size: 13px; font-weight: 600; border: 1px dashed #cbd5e1;
 }
 
 .vd-hearing-list { display: flex; flex-direction: column; gap: 16px; font-size: 14px; }
@@ -4603,7 +4623,8 @@ const ApiService = {
     if (pendingItems.length === 0) {
       pendingList.innerHTML = `
         <div class="vd-ap-empty">
-          🎉 進行中の未完了アクションプランはありません。
+          <i class="fa-solid fa-circle-check text-emerald-500 text-lg mb-1" style="display:block;"></i>
+          進行中の未完了アクションプランはありません
         </div>
       `;
     } else {
@@ -4613,40 +4634,42 @@ const ApiService = {
         card.className = `vd-ap-card ${isOverdue ? 'is-overdue' : ''}`;
 
         const reportSnippet = item.report_text ? `
-          <div style="font-size: 11px; color: #475569; background: #f8fafc; border-left: 3px solid #0ca678; padding: 4px 8px; border-radius: 4px; margin-top: 4px;">
+          <div class="vd-ap-report-snippet">
             <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 途中経過:</strong> ${escapeHtml(item.report_text)}
           </div>
         ` : '';
 
         card.innerHTML = `
-          <div class="vd-ap-left">
-            <div class="vd-ap-body">
-              <div class="vd-ap-meta-row">
-                <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
-                  <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日なし'} ${isOverdue ? '(期限超過)' : ''}
-                </span>
-                <span class="vd-ap-badge-user">
-                  <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '担当未定')}
-                </span>
-              </div>
-              <div class="vd-ap-text">
-                ${escapeHtml(item.action_text)}
-              </div>
-              ${reportSnippet}
+          <div class="vd-ap-card-top">
+            <div class="vd-ap-meta-row">
+              <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
+                <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日未定'} ${isOverdue ? '(期限超過)' : ''}
+              </span>
+              <span class="vd-ap-badge-user">
+                <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '担当未定')}
+              </span>
+            </div>
+            <div class="vd-ap-card-tools">
+              <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="共有URLをコピー">
+                <i class="fa-solid fa-share-nodes text-blue-600"></i>
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="color: var(--danger-accent);" onclick="deleteActionPlan('${item.id}')" title="削除">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           </div>
-          <div class="vd-ap-actions flex items-center gap-1.5">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="このアクションの共有URLをコピー">
-              <i class="fa-solid fa-share-nodes text-blue-600"></i>
-            </button>
-            <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')">
-              <i class="fa-solid fa-clipboard-check"></i> 報告して完了
-            </button>
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="editActionPlan('${item.id}')" title="編集">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="color: var(--danger-accent);" onclick="deleteActionPlan('${item.id}')" title="削除">
-              <i class="fa-solid fa-trash-can"></i>
+
+          <div class="vd-ap-text">
+            ${escapeHtml(item.action_text)}
+          </div>
+          ${reportSnippet}
+
+          <div class="vd-ap-card-bottom">
+            <button type="button" class="vd-ap-btn-report" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')">
+              <i class="fa-solid fa-clipboard-check" style="margin-right: 4px;"></i> 報告して完了
             </button>
           </div>
         `;
@@ -4661,33 +4684,44 @@ const ApiService = {
         card.className = 'vd-ap-card is-completed';
 
         const reportBox = item.report_text ? `
-          <div style="font-size: 11px; color: #1e293b; background: #e6fcf5; border-left: 3px solid #0ca678; padding: 6px 10px; border-radius: 6px; margin-top: 6px; line-height: 1.4;">
+          <div class="vd-ap-report-snippet completed">
             <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 実施報告:</strong> ${escapeHtml(item.report_text)}
-            ${item.completed_by ? `<span style="color: #64748b; margin-left: 6px;">(確認者: ${escapeHtml(item.completed_by)})</span>` : ''}
+            ${item.completed_by ? `<span style="color: #64748b; margin-left: 6px; font-weight: normal;">(確認者: ${escapeHtml(item.completed_by)})</span>` : ''}
           </div>
         ` : '';
 
         card.innerHTML = `
-          <div class="vd-ap-left">
-            <div class="vd-ap-body">
-              <div class="vd-ap-text completed">
-                <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> ${escapeHtml(item.action_text)}
-              </div>
-              <div class="vd-ap-submeta">
-                期日: ${item.due_date || '-'} | 担当: ${escapeHtml(item.assignee_name || '-')} ${item.completed_at ? `| 完了日時: ${item.completed_at}` : ''}
-              </div>
-              ${reportBox}
+          <div class="vd-ap-card-top">
+            <div class="vd-ap-meta-row">
+              <span class="badge" style="background:#e6fcf5; color:#0ca678; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
+                <i class="fa-solid fa-circle-check" style="margin-right: 2px;"></i> 完了済
+              </span>
+              <span class="vd-ap-badge-date">
+                <i class="fa-regular fa-calendar"></i> 期日: ${item.due_date || '-'}
+              </span>
+              <span class="vd-ap-badge-user">
+                <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '-')}
+              </span>
+            </div>
+            <div class="vd-ap-card-tools">
+              <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="共有URLをコピー">
+                <i class="fa-solid fa-share-nodes text-blue-600"></i>
+              </button>
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
             </div>
           </div>
-          <div class="vd-ap-actions flex items-center gap-1.5">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${item.id}', '${currentVdVisitorId || ''}', event)" title="このアクションの共有URLをコピー">
-              <i class="fa-solid fa-share-nodes text-blue-600"></i>
-            </button>
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')" title="報告確認・編集">
-              <i class="fa-solid fa-pen-to-square"></i> 報告確認
-            </button>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="color: #adb5bd;" onclick="deleteActionPlan('${item.id}')" title="削除">
-              <i class="fa-solid fa-trash-can"></i>
+
+          <div class="vd-ap-text completed">
+            ${escapeHtml(item.action_text)}
+          </div>
+          ${reportBox}
+
+          <div class="vd-ap-card-bottom" style="justify-content: space-between; font-size: 11px; color: #64748b;">
+            <span>${item.completed_at ? `完了: ${escapeHtml(item.completed_at)}` : ''}</span>
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${currentVdVisitorId || ''}')" title="報告確認・編集">
+              <i class="fa-solid fa-pen-to-square" style="margin-right: 2px;"></i> 報告確認・編集
             </button>
           </div>
         `;
@@ -4695,7 +4729,7 @@ const ApiService = {
       });
     } else {
       completedList.innerHTML = `
-        <div class="vd-ap-submeta" style="padding: 10px;">完了済みのアクションはありません</div>
+        <div class="vd-ap-submeta" style="padding: 10px; text-align: center;">完了済みのアクションはありません</div>
       `;
     }
   }
