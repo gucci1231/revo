@@ -749,6 +749,102 @@ tr:last-child td { border-bottom: none; }
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
 
+/* Action Plan Card Grid Layout */
+.dash-ap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+@media (max-width: 640px) {
+  .dash-ap-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+}
+.dash-ap-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.dash-ap-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #3b82f6;
+}
+.dash-ap-card.is-overdue {
+  border-color: #ffc9c9;
+  background: #fffafa;
+}
+.dash-ap-card.is-completed {
+  background: #fcfdfc;
+  border-color: #e2e8f0;
+  opacity: 0.88;
+}
+.dash-ap-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dash-ap-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dash-ap-card-visitor {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dash-ap-card-action {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.4;
+}
+.dash-ap-card-action.completed {
+  color: #64748b;
+  text-decoration: line-through;
+}
+.dash-ap-card-report {
+  font-size: 11px;
+  color: #1e293b;
+  background: #e6fcf5;
+  border-left: 3px solid #0ca678;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.dash-ap-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 2px;
+}
+
+
 
 
 
@@ -1253,13 +1349,13 @@ tr:last-child td { border-bottom: none; }
     </section>
   </div>
 
-  <!-- パネル 2: アクションプラン進捗管理 -->
+  <!-- パネル 2: アクションプラン進捗管理 (カードグリッド形式) -->
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex-wrap">
         <div>
-          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン進捗</h2>
-          <div class="section-sub">ビジターごとの次の一手（いつ・誰が・どうする）の期日と完了状況</div>
+          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン</h2>
+          <div class="section-sub">カードをタップして実施結果を報告し、完了にできます</div>
         </div>
         <div class="flex gap-1.5">
           <button type="button" class="btn-action-primary text-xs" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
@@ -1267,21 +1363,8 @@ tr:last-child td { border-bottom: none; }
           <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
         </div>
       </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th class="text-center col-w-sm">状態</th>
-              <th class="col-w-md">期日 (いつ)</th>
-              <th class="col-w-md">担当 (誰が)</th>
-              <th>対象ビジター</th>
-              <th>アクション内容 (どうする)</th>
-              <th class="text-center col-w-sm">操作</th>
-            </tr>
-          </thead>
-          <tbody id="table-dashboard-action-plans"></tbody>
-        </table>
-      </div>
+      <!-- Action Plans Cards Container -->
+      <div id="dashboard-action-plans-container" class="dash-ap-grid"></div>
     </section>
   </div>
 
@@ -2826,25 +2909,11 @@ const ApiService = {
 
   function renderDashboardActionPlansTable(plans) {
     currentDashboardActionPlans = plans || [];
-    const tbody = document.getElementById('table-dashboard-action-plans');
-    const badge = document.getElementById('dashboard-ap-badge');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const container = document.getElementById('dashboard-action-plans-container');
+    if (!container) return;
+    container.innerHTML = '';
 
     const todayStr = new Date().toISOString().slice(0, 10);
-    const pendingCount = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0).length;
-    const overdueCount = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr).length;
-
-    if (badge) {
-      if (overdueCount > 0) {
-        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800';
-        badge.innerText = `未完了 ${pendingCount}件 (期限超過 ${overdueCount}件)`;
-      } else {
-        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800';
-        badge.innerText = `未完了 ${pendingCount}件`;
-      }
-    }
-
     let filtered = currentDashboardActionPlans;
     if (currentDashboardApFilter === 'pending') {
       filtered = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0);
@@ -2853,12 +2922,11 @@ const ApiService = {
     }
 
     if (filtered.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">
-            ${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}
-          </td>
-        </tr>
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+          <i class="fa-solid fa-clipboard-check text-2xl text-slate-300 mb-2"></i>
+          <div class="font-bold text-sm text-slate-600">${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}</div>
+        </div>
       `;
       return;
     }
@@ -2866,63 +2934,62 @@ const ApiService = {
     filtered.forEach(p => {
       const isCompleted = Number(p.is_completed) === 1;
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
-      const tr = document.createElement('tr');
+      const card = document.createElement('div');
+      card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
+      card.onclick = function() {
+        openActionReportModal(p.id, p.visitor_id);
+      };
 
       const statusBadgeHtml = isCompleted
-        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check"></i> 完了</span>`
-        : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`;
+        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
+        : (isOverdue
+            ? `<span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>期限超過</span>`
+            : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`
+          );
 
       const dateBadgeHtml = isCompleted
-        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
-        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日なし'} ${isOverdue ? '(期限超過)' : ''}</span>`;
+        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8; font-size:10px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
+        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:10px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日未定'}</span>`;
 
-      const userBadgeHtml = `<span class="vd-ap-badge-user"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
-
-      const visitorNameHtml = `
-        <div>
-          <a href="#visitor/${p.visitor_id}" style="font-weight: 800; color: var(--primary-accent); text-decoration: none;" onclick="openVisitorDetailView('${p.visitor_id}'); return false;">
-            <i class="fa-solid fa-user-tag" style="font-size: 11px; margin-right: 4px;"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
-          </a>
-          ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
-        </div>
-      `;
+      const userBadgeHtml = `<span class="vd-ap-badge-user" style="font-size:10px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
 
       const reportBoxHtml = p.report_text
-        ? `<div style="margin-top:4px; font-size:11px; color:#334155; background:#f8fafc; border-left:3px solid #20c997; padding:4px 8px; border-radius:4px; line-height:1.4;">
-             <strong style="color:#0ca678;"><i class="fa-regular fa-comment-dots"></i> 報告:</strong> ${escapeHtml(p.report_text)}
-             ${p.completed_by ? `<span style="color:#64748b; margin-left:4px;">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
+        ? `<div class="dash-ap-card-report">
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
            </div>`
         : '';
 
-      const actionTextHtml = `
-        <div style="max-width: 320px;">
-          <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
-            ${escapeHtml(p.action_text)}
+      card.innerHTML = `
+        <div class="dash-ap-card-header">
+          <div class="dash-ap-card-badges">
+            ${statusBadgeHtml}
+            ${dateBadgeHtml}
+            ${userBadgeHtml}
           </div>
-          ${reportBoxHtml}
-        </div>
-      `;
-
-      const actionBtnHtml = `
-        <div class="flex items-center justify-center gap-1.5">
-          <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-            <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
-          </button>
-          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
-            詳細
+          <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+            詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
           </button>
         </div>
-      `;
 
-      tr.innerHTML = `
-        <td class="text-center">${statusBadgeHtml}</td>
-        <td>${dateBadgeHtml}</td>
-        <td>${userBadgeHtml}</td>
-        <td>${visitorNameHtml}</td>
-        <td>${actionTextHtml}</td>
-        <td class="text-center">${actionBtnHtml}</td>
+        <div class="dash-ap-card-visitor">
+          <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+          <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+          ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
+        </div>
+
+        <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+          ${escapeHtml(p.action_text)}
+        </div>
+
+        ${reportBoxHtml}
+
+        <div class="dash-ap-card-footer">
+          <span><i class="fa-solid fa-pen-to-square mr-1"></i> ${isCompleted ? 'タップして報告を確認・編集' : 'タップして報告を入力・完了'}</span>
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </div>
       `;
-      tbody.appendChild(tr);
+      container.appendChild(card);
     });
   }
 

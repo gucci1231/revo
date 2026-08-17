@@ -118,13 +118,13 @@
     </section>
   </div>
 
-  <!-- パネル 2: アクションプラン進捗管理 -->
+  <!-- パネル 2: アクションプラン進捗管理 (カードグリッド形式) -->
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex-wrap">
         <div>
-          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン進捗</h2>
-          <div class="section-sub">ビジターごとの次の一手（いつ・誰が・どうする）の期日と完了状況</div>
+          <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン</h2>
+          <div class="section-sub">カードをタップして実施結果を報告し、完了にできます</div>
         </div>
         <div class="flex gap-1.5">
           <button type="button" class="btn-action-primary text-xs" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
@@ -132,21 +132,8 @@
           <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
         </div>
       </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th class="text-center col-w-sm">状態</th>
-              <th class="col-w-md">期日 (いつ)</th>
-              <th class="col-w-md">担当 (誰が)</th>
-              <th>対象ビジター</th>
-              <th>アクション内容 (どうする)</th>
-              <th class="text-center col-w-sm">操作</th>
-            </tr>
-          </thead>
-          <tbody id="table-dashboard-action-plans"></tbody>
-        </table>
-      </div>
+      <!-- Action Plans Cards Container -->
+      <div id="dashboard-action-plans-container" class="dash-ap-grid"></div>
     </section>
   </div>
 

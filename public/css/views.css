@@ -339,4 +339,100 @@
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
 
+/* Action Plan Card Grid Layout */
+.dash-ap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+@media (max-width: 640px) {
+  .dash-ap-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 10px;
+  }
+}
+.dash-ap-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+.dash-ap-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #3b82f6;
+}
+.dash-ap-card.is-overdue {
+  border-color: #ffc9c9;
+  background: #fffafa;
+}
+.dash-ap-card.is-completed {
+  background: #fcfdfc;
+  border-color: #e2e8f0;
+  opacity: 0.88;
+}
+.dash-ap-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dash-ap-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dash-ap-card-visitor {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.dash-ap-card-action {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.4;
+}
+.dash-ap-card-action.completed {
+  color: #64748b;
+  text-decoration: line-through;
+}
+.dash-ap-card-report {
+  font-size: 11px;
+  color: #1e293b;
+  background: #e6fcf5;
+  border-left: 3px solid #0ca678;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+.dash-ap-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 2px;
+}
+
+
 
