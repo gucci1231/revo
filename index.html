@@ -1744,9 +1744,6 @@ tr:last-child td { border-bottom: none; }
       <i class="fa-solid fa-arrow-left"></i> 前の画面へ戻る
     </button>
     <div class="vd-header-buttons">
-      <button type="button" class="btn-action-primary" id="vd-btn-open-hearing-page" onclick="">
-        <i class="fa-solid fa-file-pen"></i> ヒアリングシートを編集
-      </button>
       <button type="button" class="btn-action-secondary" onclick="copyCurrentPageUrl()">
         <i class="fa-solid fa-share-nodes"></i> 共有URLをコピー
       </button>
@@ -1893,6 +1890,18 @@ tr:last-child td { border-bottom: none; }
     <!-- Tab Content 1: ヒアリングシート -->
     <div id="vd-tab-content-hearing">
       <div class="vd-box">
+        <div class="vd-box-header flex-wrap gap-2 items-center justify-between" style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+          <div>
+            <h3 class="vd-box-title" style="color: #1e293b;">
+              <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート回答
+            </h3>
+            <span class="vd-box-subtitle">オリエンテーション時のヒアリング・感触評価</span>
+          </div>
+          <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5" id="vd-btn-open-hearing-page" onclick="" style="padding: 8px 14px; font-weight: 800;">
+            <i class="fa-solid fa-pen-to-square"></i> ヒアリングシートを編集
+          </button>
+        </div>
+
         <div class="vd-hearing-list">
           <div><strong class="vd-spec-label">オリエン担当者:</strong> <span id="vd-orient-user" class="vd-spec-val bold">-</span></div>
           <div class="vd-hearing-item"><div class="vd-hearing-q">Q1【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？:</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
