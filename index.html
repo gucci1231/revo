@@ -4885,6 +4885,20 @@ const ApiService = {
           method: 'POST',
           body: { id: args[0], visitorId: args[1] }
         };
+      case 'getEmailTemplatesApi':
+        return { url: '/api/email_templates.php?action=list', method: 'GET' };
+      case 'updateEmailTemplateApi':
+        return {
+          url: '/api/email_templates.php?action=update',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0], subject: args[1], body: args[2] }
+        };
+      case 'sendEmailViaGasApi':
+        return {
+          url: '/api/email_templates.php?action=send',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { visitorId: args[0], templateKey: args[1], customSubject: args[2], customBody: args[3] }
+        };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
       case 'getScheduledEmailsApi':
