@@ -74,12 +74,6 @@
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>
           <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
-          <td class="text-center">
-            <div class="flex items-center justify-center gap-1">
-              <button class="btn-icon-action" onclick="event.stopPropagation(); openEditVisitorModal('${v.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
-              <button class="btn-icon-action btn-icon-danger" onclick="event.stopPropagation(); deleteVisitor('${v.id}', '${escapeJsParam(v.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -101,13 +95,8 @@
               ${render1to1ButtonHtml(v.id, v.is1to1)}
               ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
-            <div class="flex items-center gap-1">
-              <button type="button" class="btn-icon-action" style="padding:3px 6px;" onclick="event.stopPropagation(); openEditVisitorModal('${v.id}')" title="編集">
-                <i class="fa-solid fa-pen text-xs"></i>
-              </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${v.id}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
+            <div class="text-slate-300 text-sm">
+              <i class="fa-solid fa-chevron-right"></i>
             </div>
           </div>
 
@@ -123,11 +112,6 @@
 
           <div style="font-size: 11px; color: #475569;">
             <span><strong>招待者:</strong> ${escapeHtml(v.inviter || '-')}</span>
-          </div>
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-address-card mr-1"></i> タップして詳細・カルテを開く</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -337,11 +321,6 @@
           <div style="font-size: 11px; color: #475569;">
             <span><strong>招待者:</strong> ${escapeHtml(r.inviter || '-')}</span>
           </div>
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-address-card mr-1"></i> タップして詳細を開く</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </div>
         `;
         cardsContainer.appendChild(card);
       }
@@ -460,11 +439,6 @@
 
           <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
             ${renderCurrentStatusColumnHtml(r)}
-          </div>
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-address-card mr-1"></i> タップしてカルテ・詳細を開く</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         `;
         cardsContainer.appendChild(card);

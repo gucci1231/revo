@@ -331,11 +331,6 @@
           </div>
 
           ${reportBoxHtml}
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-pen-to-square mr-1"></i> ${isCompleted ? 'タップして報告を確認・編集' : 'タップして報告を入力・完了'}</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </div>
         `;
         cardsContainer.appendChild(card);
       }
@@ -377,7 +372,7 @@
           <td>${formatEventDateWithElapsed(r.eventDate)}</td>
           <td>
             <div>
-              ${renderVisitorNameLinkHtml(r.id, r.name)}
+              ${renderVisitorNameLinkHtml(r.id, r.name, r)}
               ${r.company ? `<div style="font-size:11px; color:#86868b;">${escapeHtml(r.company)}</div>` : ''}
             </div>
           </td>
@@ -408,34 +403,30 @@
         card.innerHTML = `
           <div class="dash-ap-card-header">
             <div class="dash-ap-card-badges">
-              <span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">
-                <i class="fa-solid fa-fire mr-1"></i>HOT A
+              <span class="badge" style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
+                HOT A
               </span>
               ${formatEventDateWithElapsed(r.eventDate)}
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
+            <div class="text-slate-300 text-sm">
+              <i class="fa-solid fa-chevron-right"></i>
+            </div>
           </div>
 
           <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-rose-600 text-xs"></i>
+            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
             <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(r.company)})</span>` : ''}
+            ${renderRepeatBadgeHtml(r)}
+            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#86868b;">(${escapeHtml(r.company)})</span>` : ''}
           </div>
 
-          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
+          <div style="font-size: 11px; color: #86868b; display: flex; gap: 8px; flex-wrap: wrap;">
             <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
-            ${r.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(r.orientUser)}</span></span>` : ''}
+            ${r.orientUser ? `<span><strong>担当:</strong> ${escapeHtml(r.orientUser)}</span>` : ''}
           </div>
 
           <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
             ${renderCurrentStatusColumnHtml(r)}
-          </div>
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-address-card mr-1"></i> タップしてカルテ・詳細を開く</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         `;
         cardsContainer.appendChild(card);
