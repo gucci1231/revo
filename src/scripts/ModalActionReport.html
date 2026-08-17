@@ -116,18 +116,18 @@
               title: 'QUEST CLEAR !',
               subtitle: actorGreeting,
               detail: detailSnippet,
-              badgeText: 'ACTION COMPLETED ✨'
+              badgeText: 'ACTION COMPLETED ✨',
+              onClose: () => {
+                if (typeof refreshCurrentActiveView === 'function') {
+                  refreshCurrentActiveView();
+                }
+              }
             });
           } else {
             showToast('💾 途中経過を保存しました');
-          }
-
-          // Refresh current views
-          if (typeof fetchDashboardData === 'function') {
-            fetchDashboardData(true);
-          }
-          if (visitorId && typeof fetchVisitorDetail === 'function') {
-            fetchVisitorDetail(visitorId);
+            if (typeof refreshCurrentActiveView === 'function') {
+              refreshCurrentActiveView();
+            }
           }
         } else {
           showToast(res && res.message ? res.message : '保存に失敗しました');

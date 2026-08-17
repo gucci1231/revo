@@ -2,6 +2,8 @@
 /**
  * CelebrationEffect - High-Impact Game-Clear Gap Celebration Engine
  * 普段の超シンプルUI ⇆ 完了時だけアーケード/RPG全開の超ド派手演出
+ * - ユーザーが自分でタップして閉じるまで永続表示
+ * - 閉じた瞬間に画面の最新データリロード（ステータス反映）を確実に実行
  */
 window.CelebrationEffect = (function() {
   let audioCtx = null;
@@ -104,7 +106,7 @@ window.CelebrationEffect = (function() {
     }, 500);
   }
 
-  // 大量の花火・金吹雪・スターパーティクル (Canvas)
+  // 大量の花火・金吹雪・スターパーティクル (Canvas - 永続ループ対応)
   function runHeavyParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const width = (canvas.width = window.innerWidth);
@@ -125,9 +127,9 @@ window.CelebrationEffect = (function() {
     const originX = width / 2;
     const originY = height / 2 - 20;
 
-    // 1. 中央からの爆発スパーク (75個)
-    for (let i = 0; i < 75; i++) {
-      const angle = (Math.PI * 2 * i) / 75 + (Math.random() - 0.5) * 0.4;
+    // 1. 初期の爆発スパーク (80個)
+    for (let i = 0; i < 80; i++) {
+      const angle = (Math.PI * 2 * i) / 80 + (Math.random() - 0.5) * 0.4;
       const speed = Math.random() * 14 + 6;
       particles.push({
         type: 'burst',
@@ -147,37 +149,53 @@ window.CelebrationEffect = (function() {
       });
     }
 
-    // 2. 上空から舞い降りる金吹雪リボン (45個)
-    for (let i = 0; i < 45; i++) {
-      particles.push({
+    // 2. 金吹雪リボン生成ヘルパー
+    function createConfetti() {
+      return {
         type: 'confetti',
         x: Math.random() * width,
-        y: Math.random() * (height * 0.4) - 50,
-        vx: (Math.random() - 0.5) * 4,
-        vy: Math.random() * 3 + 2.5,
-        width: Math.random() * 8 + 6,
-        height: Math.random() * 14 + 8,
+        y: -20,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 2 + 1.8,
+        width: Math.random() * 7 + 5,
+        height: Math.random() * 12 + 6,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.15,
-        alpha: 1,
-        decay: Math.random() * 0.006 + 0.005,
+        vRot: (Math.random() - 0.5) * 0.12,
+        alpha: Math.random() * 0.4 + 0.6,
+        decay: 0, // 画面外に出るまで生き続ける
         wobble: Math.random() * Math.PI * 2,
-        wobbleSpeed: Math.random() * 0.1 + 0.05
-      });
+        wobbleSpeed: Math.random() * 0.08 + 0.04
+      };
     }
 
+    // 初期金吹雪
+    for (let i = 0; i < 45; i++) {
+      const c = createConfetti();
+      c.y = Math.random() * height; // 画面全体に散らす
+      particles.push(c);
+    }
+
+    let isRunning = true;
     let animId = null;
 
     function render() {
+      if (!isRunning) return;
       ctx.clearRect(0, 0, width, height);
-      let aliveCount = 0;
 
-      for (let p of particles) {
-        if (p.alpha <= 0) continue;
-        aliveCount++;
+      // 定期的に新しい紙吹雪を上部から追加して永続的に舞わせる
+      if (particles.filter(p => p.type === 'confetti').length < 45) {
+        particles.push(createConfetti());
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
 
         if (p.type === 'burst') {
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
           p.x += p.vx;
           p.y += p.vy;
           p.vx *= p.friction;
@@ -215,10 +233,15 @@ window.CelebrationEffect = (function() {
           ctx.restore();
         } else if (p.type === 'confetti') {
           p.wobble += p.wobbleSpeed;
-          p.x += p.vx + Math.sin(p.wobble) * 1.5;
+          p.x += p.vx + Math.sin(p.wobble) * 1.2;
           p.y += p.vy;
           p.rotation += p.vRot;
-          p.alpha -= p.decay;
+
+          // 画面下に消えたらリサイクル
+          if (p.y > height + 20) {
+            p.y = -20;
+            p.x = Math.random() * width;
+          }
 
           ctx.save();
           ctx.translate(p.x, p.y);
@@ -231,26 +254,28 @@ window.CelebrationEffect = (function() {
         }
       }
 
-      if (aliveCount > 0) {
-        animId = requestAnimationFrame(render);
-      }
+      animId = requestAnimationFrame(render);
     }
 
     render();
 
     return () => {
+      isRunning = false;
       if (animId) cancelAnimationFrame(animId);
     };
   }
 
   /**
    * メイン演出トリガー: ギャップを極大化するド派手ゲームクリアHUD
+   * - 自分でタップするまで表示
+   * - 閉じた時に画面の最新リロード (onClose / refreshCurrentActiveView) を実行
    */
   function triggerQuestClear(options = {}) {
     const title = options.title || 'QUEST CLEAR !';
     const subtitle = options.subtitle || 'ナイスアクション！目標達成！';
     const detail = options.detail || '';
     const badgeText = options.badgeText || '★ MISSION ACCOMPLISHED ★';
+    const onCloseCallback = options.onClose || null;
 
     // 既存のエフェクトがあれば即座に削除
     const existing = document.getElementById('revo-quest-clear-overlay');
@@ -265,8 +290,8 @@ window.CelebrationEffect = (function() {
     // 3. オーバーレイDOM作成
     const overlay = document.createElement('div');
     overlay.id = 'revo-quest-clear-overlay';
-    overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none overflow-hidden';
-    overlay.style.backgroundColor = 'rgba(11, 17, 32, 0.65)';
+    overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none overflow-hidden cursor-pointer';
+    overlay.style.backgroundColor = 'rgba(11, 17, 32, 0.7)';
     overlay.style.backdropFilter = 'blur(8px)';
     overlay.style.webkitBackdropFilter = 'blur(8px)';
     overlay.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -322,11 +347,12 @@ window.CelebrationEffect = (function() {
           </div>
         ` : ''}
 
-        <!-- Dismiss Footer -->
-        <div class="mt-4 text-[11px] text-slate-400 font-bold flex items-center gap-2 opacity-80">
-          <span>タップして閉じる</span>
-          <span class="text-amber-400">•</span>
-          <span class="text-amber-300 font-extrabold tracking-wider">★ GREAT JOB! ★</span>
+        <!-- Interactive Dismiss Button / Hint -->
+        <div class="mt-5 w-full">
+          <button type="button" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> 画面に戻る（完了）
+          </button>
+          <div class="mt-2 text-[10px] text-slate-400 font-medium">※画面のどこでもタップして閉じられます</div>
         </div>
       </div>
     `;
@@ -350,29 +376,36 @@ window.CelebrationEffect = (function() {
       }
     });
 
-    // 破棄タイマー & クリック解除
+    // 破棄処理（クリック時のみ発火 & 画面リロード/リフレッシュ実行）
     let dismissed = false;
     function dismiss() {
       if (dismissed) return;
       dismissed = true;
+
       overlay.style.opacity = '0';
       const card = document.getElementById('revo-quest-card');
       if (card) {
         card.style.transform = 'scale(0.85) translateY(15px)';
         card.style.opacity = '0';
       }
+
       setTimeout(() => {
         if (cleanupParticles) cleanupParticles();
         if (overlay && overlay.parentNode) {
           overlay.parentNode.removeChild(overlay);
         }
-      }, 350);
+
+        // 閉じた瞬間にステータスリロードを実行！
+        if (typeof onCloseCallback === 'function') {
+          onCloseCallback();
+        }
+        if (typeof refreshCurrentActiveView === 'function') {
+          refreshCurrentActiveView();
+        }
+      }, 300);
     }
 
     overlay.onclick = dismiss;
-
-    // 3.2秒後に自動フェードアウト
-    setTimeout(dismiss, 3200);
   }
 
   return {

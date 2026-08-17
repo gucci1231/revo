@@ -1,4 +1,27 @@
 <script>
+  function refreshCurrentActiveView() {
+    // 1. ダッシュボード
+    if (typeof fetchDashboardData === 'function') {
+      fetchDashboardData(true);
+    }
+    // 2. アクション管理
+    if (typeof fetchActionsManagementData === 'function') {
+      fetchActionsManagementData(true);
+    }
+    // 3. 優先フォロー
+    if (typeof fetchPriorityFollowData === 'function') {
+      fetchPriorityFollowData(true);
+    }
+    // 4. ビジター一覧
+    if (typeof fetchVisitorsList === 'function') {
+      fetchVisitorsList(true);
+    }
+    // 5. 詳細画面が開いている場合
+    if (typeof currentVdVisitorId !== 'undefined' && currentVdVisitorId && typeof fetchVisitorDetail === 'function') {
+      fetchVisitorDetail(currentVdVisitorId);
+    }
+  }
+
   function parseFeelAbc(val) {
     if (!val) return '';
     const s = String(val).toUpperCase().trim();
