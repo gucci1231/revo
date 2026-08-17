@@ -796,6 +796,57 @@ tr:last-child td { border-bottom: none; }
   flex-wrap: wrap;
   gap: 14px;
 }
+/* どでかいApple風ランクエンブレム */
+.vd-hero-rank-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #f1f5f9;
+  color: #64748b;
+  user-select: none;
+}
+.vd-hero-rank-badge:hover {
+  transform: scale(1.06);
+}
+.vd-hero-rank-label {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  opacity: 0.85;
+}
+.vd-hero-rank-char {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  margin-top: 1px;
+}
+.vd-hero-rank-badge.rank-A {
+  background: linear-gradient(135deg, #ffe3e3 0%, #ffc9c9 100%);
+  color: #e03131;
+  border-color: #ffa8a8;
+  box-shadow: 0 4px 14px rgba(224, 49, 49, 0.2);
+}
+.vd-hero-rank-badge.rank-B {
+  background: linear-gradient(135deg, #fff3bf 0%, #ffec99 100%);
+  color: #d97706;
+  border-color: #ffe066;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.15);
+}
+.vd-hero-rank-badge.rank-C {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
 .vd-profile-title-area {
   display: flex;
   flex-direction: column;
@@ -2244,15 +2295,23 @@ tr:last-child td { border-bottom: none; }
 
   <div class="vd-profile-card">
     <div class="vd-profile-header">
-      <div class="vd-profile-title-area">
-        <div class="flex items-baseline gap-2 flex-wrap">
-          <h1 id="vd-name" class="vd-profile-name">-</h1>
-          <span id="vd-furigana" class="vd-profile-furigana">-</span>
+      <div class="flex items-center gap-3.5">
+        <!-- どでかいランクエンブレム -->
+        <div id="vd-hero-rank-container" class="vd-hero-rank-badge" title="ヒアリング感触評価ランク">
+          <span class="vd-hero-rank-label">RANK</span>
+          <span id="vd-hero-rank-val" class="vd-hero-rank-char">-</span>
         </div>
-        <div class="vd-profile-submeta">
-          <span id="vd-company" class="font-bold text-slate-800">-</span>
-          <span class="text-slate-300">/</span>
-          <span id="vd-profession" class="text-slate-600">-</span>
+
+        <div class="vd-profile-title-area">
+          <div class="flex items-baseline gap-2 flex-wrap">
+            <h1 id="vd-name" class="vd-profile-name">-</h1>
+            <span id="vd-furigana" class="vd-profile-furigana">-</span>
+          </div>
+          <div class="vd-profile-submeta">
+            <span id="vd-company" class="font-bold text-slate-800">-</span>
+            <span class="text-slate-300">/</span>
+            <span id="vd-profession" class="text-slate-600">-</span>
+          </div>
         </div>
       </div>
 
@@ -2280,7 +2339,6 @@ tr:last-child td { border-bottom: none; }
             <option value="見送り">入会: 見送り</option>
           </select>
         </div>
-        <div id="vd-badge-feel" class="vd-badge-static">感触: -</div>
       </div>
     </div>
 
@@ -5005,10 +5063,13 @@ const ApiService = {
           selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
         }
 
-        const badgeFeel = document.getElementById('vd-badge-feel');
-        badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
-        badgeFeel.style.background = h.feelAbc === 'A' ? '#ffe3e3' : (h.feelAbc === 'B' ? '#fff3bf' : '#e9ecef');
-        badgeFeel.style.color = h.feelAbc === 'A' ? '#c92a2a' : (h.feelAbc === 'B' ? '#e67700' : '#495057');
+        const feel = (h.feelAbc || '').toUpperCase().trim();
+        const rankContainer = document.getElementById('vd-hero-rank-container');
+        const rankVal = document.getElementById('vd-hero-rank-val');
+        if (rankContainer && rankVal) {
+          rankVal.innerText = feel || '未';
+          rankContainer.className = `vd-hero-rank-badge ${feel ? 'rank-' + feel : ''}`;
+        }
 
         // ヒアリング内容
         document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';

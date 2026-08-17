@@ -16,15 +16,23 @@
 
   <div class="vd-profile-card">
     <div class="vd-profile-header">
-      <div class="vd-profile-title-area">
-        <div class="flex items-baseline gap-2 flex-wrap">
-          <h1 id="vd-name" class="vd-profile-name">-</h1>
-          <span id="vd-furigana" class="vd-profile-furigana">-</span>
+      <div class="flex items-center gap-3.5">
+        <!-- どでかいランクエンブレム -->
+        <div id="vd-hero-rank-container" class="vd-hero-rank-badge" title="ヒアリング感触評価ランク">
+          <span class="vd-hero-rank-label">RANK</span>
+          <span id="vd-hero-rank-val" class="vd-hero-rank-char">-</span>
         </div>
-        <div class="vd-profile-submeta">
-          <span id="vd-company" class="font-bold text-slate-800">-</span>
-          <span class="text-slate-300">/</span>
-          <span id="vd-profession" class="text-slate-600">-</span>
+
+        <div class="vd-profile-title-area">
+          <div class="flex items-baseline gap-2 flex-wrap">
+            <h1 id="vd-name" class="vd-profile-name">-</h1>
+            <span id="vd-furigana" class="vd-profile-furigana">-</span>
+          </div>
+          <div class="vd-profile-submeta">
+            <span id="vd-company" class="font-bold text-slate-800">-</span>
+            <span class="text-slate-300">/</span>
+            <span id="vd-profession" class="text-slate-600">-</span>
+          </div>
         </div>
       </div>
 
@@ -52,7 +60,6 @@
             <option value="見送り">入会: 見送り</option>
           </select>
         </div>
-        <div id="vd-badge-feel" class="vd-badge-static">感触: -</div>
       </div>
     </div>
 

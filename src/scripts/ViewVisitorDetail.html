@@ -78,10 +78,13 @@
           selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
         }
 
-        const badgeFeel = document.getElementById('vd-badge-feel');
-        badgeFeel.innerText = h.feelAbc ? `ランク ${h.feelAbc}` : '未評価';
-        badgeFeel.style.background = h.feelAbc === 'A' ? '#ffe3e3' : (h.feelAbc === 'B' ? '#fff3bf' : '#e9ecef');
-        badgeFeel.style.color = h.feelAbc === 'A' ? '#c92a2a' : (h.feelAbc === 'B' ? '#e67700' : '#495057');
+        const feel = (h.feelAbc || '').toUpperCase().trim();
+        const rankContainer = document.getElementById('vd-hero-rank-container');
+        const rankVal = document.getElementById('vd-hero-rank-val');
+        if (rankContainer && rankVal) {
+          rankVal.innerText = feel || '未';
+          rankContainer.className = `vd-hero-rank-badge ${feel ? 'rank-' + feel : ''}`;
+        }
 
         // ヒアリング内容
         document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
