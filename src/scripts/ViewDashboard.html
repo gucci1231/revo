@@ -265,8 +265,8 @@
         `;
 
         const actionCellHtml = `
-          <div style="max-width: 380px;">
-            <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
+          <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
+            <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
               ${escapeHtml(p.action_text)}
             </div>
             ${reportBoxHtml}
@@ -274,15 +274,12 @@
         `;
 
         const operationCellHtml = `
-          <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation();">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="このアクションの共有URLをコピー">
-              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+          <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+              ${isCompleted ? '確認' : '報告'}
             </button>
-            <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-              <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
-            </button>
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
-              詳細
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openVisitorDetailView('${p.visitor_id}')">
+              カルテ
             </button>
           </div>
         `;

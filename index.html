@@ -1319,7 +1319,7 @@ tr:last-child td { border-bottom: none; }
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible & 2-Col Hot/AP) */
+/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible & 2-Col Hot/AP 50% 50%) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
 
@@ -1333,18 +1333,35 @@ tr:last-child td { border-bottom: none; }
   }
   .dash-top-2col-layout {
     display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
     margin-bottom: 24px;
     align-items: start;
+    width: 100%;
+    box-sizing: border-box;
   }
   .dash-top-2col-layout .dash-panel {
     margin-bottom: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .dash-top-2col-layout .table-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .dash-top-2col-layout th,
+  .dash-top-2col-layout td {
+    padding: 8px 6px !important;
+    font-size: 12px !important;
   }
   .dash-panel {
     display: block !important;
     margin-bottom: 24px;
     animation: none;
+    min-width: 0;
+    max-width: 100%;
   }
 }
 
@@ -1967,11 +1984,11 @@ tr:last-child td { border-bottom: none; }
           <table>
             <thead>
               <tr>
-                <th class="col-w-sm">参加日</th>
-                <th>氏名 / 会社名</th>
-                <th class="col-w-md">招待者 / 担当</th>
+                <th style="width: 75px;">参加日</th>
+                <th>氏名 / 会社</th>
+                <th style="width: 95px;">招待 / 担当</th>
                 <th>最新状況・次の一手</th>
-                <th class="text-center col-w-sm">カルテ</th>
+                <th class="text-center" style="width: 50px;">カルテ</th>
               </tr>
             </thead>
             <tbody id="table-hot-visitors"></tbody>
@@ -2007,12 +2024,12 @@ tr:last-child td { border-bottom: none; }
           <table>
             <thead>
               <tr>
-                <th class="text-center col-w-sm">状態</th>
-                <th class="col-w-md">期日</th>
-                <th class="col-w-md">担当</th>
-                <th>対象ビジター</th>
+                <th class="text-center" style="width: 45px;">状態</th>
+                <th style="width: 75px;">期日</th>
+                <th style="width: 65px;">担当</th>
+                <th>ビジター</th>
                 <th>アクション ＆ 報告</th>
-                <th class="text-center col-w-md">操作</th>
+                <th class="text-center" style="width: 85px;">操作</th>
               </tr>
             </thead>
             <tbody id="table-dashboard-action-plans"></tbody>
@@ -3991,8 +4008,8 @@ const ApiService = {
         `;
 
         const actionCellHtml = `
-          <div style="max-width: 380px;">
-            <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
+          <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
+            <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
               ${escapeHtml(p.action_text)}
             </div>
             ${reportBoxHtml}
@@ -4000,15 +4017,12 @@ const ApiService = {
         `;
 
         const operationCellHtml = `
-          <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation();">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="このアクションの共有URLをコピー">
-              <i class="fa-solid fa-share-nodes text-blue-600"></i>
+          <div class="flex items-center justify-center gap-1" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+              ${isCompleted ? '確認' : '報告'}
             </button>
-            <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-              <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
-            </button>
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
-              詳細
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 6px; font-size: 11px; white-space: nowrap;" onclick="openVisitorDetailView('${p.visitor_id}')">
+              カルテ
             </button>
           </div>
         `;
