@@ -134,7 +134,7 @@
         : (currentActionsFilter === 'completed' ? '完了済みのアクションプランはありません' : '該当するアクションプランはありません');
 
       if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 36px 16px;">${emptyMsg}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 36px 16px;">${emptyMsg}</td></tr>`;
       }
       if (cardsContainer) {
         cardsContainer.innerHTML = `
@@ -150,19 +150,29 @@
     list.forEach(p => {
       const isCompleted = Number(p.is_completed) === 1;
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
+      const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
-      const statusBadgeHtml = isCompleted
-        ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
-        : (isOverdue
-            ? `<span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>超過</span>`
-            : `<span class="badge" style="background:#e7f5ff; color:#1864ab; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">進行中</span>`
-          );
+      // 期日 ＆ 進行中・超過・完了ステータス (🔵🟡🔴🟢)
+      let scheduleBadgeHtml = '';
+      if (isCompleted) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60"><i class="fa-solid fa-circle-check text-[10px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+      } else if (isOverdue) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-red-50 text-red-600 border border-red-200/80"><i class="fa-solid fa-circle text-[8px] text-red-500 animate-pulse"></i><span>${p.due_date || '期日未定'}</span><span class="text-[10px] bg-red-600 text-white px-1 py-0.2 rounded font-bold">超過</span></span>`;
+      } else if (isDueToday) {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200/80"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>${p.due_date}</span><span class="text-[10px] bg-amber-500 text-white px-1 py-0.2 rounded font-bold">本日</span></span>`;
+      } else {
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+      }
 
-      const dateBadgeHtml = isCompleted
-        ? `<span class="vd-ap-badge-date" style="background:#f1f5f9; color:#94a3b8; font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '-'}</span>`
-        : `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:11px;"><i class="fa-regular fa-calendar"></i> ${p.due_date || '期日未定'}</span>`;
-
-      const userBadgeHtml = `<span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>`;
+      const scheduleAndAssigneeHtml = `
+        <div class="flex flex-col items-start justify-center">
+          ${scheduleBadgeHtml}
+          <div class="flex items-center gap-1 text-[11px] text-slate-600 font-bold mt-1 pl-0.5">
+            <i class="fa-regular fa-user text-[10px] text-slate-400"></i>
+            <span class="truncate max-w-[120px]">${escapeHtml(p.assignee_name || '担当未定')}</span>
+          </div>
+        </div>
+      `;
 
       const reportBoxHtml = p.report_text
         ? `<div class="dash-ap-card-report">
@@ -180,9 +190,7 @@
           openVisitorDetailView(p.visitor_id);
         };
         tr.innerHTML = `
-          <td class="text-center">${statusBadgeHtml}</td>
-          <td>${dateBadgeHtml}</td>
-          <td>${userBadgeHtml}</td>
+          <td>${scheduleAndAssigneeHtml}</td>
           <td>
             <div>
               <div style="font-weight: 800; font-size: 14px; color: #0f172a;">
@@ -253,12 +261,11 @@
             ${reportBoxHtml}
           </div>
 
-          <!-- 下段: 左側に状態・期日・担当者バッジ、右側に共有・詳細ナビ -->
+          <!-- 下段: 左側に期日(状態付)・担当者バッジ、右側に共有・詳細ナビ -->
           <div class="dash-ap-card-bottom-row">
             <div class="dash-ap-card-badges-left">
-              ${statusBadgeHtml}
-              ${dateBadgeHtml}
-              ${userBadgeHtml}
+              ${scheduleBadgeHtml}
+              <span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
             </div>
             <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
               <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
