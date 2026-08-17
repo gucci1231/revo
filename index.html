@@ -9733,26 +9733,26 @@ window.CelebrationEffect = (function() {
     const tmplFollow30Days = map['EMAIL_FOLLOW_30DAYS'] || { id: 'EMAIL_FOLLOW_30DAYS', name: '参加1ヶ月後フォローメール', subject: '', body: '', description: '' };
 
     container.innerHTML = `
-      <!-- Timeline Connector Line -->
-      <div class="hidden lg:block absolute left-8 top-8 bottom-8 w-1 bg-gradient-to-b from-emerald-500 via-blue-500 to-purple-500 rounded-full z-0 opacity-40"></div>
+      <!-- Timeline Connector Line (Clean Blue) -->
+      <div class="hidden lg:block absolute left-8 top-8 bottom-8 w-1 bg-blue-200/80 rounded-full z-0"></div>
 
       <!-- ================= PHASE 1: 申込時 (Welcome) ================= -->
       <div class="relative z-10 space-y-4">
         <!-- Phase Header -->
         <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-emerald-500/20 shrink-0 ring-4 ring-white">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-blue-600/20 shrink-0 ring-4 ring-white">
             1
           </div>
           <div class="flex-1 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 flex items-center gap-1">
-                  <i class="fa-solid fa-bolt"></i> 申込直後 (即時配信)
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                  <i class="fa-solid fa-bolt text-blue-600"></i> 申込直後 (即時配信)
                 </span>
                 <span class="text-xs font-bold text-slate-400">Phase 1</span>
               </div>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                <i class="fa-solid fa-code-branch text-emerald-600 mr-1"></i> ビジター属性で3分岐
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1"></i> ビジター属性で3分岐
               </span>
             </div>
             <h3 class="text-base sm:text-lg font-black text-slate-900 mt-1.5">初回受付・参加案内 (Welcome メール)</h3>
@@ -9764,19 +9764,19 @@ window.CelebrationEffect = (function() {
         <div class="lg:pl-16 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             ${renderTemplateCardHtml(tmplVisitorIntro, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800"><i class="fa-solid fa-seedling"></i> 初参加</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-user-plus text-blue-600"></i> 初参加</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 初回ビジター向け`
             )}
           </div>
           <div>
             ${renderTemplateCardHtml(tmplGuestIntro, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-sky-100 text-sky-800"><i class="fa-solid fa-handshake"></i> ゲスト</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-handshake text-blue-600"></i> ゲスト</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 他チャプターメンバー向け`
             )}
           </div>
           <div>
             ${renderTemplateCardHtml(tmplRepeaterIntro, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-teal-100 text-teal-800"><i class="fa-solid fa-rotate-right"></i> リピーター</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-rotate-right text-blue-600"></i> リピーター</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 2回目以降の再参加向け`
             )}
           </div>
@@ -9793,12 +9793,12 @@ window.CelebrationEffect = (function() {
           <div class="flex-1 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 text-blue-800 flex items-center gap-1">
-                  <i class="fa-solid fa-clock"></i> 定例会 2日前 & 前日
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                  <i class="fa-solid fa-clock text-blue-600"></i> 定例会 2日前 & 前日
                 </span>
                 <span class="text-xs font-bold text-slate-400">Phase 2</span>
               </div>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                 <i class="fa-solid fa-calendar-check text-blue-600 mr-1"></i> 定例会直前 2段階ステップ
               </span>
             </div>
@@ -9811,13 +9811,13 @@ window.CelebrationEffect = (function() {
         <div class="lg:pl-16 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             ${renderTemplateCardHtml(tmplRemind2Days, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-blue-100 text-blue-800"><i class="fa-solid fa-calendar-day"></i> 2日前 (火曜)</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-day text-blue-600"></i> 2日前 (火曜)</span>`,
               `<i class="fa-solid fa-arrow-right"></i> メインプレゼンター予告・準備`
             )}
           </div>
           <div>
             ${renderTemplateCardHtml(tmplRemind1Day, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-indigo-100 text-indigo-800"><i class="fa-solid fa-bell"></i> 前日 (水曜)</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-bell text-blue-600"></i> 前日 (水曜)</span>`,
               `<i class="fa-solid fa-arrow-right"></i> 明朝の開催時間・最終確認`
             )}
           </div>
@@ -9828,19 +9828,19 @@ window.CelebrationEffect = (function() {
       <div class="relative z-10 space-y-4">
         <!-- Phase Header -->
         <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-amber-500/20 shrink-0 ring-4 ring-white">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-blue-600/20 shrink-0 ring-4 ring-white">
             3
           </div>
           <div class="flex-1 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-100 text-amber-800 flex items-center gap-1">
-                  <i class="fa-solid fa-flag-checkered"></i> 定例会当日 (木曜午後)
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                  <i class="fa-solid fa-flag-checkered text-blue-600"></i> 定例会当日 (木曜午後)
                 </span>
                 <span class="text-xs font-bold text-slate-400">Phase 3</span>
               </div>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                <i class="fa-solid fa-code-branch text-amber-600 mr-1"></i> 出席・欠席で2分岐
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1"></i> 出席・欠席で2分岐
               </span>
             </div>
             <h3 class="text-base sm:text-lg font-black text-slate-900 mt-1.5">当日フォローメール (御礼 / 欠席フォロー)</h3>
@@ -9852,13 +9852,13 @@ window.CelebrationEffect = (function() {
         <div class="lg:pl-16 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             ${renderTemplateCardHtml(tmplThanksAttended, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-green-100 text-green-800"><i class="fa-solid fa-circle-check"></i> 出席時</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-circle-check text-blue-600"></i> 出席時</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 当日参加御礼 ＆ 1to1面談案内`
             )}
           </div>
           <div>
             ${renderTemplateCardHtml(tmplThanksAbsent, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-rose-100 text-rose-800"><i class="fa-solid fa-circle-xmark"></i> 欠席時</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-circle-xmark text-slate-500"></i> 欠席時</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 欠席フォロー ＆ 次回振替案内`
             )}
           </div>
@@ -9869,19 +9869,19 @@ window.CelebrationEffect = (function() {
       <div class="relative z-10 space-y-4">
         <!-- Phase Header -->
         <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-purple-600/20 shrink-0 ring-4 ring-white">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-blue-600/20 shrink-0 ring-4 ring-white">
             4
           </div>
           <div class="flex-1 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-100 text-purple-800 flex items-center gap-1">
-                  <i class="fa-solid fa-arrows-rotate"></i> 参加後 1週間 & 1ヶ月
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                  <i class="fa-solid fa-arrows-rotate text-blue-600"></i> 参加後 1週間 & 1ヶ月
                 </span>
                 <span class="text-xs font-bold text-slate-400">Phase 4</span>
               </div>
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                <i class="fa-solid fa-hand-holding-heart text-purple-600 mr-1"></i> 中長期リコネクト
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-hand-holding-heart text-blue-600 mr-1"></i> 中長期リコネクト
               </span>
             </div>
             <h3 class="text-base sm:text-lg font-black text-slate-900 mt-1.5">中長期ステップフォローメール</h3>
@@ -9893,13 +9893,13 @@ window.CelebrationEffect = (function() {
         <div class="lg:pl-16 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             ${renderTemplateCardHtml(tmplFollow7Days, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-purple-100 text-purple-800"><i class="fa-solid fa-calendar-week"></i> 1週間後</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-week text-blue-600"></i> 1週間後</span>`,
               `<i class="fa-solid fa-arrow-right"></i> ビジネス進捗伺い ＆ メンバー紹介`
             )}
           </div>
           <div>
             ${renderTemplateCardHtml(tmplFollow30Days, 
-              `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-fuchsia-100 text-fuchsia-800"><i class="fa-solid fa-calendar-days"></i> 1ヶ月後</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-days text-blue-600"></i> 1ヶ月後</span>`,
               `<i class="fa-solid fa-arrow-right"></i> 定期フォロー ＆ 再参加リコネクト`
             )}
           </div>
