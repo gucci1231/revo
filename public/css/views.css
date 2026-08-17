@@ -231,9 +231,43 @@
 /* --- 📊 Modern Intuitive Dashboard Styles --- */
 .dash-hero-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
+}
+@media (max-width: 1024px) {
+  .dash-hero-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+}
+@media (max-width: 640px) {
+  .dash-hero-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .dash-hero-card {
+    padding: 10px 10px;
+    border-radius: 10px;
+    min-width: 0;
+  }
+  .dash-hero-title {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dash-hero-val {
+    font-size: 22px;
+  }
+  .dash-hero-sub {
+    font-size: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
 }
 .dash-hero-card {
   background: #ffffff;
