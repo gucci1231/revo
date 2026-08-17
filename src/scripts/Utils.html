@@ -157,21 +157,28 @@
       const isCompleted = Number(ap.is_completed) === 1;
       const todayStr = new Date().toISOString().slice(0, 10);
       const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
+      const isDueToday = !isCompleted && ap.due_date && ap.due_date === todayStr;
+
+      let dotColor = '#3b82f6'; // 🔵
+      if (isCompleted) dotColor = '#10b981'; // 🟢
+      else if (isOverdue) dotColor = '#ef4444'; // 🔴
+      else if (isDueToday) dotColor = '#f59e0b'; // 🟡
       
       const metaInfo = [];
       if (ap.due_date) {
-        metaInfo.push(isOverdue ? `<span style="color:#ff3b30; font-weight:700;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
+        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
       }
       if (ap.assignee_name) {
         metaInfo.push(`担当: ${escapeHtml(ap.assignee_name)}`);
       }
 
       return `
-        <div style="display:flex; flex-direction:column; gap:2px; min-width:140px;">
-          <div style="font-size:13px; font-weight:600; color:${isCompleted ? '#86868b' : '#1d1d1f'}; ${isCompleted ? 'text-decoration:line-through;' : ''}">
-            ${escapeHtml(ap.action_text)}
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0; width:100%; white-space:normal; word-break:break-word;">
+          <div style="font-size:12.5px; font-weight:700; color:${isCompleted ? '#94a3b8' : '#0f172a'}; line-height:1.4; ${isCompleted ? 'text-decoration:line-through;' : ''}">
+            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeHtml(ap.action_text)}
           </div>
-          ${metaInfo.length > 0 ? `<div style="font-size:11px; color:#86868b;">${metaInfo.join(' · ')}</div>` : ''}
+          ${metaInfo.length > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:1px;">${metaInfo.join(' · ')}</div>` : ''}
+          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeHtml(ap.report_text)}</div>` : ''}
         </div>
       `;
     }
@@ -179,13 +186,13 @@
     const note = r.q7 || r.orientMemo || r.followMemo;
     if (note) {
       return `
-        <div style="font-size:12px; color:#64748b; line-height:1.4;" title="${escapeHtml(note)}">
-          ${formatTruncatedCell(note, 30)}
+        <div style="font-size:12px; color:#475569; line-height:1.4; white-space:normal; word-break:break-word;" title="${escapeHtml(note)}">
+          ${escapeHtml(note)}
         </div>
       `;
     }
 
-    return `<span style="font-size:12px; color:#94a3b8;">未設定</span>`;
+    return `<span style="font-size:11px; color:#94a3b8;">未設定</span>`;
   }
 
   function hideLoading() {

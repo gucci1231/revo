@@ -2310,7 +2310,7 @@ tr:last-child td { border-bottom: none; }
   }
   .dash-top-2col-layout th,
   .dash-top-2col-layout td {
-    padding: 12px 14px !important;
+    padding: 10px 8px !important;
     font-size: 13px !important;
   }
   .dash-panel {
@@ -3238,14 +3238,13 @@ tr:last-child td { border-bottom: none; }
 
         <!-- PCテーブル -->
         <div class="table-container dash-ap-table-wrap">
-          <table>
+          <table style="width: 100%; table-layout: auto;">
             <thead>
               <tr>
-                <th style="width: 75px;">参加日</th>
-                <th>氏名 / 会社</th>
-                <th style="width: 95px;">招待 / 担当</th>
-                <th>最新状況・次の一手</th>
-
+                <th style="width: 60px; min-width: 55px;">参加日</th>
+                <th style="width: 110px; min-width: 95px; max-width: 120px;">氏名 / 会社</th>
+                <th style="width: 80px; min-width: 75px; max-width: 85px;">招待 / 担当</th>
+                <th style="width: auto;">最新状況・次の一手</th>
               </tr>
             </thead>
             <tbody id="table-hot-visitors"></tbody>
@@ -4595,21 +4594,28 @@ const ApiService = {
       const isCompleted = Number(ap.is_completed) === 1;
       const todayStr = new Date().toISOString().slice(0, 10);
       const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
+      const isDueToday = !isCompleted && ap.due_date && ap.due_date === todayStr;
+
+      let dotColor = '#3b82f6'; // 🔵
+      if (isCompleted) dotColor = '#10b981'; // 🟢
+      else if (isOverdue) dotColor = '#ef4444'; // 🔴
+      else if (isDueToday) dotColor = '#f59e0b'; // 🟡
       
       const metaInfo = [];
       if (ap.due_date) {
-        metaInfo.push(isOverdue ? `<span style="color:#ff3b30; font-weight:700;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
+        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
       }
       if (ap.assignee_name) {
         metaInfo.push(`担当: ${escapeHtml(ap.assignee_name)}`);
       }
 
       return `
-        <div style="display:flex; flex-direction:column; gap:2px; min-width:140px;">
-          <div style="font-size:13px; font-weight:600; color:${isCompleted ? '#86868b' : '#1d1d1f'}; ${isCompleted ? 'text-decoration:line-through;' : ''}">
-            ${escapeHtml(ap.action_text)}
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0; width:100%; white-space:normal; word-break:break-word;">
+          <div style="font-size:12.5px; font-weight:700; color:${isCompleted ? '#94a3b8' : '#0f172a'}; line-height:1.4; ${isCompleted ? 'text-decoration:line-through;' : ''}">
+            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeHtml(ap.action_text)}
           </div>
-          ${metaInfo.length > 0 ? `<div style="font-size:11px; color:#86868b;">${metaInfo.join(' · ')}</div>` : ''}
+          ${metaInfo.length > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:1px;">${metaInfo.join(' · ')}</div>` : ''}
+          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeHtml(ap.report_text)}</div>` : ''}
         </div>
       `;
     }
@@ -4617,13 +4623,13 @@ const ApiService = {
     const note = r.q7 || r.orientMemo || r.followMemo;
     if (note) {
       return `
-        <div style="font-size:12px; color:#64748b; line-height:1.4;" title="${escapeHtml(note)}">
-          ${formatTruncatedCell(note, 30)}
+        <div style="font-size:12px; color:#475569; line-height:1.4; white-space:normal; word-break:break-word;" title="${escapeHtml(note)}">
+          ${escapeHtml(note)}
         </div>
       `;
     }
 
-    return `<span style="font-size:12px; color:#94a3b8;">未設定</span>`;
+    return `<span style="font-size:11px; color:#94a3b8;">未設定</span>`;
   }
 
   function hideLoading() {
@@ -5552,7 +5558,7 @@ const ApiService = {
     const validRecords = (records || []).filter(r => r.isJoined !== '見送り');
 
     if (!validRecords || validRecords.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       if (cardsContainer) {
         cardsContainer.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
@@ -5574,20 +5580,24 @@ const ApiService = {
           openVisitorDetailView(r.id);
         };
         tr.innerHTML = `
-          <td>${formatEventDateWithElapsed(r.eventDate)}</td>
-          <td>
-            <div>
+          <td style="font-size: 11px; color: #64748b; white-space: nowrap; padding: 8px 6px;">
+            ${formatEventDateWithElapsed(r.eventDate)}
+          </td>
+          <td style="max-width: 120px; padding: 8px 8px; vertical-align: top;">
+            <div style="font-weight: 800; font-size: 13px; color: #0f172a; line-height: 1.3;" class="truncate" title="${escapeHtml(r.name)}">
               ${renderVisitorNameLinkHtml(r.id, r.name, r)}
-              ${r.company ? `<div style="font-size:11px; color:#86868b;">${escapeHtml(r.company)}</div>` : ''}
             </div>
+            ${r.company ? `<div class="truncate" style="font-size:10.5px; color:#64748b; margin-top:2px;" title="${escapeHtml(r.company)}">${escapeHtml(r.company)}</div>` : ''}
           </td>
-          <td>
-            <div>
-              <span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(r.inviter, 8)}</span>
-              ${r.orientUser ? `<div style="font-size:11px; color:#86868b;">担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+          <td style="max-width: 85px; padding: 8px 6px; vertical-align: top;">
+            <div class="truncate" style="font-weight: 700; color: #334155; font-size: 11.5px; line-height: 1.3;" title="${escapeHtml(r.inviter || '-')}">
+              ${escapeHtml(r.inviter || '-')}
             </div>
+            ${r.orientUser ? `<div class="truncate" style="font-size:10px; color:#64748b; margin-top:2px;" title="担当: ${escapeHtml(r.orientUser)}">担当: ${escapeHtml(r.orientUser)}</div>` : ''}
           </td>
-          <td>${renderCurrentStatusColumnHtml(r)}</td>
+          <td style="white-space: normal !important; word-break: break-word; max-width: none !important; line-height: 1.4; padding: 8px 10px; vertical-align: top;">
+            ${renderCurrentStatusColumnHtml(r)}
+          </td>
         `;
         tbody.appendChild(tr);
       }
