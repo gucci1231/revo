@@ -373,6 +373,22 @@
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
 
+/* Responsive Action Plan Switching (PC: Table, Mobile: Cards) */
+.dash-ap-table-wrap {
+  display: block;
+}
+.dash-ap-cards-wrap {
+  display: none;
+}
+@media (max-width: 768px) {
+  .dash-ap-table-wrap {
+    display: none !important;
+  }
+  .dash-ap-cards-wrap {
+    display: grid !important;
+  }
+}
+
 /* Action Plan Card Grid Layout */
 .dash-ap-grid {
   display: grid;

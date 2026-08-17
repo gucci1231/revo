@@ -783,6 +783,22 @@ tr:last-child td { border-bottom: none; }
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
 
+/* Responsive Action Plan Switching (PC: Table, Mobile: Cards) */
+.dash-ap-table-wrap {
+  display: block;
+}
+.dash-ap-cards-wrap {
+  display: none;
+}
+@media (max-width: 768px) {
+  .dash-ap-table-wrap {
+    display: none !important;
+  }
+  .dash-ap-cards-wrap {
+    display: grid !important;
+  }
+}
+
 /* Action Plan Card Grid Layout */
 .dash-ap-grid {
   display: grid;
@@ -1383,13 +1399,13 @@ tr:last-child td { border-bottom: none; }
     </section>
   </div>
 
-  <!-- パネル 2: アクションプラン進捗管理 (カードグリッド形式) -->
+  <!-- パネル 2: アクションプラン進捗管理 (PC: 表 / スマホ: カード のレスポンシブ自動切替) -->
   <div id="dash-panel-ap" class="dash-panel">
     <section class="section-card overflow-hidden">
       <div class="section-header flex-wrap">
         <div>
           <h2 class="section-title text-blue-600"><i class="fa-solid fa-bullseye"></i> 進行中アクションプラン</h2>
-          <div class="section-sub">カードをタップして実施結果を報告し、完了にできます</div>
+          <div class="section-sub">PCでは一覧表、スマホではカード形式で直感的に報告・確認できます</div>
         </div>
         <div class="flex gap-1.5">
           <button type="button" class="btn-action-primary text-xs" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了のみ</button>
@@ -1397,8 +1413,26 @@ tr:last-child td { border-bottom: none; }
           <button type="button" class="btn-action-secondary text-xs" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
         </div>
       </div>
-      <!-- Action Plans Cards Container -->
-      <div id="dashboard-action-plans-container" class="dash-ap-grid"></div>
+
+      <!-- 🖥️ PC表示用: テーブルビュー (横幅が広い画面) -->
+      <div class="table-container dash-ap-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="text-center col-w-sm">状態</th>
+              <th class="col-w-md">期日 (いつ)</th>
+              <th class="col-w-md">担当 (誰が)</th>
+              <th>対象ビジター</th>
+              <th>アクション内容 ＆ 実施報告</th>
+              <th class="text-center col-w-md">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-dashboard-action-plans"></tbody>
+        </table>
+      </div>
+
+      <!-- 📱 スマホ表示用: カードグリッド (スマートフォン画面) -->
+      <div id="dashboard-action-plans-cards" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
@@ -2943,9 +2977,8 @@ const ApiService = {
 
   function renderDashboardActionPlansTable(plans) {
     currentDashboardActionPlans = plans || [];
-    const container = document.getElementById('dashboard-action-plans-container');
-    if (!container) return;
-    container.innerHTML = '';
+    const tbody = document.getElementById('table-dashboard-action-plans');
+    const cardsContainer = document.getElementById('dashboard-action-plans-cards');
 
     const todayStr = new Date().toISOString().slice(0, 10);
     let filtered = currentDashboardActionPlans;
@@ -2955,24 +2988,32 @@ const ApiService = {
       filtered = currentDashboardActionPlans.filter(p => Number(p.is_completed) === 1);
     }
 
+    const emptyHtmlCards = `
+      <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+        <i class="fa-solid fa-clipboard-check text-2xl text-slate-300 mb-2"></i>
+        <div class="font-bold text-sm text-slate-600">${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}</div>
+      </div>
+    `;
+    const emptyHtmlTable = `
+      <tr>
+        <td colspan="6" style="text-align: center; color: #868e96; padding: 32px 16px;">
+          ${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}
+        </td>
+      </tr>
+    `;
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
+
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-          <i class="fa-solid fa-clipboard-check text-2xl text-slate-300 mb-2"></i>
-          <div class="font-bold text-sm text-slate-600">${currentDashboardApFilter === 'pending' ? '🎉 進行中の未完了アクションプランはありません。' : 'アクションプランはありません。'}</div>
-        </div>
-      `;
+      if (tbody) tbody.innerHTML = emptyHtmlTable;
+      if (cardsContainer) cardsContainer.innerHTML = emptyHtmlCards;
       return;
     }
 
     filtered.forEach(p => {
       const isCompleted = Number(p.is_completed) === 1;
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
-      const card = document.createElement('div');
-      card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
-      card.onclick = function() {
-        openActionReportModal(p.id, p.visitor_id);
-      };
 
       const statusBadgeHtml = isCompleted
         ? `<span class="badge" style="background:#d3f9d8; color:#2b8a3e; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
@@ -2994,36 +3035,94 @@ const ApiService = {
            </div>`
         : '';
 
-      card.innerHTML = `
-        <div class="dash-ap-card-header">
-          <div class="dash-ap-card-badges">
-            ${statusBadgeHtml}
-            ${dateBadgeHtml}
-            ${userBadgeHtml}
+      // 1. PCテーブル行描画
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') && e.target.closest('button').innerText.includes('詳細')) return;
+          openActionReportModal(p.id, p.visitor_id);
+        };
+
+        const visitorCellHtml = `
+          <div>
+            <div style="font-weight: 800; color: var(--text-main); font-size: 13px;">
+              <i class="fa-solid fa-user-tag text-blue-600 text-xs mr-1"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
+            </div>
+            ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
-          <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-            詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-          </button>
-        </div>
+        `;
 
-        <div class="dash-ap-card-visitor">
-          <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-          <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
-          ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
-        </div>
+        const actionCellHtml = `
+          <div style="max-width: 380px;">
+            <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 13px; font-weight: 800;">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
+          </div>
+        `;
 
-        <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-          ${escapeHtml(p.action_text)}
-        </div>
+        const operationCellHtml = `
+          <div class="flex items-center justify-center gap-1.5" onclick="event.stopPropagation();">
+            <button type="button" class="btn-action-primary text-xs" style="padding: 3px 8px; font-size: 11px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+              <i class="fa-solid fa-pen-to-square"></i> ${isCompleted ? '報告確認' : '報告して完了'}
+            </button>
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${p.visitor_id}')">
+              詳細
+            </button>
+          </div>
+        `;
 
-        ${reportBoxHtml}
+        tr.innerHTML = `
+          <td class="text-center">${statusBadgeHtml}</td>
+          <td>${dateBadgeHtml}</td>
+          <td>${userBadgeHtml}</td>
+          <td>${visitorCellHtml}</td>
+          <td>${actionCellHtml}</td>
+          <td class="text-center">${operationCellHtml}</td>
+        `;
+        tbody.appendChild(tr);
+      }
 
-        <div class="dash-ap-card-footer">
-          <span><i class="fa-solid fa-pen-to-square mr-1"></i> ${isCompleted ? 'タップして報告を確認・編集' : 'タップして報告を入力・完了'}</span>
-          <i class="fa-solid fa-chevron-right text-[10px]"></i>
-        </div>
-      `;
-      container.appendChild(card);
+      // 2. スマホカード描画
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
+        card.onclick = function() {
+          openActionReportModal(p.id, p.visitor_id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              ${statusBadgeHtml}
+              ${dateBadgeHtml}
+              ${userBadgeHtml}
+            </div>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
+              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
+          </div>
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
+          </div>
+
+          <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+            ${escapeHtml(p.action_text)}
+          </div>
+
+          ${reportBoxHtml}
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-pen-to-square mr-1"></i> ${isCompleted ? 'タップして報告を確認・編集' : 'タップして報告を入力・完了'}</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 
