@@ -78,7 +78,8 @@ function deduplicateVisitorListClient(list) {
     const rawList = [
       { id: '1', name: 'Visitor A', feelAbc: 'A', isJoined: '未' },
       { id: '2', name: 'Visitor B', feelAbc: 'B', isJoined: '未' },
-      { id: '3', name: 'Visitor C', feelAbc: 'C', isJoined: '未' }
+      { id: '3', name: 'Visitor C', feelAbc: 'C', isJoined: '未' },
+      { id: '4', name: 'Visitor A Rejected', feelAbc: 'A', isJoined: '見送り' }
     ];
 
     const deduplicated = deduplicateVisitorListClient(rawList);
@@ -86,7 +87,8 @@ function deduplicateVisitorListClient(list) {
     const filterByGrade = (list, gradeFilter) => {
       return list.filter(item => {
         const isJoined = (item.isJoined === '入会済' || item.isJoined === '済' || item.isJoined === '入会' || item.isJoined === true);
-        if (isJoined) return false;
+        const isRejected = (item.isJoined === '見送り');
+        if (isJoined || isRejected) return false;
         if (gradeFilter === 'A') return item.feelAbc === 'A';
         if (gradeFilter === 'B') return item.feelAbc === 'B';
         return item.feelAbc === 'A' || item.feelAbc === 'B';

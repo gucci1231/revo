@@ -3618,7 +3618,9 @@ const ApiService = {
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    if (!records || records.length === 0) {
+    const validRecords = (records || []).filter(r => r.isJoined !== '見送り');
+
+    if (!validRecords || validRecords.length === 0) {
       if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       if (cardsContainer) {
         cardsContainer.innerHTML = `
@@ -3631,7 +3633,7 @@ const ApiService = {
       return;
     }
 
-    records.forEach(r => {
+    validRecords.forEach(r => {
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
@@ -3870,6 +3872,10 @@ const ApiService = {
     const dedupedList = deduplicateVisitorListClient(rawList);
 
     filteredPfVisitors = dedupedList.filter(v => {
+      const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isRejected = (v.isJoined === '見送り');
+      if (isJoinedBool || isRejected) return false;
+
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
                          (currentPfGradeFilter === 'B' && feel === 'B') ||
@@ -4384,7 +4390,7 @@ const ApiService = {
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    const list = currentDashboardOneMonthList || [];
+    const list = (currentDashboardOneMonthList || []).filter(r => r.isJoined !== '見送り');
     const filterMode = (typeof currentDashboardOneMonthFilter !== 'undefined') ? currentDashboardOneMonthFilter : 'pending';
 
     let filtered = list;

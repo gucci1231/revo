@@ -33,6 +33,10 @@
     const dedupedList = deduplicateVisitorListClient(rawList);
 
     filteredPfVisitors = dedupedList.filter(v => {
+      const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isRejected = (v.isJoined === '見送り');
+      if (isJoinedBool || isRejected) return false;
+
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
                          (currentPfGradeFilter === 'B' && feel === 'B') ||

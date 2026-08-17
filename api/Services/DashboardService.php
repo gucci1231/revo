@@ -88,6 +88,7 @@ class DashboardService {
 
             $isJoinedBool = ($r['isJoined'] === '入会済' || $r['isJoined'] === '済' || $r['isJoined'] === '入会');
             $isAttendedBool = ($r['isAttended'] === '参加' || $r['isAttended'] === '済');
+            $isRejected = ($r['isJoined'] === '見送り');
 
             $totalApplyCount++;
             if ($isJoinedBool) $totalJoinedCount++;
@@ -97,7 +98,7 @@ class DashboardService {
             $r['latestActionPlan'] = $apMap[(string)$r['id']] ?? null;
 
             $feel = strtoupper(trim($r['feelAbc']));
-            if ($feel === 'A' && !$isJoinedBool) {
+            if ($feel === 'A' && !$isJoinedBool && !$isRejected) {
                 $hotVisitors[] = $r;
             }
 
@@ -107,7 +108,7 @@ class DashboardService {
                 $lastMeetingVisitors[] = $r;
             }
 
-            if ($eTs && $eTs >= $oneMonthAgoTs && !$isJoinedBool) {
+            if ($eTs && $eTs >= $oneMonthAgoTs && !$isJoinedBool && !$isRejected) {
                 $oneMonthFollowupVisitors[] = $r;
             }
 

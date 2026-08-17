@@ -360,7 +360,7 @@
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    const list = currentDashboardOneMonthList || [];
+    const list = (currentDashboardOneMonthList || []).filter(r => r.isJoined !== '見送り');
     const filterMode = (typeof currentDashboardOneMonthFilter !== 'undefined') ? currentDashboardOneMonthFilter : 'pending';
 
     let filtered = list;

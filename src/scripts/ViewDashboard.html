@@ -352,7 +352,9 @@
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    if (!records || records.length === 0) {
+    const validRecords = (records || []).filter(r => r.isJoined !== '見送り');
+
+    if (!validRecords || validRecords.length === 0) {
       if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
       if (cardsContainer) {
         cardsContainer.innerHTML = `
@@ -365,7 +367,7 @@
       return;
     }
 
-    records.forEach(r => {
+    validRecords.forEach(r => {
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');

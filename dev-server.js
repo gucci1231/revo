@@ -498,13 +498,14 @@ function handleApiRequest(req, res, urlObj) {
         r.latestActionPlan = apMap[String(r.id)] || null;
         const isJoinedBool = (r.isJoined === '入会済' || r.isJoined === '済' || r.isJoined === '入会');
         const isAttendedBool = (r.isAttended === '参加' || r.isAttended === '済');
+        const isRejected = (r.isJoined === '見送り');
 
         if (isJoinedBool) totalJoinedCount++;
         if (isAttendedBool) totalAttendedCount++;
         if (r.hasHearingSheet) totalHearingCount++;
 
         const feel = (r.feelAbc || '').toUpperCase().trim();
-        if (feel === 'A' && !isJoinedBool) {
+        if (feel === 'A' && !isJoinedBool && !isRejected) {
           hotVisitors.push(r);
         }
 
@@ -512,7 +513,7 @@ function handleApiRequest(req, res, urlObj) {
         if (eDate !== '') {
           const eTs = new Date(eDate.replace(/\//g, '-')).getTime();
           const oneMonthAgoTs = Date.now() - 30 * 24 * 60 * 60 * 1000;
-          if (eTs && eTs >= oneMonthAgoTs && !isJoinedBool) {
+          if (eTs && eTs >= oneMonthAgoTs && !isJoinedBool && !isRejected) {
             oneMonthFollowup.push(r);
           }
 
