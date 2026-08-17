@@ -92,16 +92,14 @@
       }
     }
 
-    // スマホ用フッターボタン
+    // スマホ用フッターボタン（存在する場合のみ）
     const mobilePrevBtn = document.getElementById('vd-mobile-prev-btn');
     const mobileNextBtn = document.getElementById('vd-mobile-next-btn');
     if (mobilePrevBtn) {
       mobilePrevBtn.disabled = !prev;
-      mobilePrevBtn.innerHTML = prev ? `<i class="fa-solid fa-chevron-left"></i> 前へ (${escapeHtml(prev.name || 'No.' + prev.id)})` : `<i class="fa-solid fa-chevron-left"></i> 前のビジター`;
     }
     if (mobileNextBtn) {
       mobileNextBtn.disabled = !next;
-      mobileNextBtn.innerHTML = next ? `次へ (${escapeHtml(next.name || 'No.' + next.id)}) <i class="fa-solid fa-chevron-right"></i>` : `次のビジター <i class="fa-solid fa-chevron-right"></i>`;
     }
 
     // PC用左カラムサイドバー一覧を更新

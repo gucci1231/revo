@@ -1288,10 +1288,12 @@ tr:last-child td { border-bottom: none; }
 .vd-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  padding: 8px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 700;
@@ -1306,7 +1308,7 @@ tr:last-child td { border-bottom: none; }
   border-color: #cbd5e1;
 }
 .vd-back-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 /* --- 🔄 Visitor Navigation Widget --- */
@@ -1317,7 +1319,7 @@ tr:last-child td { border-bottom: none; }
   background: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.9);
   padding: 3px 4px;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -1325,9 +1327,10 @@ tr:last-child td { border-bottom: none; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 700;
   color: #334155;
@@ -3757,15 +3760,15 @@ tr:last-child td { border-bottom: none; }
     <div class="vd-main-detail-container">
       <div class="vd-top-bar">
         <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="一覧に戻る">
-          <i class="fa-solid fa-chevron-left"></i> 戻る
+          <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="vd-top-nav-group">
           <button type="button" id="vd-nav-prev-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('prev')" title="前のビジター (← キー / 右スワイプ)" disabled>
-            <i class="fa-solid fa-chevron-left"></i> 前へ
+            <i class="fa-solid fa-chevron-left"></i>
           </button>
           <span id="vd-nav-counter" class="vd-nav-counter">- / -</span>
           <button type="button" id="vd-nav-next-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('next')" title="次のビジター (→ キー / 左スワイプ)" disabled>
-            次へ <i class="fa-solid fa-chevron-right"></i>
+            <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
         <div class="vd-header-buttons">
@@ -4026,19 +4029,6 @@ tr:last-child td { border-bottom: none; }
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- スマホ用スワイプ / 前後ナビゲーションフッター -->
-        <div class="vd-mobile-swipe-footer">
-          <button type="button" id="vd-mobile-prev-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('prev')" disabled>
-            <i class="fa-solid fa-chevron-left"></i> 前のビジター
-          </button>
-          <div class="vd-swipe-indicator-hint">
-            ‹ スワイプで移動 ›
-          </div>
-          <button type="button" id="vd-mobile-next-btn" class="vd-mobile-nav-btn" onclick="navigateVisitorDetail('next')" disabled>
-            次のビジター <i class="fa-solid fa-chevron-right"></i>
-          </button>
         </div>
 
       </div>
@@ -7049,16 +7039,14 @@ const ApiService = {
       }
     }
 
-    // スマホ用フッターボタン
+    // スマホ用フッターボタン（存在する場合のみ）
     const mobilePrevBtn = document.getElementById('vd-mobile-prev-btn');
     const mobileNextBtn = document.getElementById('vd-mobile-next-btn');
     if (mobilePrevBtn) {
       mobilePrevBtn.disabled = !prev;
-      mobilePrevBtn.innerHTML = prev ? `<i class="fa-solid fa-chevron-left"></i> 前へ (${escapeHtml(prev.name || 'No.' + prev.id)})` : `<i class="fa-solid fa-chevron-left"></i> 前のビジター`;
     }
     if (mobileNextBtn) {
       mobileNextBtn.disabled = !next;
-      mobileNextBtn.innerHTML = next ? `次へ (${escapeHtml(next.name || 'No.' + next.id)}) <i class="fa-solid fa-chevron-right"></i>` : `次のビジター <i class="fa-solid fa-chevron-right"></i>`;
     }
 
     // PC用左カラムサイドバー一覧を更新
