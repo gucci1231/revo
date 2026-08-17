@@ -711,95 +711,232 @@ tr:last-child td { border-bottom: none; }
 .settings-divider { border: none; border-top: 1px dashed var(--border-color); }
 .form-input-highlight { font-weight: 800; color: var(--primary-accent); }
 
-/* --- 👤 Visitor Detail View Styles --- */
+/* --- 👤 🍏 Apple-Style Visitor Detail View --- */
 .vd-top-bar {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-  background: #ffffff; padding: 14px 20px; border-radius: var(--radius);
-  border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); flex-wrap: wrap; gap: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: transparent;
+  padding: 4px 0;
+  flex-wrap: wrap;
+  gap: 10px;
 }
-.vd-header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-.vd-profile-card { padding: 24px; }
+.vd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vd-back-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+.vd-back-btn:active {
+  transform: scale(0.97);
+}
+
+.vd-header-buttons {
+  display: flex;
+  gap: 8px;
+}
+.vd-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.vd-icon-btn:hover {
+  color: #0f172a;
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.vd-profile-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.04);
+}
+@media (max-width: 640px) {
+  .vd-profile-card {
+    padding: 16px;
+    border-radius: 16px;
+  }
+}
+
 .vd-profile-header {
-  border-bottom: 2px solid var(--border-color); padding-bottom: 14px; margin-bottom: 20px;
-  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px;
 }
-.vd-profile-title-area { display: flex; flex-direction: column; }
-.vd-profile-subtitle { font-size: 11px; font-weight: 800; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
-.vd-profile-name { font-size: 28px; font-weight: 900; color: var(--text-main); margin: 4px 0; }
-.vd-profile-furigana { font-size: 13px; color: #6c757d; }
+.vd-profile-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.vd-profile-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+.vd-profile-furigana {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
 
-.vd-badges-wrap { display: flex; gap: 10px; flex-wrap: wrap; }
-.vd-badge {
-  padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px;
-  cursor: pointer; transition: all 0.15s ease; user-select: none;
-}
-.vd-badge-static {
-  padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 12px;
-  background: #f1f5f9; color: #64748b;
-}
-
-.vd-specs-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
-  background: #f8f9fa; padding: 18px; border-radius: 10px; margin-bottom: 24px;
-  font-size: 14px; border: 1px solid #e9ecef;
-}
-.vd-spec-item { display: flex; gap: 6px; align-items: baseline; }
-.vd-spec-label { font-weight: 700; color: #495057; }
-.vd-spec-val { color: var(--text-main); }
-.vd-spec-val.accent { font-weight: 800; color: #d6336c; }
-.vd-spec-val.bold { font-weight: 800; }
-
-.vd-tab-nav {
+.vd-badges-wrap {
   display: flex;
   gap: 6px;
-  border-bottom: 2px solid #dee2e6;
-  margin-bottom: 18px;
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  align-items: center;
+  flex-wrap: wrap;
 }
-.vd-tab-nav::-webkit-scrollbar {
-  display: none;
+.vd-badge-static {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 11px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+/* Inset Grouped Specs Grid (Apple Settings Style) */
+.vd-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  background: #f8fafc;
+  padding: 14px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #f1f5f9;
+}
+.vd-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+.vd-spec-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.vd-spec-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  word-break: break-all;
+}
+.vd-spec-val.accent {
+  color: #e11d48;
+}
+
+/* iOS Segmented Control for Visitor Tabs */
+.vd-tab-nav {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: none;
 }
 .vd-tab-btn {
-  padding: 10px 16px;
+  padding: 8px 16px;
   font-size: 13px;
-  border-radius: 8px 8px 0 0;
+  font-weight: 700;
+  color: #64748b;
   border: none;
   background: transparent;
-  color: #64748b;
-  font-weight: 700;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.vd-tab-btn:hover { color: var(--text-main); background: #f1f5f9; }
+.vd-tab-btn:hover {
+  color: #0f172a;
+}
 .vd-tab-btn.active {
-  color: var(--primary-accent);
   background: #ffffff;
-  border-bottom: 3px solid var(--primary-accent);
-  font-weight: 800;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 .vd-tab-badge {
-  background: var(--danger-accent);
-  color: #ffffff;
   font-size: 10px;
   font-weight: 800;
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 10px;
+  background: #e2e8f0;
+  color: #64748b;
+}
+.vd-tab-btn.active .vd-tab-badge {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .vd-box {
-  background: #ffffff; border: 1px solid #ced4da; border-radius: 10px; padding: 22px;
-  box-shadow: var(--shadow-sm); margin-bottom: 24px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
 }
-.vd-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.vd-box-title { font-size: 16px; font-weight: 800; color: var(--text-main); margin: 0; display: flex; align-items: center; gap: 8px; }
+.vd-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.vd-box-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .vd-box-title.accent { color: var(--primary-accent); font-size: 17px; font-weight: 900; }
 .vd-box-subtitle { font-size: 12px; color: #6c757d; font-weight: 700; }
 
@@ -2092,171 +2229,157 @@ tr:last-child td { border-bottom: none; }
   </section>
 </div>
 
-    <!-- VIEW 4: ビジター詳細プロファイル (全画面フルサイズページ) -->
+    <!-- VIEW 4: ビジター詳細カルテ (Apple-Style Minimal & Refined) -->
 <div id="view-visitor-detail" class="view-content">
   <div class="vd-top-bar">
-    <button type="button" class="btn-cancel" onclick="closeVisitorDetailView()">
-      <i class="fa-solid fa-arrow-left"></i> 前の画面へ戻る
+    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()">
+      <i class="fa-solid fa-chevron-left text-xs"></i> 戻る
     </button>
     <div class="vd-header-buttons">
-      <button type="button" class="btn-action-secondary" onclick="copyCurrentPageUrl()">
-        <i class="fa-solid fa-share-nodes"></i> 共有URLをコピー
+      <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i> 共有
       </button>
-      <button type="button" class="btn-action-secondary" onclick="openCurrentVisitorInNewTab()">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> 別タブで開く
+      <button type="button" class="vd-icon-btn" onclick="openCurrentVisitorInNewTab()" title="別タブで開く">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> 別タブ
       </button>
     </div>
   </div>
 
-  <div class="section-card vd-profile-card">
+  <div class="vd-profile-card">
     <div class="vd-profile-header">
       <div class="vd-profile-title-area">
-        <span class="vd-profile-subtitle">Visitor Details Profile</span>
         <h1 id="vd-name" class="vd-profile-name">-</h1>
         <span id="vd-furigana" class="vd-profile-furigana">-</span>
       </div>
 
-      <!-- ステータス概要 (セレクトボックスで直感変更) -->
-      <div class="vd-badges-wrap flex items-center flex-wrap gap-2">
+      <!-- ステータス概要 (iOS Picker Style) -->
+      <div class="vd-badges-wrap">
         <div class="vd-status-select-wrap">
-          <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況を選択">
+          <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
             <option value="未">出欠: 未</option>
             <option value="参加">出欠: 参加</option>
             <option value="不参加">出欠: 不参加</option>
           </select>
         </div>
         <div class="vd-status-select-wrap">
-          <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1ステータスを選択">
+          <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1状況">
             <option value="未">1to1: 未</option>
             <option value="済">1to1: 済</option>
             <option value="調整中">1to1: 調整中</option>
           </select>
         </div>
         <div class="vd-status-select-wrap">
-          <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会ステータスを選択">
+          <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
             <option value="未">入会: 未</option>
             <option value="入会済">入会: 済</option>
             <option value="検討中">入会: 検討中</option>
             <option value="見送り">入会: 見送り</option>
           </select>
         </div>
-        <div id="vd-badge-feel" class="vd-badge-static">感触評価: 未</div>
+        <div id="vd-badge-feel" class="vd-badge-static">感触: -</div>
       </div>
     </div>
 
-    <!-- 基本スペック -->
+    <!-- 基本スペック (Apple Inset Grid) -->
     <div class="vd-specs-grid">
-      <div class="vd-spec-item"><strong class="vd-spec-label">会社名:</strong> <span id="vd-company" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><strong class="vd-spec-label">専門分野:</strong> <span id="vd-profession" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><strong class="vd-spec-label">招待者:</strong> <span id="vd-inviter" class="vd-spec-val accent">-</span></div>
-      <div class="vd-spec-item"><strong class="vd-spec-label">定例会参加日:</strong> <span id="vd-event-date" class="vd-spec-val bold">-</span></div>
-      <div class="vd-spec-item"><strong class="vd-spec-label">メール:</strong> <span id="vd-email" class="vd-spec-val">-</span></div>
-      <div class="vd-spec-item"><strong class="vd-spec-label">参加区分:</strong> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">会社名</span> <span id="vd-company" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">専門分野</span> <span id="vd-profession" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">招待者</span> <span id="vd-inviter" class="vd-spec-val accent">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">参加日</span> <span id="vd-event-date" class="vd-spec-val bold">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">メール</span> <span id="vd-email" class="vd-spec-val">-</span></div>
+      <div class="vd-spec-item"><span class="vd-spec-label">参加区分</span> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
     </div>
 
-    <!-- 詳細タブバー (スマホ横スクロール対応・改行防止) -->
+    <!-- セグメントコントロール -->
     <div class="vd-tab-nav">
-      <button type="button" class="tab-btn vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
-        🎯 アクションプラン <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
+      <button type="button" class="vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
+        🎯 アクション <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
       </button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">
-        📝 ヒアリング回答
+      <button type="button" class="vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">
+        📝 ヒアリング
       </button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">
-        📌 共有メモ・活動記録
+      <button type="button" class="vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">
+        📌 共有メモ
       </button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">
-        ✉️ 送信・自動化履歴
+      <button type="button" class="vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">
+        ✉️ メール履歴
       </button>
     </div>
 
-    <!-- Tab Content 0: アクションプラン (いつ・誰が・どうする) -->
+    <!-- Tab Content 0: アクションプラン -->
     <div id="vd-tab-content-action-plan">
-      <!-- アクションプラン登録カード -->
+      <!-- 登録カード -->
       <div class="vd-box">
-        <div class="vd-box-header flex-wrap gap-1">
-          <h3 class="vd-box-title accent">
-            <i class="fa-solid fa-bullseye"></i> アクションプランを登録
+        <div class="vd-box-header">
+          <h3 class="vd-box-title text-blue-600">
+            <i class="fa-solid fa-plus-circle"></i> アクション登録
           </h3>
-          <span class="vd-box-subtitle">いつ・誰が・どうする次の一手を明確化</span>
         </div>
 
         <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
           <input type="hidden" id="vd-ap-edit-id" value="">
 
           <div class="vd-form-grid">
-            <!-- いつ (期日) -->
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-regular fa-calendar" style="color: var(--primary-accent);"></i> ① いつ（期日） <span style="color: var(--danger-accent);">*</span></span>
-              </label>
+            <!-- 期日 -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-bold text-slate-500">期日</label>
               <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
               <div class="vd-quick-chips">
-                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(0)">今日</button>
-                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(1)">明日</button>
-                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(3)">3日後</button>
-                <button type="button" class="btn-action-secondary vd-quick-chip" onclick="setApDateQuick(7)">1週間後</button>
+                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
+                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
+                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
+                <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
               </div>
             </div>
 
-            <!-- 誰が (担当者) -->
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
-                <span><i class="fa-regular fa-user" style="color: var(--primary-accent);"></i> ② 誰が（担当者） <span style="color: var(--danger-accent);">*</span></span>
-              </label>
+            <!-- 担当者 -->
+            <div class="form-group mb-0">
+              <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
               <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
-                <option value="">-- 担当メンバーを選択 --</option>
+                <option value="">-- 選択してください --</option>
               </select>
-              <div id="vd-ap-quick-assignees" class="vd-quick-chips">
-                <!-- 招待者やオリエン担当のサジェストボタンがJSで入る -->
-              </div>
+              <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
             </div>
           </div>
 
-          <!-- どうする (アクション内容) -->
-          <div class="form-group" style="margin-top: 16px; margin-bottom: 0;">
-            <label class="form-label">
-              <i class="fa-solid fa-list-check" style="color: var(--primary-accent);"></i> ③ どうする（アクション内容） <span style="color: var(--danger-accent);">*</span>
-            </label>
-            <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：〇〇さんと1to1の日程調整をする、入会案内を送付してフォロー連絡 など" required>
+          <!-- アクション内容 -->
+          <div class="form-group mt-3 mb-0">
+            <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
+            <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
           </div>
 
-          <div class="vd-form-actions">
-            <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel" style="display: none;" onclick="cancelApEdit()">編集をキャンセル</button>
-            <button type="submit" id="vd-ap-btn-submit" class="btn-save">
-              <i class="fa-solid fa-plus"></i> <span id="vd-ap-btn-submit-label">アクションプランを登録する</span>
+          <div class="vd-form-actions mt-3">
+            <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
+            <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
+              <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
             </button>
           </div>
         </form>
       </div>
 
-      <!-- アクションプラン一覧 -->
+      <!-- 一覧 -->
       <div class="vd-box">
         <div class="vd-box-header">
           <h3 class="vd-box-title">
-            <i class="fa-solid fa-list-check" style="color: #2b8a3e;"></i> アクションプラン一覧
+            <i class="fa-solid fa-list-check text-emerald-600"></i> プラン一覧
           </h3>
-          <span id="vd-ap-summary-text" class="vd-box-subtitle">0件のプラン</span>
+          <span id="vd-ap-summary-text" class="text-xs text-slate-400 font-bold">0件</span>
         </div>
 
-        <!-- 未完了プランリスト -->
-        <div style="margin-bottom: 20px;">
-          <div class="vd-ap-section-header">
-            <span class="vd-ap-dot pending"></span> 未完了（進行中）
+        <!-- 未完了 -->
+        <div class="mb-4">
+          <div class="vd-ap-section-header font-bold text-xs text-slate-600 mb-2">
+            <span class="vd-ap-dot pending"></span> 未完了
           </div>
-          <div id="vd-ap-pending-list" class="vd-ap-list">
-            <!-- JSで挿入 -->
-          </div>
+          <div id="vd-ap-pending-list" class="vd-ap-list"></div>
         </div>
 
-        <!-- 完了済みプランリスト -->
+        <!-- 完了済 -->
         <div>
-          <div class="vd-ap-section-header">
-            <span class="vd-ap-dot completed"></span> 完了済み
+          <div class="vd-ap-section-header font-bold text-xs text-slate-400 mb-2">
+            <span class="vd-ap-dot completed"></span> 完了済
           </div>
-          <div id="vd-ap-completed-list" class="vd-ap-list">
-            <!-- JSで挿入 -->
-          </div>
+          <div id="vd-ap-completed-list" class="vd-ap-list"></div>
         </div>
       </div>
     </div>
@@ -2264,29 +2387,29 @@ tr:last-child td { border-bottom: none; }
     <!-- Tab Content 1: ヒアリングシート -->
     <div id="vd-tab-content-hearing">
       <div class="vd-box">
-        <div class="vd-box-header flex-wrap gap-2 items-center justify-between" style="margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
-          <div>
-            <h3 class="vd-box-title" style="color: #1e293b;">
-              <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート回答
-            </h3>
-            <span class="vd-box-subtitle">オリエンテーション時のヒアリング・感触評価</span>
-          </div>
-          <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5" id="vd-btn-open-hearing-page" onclick="" style="padding: 8px 14px; font-weight: 800;">
-            <i class="fa-solid fa-pen-to-square"></i> ヒアリングシートを編集
+        <div class="vd-box-header py-1 pb-3 border-b border-slate-100 mb-3">
+          <h3 class="vd-box-title text-slate-800">
+            <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
+          </h3>
+          <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
+            <i class="fa-solid fa-pen-to-square"></i> 編集
           </button>
         </div>
 
         <div class="vd-hearing-list">
-          <div><strong class="vd-spec-label">オリエン担当者:</strong> <span id="vd-orient-user" class="vd-spec-val bold">-</span></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q1【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？:</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q2【お仕事について】〇〇さんのお仕事について再度聞かせてください。:</div> <p id="vd-q2" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q3【Goal(目標)】夢や目標、〇年後にこうなりたいという計画はありますか？:</div> <p id="vd-q3" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q4【Reality(現実)】課題と感じることはございますか？それはいつ頃からですか？:</div> <p id="vd-q4" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q5【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？:</div> <p id="vd-q5" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q6【Way Forward(今後)】私たちREvoチャプターのメンバーでお力になれそうな人はいましたか？:</div> <p id="vd-q6" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">Q7【促し・クロージング】次回イベントや1to1、BOD等の提案状況:</div> <p id="vd-q7" class="vd-hearing-a">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">オリエン直後メモ:</div> <p id="vd-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
-          <div class="vd-hearing-item"><div class="vd-hearing-q">追跡フォローメモ:</div> <p id="vd-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
+          <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
+            <span class="vd-spec-label">担当者</span>
+            <span id="vd-orient-user" class="font-bold text-sm text-slate-800">-</span>
+          </div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">お礼と感想</div> <p id="vd-q1" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">仕事内容</div> <p id="vd-q2" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">目標・計画 (Goal)</div> <p id="vd-q3" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">課題・悩み (Reality)</div> <p id="vd-q4" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">解決策・アイディア (Options)</div> <p id="vd-q5" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">力になれそうなメンバー (Way Forward)</div> <p id="vd-q6" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">次回促し・クロージング</div> <p id="vd-q7" class="vd-hearing-a">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">オリエンメモ</div> <p id="vd-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
+          <div class="vd-hearing-item"><div class="vd-hearing-q">追跡メモ</div> <p id="vd-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
         </div>
       </div>
     </div>
@@ -2294,11 +2417,12 @@ tr:last-child td { border-bottom: none; }
     <!-- Tab Content 2: 自由メモ -->
     <div id="vd-tab-content-memo" style="display:none;">
       <div class="vd-box">
-        <h3 class="vd-box-title" style="margin-bottom: 6px;">📌 自由メモ・チームフォロー活動ノート</h3>
-        <p class="settings-desc">やり取りのメモ、興味関心、招待者・他メンバーとの共有記録などを自由に書き込めます。</p>
-        <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="例：電話でフォロー実施。次回1to1の調整中。AIに興味あり。前井さんを引き合わせると良さそう。"></textarea>
-        <div class="vd-form-actions" style="margin-top: 14px;">
-          <button type="button" class="btn-save btn-action-emerald" onclick="saveVisitorFreeMemo()">💾 メモを保存する</button>
+        <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+        <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+        <div class="vd-form-actions mt-3">
+          <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+          </button>
         </div>
       </div>
     </div>
@@ -2306,10 +2430,8 @@ tr:last-child td { border-bottom: none; }
     <!-- Tab Content 3: メール履歴 -->
     <div id="vd-tab-content-mail" style="display:none;">
       <div class="vd-box">
-        <h3 class="vd-box-title" style="margin-bottom: 14px;">✉️ ステップメール送信履歴 ＆ ログ</h3>
-        <div id="vd-mail-history-list" class="vd-mail-list">
-          <!-- JSで動的挿入 -->
-        </div>
+        <h3 class="vd-box-title mb-3"><i class="fa-solid fa-envelope text-blue-500 mr-1.5"></i> メール送信履歴</h3>
+        <div id="vd-mail-history-list" class="vd-mail-list"></div>
       </div>
     </div>
 
@@ -5076,7 +5198,7 @@ const ApiService = {
       badge.style.display = pendingItems.length > 0 ? 'inline-block' : 'none';
     }
     if (summaryText) {
-      summaryText.innerText = `計 ${currentVdActionPlans.length}件 (未完了: ${pendingItems.length}件 / 完了: ${completedItems.length}件)`;
+      summaryText.innerText = `未完了 ${pendingItems.length}件 / 完了 ${completedItems.length}件`;
     }
 
     // 1. 未完了リスト
