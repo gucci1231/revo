@@ -1530,10 +1530,15 @@ tr:last-child td { border-bottom: none; }
   <!-- パネル 4: 1ヶ月フォローアップ名簿 -->
   <div id="dash-panel-onemonth" class="dash-panel">
     <section class="section-card overflow-hidden">
-      <div class="section-header">
+      <div class="section-header flex-wrap">
         <div>
           <h2 class="section-title text-indigo-600"><i class="fa-solid fa-comments"></i> 1ヶ月フォローアップ名簿</h2>
           <div class="section-sub">定例会参加から30日以内のビジター進捗と次の一手</div>
+        </div>
+        <div class="flex gap-1.5">
+          <button type="button" class="btn-action-primary text-xs" id="dash-onemonth-filter-pending" onclick="filterDashboardOneMonth('pending')">要対応のみ</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-all" onclick="filterDashboardOneMonth('all')">全件</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-completed" onclick="filterDashboardOneMonth('completed')">完了済</button>
         </div>
       </div>
 
@@ -2371,6 +2376,12 @@ const ApiService = {
     return `<div><span style="font-weight:700;">${escapeHtml(shortDate)}</span>${elapsedBadge}</div>`;
   }
 
+  function isVisitorActionCompleted(r) {
+    if (!r) return false;
+    const ap = r.latestActionPlan;
+    return !!(ap && Number(ap.is_completed) === 1);
+  }
+
   function renderCurrentStatusColumnHtml(r) {
     const ap = r.latestActionPlan;
     if (ap) {
@@ -2994,10 +3005,12 @@ const ApiService = {
     const tabBadgeMeeting = document.getElementById('dash-tab-badge-meeting');
     const tabBadgeOnemonth = document.getElementById('dash-tab-badge-onemonth');
 
+    const pendingOneMonthCount = oneMonthList.filter(r => !isVisitorActionCompleted(r)).length;
+
     if (tabBadgeHot) tabBadgeHot.innerText = hotList.length;
     if (tabBadgeAp) tabBadgeAp.innerText = pendingCount;
     if (tabBadgeMeeting) tabBadgeMeeting.innerText = `次回 ${nextMeetingList.length}名`;
-    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = oneMonthList.length;
+    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = pendingOneMonthCount;
 
     // Charts
     const chartLabels = c.labels || data.chartLabels || [];
@@ -3018,6 +3031,24 @@ const ApiService = {
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
     }
+  }
+
+  let currentDashboardOneMonthList = [];
+  let currentDashboardOneMonthFilter = 'pending';
+
+  function filterDashboardOneMonth(mode) {
+    currentDashboardOneMonthFilter = mode;
+    ['pending', 'all', 'completed'].forEach(m => {
+      const btn = document.getElementById(`dash-onemonth-filter-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-indigo-600 text-white transition-all';
+        } else {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+        }
+      }
+    });
+    renderOneMonthTable(currentDashboardOneMonthList);
   }
 
   let currentDashboardActionPlans = [];
@@ -3828,26 +3859,43 @@ const ApiService = {
   }
 
   function renderOneMonthTable(records) {
+    if (records) {
+      currentDashboardOneMonthList = records;
+    }
     const tbody = document.getElementById('table-one-month');
     const cardsContainer = document.getElementById('cards-one-month');
 
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    if (!records || records.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+    const list = currentDashboardOneMonthList || [];
+    const filterMode = (typeof currentDashboardOneMonthFilter !== 'undefined') ? currentDashboardOneMonthFilter : 'pending';
+
+    let filtered = list;
+    if (filterMode === 'pending') {
+      filtered = list.filter(r => !isVisitorActionCompleted(r));
+    } else if (filterMode === 'completed') {
+      filtered = list.filter(r => isVisitorActionCompleted(r));
+    }
+
+    if (!filtered || filtered.length === 0) {
+      const emptyMsg = filterMode === 'completed'
+        ? '完了済みのアクションはありません'
+        : (filterMode === 'pending' ? '現在、要対応のフォローアップ対象者はいません（すべて完了済）' : '該当するフォローアップ対象者はいません');
+
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">${emptyMsg}</td></tr>`;
       if (cardsContainer) {
         cardsContainer.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
             <i class="fa-solid fa-comments text-2xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">該当するフォローアップ対象者はいません</div>
+            <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
           </div>
         `;
       }
       return;
     }
 
-    records.forEach(r => {
+    filtered.forEach(r => {
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');

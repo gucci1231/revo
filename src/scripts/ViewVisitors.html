@@ -287,26 +287,43 @@
   }
 
   function renderOneMonthTable(records) {
+    if (records) {
+      currentDashboardOneMonthList = records;
+    }
     const tbody = document.getElementById('table-one-month');
     const cardsContainer = document.getElementById('cards-one-month');
 
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    if (!records || records.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+    const list = currentDashboardOneMonthList || [];
+    const filterMode = (typeof currentDashboardOneMonthFilter !== 'undefined') ? currentDashboardOneMonthFilter : 'pending';
+
+    let filtered = list;
+    if (filterMode === 'pending') {
+      filtered = list.filter(r => !isVisitorActionCompleted(r));
+    } else if (filterMode === 'completed') {
+      filtered = list.filter(r => isVisitorActionCompleted(r));
+    }
+
+    if (!filtered || filtered.length === 0) {
+      const emptyMsg = filterMode === 'completed'
+        ? '完了済みのアクションはありません'
+        : (filterMode === 'pending' ? '現在、要対応のフォローアップ対象者はいません（すべて完了済）' : '該当するフォローアップ対象者はいません');
+
+      if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">${emptyMsg}</td></tr>`;
       if (cardsContainer) {
         cardsContainer.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
             <i class="fa-solid fa-comments text-2xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">該当するフォローアップ対象者はいません</div>
+            <div class="font-bold text-sm text-slate-600">${emptyMsg}</div>
           </div>
         `;
       }
       return;
     }
 
-    records.forEach(r => {
+    filtered.forEach(r => {
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');

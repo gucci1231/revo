@@ -222,10 +222,15 @@
   <!-- パネル 4: 1ヶ月フォローアップ名簿 -->
   <div id="dash-panel-onemonth" class="dash-panel">
     <section class="section-card overflow-hidden">
-      <div class="section-header">
+      <div class="section-header flex-wrap">
         <div>
           <h2 class="section-title text-indigo-600"><i class="fa-solid fa-comments"></i> 1ヶ月フォローアップ名簿</h2>
           <div class="section-sub">定例会参加から30日以内のビジター進捗と次の一手</div>
+        </div>
+        <div class="flex gap-1.5">
+          <button type="button" class="btn-action-primary text-xs" id="dash-onemonth-filter-pending" onclick="filterDashboardOneMonth('pending')">要対応のみ</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-all" onclick="filterDashboardOneMonth('all')">全件</button>
+          <button type="button" class="btn-action-secondary text-xs" id="dash-onemonth-filter-completed" onclick="filterDashboardOneMonth('completed')">完了済</button>
         </div>
       </div>
 

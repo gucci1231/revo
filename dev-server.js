@@ -510,6 +510,12 @@ function handleApiRequest(req, res, urlObj) {
 
         const eDate = (r.eventDate || '').trim();
         if (eDate !== '') {
+          const eTs = new Date(eDate.replace(/\//g, '-')).getTime();
+          const oneMonthAgoTs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+          if (eTs && eTs >= oneMonthAgoTs && !isJoinedBool) {
+            oneMonthFollowup.push(r);
+          }
+
           if (!weeklyMap[eDate]) {
             weeklyMap[eDate] = { date: eDate, applyCount: 0, attendedCount: 0, joinedCount: 0 };
           }

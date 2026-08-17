@@ -113,10 +113,12 @@
     const tabBadgeMeeting = document.getElementById('dash-tab-badge-meeting');
     const tabBadgeOnemonth = document.getElementById('dash-tab-badge-onemonth');
 
+    const pendingOneMonthCount = oneMonthList.filter(r => !isVisitorActionCompleted(r)).length;
+
     if (tabBadgeHot) tabBadgeHot.innerText = hotList.length;
     if (tabBadgeAp) tabBadgeAp.innerText = pendingCount;
     if (tabBadgeMeeting) tabBadgeMeeting.innerText = `次回 ${nextMeetingList.length}名`;
-    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = oneMonthList.length;
+    if (tabBadgeOnemonth) tabBadgeOnemonth.innerText = pendingOneMonthCount;
 
     // Charts
     const chartLabels = c.labels || data.chartLabels || [];
@@ -137,6 +139,24 @@
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
     }
+  }
+
+  let currentDashboardOneMonthList = [];
+  let currentDashboardOneMonthFilter = 'pending';
+
+  function filterDashboardOneMonth(mode) {
+    currentDashboardOneMonthFilter = mode;
+    ['pending', 'all', 'completed'].forEach(m => {
+      const btn = document.getElementById(`dash-onemonth-filter-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-indigo-600 text-white transition-all';
+        } else {
+          btn.className = 'px-3 py-1 text-xs font-bold rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all';
+        }
+      }
+    });
+    renderOneMonthTable(currentDashboardOneMonthList);
   }
 
   let currentDashboardActionPlans = [];

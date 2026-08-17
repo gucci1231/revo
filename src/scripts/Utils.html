@@ -76,6 +76,12 @@
     return `<div><span style="font-weight:700;">${escapeHtml(shortDate)}</span>${elapsedBadge}</div>`;
   }
 
+  function isVisitorActionCompleted(r) {
+    if (!r) return false;
+    const ap = r.latestActionPlan;
+    return !!(ap && Number(ap.is_completed) === 1);
+  }
+
   function renderCurrentStatusColumnHtml(r) {
     const ap = r.latestActionPlan;
     if (ap) {

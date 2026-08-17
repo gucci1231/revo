@@ -92,5 +92,35 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(pendingCount, 2);
     assert.strictEqual(overdueCount, 1);
   });
+
+  it('correctly identifies completed vs pending visitors for one-month follow up list', () => {
+    function isVisitorActionCompleted(r) {
+      if (!r) return false;
+      const ap = r.latestActionPlan;
+      return !!(ap && Number(ap.is_completed) === 1);
+    }
+
+    const visitors = [
+      { id: '1', name: '未対応（アクション未設定）', latestActionPlan: null },
+      { id: '2', name: '対応中（未完了アクションあり）', latestActionPlan: { id: 'ap_1', is_completed: 0, action_text: '1to1' } },
+      { id: '3', name: '完了済（アクション完了）', latestActionPlan: { id: 'ap_2', is_completed: 1, action_text: '入会確認完了' } }
+    ];
+
+    // isVisitorActionCompleted
+    assert.strictEqual(isVisitorActionCompleted(visitors[0]), false);
+    assert.strictEqual(isVisitorActionCompleted(visitors[1]), false);
+    assert.strictEqual(isVisitorActionCompleted(visitors[2]), true);
+
+    // Filter pending (default list: hides completed)
+    const pendingList = visitors.filter(r => !isVisitorActionCompleted(r));
+    assert.strictEqual(pendingList.length, 2);
+    assert.deepStrictEqual(pendingList.map(v => v.id), ['1', '2']);
+
+    // Filter completed
+    const completedList = visitors.filter(r => isVisitorActionCompleted(r));
+    assert.strictEqual(completedList.length, 1);
+    assert.strictEqual(completedList[0].id, '3');
+  });
 });
+
 
