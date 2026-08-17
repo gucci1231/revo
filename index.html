@@ -2128,7 +2128,7 @@ tr:last-child td { border-bottom: none; }
                 <th>氏名 / 会社</th>
                 <th style="width: 95px;">招待 / 担当</th>
                 <th>最新状況・次の一手</th>
-                <th class="text-center" style="width: 50px;">カルテ</th>
+
               </tr>
             </thead>
             <tbody id="table-hot-visitors"></tbody>
@@ -2203,7 +2203,7 @@ tr:last-child td { border-bottom: none; }
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
               <th class="text-center col-w-sm">出欠</th>
-              <th class="text-center col-w-sm">カルテ</th>
+
             </tr>
           </thead>
           <tbody id="table-next-meeting"></tbody>
@@ -2233,7 +2233,7 @@ tr:last-child td { border-bottom: none; }
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
               <th class="text-center col-w-sm">出欠</th>
-              <th class="text-center col-w-sm">カルテ</th>
+
             </tr>
           </thead>
           <tbody id="table-last-meeting"></tbody>
@@ -2269,7 +2269,7 @@ tr:last-child td { border-bottom: none; }
               <th class="col-w-md">招待者 / 担当</th>
               <th>最新状況・次の一手</th>
               <th class="text-center col-w-sm">ランク</th>
-              <th class="text-center col-w-sm">カルテ</th>
+
             </tr>
           </thead>
           <tbody id="table-one-month"></tbody>
@@ -2488,7 +2488,6 @@ tr:last-child td { border-bottom: none; }
             <th style="width: 120px;">招待者</th>
             <th style="width: 120px;">オリエン担当</th>
             <th>ヒアリングメモ (Q7 / 直後メモ)</th>
-            <th style="width: 90px;" class="text-center">詳細</th>
           </tr>
         </thead>
         <tbody id="table-priority-follow-page"></tbody>
@@ -4293,11 +4292,6 @@ const ApiService = {
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
-          <td class="text-center">
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${r.id}')">
-              カルテ
-            </button>
-          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -4706,9 +4700,6 @@ const ApiService = {
                   <i class="fa-solid fa-eye mr-1"></i> 確認
                 </button>
               `}
-              <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-                カルテ <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
             </div>
           </td>
         `;
@@ -4729,7 +4720,7 @@ const ApiService = {
               ${statusBadgeHtml}
               ${dateBadgeHtml}
             </div>
-            <div class="flex gap-1" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-2" onclick="event.stopPropagation()">
               ${!isCompleted ? `
                 <button type="button" class="btn-action-primary text-xs" style="font-size:11px; padding:3px 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
                   <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
@@ -4739,6 +4730,7 @@ const ApiService = {
                   確認
                 </button>
               `}
+              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
@@ -4756,11 +4748,6 @@ const ApiService = {
             ${escapeHtml(p.action_text)}
           </div>
           ${reportBoxHtml}
-
-          <div class="dash-ap-card-footer">
-            <span><i class="fa-solid fa-address-card mr-1"></i> カルテ・詳細を開く</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </div>
         `;
         cardsContainer.appendChild(card);
       }
@@ -4894,11 +4881,6 @@ const ApiService = {
           <td>
             <div style="font-size:12px; max-width:260px; white-space:normal;">${formatTruncatedCell(v.q7 || v.orientMemo || v.followMemo, 40)}</div>
           </td>
-          <td class="text-center">
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${vid}')">
-              カルテ
-            </button>
-          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -4936,9 +4918,6 @@ const ApiService = {
             <div class="dash-card-meta-left">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
               ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
-            </div>
-            <div class="dash-card-status-right">
-              <span class="text-xs text-slate-400 font-semibold">詳細カルテ <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
             </div>
           </div>
         `;
@@ -5217,19 +5196,6 @@ const ApiService = {
           openVisitorDetailView(r.id);
         };
 
-        const actionsCell = `
-          <td class="text-center">
-            <div class="flex items-center justify-center gap-1">
-              ${showActions ? `
-                <button class="btn-icon-action" onclick="event.stopPropagation(); openHearingFormModal('${r.id}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
-                <button class="btn-icon-action" onclick="event.stopPropagation(); openEditVisitorModal('${r.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
-              ` : ''}
-              <button class="btn-action-secondary vd-quick-chip" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
-                詳細
-              </button>
-            </div>
-          </td>`;
-
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
@@ -5237,7 +5203,6 @@ const ApiService = {
           <td>${formatTruncatedCell(r.inviter, 10)}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(r.id, r.isAttended)}</td>
-          ${actionsCell}
         `;
         tbody.appendChild(tr);
       }
@@ -5356,11 +5321,6 @@ const ApiService = {
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-          <td class="text-center">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
-            </button>
-          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -5374,29 +5334,34 @@ const ApiService = {
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              ${renderRankBadgeHtml(r.feelAbc)}
-              ${formatEventDateWithElapsed(r.eventDate)}
+          <div class="dash-card-main-row">
+            <div class="dash-card-left">
+              ${renderRankBadgeHtml(r.feelAbc, 'large')}
+              <div class="dash-card-info">
+                <div class="dash-card-name-row">
+                  <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+                  ${renderRepeatBadgeHtml(r)}
+                </div>
+                <div class="dash-card-company">
+                  ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+                </div>
+              </div>
             </div>
-            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-            </button>
+
+            <div class="dash-card-right">
+              ${formatEventDateWithElapsed(r.eventDate)}
+              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
           </div>
 
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-indigo-600 text-xs"></i>
-            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
-            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(r.company)})</span>` : ''}
-          </div>
-
-          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
-            <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
-            ${r.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(r.orientUser)}</span></span>` : ''}
-          </div>
-
-          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
-            ${renderCurrentStatusColumnHtml(r)}
+          <div class="dash-card-bottom-row">
+            <div class="dash-card-meta-left">
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+              ${r.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+            </div>
+            <div class="dash-card-status-right">
+              ${renderCurrentStatusColumnHtml(r)}
+            </div>
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -5493,11 +5458,6 @@ const ApiService = {
             <div class="dash-card-meta-left">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(h.inviter || '-')}</span>
               ${h.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(h.orientUser)}</span>` : ''}
-            </div>
-            <div class="dash-card-status-right">
-              <button type="button" class="btn-icon-action" style="padding:3px 8px; font-size:11px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集">
-                <i class="fa-solid fa-pen mr-1"></i> 編集
-              </button>
             </div>
           </div>
 

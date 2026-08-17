@@ -124,11 +124,6 @@
           <td>
             <div style="font-size:12px; max-width:260px; white-space:normal;">${formatTruncatedCell(v.q7 || v.orientMemo || v.followMemo, 40)}</div>
           </td>
-          <td class="text-center">
-            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${vid}')">
-              カルテ
-            </button>
-          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -166,9 +161,6 @@
             <div class="dash-card-meta-left">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
               ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
-            </div>
-            <div class="dash-card-status-right">
-              <span class="text-xs text-slate-400 font-semibold">詳細カルテ <i class="fa-solid fa-chevron-right text-[9px]"></i></span>
             </div>
           </div>
         `;

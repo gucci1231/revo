@@ -87,11 +87,6 @@
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(h.inviter || '-')}</span>
               ${h.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(h.orientUser)}</span>` : ''}
             </div>
-            <div class="dash-card-status-right">
-              <button type="button" class="btn-icon-action" style="padding:3px 8px; font-size:11px;" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集">
-                <i class="fa-solid fa-pen mr-1"></i> 編集
-              </button>
-            </div>
           </div>
 
           ${memoSnippet ? `
