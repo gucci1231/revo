@@ -31,7 +31,18 @@
       if (vid && vid !== currentVdVisitorId) {
         openVisitorDetailView(vid, false);
       }
-    } else if (['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash.startsWith('visitors')) {
+      switchTab('visitors', false);
+      if (hash.includes('considering')) {
+        setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('considering'); }, 50);
+      } else if (hash.includes('joined')) {
+        setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('joined'); }, 50);
+      } else if (hash.includes('attended')) {
+        setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('attended'); }, 50);
+      } else if (hash.includes('hot')) {
+        setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
+      }
+    } else if (['dashboard', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
       switchTab(hash, false);
     }
   }

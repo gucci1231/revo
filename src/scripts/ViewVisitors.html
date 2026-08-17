@@ -129,6 +129,52 @@
     });
   }
 
+  let currentVisitorsStatusFilter = 'all';
+
+  function setVisitorsStatusFilter(status) {
+    currentVisitorsStatusFilter = status;
+    document.querySelectorAll('.visitors-status-tab').forEach(btn => {
+      if (btn.getAttribute('data-status-filter') === status) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    filterAllVisitorsTable();
+  }
+
+  function updateVisitorsFilterCounts(dedupedList) {
+    const counts = {
+      all: dedupedList.length,
+      considering: 0,
+      joined: 0,
+      attended: 0,
+      hot: 0
+    };
+
+    dedupedList.forEach(v => {
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
+      const isConsidering = (v.isJoined === '検討中');
+      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
+      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+
+      if (isConsidering) counts.considering++;
+      if (isJoined) counts.joined++;
+      if (isAttended) counts.attended++;
+      if (isHot) counts.hot++;
+    });
+
+    const setBadge = (id, count) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = count;
+    };
+    setBadge('count-filter-all', counts.all);
+    setBadge('count-filter-considering', counts.considering);
+    setBadge('count-filter-joined', counts.joined);
+    setBadge('count-filter-attended', counts.attended);
+    setBadge('count-filter-hot', counts.hot);
+  }
+
   function filterAllVisitorsTable() {
     const search = (
       document.getElementById('search-visitors-input')?.value || 
@@ -141,6 +187,8 @@
 
     const rawList = cachedAllVisitors || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
+
+    updateVisitorsFilterCounts(dedupedList);
 
     filteredVisitors = dedupedList.filter(v => {
       const name = (v.name || '').toLowerCase();
@@ -157,7 +205,23 @@
       if (dateTo && eventDate > dateTo) matchDate = false;
       if (legacyDate && eventDate !== legacyDate) matchDate = false;
 
-      return matchSearch && matchDate;
+      let matchStatus = true;
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
+      const isConsidering = (v.isJoined === '検討中');
+      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
+      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+
+      if (currentVisitorsStatusFilter === 'considering') {
+        matchStatus = isConsidering;
+      } else if (currentVisitorsStatusFilter === 'joined') {
+        matchStatus = isJoined;
+      } else if (currentVisitorsStatusFilter === 'attended') {
+        matchStatus = isAttended;
+      } else if (currentVisitorsStatusFilter === 'hot') {
+        matchStatus = isHot;
+      }
+
+      return matchSearch && matchDate && matchStatus;
     });
 
     visitorsCurrentPage = 1;

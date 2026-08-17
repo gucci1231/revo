@@ -30,6 +30,26 @@
         </button>
       </div>
     </div>
+
+    <!-- ステータス絞り込みタブバー (検討中・入会済・出席・HOTなど) -->
+    <div class="visitors-status-tabs">
+      <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">
+        すべて <span class="badge" id="count-filter-all">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="considering" onclick="setVisitorsStatusFilter('considering')">
+        🤔 検討中 <span class="badge badge-warning" id="count-filter-considering">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="joined" onclick="setVisitorsStatusFilter('joined')">
+        🎉 入会済 <span class="badge badge-success" id="count-filter-joined">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="attended" onclick="setVisitorsStatusFilter('attended')">
+        出席済 <span class="badge" id="count-filter-attended">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="hot" onclick="setVisitorsStatusFilter('hot')">
+        🔥 HOT(A/B) <span class="badge badge-danger" id="count-filter-hot">0</span>
+      </button>
+    </div>
+
     <div class="dash-ap-table-wrap table-container">
       <table>
         <thead>
