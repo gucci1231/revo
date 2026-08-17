@@ -257,10 +257,10 @@
 
         const visitorCellHtml = `
           <div>
-            <div style="font-weight: 800; color: var(--text-main); font-size: 13px;">
+            <div style="font-weight: 800; color: #0f172a; font-size: 14px;">
               <i class="fa-solid fa-user-tag text-blue-600 text-xs mr-1"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
             </div>
-            ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+            ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b; margin-top: 1px;">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
         `;
 
@@ -275,9 +275,15 @@
 
         const operationCellHtml = `
           <div class="flex items-center justify-center" onclick="event.stopPropagation();">
-            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 8px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-              ${isCompleted ? '確認' : '報告'}
-            </button>
+            ${!isCompleted ? `
+              <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+              </button>
+            ` : `
+              <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-check mr-1 text-emerald-600"></i> 確認
+              </button>
+            `}
           </div>
         `;
 
@@ -301,31 +307,50 @@
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
+          <!-- 上段: 左側にビジター名（大きく太字）＋会社、右側に大きな報告ボタン -->
+          <div class="dash-ap-card-top-row">
+            <div class="dash-ap-card-visitor-left">
+              <div class="dash-ap-card-visitor-name">
+                <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
+                <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+              </div>
+              ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
+            </div>
+            <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
+              ${!isCompleted ? `
+                <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-check text-emerald-600"></i> 確認
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- 中段: アクション内容と実施報告 -->
+          <div class="dash-ap-card-body">
+            <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
+          </div>
+
+          <!-- 下段: 左側に状態・期日・担当者バッジ、右側に共有・詳細ナビ -->
+          <div class="dash-ap-card-bottom-row">
+            <div class="dash-ap-card-badges-left">
               ${statusBadgeHtml}
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+            <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
                 <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
               </button>
-              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="text-slate-300 text-sm ml-0.5"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
-            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
-          </div>
-
-          <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-            ${escapeHtml(p.action_text)}
-          </div>
-
-          ${reportBoxHtml}
         `;
         cardsContainer.appendChild(card);
       }

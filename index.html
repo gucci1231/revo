@@ -1433,12 +1433,12 @@ tr:last-child td { border-bottom: none; }
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   box-shadow: var(--shadow-xs);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
   width: 100%;
@@ -1452,13 +1452,154 @@ tr:last-child td { border-bottom: none; }
   border-color: #0071e3;
 }
 .dash-ap-card.is-overdue {
-  border-color: #ffc9c9;
+  border-color: #fca5a5;
   background: #fffafa;
 }
 .dash-ap-card.is-completed {
   background: #fcfdfc;
   border-color: #e2e8f0;
-  opacity: 0.88;
+  opacity: 0.92;
+}
+
+/* Action Card - Top Row (Left: Visitor Name Large & Sub, Right: Big Report Button) */
+.dash-ap-card-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+.dash-ap-card-visitor-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.dash-ap-card-visitor-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dash-ap-card-visitor-sub {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.dash-ap-card-btn-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-ap-btn-report {
+  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.28);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.dash-ap-btn-report:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.38);
+  background: linear-gradient(135deg, #0077ed 0%, #005ec4 100%);
+}
+.dash-ap-btn-report:active {
+  transform: translateY(0);
+}
+.dash-ap-btn-confirmed {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.dash-ap-btn-confirmed:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Action Card - Body (Action text & Report box) */
+.dash-ap-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.dash-ap-card-action {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.dash-ap-card-action.completed {
+  color: #64748b;
+  text-decoration: line-through;
+}
+.dash-ap-card-report {
+  font-size: 11.5px;
+  color: #065f46;
+  background: #ecfdf5;
+  border-left: 3px solid #10b981;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1.4;
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+/* Action Card - Bottom Row (Left: Badges, Right: Tools) */
+.dash-ap-card-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.dash-ap-card-badges-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.dash-ap-card-tools-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 /* Card Main Row (Top / Middle: Left-align rank & name, Right-align date & chevron) */
@@ -1564,27 +1705,6 @@ tr:last-child td { border-bottom: none; }
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
-}
-
-.dash-ap-card-action {
-  font-size: 14px;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.4;
-}
-.dash-ap-card-action.completed {
-  color: #64748b;
-  text-decoration: line-through;
-}
-.dash-ap-card-report {
-  font-size: 11px;
-  color: #1e293b;
-  background: #e6fcf5;
-  border-left: 3px solid #0ca678;
-  padding: 6px 10px;
-  border-radius: 6px;
-  line-height: 1.4;
-  margin-top: 2px;
 }
 
 /* Visitor Detail: Hearing Empty Actions Box */
@@ -4152,10 +4272,10 @@ const ApiService = {
 
         const visitorCellHtml = `
           <div>
-            <div style="font-weight: 800; color: var(--text-main); font-size: 13px;">
+            <div style="font-weight: 800; color: #0f172a; font-size: 14px;">
               <i class="fa-solid fa-user-tag text-blue-600 text-xs mr-1"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
             </div>
-            ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+            ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b; margin-top: 1px;">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
         `;
 
@@ -4170,9 +4290,15 @@ const ApiService = {
 
         const operationCellHtml = `
           <div class="flex items-center justify-center" onclick="event.stopPropagation();">
-            <button type="button" class="btn-action-primary text-xs" style="padding: 2px 8px; font-size: 11px; white-space: nowrap;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-              ${isCompleted ? '確認' : '報告'}
-            </button>
+            ${!isCompleted ? `
+              <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+              </button>
+            ` : `
+              <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <i class="fa-solid fa-check mr-1 text-emerald-600"></i> 確認
+              </button>
+            `}
           </div>
         `;
 
@@ -4196,31 +4322,50 @@ const ApiService = {
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
+          <!-- 上段: 左側にビジター名（大きく太字）＋会社、右側に大きな報告ボタン -->
+          <div class="dash-ap-card-top-row">
+            <div class="dash-ap-card-visitor-left">
+              <div class="dash-ap-card-visitor-name">
+                <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
+                <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+              </div>
+              ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
+            </div>
+            <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
+              ${!isCompleted ? `
+                <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check"></i> 報告
+                </button>
+              ` : `
+                <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-check text-emerald-600"></i> 確認
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- 中段: アクション内容と実施報告 -->
+          <div class="dash-ap-card-body">
+            <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
+          </div>
+
+          <!-- 下段: 左側に状態・期日・担当者バッジ、右側に共有・詳細ナビ -->
+          <div class="dash-ap-card-bottom-row">
+            <div class="dash-ap-card-badges-left">
               ${statusBadgeHtml}
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+            <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
                 <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
               </button>
-              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
+              <span class="text-slate-300 text-sm ml-0.5"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
-
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
-            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
-          </div>
-
-          <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-            ${escapeHtml(p.action_text)}
-          </div>
-
-          ${reportBoxHtml}
         `;
         cardsContainer.appendChild(card);
       }
@@ -4660,8 +4805,10 @@ const ApiService = {
           <td>${userBadgeHtml}</td>
           <td>
             <div>
-              ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
-              ${p.visitor_company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(p.visitor_company)}</div>` : ''}
+              <div style="font-weight: 800; font-size: 14px; color: #0f172a;">
+                ${renderVisitorNameLinkHtml(p.visitor_id, p.visitor_name)}
+              </div>
+              ${p.visitor_company ? `<div style="font-size:11px; color:#64748b; margin-top:1px;">${escapeHtml(p.visitor_company)}</div>` : ''}
             </div>
           </td>
           <td>
@@ -4671,14 +4818,14 @@ const ApiService = {
             ${reportBoxHtml}
           </td>
           <td class="text-center">
-            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+            <div class="flex items-center justify-center gap-1.5 flex-wrap" onclick="event.stopPropagation();">
               ${!isCompleted ? `
-                <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
+                <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size:12px; font-weight:700; white-space:nowrap; border-radius:8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
                   <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
                 </button>
               ` : `
-                <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px;" onclick="event.stopPropagation(); openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-eye mr-1"></i> 確認
+                <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size:11px; font-weight:600; white-space:nowrap; border-radius:8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-check mr-1 text-emerald-600"></i> 確認
                 </button>
               `}
             </div>
@@ -4690,45 +4837,56 @@ const ApiService = {
       // 2. スマホカード
       if (cardsContainer) {
         const card = document.createElement('div');
-        card.className = `dash-ap-card ${isOverdue ? 'border-rose-300' : ''}`;
+        card.className = `dash-ap-card ${isCompleted ? 'is-completed' : (isOverdue ? 'is-overdue' : '')}`;
         card.onclick = function() {
           openVisitorDetailView(p.visitor_id);
         };
 
         card.innerHTML = `
-          <div class="dash-ap-card-header">
-            <div class="dash-ap-card-badges">
-              ${statusBadgeHtml}
-              ${dateBadgeHtml}
+          <!-- 上段: 左側にビジター名（大きく太字）＋会社、右側に大きな報告ボタン -->
+          <div class="dash-ap-card-top-row">
+            <div class="dash-ap-card-visitor-left">
+              <div class="dash-ap-card-visitor-name">
+                <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
+                <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
+              </div>
+              ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
             </div>
-            <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+            <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
               ${!isCompleted ? `
-                <button type="button" class="btn-action-primary text-xs" style="font-size:11px; padding:3px 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-clipboard-check"></i> 報告
                 </button>
               ` : `
-                <button type="button" class="btn-action-secondary text-xs" style="font-size:10px; padding:2px 6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  確認
+                <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
+                  <i class="fa-solid fa-check text-emerald-600"></i> 確認
                 </button>
               `}
-              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
-          <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
-            <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
-            ${p.visitor_company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(p.visitor_company)})</span>` : ''}
+          <!-- 中段: アクション内容と実施報告 -->
+          <div class="dash-ap-card-body">
+            <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
+              ${escapeHtml(p.action_text)}
+            </div>
+            ${reportBoxHtml}
           </div>
 
-          <div style="font-size: 12px; color: #475569; display: flex; gap: 8px;">
-            ${userBadgeHtml}
+          <!-- 下段: 左側に状態・期日・担当者バッジ、右側に共有・詳細ナビ -->
+          <div class="dash-ap-card-bottom-row">
+            <div class="dash-ap-card-badges-left">
+              ${statusBadgeHtml}
+              ${dateBadgeHtml}
+              ${userBadgeHtml}
+            </div>
+            <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
+              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
+                <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
+              </button>
+              <span class="text-slate-300 text-sm ml-0.5"><i class="fa-solid fa-chevron-right"></i></span>
+            </div>
           </div>
-
-          <div class="dash-ap-card-action">
-            ${escapeHtml(p.action_text)}
-          </div>
-          ${reportBoxHtml}
         `;
         cardsContainer.appendChild(card);
       }
