@@ -137,6 +137,22 @@
     </div>
   </div>
 
+  <!-- 1.5. 常時表示ビジター推移トレンドグラフ -->
+  <section class="section-card p-4 sm:p-5 mb-5 overflow-hidden">
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h3 class="font-bold text-sm text-slate-800 m-0">ビジター来訪推移グラフ</h3>
+      </div>
+      <span class="text-xs text-slate-400 font-medium">直近10回</span>
+    </div>
+    <div class="relative w-full h-44 sm:h-52">
+      <canvas id="lineChartMain"></canvas>
+    </div>
+  </section>
+
   <!-- 2. セグメントコントロール -->
   <div class="dash-nav-wrap">
     <button type="button" class="dash-nav-btn active" id="dash-tab-btn-hot" onclick="switchDashboardPanel('hot')">
