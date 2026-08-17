@@ -48,6 +48,13 @@
         if (!existing.allIds) existing.allIds = [existing.id];
         if (r.id && !existing.allIds.includes(r.id)) existing.allIds.push(r.id);
 
+        if (!existing.eventDates) existing.eventDates = [existing.eventDate].filter(Boolean);
+        if (r.eventDate && !existing.eventDates.includes(r.eventDate)) {
+          existing.eventDates.push(r.eventDate);
+        }
+        existing.eventDates.sort().reverse();
+        existing.visitCount = existing.allIds.length;
+
         const currentAtt = existing.isAttended || '不参加';
         const newAtt = r.isAttended || '不参加';
         if (newAtt === '参加' || currentAtt !== '参加') existing.isAttended = newAtt;
@@ -81,6 +88,8 @@
       } else {
         const item = Object.assign({}, r);
         item.allIds = [item.id];
+        item.eventDates = [item.eventDate].filter(Boolean);
+        item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
         result.push(item);
         if (emailKey) emailMap.set(emailKey, item);

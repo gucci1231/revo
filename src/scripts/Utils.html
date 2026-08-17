@@ -106,8 +106,17 @@
     `;
   }
 
-  function renderVisitorNameLinkHtml(id, name) {
-    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>`;
+  function renderRepeatBadgeHtml(v) {
+    if (!v) return '';
+    const count = v.visitCount || (v.allIds && v.allIds.length) || 1;
+    if (count < 2) return '';
+    const datesTitle = (v.eventDates && v.eventDates.length > 0) ? `参加履歴: ${v.eventDates.join(', ')}` : `参加回数: ${count}回`;
+    return `<span class="badge" style="background:#f2f2f7; color:#1d1d1f; border:1px solid #d2d2d7; font-size:10px; font-weight:700; padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;" title="${escapeHtml(datesTitle)}"><i class="fa-solid fa-rotate-right" style="font-size:9px; margin-right:2px; color:#86868b;"></i>${count}回</span>`;
+  }
+
+  function renderVisitorNameLinkHtml(id, name, v = null) {
+    const repeatBadge = v ? renderRepeatBadgeHtml(v) : '';
+    return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${repeatBadge}</span>`;
   }
 
   function formatEventDateWithElapsed(eventDate) {

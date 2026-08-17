@@ -3168,8 +3168,17 @@ const ApiService = {
     `;
   }
 
-  function renderVisitorNameLinkHtml(id, name) {
-    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>`;
+  function renderRepeatBadgeHtml(v) {
+    if (!v) return '';
+    const count = v.visitCount || (v.allIds && v.allIds.length) || 1;
+    if (count < 2) return '';
+    const datesTitle = (v.eventDates && v.eventDates.length > 0) ? `参加履歴: ${v.eventDates.join(', ')}` : `参加回数: ${count}回`;
+    return `<span class="badge" style="background:#f2f2f7; color:#1d1d1f; border:1px solid #d2d2d7; font-size:10px; font-weight:700; padding:1px 5px; border-radius:8px; margin-left:4px; vertical-align:middle;" title="${escapeHtml(datesTitle)}"><i class="fa-solid fa-rotate-right" style="font-size:9px; margin-right:2px; color:#86868b;"></i>${count}回</span>`;
+  }
+
+  function renderVisitorNameLinkHtml(id, name, v = null) {
+    const repeatBadge = v ? renderRepeatBadgeHtml(v) : '';
+    return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${repeatBadge}</span>`;
   }
 
   function formatEventDateWithElapsed(eventDate) {
@@ -3522,6 +3531,13 @@ const ApiService = {
         if (!existing.allIds) existing.allIds = [existing.id];
         if (r.id && !existing.allIds.includes(r.id)) existing.allIds.push(r.id);
 
+        if (!existing.eventDates) existing.eventDates = [existing.eventDate].filter(Boolean);
+        if (r.eventDate && !existing.eventDates.includes(r.eventDate)) {
+          existing.eventDates.push(r.eventDate);
+        }
+        existing.eventDates.sort().reverse();
+        existing.visitCount = existing.allIds.length;
+
         const currentAtt = existing.isAttended || '不参加';
         const newAtt = r.isAttended || '不参加';
         if (newAtt === '参加' || currentAtt !== '参加') existing.isAttended = newAtt;
@@ -3555,6 +3571,8 @@ const ApiService = {
       } else {
         const item = Object.assign({}, r);
         item.allIds = [item.id];
+        item.eventDates = [item.eventDate].filter(Boolean);
+        item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
         result.push(item);
         if (emailKey) emailMap.set(emailKey, item);
@@ -4838,7 +4856,7 @@ const ApiService = {
           <td>${formatEventDateWithElapsed(v.eventDate)}</td>
           <td>
             <div>
-              ${renderVisitorNameLinkHtml(v.id, v.name)}
+              ${renderVisitorNameLinkHtml(v.id, v.name, v)}
               ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
             </div>
           </td>
@@ -4887,8 +4905,9 @@ const ApiService = {
           </div>
 
           <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
             <span>${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+            ${renderRepeatBadgeHtml(v)}
           </div>
 
           <div style="font-size: 11px; color: #64748b;">
@@ -5502,7 +5521,9 @@ const ApiService = {
         document.getElementById('vd-inviter').innerText = v.inviter || '-';
         document.getElementById('vd-event-date').innerText = v.eventDate || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
-        document.getElementById('vd-attendance-count').innerText = v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)';
+        const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
+        const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
+        document.getElementById('vd-attendance-count').innerText = countText;
 
         // 自由メモ
         document.getElementById('vd-free-memo').value = v.remarks || '';

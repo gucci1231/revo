@@ -63,7 +63,7 @@
           <td>${formatEventDateWithElapsed(v.eventDate)}</td>
           <td>
             <div>
-              ${renderVisitorNameLinkHtml(v.id, v.name)}
+              ${renderVisitorNameLinkHtml(v.id, v.name, v)}
               ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
             </div>
           </td>
@@ -112,8 +112,9 @@
           </div>
 
           <div class="dash-ap-card-visitor">
-            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <i class="fa-solid fa-user-tag text-slate-400 text-xs"></i>
             <span>${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+            ${renderRepeatBadgeHtml(v)}
           </div>
 
           <div style="font-size: 11px; color: #64748b;">
