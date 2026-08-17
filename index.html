@@ -4723,16 +4723,13 @@ const ApiService = {
 
 <script>
 /**
- * CelebrationEffect - Minimalist Game-Clear Style Reward & Animation Engine
- * 提供機能:
- * 1. Web Audio API による澄んだクリスタルクリアチャイム（和音アルペジオ）
- * 2. Canvas ベースの軽量ゴールド＆エメラルド幾何学スターパーティクル
- * 3. 洗練されたミニマルHUDスタイルの承認オーバーレイ演出
+ * CelebrationEffect - High-Impact Game-Clear Gap Celebration Engine
+ * 普段の超シンプルUI ⇆ 完了時だけアーケード/RPG全開の超ド派手演出
  */
 window.CelebrationEffect = (function() {
   let audioCtx = null;
 
-  // Web Audio 初期化 & サウンド再生 (C5 -> E5 -> G5 -> C6 のクリアファンファーレ)
+  // Web Audio による本格的で重厚な勝利ファンファーレ (ブラス＆クリスタル調)
   function playClearChime() {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -4745,75 +4742,151 @@ window.CelebrationEffect = (function() {
       }
 
       const now = audioCtx.currentTime;
-      // ノート周波数: C5(523.25), E5(659.25), G5(783.99), B5(987.77), C6(1046.50)
-      const notes = [
-        { freq: 523.25, time: 0.00, dur: 0.4, gain: 0.15 },
-        { freq: 659.25, time: 0.08, dur: 0.4, gain: 0.18 },
-        { freq: 783.99, time: 0.16, dur: 0.45, gain: 0.20 },
-        { freq: 1046.50, time: 0.25, dur: 0.7, gain: 0.25 }
+
+      // ファンファーレノート進行 (重厚なメジャーアルペジオ & 和音)
+      const chordEvents = [
+        // 1. 低音アタック + C4
+        { freqs: [130.81, 261.63], time: 0.00, dur: 0.25, gain: 0.22, type: 'triangle' },
+        // 2. E4 + G4
+        { freqs: [329.63, 392.00], time: 0.09, dur: 0.25, gain: 0.24, type: 'triangle' },
+        // 3. C5 + E5
+        { freqs: [523.25, 659.25], time: 0.18, dur: 0.30, gain: 0.26, type: 'triangle' },
+        // 4. クライマックスの重厚なハイコード (G5 + C6 + E6)
+        { freqs: [783.99, 1046.50, 1318.51], time: 0.28, dur: 1.1, gain: 0.30, type: 'triangle' },
+        // 煌びやかなベル倍音
+        { freqs: [2093.00], time: 0.28, dur: 0.9, gain: 0.12, type: 'sine' }
       ];
 
-      notes.forEach(n => {
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+      chordEvents.forEach(evt => {
+        evt.freqs.forEach(freq => {
+          const osc = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
 
-        // 澄んだサイン波 + 少しの倍音感
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(n.freq, now + n.time);
+          osc.type = evt.type;
+          osc.frequency.setValueAtTime(freq, now + evt.time);
 
-        gainNode.gain.setValueAtTime(0.0001, now + n.time);
-        gainNode.gain.exponentialRampToValueAtTime(n.gain, now + n.time + 0.02);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + n.time + n.dur);
+          gainNode.gain.setValueAtTime(0.0001, now + evt.time);
+          gainNode.gain.exponentialRampToValueAtTime(evt.gain, now + evt.time + 0.02);
+          gainNode.gain.exponentialRampToValueAtTime(0.0001, now + evt.time + evt.dur);
 
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
 
-        osc.start(now + n.time);
-        osc.stop(now + n.time + n.dur + 0.05);
+          osc.start(now + evt.time);
+          osc.stop(now + evt.time + evt.dur + 0.05);
+        });
       });
     } catch (e) {
-      console.warn('Web Audio error (skipped):', e);
+      console.warn('Web Audio playback error (skipped):', e);
     }
   }
 
-  // Canvas パーティクルアニメーション
-  function runParticles(canvas) {
+  // 画面シェイク (インパクト感の演出)
+  function triggerScreenShake() {
+    const styleId = 'revo-screen-shake-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        @keyframes revoScreenShake {
+          0% { transform: translate(0, 0) scale(1); }
+          15% { transform: translate(-3px, 4px) scale(1.003); }
+          30% { transform: translate(4px, -3px) scale(0.998); }
+          45% { transform: translate(-3px, -2px) scale(1.002); }
+          60% { transform: translate(2px, 2px) scale(1); }
+          80% { transform: translate(-1px, 1px) scale(1); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+        .revo-screen-shaking {
+          animation: revoScreenShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+        }
+        @keyframes revoSunburstSpin {
+          0% { transform: translate(-50%, -50%) rotate(0deg); }
+          100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes revoShockwaveRing {
+          0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; border-width: 8px; }
+          100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-width: 1px; }
+        }
+        @keyframes revoEmblemBounce {
+          0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+          50% { transform: scale(1.2) rotate(4deg); opacity: 1; }
+          75% { transform: scale(0.95) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const appContainer = document.getElementById('app-main-layout') || document.body;
+    appContainer.classList.remove('revo-screen-shaking');
+    void appContainer.offsetWidth; // reflow
+    appContainer.classList.add('revo-screen-shaking');
+    setTimeout(() => {
+      appContainer.classList.remove('revo-screen-shaking');
+    }, 500);
+  }
+
+  // 大量の花火・金吹雪・スターパーティクル (Canvas)
+  function runHeavyParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const width = (canvas.width = window.innerWidth);
     const height = (canvas.height = window.innerHeight);
 
     const particles = [];
     const colors = [
-      '#F59E0B', // Amber Gold
-      '#FBBF24', // Bright Gold
-      '#10B981', // Emerald
-      '#3B82F6', // Blue
-      '#6366F1', // Indigo
-      '#EC4899', // Pink
-      '#FFFFFF'  // White Diamond
+      '#FFD700', // Bright Gold
+      '#F59E0B', // Amber
+      '#FBBF24', // Yellow Gold
+      '#10B981', // Emerald Neon
+      '#06B6D4', // Cyan Neon
+      '#EC4899', // Hot Pink
+      '#8B5CF6', // Purple
+      '#FFFFFF'  // Pure Diamond
     ];
 
-    const particleCount = 45;
     const originX = width / 2;
     const originY = height / 2 - 20;
 
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
-      const speed = Math.random() * 8 + 4;
+    // 1. 中央からの爆発スパーク (75個)
+    for (let i = 0; i < 75; i++) {
+      const angle = (Math.PI * 2 * i) / 75 + (Math.random() - 0.5) * 0.4;
+      const speed = Math.random() * 14 + 6;
       particles.push({
+        type: 'burst',
         x: originX,
         y: originY,
-        vx: Math.cos(angle) * speed * (Math.random() * 0.8 + 0.6),
-        vy: Math.sin(angle) * speed * (Math.random() * 0.8 + 0.6) - 2.5, // 少し上方向にバイアス
-        size: Math.random() * 5 + 3,
+        vx: Math.cos(angle) * speed * (Math.random() * 0.8 + 0.5),
+        vy: Math.sin(angle) * speed * (Math.random() * 0.8 + 0.5) - 3.5,
+        size: Math.random() * 6 + 3,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
-        vRot: (Math.random() - 0.5) * 0.2,
-        shape: Math.random() > 0.4 ? 'star' : 'diamond',
+        vRot: (Math.random() - 0.5) * 0.25,
+        shape: Math.random() > 0.35 ? 'star' : 'diamond',
         alpha: 1,
-        decay: Math.random() * 0.015 + 0.012,
-        gravity: 0.18,
-        friction: 0.96
+        decay: Math.random() * 0.012 + 0.008,
+        gravity: 0.22,
+        friction: 0.95
+      });
+    }
+
+    // 2. 上空から舞い降りる金吹雪リボン (45個)
+    for (let i = 0; i < 45; i++) {
+      particles.push({
+        type: 'confetti',
+        x: Math.random() * width,
+        y: Math.random() * (height * 0.4) - 50,
+        vx: (Math.random() - 0.5) * 4,
+        vy: Math.random() * 3 + 2.5,
+        width: Math.random() * 8 + 6,
+        height: Math.random() * 14 + 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.15,
+        alpha: 1,
+        decay: Math.random() * 0.006 + 0.005,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: Math.random() * 0.1 + 0.05
       });
     }
 
@@ -4827,44 +4900,58 @@ window.CelebrationEffect = (function() {
         if (p.alpha <= 0) continue;
         aliveCount++;
 
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vx *= p.friction;
-        p.vy = p.vy * p.friction + p.gravity;
-        p.rotation += p.vRot;
-        p.alpha -= p.decay;
+        if (p.type === 'burst') {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= p.friction;
+          p.vy = p.vy * p.friction + p.gravity;
+          p.rotation += p.vRot;
+          p.alpha -= p.decay;
 
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rotation);
-        ctx.globalAlpha = Math.max(0, p.alpha);
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 6;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 8;
 
-        if (p.shape === 'star') {
-          // 4点スター描画
-          ctx.beginPath();
-          const r = p.size;
-          ctx.moveTo(0, -r * 1.5);
-          ctx.quadraticCurveTo(0, 0, r * 1.5, 0);
-          ctx.quadraticCurveTo(0, 0, 0, r * 1.5);
-          ctx.quadraticCurveTo(0, 0, -r * 1.5, 0);
-          ctx.quadraticCurveTo(0, 0, 0, -r * 1.5);
-          ctx.fill();
-        } else {
-          // ダイヤモンド描画
-          ctx.beginPath();
-          const r = p.size;
-          ctx.moveTo(0, -r);
-          ctx.lineTo(r, 0);
-          ctx.lineTo(0, r);
-          ctx.lineTo(-r, 0);
-          ctx.closePath();
-          ctx.fill();
+          if (p.shape === 'star') {
+            const r = p.size;
+            ctx.beginPath();
+            ctx.moveTo(0, -r * 1.6);
+            ctx.quadraticCurveTo(0, 0, r * 1.6, 0);
+            ctx.quadraticCurveTo(0, 0, 0, r * 1.6);
+            ctx.quadraticCurveTo(0, 0, -r * 1.6, 0);
+            ctx.quadraticCurveTo(0, 0, 0, -r * 1.6);
+            ctx.fill();
+          } else {
+            const r = p.size;
+            ctx.beginPath();
+            ctx.moveTo(0, -r);
+            ctx.lineTo(r * 1.2, 0);
+            ctx.lineTo(0, r);
+            ctx.lineTo(-r * 1.2, 0);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+        } else if (p.type === 'confetti') {
+          p.wobble += p.wobbleSpeed;
+          p.x += p.vx + Math.sin(p.wobble) * 1.5;
+          p.y += p.vy;
+          p.rotation += p.vRot;
+          p.alpha -= p.decay;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotation);
+          ctx.scale(Math.cos(p.wobble), 1);
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
+          ctx.restore();
         }
-
-        ctx.restore();
       }
 
       if (aliveCount > 0) {
@@ -4880,83 +4967,89 @@ window.CelebrationEffect = (function() {
   }
 
   /**
-   * メイン演出トリガー: ゲームクリア風クエスト完了HUD
-   * @param {Object} options
-   *   - title: string (例: 'ACTION COMPLETE')
-   *   - subtitle: string (例: '川口 陽平さん、ナイスフォロー！')
-   *   - detail: string (例: '事前連絡と1to1日程調整完了')
-   *   - badgeText: string (例: '+100 EXP / 達成')
+   * メイン演出トリガー: ギャップを極大化するド派手ゲームクリアHUD
    */
   function triggerQuestClear(options = {}) {
-    const title = options.title || 'ACTION COMPLETED';
-    const subtitle = options.subtitle || 'ナイスアクション！';
+    const title = options.title || 'QUEST CLEAR !';
+    const subtitle = options.subtitle || 'ナイスアクション！目標達成！';
     const detail = options.detail || '';
-    const badgeText = options.badgeText || 'STATUS: COMPLETED';
+    const badgeText = options.badgeText || '★ MISSION ACCOMPLISHED ★';
 
-    // 既存のエフェクトがあれば削除
+    // 既存のエフェクトがあれば即座に削除
     const existing = document.getElementById('revo-quest-clear-overlay');
     if (existing) existing.remove();
 
-    // 音声再生
+    // 1. 画面シェイク
+    triggerScreenShake();
+
+    // 2. 重厚なファンファーレ
     playClearChime();
 
-    // オーバーレイDOM作成
+    // 3. オーバーレイDOM作成
     const overlay = document.createElement('div');
     overlay.id = 'revo-quest-clear-overlay';
-    overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none';
-    overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.45)';
-    overlay.style.backdropFilter = 'blur(4px)';
-    overlay.style.webkitBackdropFilter = 'blur(4px)';
-    overlay.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+    overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none overflow-hidden';
+    overlay.style.backgroundColor = 'rgba(11, 17, 32, 0.65)';
+    overlay.style.backdropFilter = 'blur(8px)';
+    overlay.style.webkitBackdropFilter = 'blur(8px)';
+    overlay.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     overlay.style.opacity = '0';
 
     overlay.innerHTML = `
+      <!-- 背景: 放射状回転サンバースト光線 -->
+      <div class="absolute top-1/2 left-1/2 w-[800px] h-[800px] pointer-events-none opacity-25" style="animation: revoSunburstSpin 25s linear infinite; background: repeating-conic-gradient(from 0deg, rgba(245, 158, 11, 0.4) 0deg 15deg, transparent 15deg 30deg);"></div>
+
+      <!-- 背景: 衝撃波リング -->
+      <div class="absolute top-1/2 left-1/2 w-48 h-48 rounded-full border-4 border-amber-300 pointer-events-none" style="animation: revoShockwaveRing 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;"></div>
+      <div class="absolute top-1/2 left-1/2 w-48 h-48 rounded-full border-4 border-cyan-400 pointer-events-none" style="animation: revoShockwaveRing 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) 0.15s forwards;"></div>
+
+      <!-- Canvas パーティクルレイヤー -->
       <canvas id="revo-celebration-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       
-      <!-- Minimalist Game Clear HUD Card -->
-      <div id="revo-quest-card" class="relative z-10 mx-4 max-w-sm w-full bg-slate-900/90 text-white border border-amber-400/40 rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden" style="box-shadow: 0 0 35px rgba(245, 158, 11, 0.25), 0 20px 40px -15px rgba(0, 0, 0, 0.5); transform: scale(0.85); transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;">
+      <!-- メイン: ゲームクリアHUDカード -->
+      <div id="revo-quest-card" class="relative z-10 mx-4 max-w-sm w-full bg-slate-950/95 text-white border-2 border-amber-400/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden" style="box-shadow: 0 0 50px rgba(245, 158, 11, 0.45), 0 0 100px rgba(6, 182, 212, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.15); transform: scale(0.7); opacity: 0; transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;">
         
-        <!-- Ambient Top Glow Light -->
-        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-24 bg-gradient-to-b from-amber-400/30 to-transparent blur-xl pointer-events-none rounded-full"></div>
+        <!-- Ambient Top Gold Glow -->
+        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-amber-400/50 via-yellow-300/30 to-transparent blur-2xl pointer-events-none rounded-full"></div>
 
-        <!-- Top Clear Badge -->
-        <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/30 text-amber-300 text-[10px] font-extrabold tracking-widest uppercase mb-3 shadow-sm">
-          <i class="fa-solid fa-crown text-amber-400 animate-pulse text-xs"></i>
+        <!-- Top Badge -->
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-yellow-500/20 border border-amber-300 text-amber-200 text-[11px] font-black tracking-widest uppercase mb-3.5 shadow-lg shadow-amber-500/20">
+          <i class="fa-solid fa-crown text-amber-300 text-xs animate-bounce"></i>
           <span>${badgeText}</span>
         </div>
 
-        <!-- Animated Center Icon -->
-        <div class="relative my-1 flex items-center justify-center">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 flex items-center justify-center text-slate-950 text-2xl shadow-lg shadow-amber-500/40 transform -rotate-3 hover:rotate-0 transition-transform">
-            <i class="fa-solid fa-check text-slate-950 font-black text-3xl"></i>
+        <!-- 3D Gold Emblem Icon -->
+        <div class="relative my-2 flex items-center justify-center">
+          <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 flex items-center justify-center text-slate-950 text-3xl shadow-xl shadow-amber-500/60 border-2 border-yellow-100 transform" style="animation: revoEmblemBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;">
+            <i class="fa-solid fa-trophy text-slate-950 font-black text-4xl drop-shadow-md"></i>
           </div>
-          <!-- Sparkle accents -->
-          <i class="fa-solid fa-star absolute -top-1.5 -right-2 text-yellow-300 text-xs animate-spin" style="animation-duration: 4s;"></i>
-          <i class="fa-solid fa-sparkles absolute -bottom-1 -left-2 text-amber-300 text-xs"></i>
+          <!-- Sparkles -->
+          <i class="fa-solid fa-star absolute -top-2 -right-3 text-yellow-200 text-sm animate-spin" style="animation-duration: 3s; filter: drop-shadow(0 0 6px #fde047);"></i>
+          <i class="fa-solid fa-star absolute -bottom-2 -left-3 text-amber-300 text-xs animate-spin" style="animation-duration: 4s; filter: drop-shadow(0 0 6px #f59e0b);"></i>
         </div>
 
-        <!-- Main Quest Clear Title -->
-        <h2 class="mt-3.5 text-lg font-black tracking-wider bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent drop-shadow-sm font-sans uppercase">
+        <!-- Title -->
+        <h2 class="mt-4 text-2xl font-black tracking-widest bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent drop-shadow-lg font-sans uppercase" style="text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);">
           ${title}
         </h2>
 
-        <!-- Personalized Subtitle -->
-        <p class="mt-1 text-sm font-bold text-white/95 leading-snug">
+        <!-- Subtitle -->
+        <p class="mt-2 text-base font-extrabold text-white drop-shadow leading-snug">
           ${subtitle}
         </p>
 
-        <!-- Detail Action Snippet -->
+        <!-- Detail Snippet -->
         ${detail ? `
-          <div class="mt-3.5 w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-300 font-medium truncate shadow-inner">
-            <span class="text-amber-400 mr-1">✦</span> ${detail}
+          <div class="mt-4 w-full bg-slate-900/90 border border-amber-400/40 rounded-2xl px-4 py-2.5 text-xs text-amber-100 font-bold truncate shadow-inner">
+            <span class="text-amber-400 mr-1.5 font-black">✦</span> ${detail}
           </div>
         ` : ''}
 
-        <!-- Interactive Dismiss Hint -->
-        <div class="mt-4 text-[10px] text-slate-400 font-medium flex items-center gap-1.5 opacity-70">
+        <!-- Dismiss Footer -->
+        <div class="mt-4 text-[11px] text-slate-400 font-bold flex items-center gap-2 opacity-80">
           <span>タップして閉じる</span>
-          <span class="text-slate-500">•</span>
-          <span class="text-slate-400">✨ NICE JOB!</span>
+          <span class="text-amber-400">•</span>
+          <span class="text-amber-300 font-extrabold tracking-wider">★ GREAT JOB! ★</span>
         </div>
       </div>
     `;
@@ -4967,15 +5060,16 @@ window.CelebrationEffect = (function() {
     const canvas = document.getElementById('revo-celebration-canvas');
     let cleanupParticles = null;
     if (canvas) {
-      cleanupParticles = runParticles(canvas);
+      cleanupParticles = runHeavyParticles(canvas);
     }
 
-    // スムーズインアニメーション
+    // スムーズイン
     requestAnimationFrame(() => {
       overlay.style.opacity = '1';
       const card = document.getElementById('revo-quest-card');
       if (card) {
         card.style.transform = 'scale(1)';
+        card.style.opacity = '1';
       }
     });
 
@@ -4987,7 +5081,8 @@ window.CelebrationEffect = (function() {
       overlay.style.opacity = '0';
       const card = document.getElementById('revo-quest-card');
       if (card) {
-        card.style.transform = 'scale(0.9) translateY(10px)';
+        card.style.transform = 'scale(0.85) translateY(15px)';
+        card.style.opacity = '0';
       }
       setTimeout(() => {
         if (cleanupParticles) cleanupParticles();
@@ -4999,13 +5094,14 @@ window.CelebrationEffect = (function() {
 
     overlay.onclick = dismiss;
 
-    // 2.6秒後に自動フェードアウト
-    setTimeout(dismiss, 2600);
+    // 3.2秒後に自動フェードアウト
+    setTimeout(dismiss, 3200);
   }
 
   return {
     triggerQuestClear: triggerQuestClear,
-    playClearChime: playClearChime
+    playClearChime: playClearChime,
+    triggerScreenShake: triggerScreenShake
   };
 })();
 </script>
