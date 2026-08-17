@@ -290,11 +290,11 @@ body {
 }
 table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 13px; white-space: nowrap; }
 th {
-  position: sticky; top: 0; background: #f8fafc; color: #64748b; font-size: 11px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.03em; padding: 12px 14px; border-bottom: 2px solid var(--border-color);
-  white-space: nowrap; word-break: keep-all; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  position: sticky; top: 0; background: #ffffff; color: #86868b; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; padding: 14px 16px; border-bottom: 1px solid var(--border-color);
+  white-space: nowrap; word-break: keep-all; z-index: 10;
 }
-td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+td { padding: 14px 16px; border-bottom: 1px solid #f2f2f7; color: #1d1d1f; vertical-align: middle; white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; line-height: 1.5; }
 tr:hover td { background-color: #f8fafc; }
 tr:last-child td { border-bottom: none; }
 
@@ -1339,8 +1339,8 @@ tr:last-child td { border-bottom: none; }
   .dash-top-2col-layout {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 28px;
     align-items: start;
     width: 100%;
     box-sizing: border-box;
@@ -1358,12 +1358,12 @@ tr:last-child td { border-bottom: none; }
   }
   .dash-top-2col-layout th,
   .dash-top-2col-layout td {
-    padding: 8px 6px !important;
-    font-size: 12px !important;
+    padding: 12px 14px !important;
+    font-size: 13px !important;
   }
   .dash-panel {
     display: block !important;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     animation: none;
     min-width: 0;
     max-width: 100%;
@@ -3208,7 +3208,7 @@ const ApiService = {
     }
 
     const shortDate = eventDate.length >= 10 ? eventDate.substring(5) : eventDate;
-    return `<div><span style="font-weight:700;">${escapeHtml(shortDate)}</span>${elapsedBadge}</div>`;
+    return `<span style="font-weight:600; color: #1d1d1f;">${escapeHtml(shortDate)}</span>`;
   }
 
   function isVisitorActionCompleted(r) {
@@ -3223,29 +3223,21 @@ const ApiService = {
       const isCompleted = Number(ap.is_completed) === 1;
       const todayStr = new Date().toISOString().slice(0, 10);
       const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
-      const dateBadge = `<span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-calendar"></i> ${ap.due_date || '期日未定'}</span>`;
-      const userBadge = ap.assignee_name ? `<span class="vd-ap-badge-user" style="font-size:10px; padding:1px 6px;"><i class="fa-regular fa-user"></i> ${escapeHtml(ap.assignee_name)}</span>` : '';
-      const textStyle = isCompleted ? 'color:#868e96; text-decoration:line-through;' : 'color:#1e293b; font-weight:700;';
-
-      const reportSnippet = ap.report_text
-        ? `<div style="font-size:11px; color:#0ca678; background:#e6fcf5; padding:2px 6px; border-radius:4px; margin-top:2px;">
-             <strong>報告:</strong> ${escapeHtml(ap.report_text)}
-           </div>`
-        : '';
+      
+      const metaInfo = [];
+      if (ap.due_date) {
+        metaInfo.push(isOverdue ? `<span style="color:#ff3b30; font-weight:700;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
+      }
+      if (ap.assignee_name) {
+        metaInfo.push(`担当: ${escapeHtml(ap.assignee_name)}`);
+      }
 
       return `
-        <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
-          <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:11px; font-weight:800; color:${isCompleted ? '#2b8a3e' : '#228be6'};">
-              ${isCompleted ? '✅ 完了アクション:' : '🎯 次の一手:'}
-            </span>
-            ${dateBadge}
-            ${userBadge}
-          </div>
-          <div style="font-size:12px; line-height:1.3; ${textStyle}" title="${escapeHtml(ap.action_text)}">
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:140px;">
+          <div style="font-size:13px; font-weight:600; color:${isCompleted ? '#86868b' : '#1d1d1f'}; ${isCompleted ? 'text-decoration:line-through;' : ''}">
             ${escapeHtml(ap.action_text)}
           </div>
-          ${reportSnippet}
+          ${metaInfo.length > 0 ? `<div style="font-size:11px; color:#86868b;">${metaInfo.join(' · ')}</div>` : ''}
         </div>
       `;
     }
@@ -3253,22 +3245,13 @@ const ApiService = {
     const note = r.q7 || r.orientMemo || r.followMemo;
     if (note) {
       return `
-        <div style="display:flex; flex-direction:column; gap:2px; max-width:280px;">
-          <div style="font-size:11px; font-weight:800; color:#495057;">
-            <i class="fa-regular fa-comment-dots" style="color:#868e96;"></i> 共有メモ / 提案状況:
-          </div>
-          <div style="font-size:12px; color:#475569; line-height:1.3;" title="${escapeHtml(note)}">
-            ${formatTruncatedCell(note, 26)}
-          </div>
+        <div style="font-size:12px; color:#64748b; line-height:1.4;" title="${escapeHtml(note)}">
+          ${formatTruncatedCell(note, 30)}
         </div>
       `;
     }
 
-    return `
-      <button type="button" class="btn-action-secondary" style="padding: 2px 8px; font-size: 11px; font-weight: 700; color: #228be6;" onclick="openVisitorDetailView('${r.id}'); return false;">
-        <i class="fa-solid fa-plus text-[10px]"></i> プランを登録
-      </button>
-    `;
+    return `<span style="font-size:12px; color:#94a3b8;">未設定</span>`;
   }
 
   function hideLoading() {
@@ -4126,19 +4109,19 @@ const ApiService = {
           <td>
             <div>
               ${renderVisitorNameLinkHtml(r.id, r.name)}
-              ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+              ${r.company ? `<div style="font-size:11px; color:#86868b;">${escapeHtml(r.company)}</div>` : ''}
             </div>
           </td>
           <td>
             <div>
-              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+              <span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(r.inviter, 8)}</span>
+              ${r.orientUser ? `<div style="font-size:11px; color:#86868b;">担当: ${escapeHtml(r.orientUser)}</div>` : ''}
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
           <td class="text-center">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${r.id}')">
+              カルテ
             </button>
           </td>
         `;

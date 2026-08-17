@@ -378,19 +378,19 @@
           <td>
             <div>
               ${renderVisitorNameLinkHtml(r.id, r.name)}
-              ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+              ${r.company ? `<div style="font-size:11px; color:#86868b;">${escapeHtml(r.company)}</div>` : ''}
             </div>
           </td>
           <td>
             <div>
-              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+              <span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(r.inviter, 8)}</span>
+              ${r.orientUser ? `<div style="font-size:11px; color:#86868b;">担当: ${escapeHtml(r.orientUser)}</div>` : ''}
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
           <td class="text-center">
-            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
-              詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+            <button type="button" class="btn-action-secondary text-xs" style="padding: 2px 8px; font-size: 11px;" onclick="openVisitorDetailView('${r.id}')">
+              カルテ
             </button>
           </td>
         `;
