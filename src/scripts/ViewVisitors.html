@@ -60,11 +60,16 @@
         };
 
         tr.innerHTML = `
-          <td>${formatTruncatedCell(v.eventDate, 10)}</td>
-          <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+          <td>${formatEventDateWithElapsed(v.eventDate)}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(v.id, v.name)}
+              ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
+            </div>
+          </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
-          <td>${formatTruncatedCell(v.inviter, 10)}</td>
+          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>

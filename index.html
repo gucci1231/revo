@@ -320,67 +320,103 @@ tr:last-child td { border-bottom: none; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
 .badge-toggle.none { background: #f1f5f9; color: #64748b; }
 
-/* Status Select Dropdowns (List & Mobile Cards) */
+/* Status Select Dropdowns (List & Mobile Cards - Apple Pill Style) */
 .status-select {
   appearance: none;
   -webkit-appearance: none;
-  background-color: #f1f5f9;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-color: #f2f2f7;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 6px center;
   background-size: 9px 9px;
-  padding: 3px 18px 3px 7px;
-  border-radius: 6px;
+  padding: 4px 18px 4px 8px;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid #cbd5e1;
-  color: #475569;
+  border: 1px solid #e5e5ea;
+  color: #1d1d1f;
   outline: none;
   white-space: nowrap;
   transition: all 0.15s ease;
   line-height: 1.3;
 }
 .status-select:hover {
-  border-color: #94a3b8;
+  border-color: #d2d2d7;
 }
 .status-select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
 }
 
 .status-select.state-attended,
 .status-select.state-done,
 .status-select.state-joined {
-  background-color: #dcfce7;
-  color: #15803d;
-  border-color: #86efac;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-color: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23166534' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 .status-select.state-absent,
 .status-select.state-rejected {
-  background-color: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23991b1b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 .status-select.state-progress,
 .status-select.state-considering {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: #fffbeb;
+  color: #92400e;
   border-color: #fde68a;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2392400e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
-/* Visitors Status Filter Tabs */
+/* Visitors Status Filter Tabs (Apple Pill Segment Control) */
 .visitors-status-tabs {
   display: flex;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding: 8px 16px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  -webkit-overflow-scrolling: touch;
+}
+.visitors-status-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #f2f2f7;
+  color: #1d1d1f;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.visitors-status-tab:hover {
+  background: #e5e5ea;
+}
+.visitors-status-tab.active {
+  background: #1d1d1f;
+  color: #ffffff;
+}
+.visitors-status-tab.active .badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+.visitors-status-tab .badge {
+  background: #e5e5ea;
+  color: #1d1d1f;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
   -webkit-overflow-scrolling: touch;
 }
 .visitors-status-tab {
@@ -2374,16 +2410,16 @@ tr:last-child td { border-bottom: none; }
   </section>
 </div>
 
-    <!-- VIEW 2: ビジター全一覧 (CRUD統合管理) -->
+    <!-- VIEW 2: ビジター全一覧 (CRUD統合管理 - Apple Minimal & Clean) -->
 <div id="view-visitors" class="view-content">
   <section class="section-card">
     <div class="section-header flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between p-4 md:p-5">
       <div class="flex items-center justify-between gap-3 w-full sm:w-auto">
         <div>
-          <h2 class="section-title text-base md:text-lg font-bold text-slate-800 m-0">
-            <i class="fa-solid fa-users text-blue-600"></i> 全ビジター統合管理名簿
+          <h2 class="section-title text-base md:text-lg font-bold text-slate-900 m-0">
+            <i class="fa-solid fa-users text-slate-400"></i> 全ビジター統合管理名簿
           </h2>
-          <div class="section-sub text-xs text-slate-500 mt-0.5">全ビジターのステータス・進捗管理と検索</div>
+          <div class="section-sub text-xs text-slate-400 mt-0.5">全ビジターのステータス・進捗管理と検索</div>
         </div>
         <button type="button" class="btn-create-visitor sm:hidden" onclick="openAddVisitorModal()">
           <i class="fa-solid fa-plus"></i> 新規追加
@@ -2407,22 +2443,22 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- ステータス絞り込みタブバー (検討中・入会済・出席・HOTなど) -->
+    <!-- ステータス絞り込みタブバー (Apple Pill Style) -->
     <div class="visitors-status-tabs">
       <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">
         すべて <span class="badge" id="count-filter-all">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="considering" onclick="setVisitorsStatusFilter('considering')">
-        🤔 検討中 <span class="badge badge-warning" id="count-filter-considering">0</span>
+        検討中 <span class="badge" id="count-filter-considering">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="joined" onclick="setVisitorsStatusFilter('joined')">
-        🎉 入会済 <span class="badge badge-success" id="count-filter-joined">0</span>
+        入会済 <span class="badge" id="count-filter-joined">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="attended" onclick="setVisitorsStatusFilter('attended')">
         出席済 <span class="badge" id="count-filter-attended">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="hot" onclick="setVisitorsStatusFilter('hot')">
-        🔥 HOT(A/B) <span class="badge badge-danger" id="count-filter-hot">0</span>
+        HOT (A/B) <span class="badge" id="count-filter-hot">0</span>
       </button>
     </div>
 
@@ -3088,15 +3124,15 @@ const ApiService = {
   function renderRankBadgeHtml(val) {
     const feel = parseFeelAbc(val);
     if (feel === 'A') {
-      return '<span style="background:#ffe3e3; color:#c92a2a; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">A</span>';
+      return '<span style="background:#fff1f2; color:#e11d48; border:1px solid #fecdd3; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">A</span>';
     }
     if (feel === 'B') {
-      return '<span style="background:#fff3bf; color:#e67700; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">B</span>';
+      return '<span style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; padding:2px 8px; border-radius:12px; font-weight:800; font-size:11px;">B</span>';
     }
     if (feel === 'C') {
-      return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">C</span>';
+      return '<span style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:700; font-size:11px;">C</span>';
     }
-    return '<span style="background:#e9ecef; color:#495057; padding:2px 8px; border-radius:10px; font-weight:800; font-size:12px;">-</span>';
+    return '<span style="background:#f8fafc; color:#94a3b8; border:1px solid #e2e8f0; padding:2px 8px; border-radius:12px; font-weight:600; font-size:11px;">-</span>';
   }
 
   function changeVisitorStatus(id, field, value) {
@@ -3183,7 +3219,7 @@ const ApiService = {
   }
 
   function renderVisitorNameLinkHtml(id, name) {
-    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:800; color:#364fc7; text-decoration:underline;">${escapeHtml(name)}</a>`;
+    return `<a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>`;
   }
 
   function formatEventDateWithElapsed(eventDate) {
@@ -4849,11 +4885,16 @@ const ApiService = {
         };
 
         tr.innerHTML = `
-          <td>${formatTruncatedCell(v.eventDate, 10)}</td>
-          <td>${renderVisitorNameLinkHtml(v.id, v.name)}</td>
+          <td>${formatEventDateWithElapsed(v.eventDate)}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(v.id, v.name)}
+              ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
+            </div>
+          </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
-          <td>${formatTruncatedCell(v.inviter, 10)}</td>
+          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderRankBadgeHtml(v.feelAbc)}</td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${render1to1ButtonHtml(v.id, v.is1to1)}</td>
