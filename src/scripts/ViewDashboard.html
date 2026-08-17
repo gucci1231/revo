@@ -310,13 +310,11 @@
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
               <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
                 <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
               </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
+              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 

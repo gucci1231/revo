@@ -4219,13 +4219,11 @@ const ApiService = {
               ${dateBadgeHtml}
               ${userBadgeHtml}
             </div>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
               <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 7px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
                 <i class="fa-solid fa-share-nodes text-blue-600"></i> 共有
               </button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${p.visitor_id}')">
-                詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
-              </button>
+              <span class="text-slate-300 text-sm"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
 
@@ -5415,10 +5413,7 @@ const ApiService = {
           <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.q1, 30)}</div></td>
           <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.orientMemo || h.followMemo, 30)}</div></td>
           <td class="text-center">
-            <div class="flex items-center justify-center gap-1">
-              <button class="btn-icon-action" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集"><i class="fa-solid fa-pen"></i></button>
-              <button type="button" class="btn-action-secondary vd-quick-chip" onclick="event.stopPropagation(); openVisitorDetailView('${vid}')">詳細</button>
-            </div>
+            <button class="btn-icon-action" onclick="event.stopPropagation(); openHearingFormModal('${vid}')" title="ヒアリング編集"><i class="fa-solid fa-pen"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
