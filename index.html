@@ -1156,11 +1156,18 @@ tr:last-child td { border-bottom: none; }
   gap: 16px;
   margin-bottom: 28px;
 }
+.dash-hero-grid.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 @media (max-width: 1200px) {
   .dash-hero-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
     margin-bottom: 22px;
+  }
+  .dash-hero-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
   }
 }
 @media (max-width: 640px) {
@@ -1168,6 +1175,24 @@ tr:last-child td { border-bottom: none; }
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-bottom: 18px;
+  }
+  .dash-hero-grid.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-card {
+    padding: 14px 10px;
+    min-height: 110px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-number {
+    font-size: 34px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-title {
+    font-size: 11px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-sub-line {
+    font-size: 9.5px;
   }
 }
 
@@ -2591,61 +2616,71 @@ tr:last-child td { border-bottom: none; }
 <div id="view-actions" class="view-content">
 
   <!-- 1. トップサマリーKPIカード -->
-  <div class="dash-hero-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 16px;">
+  <div class="dash-hero-grid grid-3">
     <!-- KPI 1: 進行中 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('pending')">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-bullseye"></i></div>
-          <span class="dash-hero-title">進行中アクション</span>
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('pending')" title="進行中アクションに絞り込み">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon"><i class="fa-solid fa-bullseye"></i></div>
+            <span class="dash-hero-title">進行中</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line"><span class="kpi-sub-indicator hot"></span>未完了タスク</span>
+            <span class="dash-hero-sub-line">要対応プラン</span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">要対応</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="actions-kpi-pending">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">件</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>未完了プラン</span>
-        <span class="text-xs text-slate-500 font-bold">絞り込み</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="actions-kpi-pending">-</span>
+            <span class="dash-hero-unit-text">件</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- KPI 2: 期限超過 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('overdue')">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <span class="dash-hero-title">期限超過</span>
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('overdue')" title="期限超過アクションに絞り込み">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <span class="dash-hero-title">期限超過</span>
+            <span class="kpi-status-dot red" title="超過"></span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line"><span class="kpi-sub-indicator overdue"></span>期日遅れ</span>
+            <span class="dash-hero-sub-line">早急対応</span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">最優先</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="actions-kpi-overdue" style="color: #ff3b30;">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">件</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>期日遅れ</span>
-        <span class="text-xs text-slate-500 font-bold">早急対応</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="actions-kpi-overdue" style="color: #ef4444;">-</span>
+            <span class="dash-hero-unit-text">件</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- KPI 3: 完了済 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('completed')">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-circle-check"></i></div>
-          <span class="dash-hero-title">完了実績</span>
+    <div class="dash-hero-card" onclick="setActionsStatusFilter('completed')" title="完了済実績に絞り込み">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <span class="dash-hero-title">完了実績</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line"><span class="kpi-sub-indicator normal"></span>報告完了済</span>
+            <span class="dash-hero-sub-line">今期累計</span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">達成</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="actions-kpi-completed">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">件</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>報告完了済</span>
-        <span class="text-xs text-slate-500 font-bold">実績一覧</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="actions-kpi-completed" style="color: #10b981;">-</span>
+            <span class="dash-hero-unit-text">件</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
