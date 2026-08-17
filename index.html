@@ -1026,6 +1026,89 @@ tr:last-child td { border-bottom: none; }
   }
 }
 
+/* アクションプラン モバイル用トリガー & レスポンシブモーダル */
+.vd-mobile-ap-trigger-wrap {
+  display: block;
+  margin-bottom: 16px;
+}
+.vd-ap-modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.vd-ap-modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+@media (max-width: 1023px) {
+  .vd-mobile-ap-trigger-wrap {
+    display: block;
+  }
+  .vd-ap-form-modal-wrap {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 16px;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vd-ap-form-modal-wrap.is-open {
+    display: flex !important;
+    animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .vd-ap-modal-content {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vd-mobile-ap-trigger-wrap {
+    display: none !important;
+  }
+  .vd-ap-form-modal-wrap {
+    display: block !important;
+    position: static;
+    background: transparent;
+    padding: 0;
+    backdrop-filter: none;
+    z-index: auto;
+  }
+  .vd-ap-modal-content {
+    max-width: 100%;
+    margin: 0 0 16px 0;
+    box-shadow: none;
+    border-radius: 16px;
+  }
+  .vd-ap-modal-close-btn {
+    display: none !important;
+  }
+}
+
 .vd-box {
   background: #ffffff;
   border: 1px solid #f1f5f9;
@@ -3010,53 +3093,63 @@ tr:last-child td { border-bottom: none; }
       <div class="vd-col-left">
         <!-- Tab Content 0: アクションプラン -->
         <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
-          <!-- 登録カード -->
-          <div class="vd-box">
-            <div class="vd-box-header">
-              <h3 class="vd-box-title text-blue-600">
-                <i class="fa-solid fa-plus-circle"></i> アクション登録
-              </h3>
-            </div>
+          <!-- スマホ用: アクション登録ボタン (PCでは非表示) -->
+          <div class="vd-mobile-ap-trigger-wrap">
+            <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
+              <i class="fa-solid fa-plus-circle text-base"></i> アクション登録
+            </button>
+          </div>
 
-            <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
-              <input type="hidden" id="vd-ap-edit-id" value="">
+          <!-- 登録カード (PC: インライン / スマホ: モーダル) -->
+          <div id="vd-ap-form-modal" class="vd-ap-form-modal-wrap" onclick="handleApModalOverlayClick(event)">
+            <div class="vd-box vd-ap-modal-content">
+              <div class="vd-box-header">
+                <h3 class="vd-box-title text-blue-600">
+                  <i class="fa-solid fa-plus-circle"></i> <span id="vd-ap-form-title">アクション登録</span>
+                </h3>
+                <button type="button" class="vd-ap-modal-close-btn" onclick="closeActionPlanModal()" title="閉じる">&times;</button>
+              </div>
 
-              <div class="vd-form-grid">
-                <!-- 期日 -->
-                <div class="form-group mb-0">
-                  <label class="form-label text-xs font-bold text-slate-500">期日</label>
-                  <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
-                  <div class="vd-quick-chips">
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+              <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
+                <input type="hidden" id="vd-ap-edit-id" value="">
+
+                <div class="vd-form-grid">
+                  <!-- 期日 -->
+                  <div class="form-group mb-0">
+                    <label class="form-label text-xs font-bold text-slate-500">期日</label>
+                    <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
+                    <div class="vd-quick-chips">
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+                    </div>
+                  </div>
+
+                  <!-- 担当者 -->
+                  <div class="form-group mb-0">
+                    <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
+                    <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
+                      <option value="">-- 選択してください --</option>
+                    </select>
+                    <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
                   </div>
                 </div>
 
-                <!-- 担当者 -->
-                <div class="form-group mb-0">
-                  <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
-                  <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
-                    <option value="">-- 選択してください --</option>
-                  </select>
-                  <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
+                <!-- アクション内容 -->
+                <div class="form-group mt-3 mb-0">
+                  <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
+                  <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
                 </div>
-              </div>
 
-              <!-- アクション内容 -->
-              <div class="form-group mt-3 mb-0">
-                <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
-                <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
-              </div>
-
-              <div class="vd-form-actions mt-3">
-                <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
-                <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
-                  <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
-                </button>
-              </div>
-            </form>
+                <div class="vd-form-actions mt-3">
+                  <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
+                  <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
+                    <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
           <!-- 一覧 -->
@@ -6309,6 +6402,31 @@ const ApiService = {
     }
   }
 
+  function openActionPlanModal() {
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) {
+      modal.classList.add('is-open');
+    }
+    const input = document.getElementById('vd-ap-action-text');
+    if (input) {
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+
+  function closeActionPlanModal() {
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) {
+      modal.classList.remove('is-open');
+    }
+    cancelApEdit();
+  }
+
+  function handleApModalOverlayClick(event) {
+    if (event.target === document.getElementById('vd-ap-form-modal')) {
+      closeActionPlanModal();
+    }
+  }
+
   function submitNewActionPlan() {
     if (!currentVdVisitorId) return;
 
@@ -6344,7 +6462,7 @@ const ApiService = {
         .then(res => {
           showToast('✅ アクションプランを更新しました！');
           if (res.list) renderActionPlansList(res.list);
-          cancelApEdit();
+          closeActionPlanModal();
         })
         .catch(handleError);
     } else {
@@ -6355,6 +6473,7 @@ const ApiService = {
           if (res.list) renderActionPlansList(res.list);
           document.getElementById('vd-ap-action-text').value = '';
           setApDateQuick(3);
+          closeActionPlanModal();
         })
         .catch(handleError);
     }
@@ -6379,17 +6498,22 @@ const ApiService = {
     setApAssigneeQuick(item.assignee_name || '');
     document.getElementById('vd-ap-action-text').value = item.action_text || '';
 
+    const titleEl = document.getElementById('vd-ap-form-title');
+    if (titleEl) titleEl.innerText = 'アクション編集';
     document.getElementById('vd-ap-btn-submit-label').innerText = '変更を保存する';
     document.getElementById('vd-ap-btn-cancel-edit').style.display = 'inline-block';
 
-    document.getElementById('vd-ap-action-text').focus();
-    window.scrollTo({ top: document.getElementById('vd-form-action-plan').offsetTop - 60, behavior: 'smooth' });
+    openActionPlanModal();
   }
 
   function cancelApEdit() {
     document.getElementById('vd-ap-edit-id').value = '';
-    document.getElementById('vd-ap-btn-submit-label').innerText = 'アクションプランを登録する';
+    const titleEl = document.getElementById('vd-ap-form-title');
+    if (titleEl) titleEl.innerText = 'アクション登録';
+    document.getElementById('vd-ap-btn-submit-label').innerText = '保存';
     document.getElementById('vd-ap-btn-cancel-edit').style.display = 'none';
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) modal.classList.remove('is-open');
   }
 
   function deleteActionPlan(id) {

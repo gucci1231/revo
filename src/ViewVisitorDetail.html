@@ -117,53 +117,63 @@
       <div class="vd-col-left">
         <!-- Tab Content 0: アクションプラン -->
         <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
-          <!-- 登録カード -->
-          <div class="vd-box">
-            <div class="vd-box-header">
-              <h3 class="vd-box-title text-blue-600">
-                <i class="fa-solid fa-plus-circle"></i> アクション登録
-              </h3>
-            </div>
+          <!-- スマホ用: アクション登録ボタン (PCでは非表示) -->
+          <div class="vd-mobile-ap-trigger-wrap">
+            <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
+              <i class="fa-solid fa-plus-circle text-base"></i> アクション登録
+            </button>
+          </div>
 
-            <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
-              <input type="hidden" id="vd-ap-edit-id" value="">
+          <!-- 登録カード (PC: インライン / スマホ: モーダル) -->
+          <div id="vd-ap-form-modal" class="vd-ap-form-modal-wrap" onclick="handleApModalOverlayClick(event)">
+            <div class="vd-box vd-ap-modal-content">
+              <div class="vd-box-header">
+                <h3 class="vd-box-title text-blue-600">
+                  <i class="fa-solid fa-plus-circle"></i> <span id="vd-ap-form-title">アクション登録</span>
+                </h3>
+                <button type="button" class="vd-ap-modal-close-btn" onclick="closeActionPlanModal()" title="閉じる">&times;</button>
+              </div>
 
-              <div class="vd-form-grid">
-                <!-- 期日 -->
-                <div class="form-group mb-0">
-                  <label class="form-label text-xs font-bold text-slate-500">期日</label>
-                  <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
-                  <div class="vd-quick-chips">
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
-                    <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+              <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
+                <input type="hidden" id="vd-ap-edit-id" value="">
+
+                <div class="vd-form-grid">
+                  <!-- 期日 -->
+                  <div class="form-group mb-0">
+                    <label class="form-label text-xs font-bold text-slate-500">期日</label>
+                    <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight" required>
+                    <div class="vd-quick-chips">
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(0)">今日</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(1)">明日</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(3)">3日後</button>
+                      <button type="button" class="seg-pill-btn" onclick="setApDateQuick(7)">1週間後</button>
+                    </div>
+                  </div>
+
+                  <!-- 担当者 -->
+                  <div class="form-group mb-0">
+                    <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
+                    <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
+                      <option value="">-- 選択してください --</option>
+                    </select>
+                    <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
                   </div>
                 </div>
 
-                <!-- 担当者 -->
-                <div class="form-group mb-0">
-                  <label class="form-label text-xs font-bold text-slate-500">担当メンバー</label>
-                  <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
-                    <option value="">-- 選択してください --</option>
-                  </select>
-                  <div id="vd-ap-quick-assignees" class="vd-quick-chips"></div>
+                <!-- アクション内容 -->
+                <div class="form-group mt-3 mb-0">
+                  <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
+                  <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
                 </div>
-              </div>
 
-              <!-- アクション内容 -->
-              <div class="form-group mt-3 mb-0">
-                <label class="form-label text-xs font-bold text-slate-500">アクション内容</label>
-                <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
-              </div>
-
-              <div class="vd-form-actions mt-3">
-                <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
-                <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
-                  <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
-                </button>
-              </div>
-            </form>
+                <div class="vd-form-actions mt-3">
+                  <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" style="display: none;" onclick="cancelApEdit()">キャンセル</button>
+                  <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
+                    <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
           <!-- 一覧 -->

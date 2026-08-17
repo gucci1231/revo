@@ -435,6 +435,31 @@
     }
   }
 
+  function openActionPlanModal() {
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) {
+      modal.classList.add('is-open');
+    }
+    const input = document.getElementById('vd-ap-action-text');
+    if (input) {
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+
+  function closeActionPlanModal() {
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) {
+      modal.classList.remove('is-open');
+    }
+    cancelApEdit();
+  }
+
+  function handleApModalOverlayClick(event) {
+    if (event.target === document.getElementById('vd-ap-form-modal')) {
+      closeActionPlanModal();
+    }
+  }
+
   function submitNewActionPlan() {
     if (!currentVdVisitorId) return;
 
@@ -470,7 +495,7 @@
         .then(res => {
           showToast('✅ アクションプランを更新しました！');
           if (res.list) renderActionPlansList(res.list);
-          cancelApEdit();
+          closeActionPlanModal();
         })
         .catch(handleError);
     } else {
@@ -481,6 +506,7 @@
           if (res.list) renderActionPlansList(res.list);
           document.getElementById('vd-ap-action-text').value = '';
           setApDateQuick(3);
+          closeActionPlanModal();
         })
         .catch(handleError);
     }
@@ -505,17 +531,22 @@
     setApAssigneeQuick(item.assignee_name || '');
     document.getElementById('vd-ap-action-text').value = item.action_text || '';
 
+    const titleEl = document.getElementById('vd-ap-form-title');
+    if (titleEl) titleEl.innerText = 'アクション編集';
     document.getElementById('vd-ap-btn-submit-label').innerText = '変更を保存する';
     document.getElementById('vd-ap-btn-cancel-edit').style.display = 'inline-block';
 
-    document.getElementById('vd-ap-action-text').focus();
-    window.scrollTo({ top: document.getElementById('vd-form-action-plan').offsetTop - 60, behavior: 'smooth' });
+    openActionPlanModal();
   }
 
   function cancelApEdit() {
     document.getElementById('vd-ap-edit-id').value = '';
-    document.getElementById('vd-ap-btn-submit-label').innerText = 'アクションプランを登録する';
+    const titleEl = document.getElementById('vd-ap-form-title');
+    if (titleEl) titleEl.innerText = 'アクション登録';
+    document.getElementById('vd-ap-btn-submit-label').innerText = '保存';
     document.getElementById('vd-ap-btn-cancel-edit').style.display = 'none';
+    const modal = document.getElementById('vd-ap-form-modal');
+    if (modal) modal.classList.remove('is-open');
   }
 
   function deleteActionPlan(id) {
