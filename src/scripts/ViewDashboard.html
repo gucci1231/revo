@@ -420,6 +420,8 @@
           openVisitorDetailView(r.id);
         };
 
+        const actionBlockHtml = renderHotVisitorActionFullWidthHtml(r);
+
         card.innerHTML = `
           <div class="dash-card-main-row">
             <div class="dash-card-left">
@@ -441,19 +443,85 @@
             </div>
           </div>
 
+          <!-- アクション表示: 横幅一杯一杯 -->
+          <div class="dash-hot-action-block">
+            ${actionBlockHtml}
+          </div>
+
+          <!-- 担当と紹介者を下の列に -->
           <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
-            </div>
-            <div class="dash-card-status-right">
-              ${renderCurrentStatusColumnHtml(r)}
+            <div class="dash-card-meta-tags">
+              <span class="dash-card-meta-tag">
+                <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(r.inviter || '-')}</strong>
+              </span>
+              ${r.orientUser ? `
+                <span class="dash-card-meta-tag">
+                  <i class="fa-solid fa-user-check text-indigo-500"></i> 担当: <strong class="text-slate-800">${escapeHtml(r.orientUser)}</strong>
+                </span>
+              ` : ''}
             </div>
           </div>
         `;
         cardsContainer.appendChild(card);
       }
     });
+  }
+
+  function renderHotVisitorActionFullWidthHtml(r) {
+    const ap = r.latestActionPlan;
+    if (ap) {
+      const isCompleted = Number(ap.is_completed) === 1;
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
+
+      const badgeHtml = isCompleted
+        ? `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#d3f9d8; color:#2b8a3e; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
+        : (isOverdue
+            ? `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#ffe3e3; color:#e03131; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>期限超過 (${escapeHtml(ap.due_date)})</span>`
+            : `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#e7f5ff; color:#1864ab; border-radius:6px;"><i class="fa-regular fa-calendar mr-1"></i>期日: ${escapeHtml(ap.due_date || '未定')}</span>`
+          );
+
+      const reportSnippet = ap.report_text ? `
+        <div class="dash-hot-action-report">
+          <i class="fa-regular fa-comment-dots text-emerald-600 mr-1"></i><strong>報告:</strong> ${escapeHtml(ap.report_text)}
+        </div>
+      ` : '';
+
+      return `
+        <div class="dash-hot-action-inner ${isOverdue ? 'is-overdue' : (isCompleted ? 'is-completed' : '')}">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-bullseye text-blue-500"></i> 次のアクション
+            </span>
+            ${badgeHtml}
+          </div>
+          <div class="dash-hot-action-text ${isCompleted ? 'completed' : ''}">
+            ${escapeHtml(ap.action_text)}
+          </div>
+          ${reportSnippet}
+        </div>
+      `;
+    }
+
+    const note = r.q7 || r.orientMemo || r.followMemo;
+    if (note) {
+      return `
+        <div class="dash-hot-action-inner">
+          <div class="text-[11px] font-bold text-slate-500 mb-1 flex items-center gap-1">
+            <i class="fa-solid fa-note-sticky text-amber-500"></i> ヒアリングメモ
+          </div>
+          <div class="dash-hot-action-text text-slate-700 font-medium">
+            ${escapeHtml(note)}
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="dash-hot-action-inner text-slate-400 text-xs py-2 font-bold flex items-center gap-1.5">
+        <i class="fa-solid fa-circle-info text-slate-300"></i> アクションプラン未登録
+      </div>
+    `;
   }
 
   function renderPeriodicStatsTable(tbodyId, records, labelKey) {
