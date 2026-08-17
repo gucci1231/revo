@@ -106,13 +106,13 @@
 
     if (overdueBadgeEl) {
       if (overdueCount > 0) {
-        overdueBadgeEl.innerText = `超過 ${overdueCount}件`;
-        overdueBadgeEl.style.background = '#ffe3e3';
-        overdueBadgeEl.style.color = '#e03131';
+        overdueBadgeEl.className = 'kpi-status-dot red';
+        overdueBadgeEl.title = `超過 ${overdueCount}件`;
+        overdueBadgeEl.innerText = '';
       } else {
-        overdueBadgeEl.innerText = '順調';
-        overdueBadgeEl.style.background = '#e6fcf5';
-        overdueBadgeEl.style.color = '#0ca678';
+        overdueBadgeEl.className = 'kpi-status-dot green';
+        overdueBadgeEl.title = '順調';
+        overdueBadgeEl.innerText = '';
       }
     }
 
