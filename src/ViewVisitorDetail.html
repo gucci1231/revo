@@ -44,25 +44,31 @@
       <div class="vd-spec-item"><strong class="vd-spec-label">参加区分:</strong> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
     </div>
 
-    <!-- 詳細タブバー -->
+    <!-- 詳細タブバー (スマホ横スクロール対応・改行防止) -->
     <div class="vd-tab-nav">
       <button type="button" class="tab-btn vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
         🎯 アクションプラン <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
       </button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">📝 ヒアリングシート全回答</button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">📌 自由メモ・活動記録</button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">✉️ メール送信・自動化履歴</button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">
+        📝 ヒアリング回答
+      </button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">
+        📌 共有メモ・活動記録
+      </button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">
+        ✉️ 送信・自動化履歴
+      </button>
     </div>
 
     <!-- Tab Content 0: アクションプラン (いつ・誰が・どうする) -->
     <div id="vd-tab-content-action-plan">
       <!-- アクションプラン登録カード -->
       <div class="vd-box">
-        <div class="vd-box-header">
+        <div class="vd-box-header flex-wrap gap-1">
           <h3 class="vd-box-title accent">
-            <i class="fa-solid fa-bullseye"></i> アクションプランを登録 (いつ・誰が・どうする)
+            <i class="fa-solid fa-bullseye"></i> アクションプランを登録
           </h3>
-          <span class="vd-box-subtitle">ビジターの成約・定着に向けた次の一手を明確化</span>
+          <span class="vd-box-subtitle">いつ・誰が・どうする次の一手を明確化</span>
         </div>
 
         <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">

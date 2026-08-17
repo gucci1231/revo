@@ -127,18 +127,48 @@
 .vd-spec-val.bold { font-weight: 800; }
 
 .vd-tab-nav {
-  display: flex; gap: 8px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; flex-wrap: wrap;
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.vd-tab-nav::-webkit-scrollbar {
+  display: none;
 }
 .vd-tab-btn {
-  padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;
-  border: none; background: transparent; color: #64748b; font-weight: 700;
-  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 .vd-tab-btn:hover { color: var(--text-main); background: #f1f5f9; }
-.vd-tab-btn.active { color: var(--primary-accent); background: #ffffff; border-bottom: 2px solid var(--primary-accent); }
+.vd-tab-btn.active {
+  color: var(--primary-accent);
+  background: #ffffff;
+  border-bottom: 3px solid var(--primary-accent);
+  font-weight: 800;
+}
 .vd-tab-badge {
-  background: var(--danger-accent); color: #ffffff; font-size: 11px; font-weight: 800;
-  padding: 2px 8px; border-radius: 12px;
+  background: var(--danger-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
 }
 
 .vd-box {

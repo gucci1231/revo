@@ -537,18 +537,48 @@ tr:last-child td { border-bottom: none; }
 .vd-spec-val.bold { font-weight: 800; }
 
 .vd-tab-nav {
-  display: flex; gap: 8px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; flex-wrap: wrap;
+  display: flex;
+  gap: 6px;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.vd-tab-nav::-webkit-scrollbar {
+  display: none;
 }
 .vd-tab-btn {
-  padding: 10px 20px; font-size: 14px; border-radius: 8px 8px 0 0;
-  border: none; background: transparent; color: #64748b; font-weight: 700;
-  cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
 .vd-tab-btn:hover { color: var(--text-main); background: #f1f5f9; }
-.vd-tab-btn.active { color: var(--primary-accent); background: #ffffff; border-bottom: 2px solid var(--primary-accent); }
+.vd-tab-btn.active {
+  color: var(--primary-accent);
+  background: #ffffff;
+  border-bottom: 3px solid var(--primary-accent);
+  font-weight: 800;
+}
 .vd-tab-badge {
-  background: var(--danger-accent); color: #ffffff; font-size: 11px; font-weight: 800;
-  padding: 2px 8px; border-radius: 12px;
+  background: var(--danger-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 10px;
 }
 
 .vd-box {
@@ -1753,25 +1783,31 @@ tr:last-child td { border-bottom: none; }
       <div class="vd-spec-item"><strong class="vd-spec-label">参加区分:</strong> <span id="vd-attendance-count" class="vd-spec-val">-</span></div>
     </div>
 
-    <!-- 詳細タブバー -->
+    <!-- 詳細タブバー (スマホ横スクロール対応・改行防止) -->
     <div class="vd-tab-nav">
       <button type="button" class="tab-btn vd-tab-btn active" id="vd-tab-btn-action-plan" onclick="switchVdTab('action-plan')">
         🎯 アクションプラン <span id="vd-action-plan-badge" class="vd-tab-badge" style="display:none;">0</span>
       </button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">📝 ヒアリングシート全回答</button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">📌 自由メモ・活動記録</button>
-      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">✉️ メール送信・自動化履歴</button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-hearing" onclick="switchVdTab('hearing')">
+        📝 ヒアリング回答
+      </button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-memo" onclick="switchVdTab('memo')">
+        📌 共有メモ・活動記録
+      </button>
+      <button type="button" class="tab-btn vd-tab-btn" id="vd-tab-btn-mail" onclick="switchVdTab('mail')">
+        ✉️ 送信・自動化履歴
+      </button>
     </div>
 
     <!-- Tab Content 0: アクションプラン (いつ・誰が・どうする) -->
     <div id="vd-tab-content-action-plan">
       <!-- アクションプラン登録カード -->
       <div class="vd-box">
-        <div class="vd-box-header">
+        <div class="vd-box-header flex-wrap gap-1">
           <h3 class="vd-box-title accent">
-            <i class="fa-solid fa-bullseye"></i> アクションプランを登録 (いつ・誰が・どうする)
+            <i class="fa-solid fa-bullseye"></i> アクションプランを登録
           </h3>
-          <span class="vd-box-subtitle">ビジターの成約・定着に向けた次の一手を明確化</span>
+          <span class="vd-box-subtitle">いつ・誰が・どうする次の一手を明確化</span>
         </div>
 
         <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
