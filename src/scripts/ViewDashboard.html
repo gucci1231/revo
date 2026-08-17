@@ -116,6 +116,11 @@
       }
     }
 
+    const overdueDotEl = document.getElementById('indicator-overdue-dot');
+    if (overdueDotEl) {
+      overdueDotEl.className = overdueCount > 0 ? 'kpi-sub-indicator overdue' : 'kpi-sub-indicator normal';
+    }
+
     // Tab badges
     const tabBadgeHot = document.getElementById('dash-tab-badge-hot');
     const tabBadgeAp = document.getElementById('dash-tab-badge-ap');

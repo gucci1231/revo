@@ -1205,7 +1205,7 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 .dash-hero-icon-title {
@@ -1259,17 +1259,38 @@ tr:last-child td { border-bottom: none; }
 .dash-hero-meta-stack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
-.dash-hero-sub-text {
+.dash-hero-sub-line {
   font-size: 12px;
   color: #86868b;
   font-weight: 500;
   line-height: 1.35;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Right side: Giant Typographic Focus Numbers */
+/* Sub Indicator Dots */
+.kpi-sub-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.kpi-sub-indicator.hot {
+  background-color: #f59e0b;
+}
+.kpi-sub-indicator.normal {
+  background-color: #10b981;
+}
+.kpi-sub-indicator.overdue {
+  background-color: #ef4444;
+}
+
+/* Right side: Giant Typographic Focus Numbers (1.5x scale) */
 .dash-hero-right {
   display: flex;
   flex-direction: column;
@@ -1285,27 +1306,27 @@ tr:last-child td { border-bottom: none; }
   gap: 2px;
 }
 .dash-hero-number {
-  font-size: 56px;
+  font-size: 82px;
   font-weight: 900;
   color: #0071e3;
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   font-variant-numeric: tabular-nums;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
 }
 
 .dash-hero-goal-text {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #86868b;
-  margin-left: 4px;
+  margin-left: 5px;
   letter-spacing: -0.02em;
 }
 .dash-hero-unit-text {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #86868b;
-  margin-left: 3px;
+  margin-left: 4px;
   letter-spacing: -0.01em;
 }
 
@@ -1318,7 +1339,7 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-card {
     padding: 16px 14px;
     border-radius: 16px;
-    min-height: 110px;
+    min-height: 125px;
   }
   .dash-hero-split {
     display: flex;
@@ -1326,13 +1347,13 @@ tr:last-child td { border-bottom: none; }
     align-items: flex-start;
     justify-content: space-between;
     height: 100%;
-    gap: 12px;
+    gap: 10px;
   }
   
-  /* Top: Icon + Title */
+  /* Top: Icon + Title & Lines */
   .dash-hero-left {
     width: 100%;
-    gap: 6px;
+    gap: 5px;
   }
   .dash-hero-icon-title {
     gap: 6px;
@@ -1347,12 +1368,15 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-title {
     font-size: 11.5px;
   }
-  .dash-hero-sub-text {
+  .dash-hero-meta-stack {
+    gap: 2px;
+  }
+  .dash-hero-sub-line {
     font-size: 10px;
     line-height: 1.25;
   }
 
-  /* Bottom: Giant Number */
+  /* Bottom: 1.5x Giant Number */
   .dash-hero-right {
     width: 100%;
     align-items: flex-end;
@@ -1362,16 +1386,16 @@ tr:last-child td { border-bottom: none; }
     justify-content: flex-end;
   }
   .dash-hero-number {
-    font-size: 38px;
-    line-height: 0.95;
+    font-size: 48px;
+    line-height: 0.9;
   }
   .dash-hero-goal-text {
-    font-size: 12px;
-    margin-left: 2px;
+    font-size: 13px;
+    margin-left: 3px;
   }
   .dash-hero-unit-text {
-    font-size: 12px;
-    margin-left: 2px;
+    font-size: 13px;
+    margin-left: 3px;
   }
 }
 
@@ -2228,7 +2252,8 @@ tr:last-child td { border-bottom: none; }
             <span class="dash-hero-title">入会数</span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-text"><strong id="val-achievement-rate" class="text-blue-600 font-bold">0%達成</strong> ・ 入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span class="dash-hero-sub-line"><strong id="val-achievement-rate" class="text-blue-600 font-bold">0%達成</strong></span>
+            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
           </div>
         </div>
         <div class="dash-hero-right">
@@ -2249,7 +2274,8 @@ tr:last-child td { border-bottom: none; }
             <span class="dash-hero-title">申込ビジター</span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-text">平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回 ・ 提出 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span class="dash-hero-sub-line">平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回</span>
+            <span class="dash-hero-sub-line">提出率 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong></span>
           </div>
         </div>
         <div class="dash-hero-right">
@@ -2268,10 +2294,10 @@ tr:last-child td { border-bottom: none; }
           <div class="dash-hero-icon-title">
             <div class="dash-hero-icon"><i class="fa-solid fa-calendar-check"></i></div>
             <span class="dash-hero-title">次回定例会</span>
-            <span class="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full" id="date-next-thu">--/--</span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-text">次々回 (<span id="date-after-next-thu">--/--</span>) <strong id="val-after-next-thu-count" class="text-slate-800 font-bold">-</strong>名</span>
+            <span class="dash-hero-sub-line">次回 <strong id="date-next-thu" class="text-blue-600 font-bold">--/--</strong></span>
+            <span class="dash-hero-sub-line">次々回 (<span id="date-after-next-thu">--/--</span>) <strong id="val-after-next-thu-count" class="text-slate-800 font-bold">-</strong>名</span>
           </div>
         </div>
         <div class="dash-hero-right">
@@ -2293,7 +2319,8 @@ tr:last-child td { border-bottom: none; }
             <span id="badge-overdue-summary" class="kpi-status-dot green" title="順調"></span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-text">HOT <strong id="val-hot-count" class="text-slate-800 font-bold">-</strong>名 ・ 超過 <strong id="val-overdue-action-plans" class="text-slate-800 font-bold">0</strong>件</span>
+            <span class="dash-hero-sub-line"><span class="kpi-sub-indicator hot"></span>最優先 <strong id="val-hot-count" class="text-slate-800 font-bold">-</strong>名</span>
+            <span class="dash-hero-sub-line"><span id="indicator-overdue-dot" class="kpi-sub-indicator normal"></span>超過 <strong id="val-overdue-action-plans" class="text-slate-800 font-bold">0</strong>件</span>
           </div>
         </div>
         <div class="dash-hero-right">
@@ -4243,6 +4270,11 @@ const ApiService = {
         overdueBadgeEl.title = '順調';
         overdueBadgeEl.innerText = '';
       }
+    }
+
+    const overdueDotEl = document.getElementById('indicator-overdue-dot');
+    if (overdueDotEl) {
+      overdueDotEl.className = overdueCount > 0 ? 'kpi-sub-indicator overdue' : 'kpi-sub-indicator normal';
     }
 
     // Tab badges

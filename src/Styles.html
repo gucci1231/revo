@@ -1163,7 +1163,7 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 .dash-hero-icon-title {
@@ -1217,17 +1217,38 @@ tr:last-child td { border-bottom: none; }
 .dash-hero-meta-stack {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
-.dash-hero-sub-text {
+.dash-hero-sub-line {
   font-size: 12px;
   color: #86868b;
   font-weight: 500;
   line-height: 1.35;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Right side: Giant Typographic Focus Numbers */
+/* Sub Indicator Dots */
+.kpi-sub-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.kpi-sub-indicator.hot {
+  background-color: #f59e0b;
+}
+.kpi-sub-indicator.normal {
+  background-color: #10b981;
+}
+.kpi-sub-indicator.overdue {
+  background-color: #ef4444;
+}
+
+/* Right side: Giant Typographic Focus Numbers (1.5x scale) */
 .dash-hero-right {
   display: flex;
   flex-direction: column;
@@ -1243,27 +1264,27 @@ tr:last-child td { border-bottom: none; }
   gap: 2px;
 }
 .dash-hero-number {
-  font-size: 56px;
+  font-size: 82px;
   font-weight: 900;
   color: #0071e3;
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   font-variant-numeric: tabular-nums;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
 }
 
 .dash-hero-goal-text {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #86868b;
-  margin-left: 4px;
+  margin-left: 5px;
   letter-spacing: -0.02em;
 }
 .dash-hero-unit-text {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   color: #86868b;
-  margin-left: 3px;
+  margin-left: 4px;
   letter-spacing: -0.01em;
 }
 
@@ -1276,7 +1297,7 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-card {
     padding: 16px 14px;
     border-radius: 16px;
-    min-height: 110px;
+    min-height: 125px;
   }
   .dash-hero-split {
     display: flex;
@@ -1284,13 +1305,13 @@ tr:last-child td { border-bottom: none; }
     align-items: flex-start;
     justify-content: space-between;
     height: 100%;
-    gap: 12px;
+    gap: 10px;
   }
   
-  /* Top: Icon + Title */
+  /* Top: Icon + Title & Lines */
   .dash-hero-left {
     width: 100%;
-    gap: 6px;
+    gap: 5px;
   }
   .dash-hero-icon-title {
     gap: 6px;
@@ -1305,12 +1326,15 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-title {
     font-size: 11.5px;
   }
-  .dash-hero-sub-text {
+  .dash-hero-meta-stack {
+    gap: 2px;
+  }
+  .dash-hero-sub-line {
     font-size: 10px;
     line-height: 1.25;
   }
 
-  /* Bottom: Giant Number */
+  /* Bottom: 1.5x Giant Number */
   .dash-hero-right {
     width: 100%;
     align-items: flex-end;
@@ -1320,16 +1344,16 @@ tr:last-child td { border-bottom: none; }
     justify-content: flex-end;
   }
   .dash-hero-number {
-    font-size: 38px;
-    line-height: 0.95;
+    font-size: 48px;
+    line-height: 0.9;
   }
   .dash-hero-goal-text {
-    font-size: 12px;
-    margin-left: 2px;
+    font-size: 13px;
+    margin-left: 3px;
   }
   .dash-hero-unit-text {
-    font-size: 12px;
-    margin-left: 2px;
+    font-size: 13px;
+    margin-left: 3px;
   }
 }
 
