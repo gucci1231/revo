@@ -119,12 +119,34 @@
     initSidebarState();
   }
 
+  const PAGE_NAV_INFO = {
+    'dashboard': { title: 'ダッシュボード', icon: 'fa-solid fa-chart-pie' },
+    'actions': { title: 'アクション管理', icon: 'fa-solid fa-bullseye' },
+    'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
+    'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
+    'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
+    'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
+    'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
+    'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
+  };
+
+  function updateHeaderCurrentPage(tabName, customTitle = null, customIcon = null) {
+    const info = PAGE_NAV_INFO[tabName] || { title: 'ビジター管理', icon: 'fa-solid fa-layer-group' };
+    const titleEl = document.getElementById('header-page-title');
+    const iconEl = document.getElementById('header-page-icon');
+    if (titleEl) titleEl.innerText = customTitle || info.title;
+    if (iconEl) iconEl.innerHTML = `<i class="${customIcon || info.icon}"></i>`;
+  }
+
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
     if (tabName !== 'visitor-detail') {
       previousTabBeforeDetail = tabName;
       currentVdVisitorId = null;
     }
+
+    updateHeaderCurrentPage(tabName);
+
     ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);

@@ -323,6 +323,11 @@
         currentVdWebAppUrl = res.webAppUrl || "";
         const v = res.visitor || {};
         currentVisitorDetail = v;
+
+        if (typeof updateHeaderCurrentPage === 'function') {
+          updateHeaderCurrentPage('visitor-detail', v.name ? `${v.name} 様` : 'ビジター詳細', 'fa-solid fa-user-tag');
+        }
+
         const st = res.status || {};
         const h = res.hearing || {};
         currentVdActionPlans = res.actionPlans || [];

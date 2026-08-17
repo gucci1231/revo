@@ -77,15 +77,41 @@ body {
 
 .container { max-width: 1280px; margin: 0 auto; }
 
-/* Header Bar & Navigation */
+/* Header Bar & Navigation (Sticky Top Bar) */
 .header-bar {
-  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-  gap: 16px; margin-bottom: 20px; background: var(--card-bg); padding: 16px 24px;
-  border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 850;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 10px 14px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-top: none;
+  margin-top: -24px;
+  margin-bottom: 20px;
+  margin-left: -16px;
+  margin-right: -16px;
+  transition: all 0.2s ease;
 }
 
-.logo-area { display: flex; align-items: center; gap: 12px; }
-.logo-title { font-size: 20px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+@media (min-width: 1024px) {
+  .header-bar {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+  }
+}
+
+.logo-area { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.logo-title { font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
 .nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .main-tab-bar { display: flex; gap: 6px; margin-bottom: 24px; background: #e2e8f0; padding: 4px; border-radius: var(--radius); }
@@ -3108,16 +3134,35 @@ tr:last-child td { border-bottom: none; }
 
   <div class="container">
 
-    <!-- Top Header -->
-    <header class="header-bar bg-white border border-slate-200 shadow-sm rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 flex items-center justify-between">
-      <div class="logo-area flex items-center gap-2.5">
-        <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200" onclick="toggleLeftDrawer()" title="メニューを開く">
+    <!-- Top Header (Sticky) -->
+    <header class="header-bar">
+      <div class="logo-area">
+        <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200 shrink-0" onclick="toggleLeftDrawer()" title="メニューを開く">
           <i class="fa-solid fa-bars"></i>
         </button>
-        <button class="btn-sidebar-toggle-pc" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+        <button class="btn-sidebar-toggle-pc shrink-0" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
           <i class="fa-solid fa-bars-staggered"></i>
         </button>
-        <h1 class="logo-title text-base sm:text-xl font-extrabold text-slate-900 tracking-tight">REvo ビジター管理</h1>
+        
+        <!-- ブランド ＆ 現在ページ表示 -->
+        <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          <a href="#dashboard" onclick="switchTab('dashboard')" class="logo-title text-sm sm:text-base font-extrabold text-slate-900 tracking-tight hover:text-blue-600 transition-colors shrink-0 flex items-center gap-1.5 no-underline">
+            <i class="fa-solid fa-layer-group text-blue-600"></i>
+            <span>REvo</span>
+          </a>
+          <span class="text-slate-300 font-bold shrink-0 text-xs sm:text-sm">/</span>
+          <div id="header-current-page" class="flex items-center gap-1.5 min-w-0 bg-slate-100/80 border border-slate-200/80 px-2 py-0.5 rounded-lg">
+            <span id="header-page-icon" class="text-blue-600 text-xs shrink-0"><i class="fa-solid fa-chart-pie"></i></span>
+            <span id="header-page-title" class="text-xs sm:text-sm font-extrabold text-slate-800 truncate">ダッシュボード</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側: 新規ビジター登録ボタン -->
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 py-1.5 px-3 rounded-lg font-bold shadow-xs" onclick="openAddVisitorModal()" title="新規ビジター登録">
+          <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">新規登録</span>
+        </button>
       </div>
     </header>
 
@@ -5325,12 +5370,34 @@ window.CelebrationEffect = (function() {
     initSidebarState();
   }
 
+  const PAGE_NAV_INFO = {
+    'dashboard': { title: 'ダッシュボード', icon: 'fa-solid fa-chart-pie' },
+    'actions': { title: 'アクション管理', icon: 'fa-solid fa-bullseye' },
+    'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
+    'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
+    'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
+    'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
+    'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
+    'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
+  };
+
+  function updateHeaderCurrentPage(tabName, customTitle = null, customIcon = null) {
+    const info = PAGE_NAV_INFO[tabName] || { title: 'ビジター管理', icon: 'fa-solid fa-layer-group' };
+    const titleEl = document.getElementById('header-page-title');
+    const iconEl = document.getElementById('header-page-icon');
+    if (titleEl) titleEl.innerText = customTitle || info.title;
+    if (iconEl) iconEl.innerHTML = `<i class="${customIcon || info.icon}"></i>`;
+  }
+
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
     if (tabName !== 'visitor-detail') {
       previousTabBeforeDetail = tabName;
       currentVdVisitorId = null;
     }
+
+    updateHeaderCurrentPage(tabName);
+
     ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
@@ -7753,6 +7820,11 @@ window.CelebrationEffect = (function() {
         currentVdWebAppUrl = res.webAppUrl || "";
         const v = res.visitor || {};
         currentVisitorDetail = v;
+
+        if (typeof updateHeaderCurrentPage === 'function') {
+          updateHeaderCurrentPage('visitor-detail', v.name ? `${v.name} 様` : 'ビジター詳細', 'fa-solid fa-user-tag');
+        }
+
         const st = res.status || {};
         const h = res.hearing || {};
         currentVdActionPlans = res.actionPlans || [];

@@ -11,15 +11,41 @@ body {
 
 .container { max-width: 1280px; margin: 0 auto; }
 
-/* Header Bar & Navigation */
+/* Header Bar & Navigation (Sticky Top Bar) */
 .header-bar {
-  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-  gap: 16px; margin-bottom: 20px; background: var(--card-bg); padding: 16px 24px;
-  border-radius: var(--radius); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 850;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 10px 14px;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-top: none;
+  margin-top: -24px;
+  margin-bottom: 20px;
+  margin-left: -16px;
+  margin-right: -16px;
+  transition: all 0.2s ease;
 }
 
-.logo-area { display: flex; align-items: center; gap: 12px; }
-.logo-title { font-size: 20px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+@media (min-width: 1024px) {
+  .header-bar {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+  }
+}
+
+.logo-area { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.logo-title { font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
 .nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .main-tab-bar { display: flex; gap: 6px; margin-bottom: 24px; background: #e2e8f0; padding: 4px; border-radius: var(--radius); }
