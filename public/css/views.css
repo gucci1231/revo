@@ -696,13 +696,27 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible) */
+/* Dashboard Panels (Mobile: Tabs, PC: All Panels Visible & 2-Col Hot/AP) */
 .dash-panel { display: none; }
 .dash-panel.active { display: block; animation: fadeIn 0.2s ease forwards; }
+
+.dash-top-2col-layout {
+  display: contents;
+}
 
 @media (min-width: 1024px) {
   .dash-nav-wrap {
     display: none !important;
+  }
+  .dash-top-2col-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+    align-items: start;
+  }
+  .dash-top-2col-layout .dash-panel {
+    margin-bottom: 0 !important;
   }
   .dash-panel {
     display: block !important;

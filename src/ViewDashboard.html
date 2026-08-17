@@ -100,79 +100,80 @@
   </div>
 
   <!-- 3. セグメント別コンテンツ -->
-
-  <!-- パネル 1: 最優先フォロー -->
-  <div id="dash-panel-hot" class="dash-panel active">
-    <section class="section-card overflow-hidden">
-      <div class="section-header flex justify-between items-center py-3 px-4">
-        <h2 class="section-title text-rose-600 font-bold text-sm sm:text-base m-0">
-          <i class="fa-solid fa-fire mr-1"></i> 最優先フォロー (感触A)
-        </h2>
-        <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
-          全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        </button>
-      </div>
-
-      <!-- PCテーブル -->
-      <div class="table-container dash-ap-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-w-sm">参加日</th>
-              <th>氏名 / 会社名</th>
-              <th class="col-w-md">招待者 / 担当</th>
-              <th>最新状況・次の一手</th>
-              <th class="text-center col-w-sm">カルテ</th>
-            </tr>
-          </thead>
-          <tbody id="table-hot-visitors"></tbody>
-        </table>
-      </div>
-
-      <!-- スマホカード -->
-      <div id="cards-hot-visitors" class="dash-ap-grid dash-ap-cards-wrap"></div>
-    </section>
-  </div>
-
-  <!-- パネル 2: アクションプラン進捗 -->
-  <div id="dash-panel-ap" class="dash-panel">
-    <section class="section-card overflow-hidden">
-      <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
-        <div class="flex items-center gap-2">
-          <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
-            <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+  <div class="dash-top-2col-layout">
+    <!-- パネル 1: 最優先フォロー -->
+    <div id="dash-panel-hot" class="dash-panel active">
+      <section class="section-card overflow-hidden">
+        <div class="section-header flex justify-between items-center py-3 px-4">
+          <h2 class="section-title text-rose-600 font-bold text-sm sm:text-base m-0">
+            <i class="fa-solid fa-fire mr-1"></i> 最優先フォロー (感触A)
           </h2>
-          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
-            管理ページを開く <i class="fa-solid fa-chevron-right text-[9px]"></i>
+          <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('priority-follow')">
+            全件表示 <i class="fa-solid fa-chevron-right text-[9px]"></i>
           </button>
         </div>
-        <div class="seg-pill-group">
-          <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
-          <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
-          <button type="button" class="seg-pill-btn" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
+
+        <!-- PCテーブル -->
+        <div class="table-container dash-ap-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-w-sm">参加日</th>
+                <th>氏名 / 会社名</th>
+                <th class="col-w-md">招待者 / 担当</th>
+                <th>最新状況・次の一手</th>
+                <th class="text-center col-w-sm">カルテ</th>
+              </tr>
+            </thead>
+            <tbody id="table-hot-visitors"></tbody>
+          </table>
         </div>
-      </div>
 
-      <!-- PCテーブル -->
-      <div class="table-container dash-ap-table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="text-center col-w-sm">状態</th>
-              <th class="col-w-md">期日</th>
-              <th class="col-w-md">担当</th>
-              <th>対象ビジター</th>
-              <th>アクション内容 ＆ 実施報告</th>
-              <th class="text-center col-w-md">操作</th>
-            </tr>
-          </thead>
-          <tbody id="table-dashboard-action-plans"></tbody>
-        </table>
-      </div>
+        <!-- スマホカード -->
+        <div id="cards-hot-visitors" class="dash-ap-grid dash-ap-cards-wrap"></div>
+      </section>
+    </div>
 
-      <!-- スマホカード -->
-      <div id="dashboard-action-plans-cards" class="dash-ap-grid dash-ap-cards-wrap"></div>
-    </section>
+    <!-- パネル 2: アクションプラン進捗 -->
+    <div id="dash-panel-ap" class="dash-panel">
+      <section class="section-card overflow-hidden">
+        <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h2 class="section-title text-blue-600 font-bold text-sm sm:text-base m-0">
+              <i class="fa-solid fa-bullseye mr-1"></i> アクションプラン
+            </h2>
+            <button type="button" class="btn-action-secondary text-xs" onclick="switchTab('actions')">
+              管理ページ <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            </button>
+          </div>
+          <div class="seg-pill-group">
+            <button type="button" class="seg-pill-btn active" id="dash-ap-filter-pending" onclick="filterDashboardActionPlans('pending')">未完了</button>
+            <button type="button" class="seg-pill-btn" id="dash-ap-filter-all" onclick="filterDashboardActionPlans('all')">すべて</button>
+            <button type="button" class="seg-pill-btn" id="dash-ap-filter-completed" onclick="filterDashboardActionPlans('completed')">完了済</button>
+          </div>
+        </div>
+
+        <!-- PCテーブル -->
+        <div class="table-container dash-ap-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="text-center col-w-sm">状態</th>
+                <th class="col-w-md">期日</th>
+                <th class="col-w-md">担当</th>
+                <th>対象ビジター</th>
+                <th>アクション ＆ 報告</th>
+                <th class="text-center col-w-md">操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-dashboard-action-plans"></tbody>
+          </table>
+        </div>
+
+        <!-- スマホカード -->
+        <div id="dashboard-action-plans-cards" class="dash-ap-grid dash-ap-cards-wrap"></div>
+      </section>
+    </div>
   </div>
 
   <!-- パネル 3: 定例会ビジター名簿 -->
