@@ -489,10 +489,7 @@
 
       return `
         <div class="dash-hot-action-inner ${isOverdue ? 'is-overdue' : (isCompleted ? 'is-completed' : '')}">
-          <div class="flex items-center justify-between gap-2 mb-1">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-              <i class="fa-solid fa-bullseye text-blue-500"></i> 次のアクション
-            </span>
+          <div class="flex items-center justify-between gap-2 mb-1.5">
             ${badgeHtml}
           </div>
           <div class="dash-hot-action-text ${isCompleted ? 'completed' : ''}">
