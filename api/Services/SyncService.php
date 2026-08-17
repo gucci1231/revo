@@ -349,7 +349,10 @@ class SyncService {
                 $rowData = [];
                 foreach ($header as $idx => $hName) {
                     if ($hName !== '') {
-                        $rowData[$hName] = isset($row[$idx]) ? trim((string)$row[$idx]) : '';
+                        $val = isset($row[$idx]) ? trim((string)$row[$idx]) : '';
+                        if (!isset($rowData[$hName]) || ($rowData[$hName] === '' && $val !== '')) {
+                            $rowData[$hName] = $val;
+                        }
                     }
                 }
                 $rows[] = $rowData;
