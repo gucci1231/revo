@@ -1195,7 +1195,7 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -1263,18 +1263,13 @@ tr:last-child td { border-bottom: none; }
   white-space: nowrap;
 }
 
-/* Right side: Giant Numbers & Ring Charts */
-.dash-hero-right-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
+/* Right side: Typographic Focus & Prominent Numbers */
 .dash-hero-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
+  flex-shrink: 0;
   text-align: right;
 }
 .dash-hero-val-container {
@@ -1284,24 +1279,25 @@ tr:last-child td { border-bottom: none; }
   gap: 2px;
 }
 .dash-hero-number {
-  font-size: 36px;
+  font-size: 44px;
   font-weight: 900;
-  color: #0f172a;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  color: #2563eb;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  text-shadow: 0 1px 2px rgba(37, 99, 235, 0.08);
 }
 
 .dash-hero-goal-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #94a3b8;
-  margin-left: 3px;
+  margin-left: 4px;
   letter-spacing: -0.02em;
 }
 .dash-hero-unit-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: #94a3b8;
   margin-left: 2px;
@@ -1311,63 +1307,17 @@ tr:last-child td { border-bottom: none; }
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  margin-top: 3px;
+  margin-top: 4px;
   letter-spacing: -0.01em;
-}
-
-/* 🔵 Blue Donut / Ring Progress Chart */
-.kpi-ring-wrap {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.kpi-ring-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-.kpi-ring-bg {
-  stroke: #e2e8f0;
-}
-.kpi-ring-val {
-  stroke: #2563eb;
-  transition: stroke-dasharray 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.kpi-ring-center-text {
-  position: absolute;
-  font-size: 9.5px;
-  font-weight: 800;
-  color: #2563eb;
-  text-align: center;
-  line-height: 1;
-  pointer-events: none;
-}
-
-/* 🔵 Blue Sparkline Area Chart */
-.kpi-spark-wrap {
-  width: 48px;
-  height: 28px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-.kpi-spark-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
 }
 
 @media (max-width: 640px) {
   .dash-hero-card {
-    padding: 11px 12px;
+    padding: 12px 14px;
     border-radius: 14px;
   }
   .dash-hero-split {
-    gap: 6px;
+    gap: 8px;
   }
   .dash-hero-left {
     gap: 4px;
@@ -1395,11 +1345,9 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-sub-text {
     font-size: 9.5px;
   }
-  .dash-hero-right-group {
-    gap: 6px;
-  }
   .dash-hero-number {
-    font-size: 24px;
+    font-size: 30px;
+    line-height: 1;
   }
   .dash-hero-goal-text {
     font-size: 11px;
@@ -1411,18 +1359,7 @@ tr:last-child td { border-bottom: none; }
   }
   .dash-hero-caption {
     font-size: 9.5px;
-    margin-top: 1px;
-  }
-  .kpi-ring-wrap {
-    width: 32px;
-    height: 32px;
-  }
-  .kpi-ring-center-text {
-    font-size: 8px;
-  }
-  .kpi-spark-wrap {
-    width: 38px;
-    height: 22px;
+    margin-top: 2px;
   }
 }
 
@@ -2283,22 +2220,12 @@ tr:last-child td { border-bottom: none; }
             <span class="dash-hero-sub-text">入会率 <strong id="val-join-rate" class="text-slate-800">-%</strong></span>
           </div>
         </div>
-        <div class="dash-hero-right-group">
-          <div class="dash-hero-right">
-            <div class="dash-hero-val-container">
-              <span class="dash-hero-number" id="val-joined-count">-</span>
-              <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
-            </div>
-            <span class="dash-hero-caption">今期目標</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-joined-count">-</span>
+            <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
           </div>
-          <!-- 達成率 ドーナツ円グラフ -->
-          <div class="kpi-ring-wrap" title="目標達成率">
-            <svg class="kpi-ring-svg" viewBox="0 0 36 36">
-              <path class="kpi-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-width="3.5" fill="none"/>
-              <path id="kpi-ring-joined" class="kpi-ring-val" stroke-width="3.5" stroke-dasharray="0, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            </svg>
-            <span id="kpi-ring-label-joined" class="kpi-ring-center-text">0%</span>
-          </div>
+          <span class="dash-hero-caption">今期目標</span>
         </div>
       </div>
     </div>
@@ -2313,30 +2240,15 @@ tr:last-child td { border-bottom: none; }
           </div>
           <div class="dash-hero-meta-stack">
             <span class="dash-hero-badge">今期累計</span>
-            <span class="dash-hero-sub-text">平均 <strong id="val-avg-visitors" class="text-slate-800">-</strong>/回</span>
+            <span class="dash-hero-sub-text">平均 <strong id="val-avg-visitors" class="text-slate-800">-</strong>/回 ・ 提出 <strong id="val-hearing-rate" class="text-slate-800">-%</strong></span>
           </div>
         </div>
-        <div class="dash-hero-right-group">
-          <div class="dash-hero-right">
-            <div class="dash-hero-val-container">
-              <span class="dash-hero-number" id="val-apply-count">-</span>
-              <span class="dash-hero-unit-text">名</span>
-            </div>
-            <span class="dash-hero-caption">累計申込</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-apply-count">-</span>
+            <span class="dash-hero-unit-text">名</span>
           </div>
-          <!-- 来訪推移スパークライン -->
-          <div class="kpi-spark-wrap" title="直近来訪推移">
-            <svg id="kpi-sparkline-visitors" class="kpi-spark-svg" viewBox="0 0 50 26" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="spark-blue-kpi" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#2563eb" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#2563eb" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <path id="kpi-sparkline-area-visitors" fill="url(#spark-blue-kpi)" d="M0,26 L50,26 Z" />
-              <path id="kpi-sparkline-line-visitors" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M0,13 L50,13" />
-            </svg>
-          </div>
+          <span class="dash-hero-caption">累計申込</span>
         </div>
       </div>
     </div>
@@ -2354,22 +2266,12 @@ tr:last-child td { border-bottom: none; }
             <span class="dash-hero-sub-text">次々回 (<span id="date-after-next-thu">--/--</span>) <strong id="val-after-next-thu-count" class="text-slate-800">-</strong>名</span>
           </div>
         </div>
-        <div class="dash-hero-right-group">
-          <div class="dash-hero-right">
-            <div class="dash-hero-val-container">
-              <span class="dash-hero-number" id="val-next-thu-count">-</span>
-              <span class="dash-hero-unit-text">名</span>
-            </div>
-            <span class="dash-hero-caption">参加予定</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-next-thu-count">-</span>
+            <span class="dash-hero-unit-text">名</span>
           </div>
-          <!-- 次回規模 ドーナツ円グラフ -->
-          <div class="kpi-ring-wrap" title="定例会規模">
-            <svg class="kpi-ring-svg" viewBox="0 0 36 36">
-              <path class="kpi-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-width="3.5" fill="none"/>
-              <path id="kpi-ring-meeting" class="kpi-ring-val" stroke-width="3.5" stroke-dasharray="0, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            </svg>
-            <span id="kpi-ring-label-meeting" class="kpi-ring-center-text">--</span>
-          </div>
+          <span class="dash-hero-caption">参加予定</span>
         </div>
       </div>
     </div>
@@ -2387,22 +2289,12 @@ tr:last-child td { border-bottom: none; }
             <span class="dash-hero-sub-text">HOT <strong id="val-hot-count" class="text-slate-800">-</strong>名 ・ 超過 <strong id="val-overdue-action-plans" class="text-slate-800">0</strong>件</span>
           </div>
         </div>
-        <div class="dash-hero-right-group">
-          <div class="dash-hero-right">
-            <div class="dash-hero-val-container">
-              <span class="dash-hero-number" id="val-pending-action-plans">-</span>
-              <span class="dash-hero-unit-text">件</span>
-            </div>
-            <span class="dash-hero-caption">進行中タスク</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-pending-action-plans">-</span>
+            <span class="dash-hero-unit-text">件</span>
           </div>
-          <!-- 完了率 ドーナツ円グラフ -->
-          <div class="kpi-ring-wrap" title="アクション消化率">
-            <svg class="kpi-ring-svg" viewBox="0 0 36 36">
-              <path class="kpi-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-width="3.5" fill="none"/>
-              <path id="kpi-ring-actions" class="kpi-ring-val" stroke-width="3.5" stroke-dasharray="0, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            </svg>
-            <span id="kpi-ring-label-actions" class="kpi-ring-center-text">0%</span>
-          </div>
+          <span class="dash-hero-caption">進行中タスク</span>
         </div>
       </div>
     </div>
@@ -4367,9 +4259,6 @@ const ApiService = {
       initLineChart(chartLabels, chartValues);
     }
 
-    // KPI Mini Visuals (Sparkline, Gauges, Progress Bars)
-    updateKpiMiniVisuals(m, c, t, allActionPlans);
-
     // Tables
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
@@ -4381,74 +4270,6 @@ const ApiService = {
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
-    }
-  }
-
-  function updateKpiMiniVisuals(m, c, t, allActionPlans) {
-    // 1. 入会数 ドーナツ円グラフ
-    const ringJoined = document.getElementById('kpi-ring-joined');
-    const ringLabelJoined = document.getElementById('kpi-ring-label-joined');
-    const joinedAchRate = Math.min(100, Math.max(0, Number(m.achievementRate) || 0));
-    if (ringJoined) {
-      ringJoined.setAttribute('stroke-dasharray', `${joinedAchRate}, 100`);
-    }
-    if (ringLabelJoined) {
-      ringLabelJoined.innerText = `${joinedAchRate}%`;
-    }
-
-    // 2. 申込ビジター スパークライン (SVG)
-    const sparkArea = document.getElementById('kpi-sparkline-area-visitors');
-    const sparkLine = document.getElementById('kpi-sparkline-line-visitors');
-    if (sparkArea && sparkLine) {
-      const values = (c && Array.isArray(c.data) && c.data.length > 0) 
-        ? c.data.slice(-7).map(v => Number(v) || 0)
-        : [2, 4, 3, 5, 4, 6];
-      
-      const maxVal = Math.max(...values, 1);
-      const minVal = Math.min(...values, 0);
-      const range = (maxVal - minVal) || 1;
-      const count = values.length;
-      
-      const pts = values.map((v, idx) => {
-        const x = count > 1 ? (idx / (count - 1)) * 50 : 25;
-        const y = 23 - ((v - minVal) / range) * 18; // Y range: 5 to 23
-        return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) };
-      });
-
-      const lineD = pts.reduce((acc, pt, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`, '');
-      const areaD = `${lineD} L 50 26 L 0 26 Z`;
-
-      sparkLine.setAttribute('d', lineD);
-      sparkArea.setAttribute('d', areaD);
-    }
-
-    // 3. 次回定例会 ドーナツ円グラフ (参加予定規模)
-    const ringMeeting = document.getElementById('kpi-ring-meeting');
-    const ringLabelMeeting = document.getElementById('kpi-ring-label-meeting');
-    const nextCnt = (m.nextThuCount !== undefined ? Number(m.nextThuCount) : (t.nextMeeting || []).length) || 0;
-    // 基準目標 (例: 5名で100%)
-    const meetingGoal = 5;
-    const meetingPct = Math.min(100, Math.round((nextCnt / meetingGoal) * 100));
-    if (ringMeeting) {
-      ringMeeting.setAttribute('stroke-dasharray', `${meetingPct}, 100`);
-    }
-    if (ringLabelMeeting) {
-      ringLabelMeeting.innerText = `${nextCnt}名`;
-    }
-
-    // 4. 要対応アクション ドーナツ円グラフ (消化率)
-    const ringActions = document.getElementById('kpi-ring-actions');
-    const ringLabelActions = document.getElementById('kpi-ring-label-actions');
-    if (ringActions || ringLabelActions) {
-      const totalAp = allActionPlans.length || 1;
-      const completedCount = allActionPlans.filter(p => Number(p.is_completed) === 1).length;
-      const apCompPct = Math.min(100, Math.max(0, Math.round((completedCount / totalAp) * 100)));
-      if (ringActions) {
-        ringActions.setAttribute('stroke-dasharray', `${apCompPct}, 100`);
-      }
-      if (ringLabelActions) {
-        ringLabelActions.innerText = `${apCompPct}%`;
-      }
     }
   }
 

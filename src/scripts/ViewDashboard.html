@@ -136,9 +136,6 @@
       initLineChart(chartLabels, chartValues);
     }
 
-    // KPI Mini Visuals (Sparkline, Gauges, Progress Bars)
-    updateKpiMiniVisuals(m, c, t, allActionPlans);
-
     // Tables
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
@@ -150,74 +147,6 @@
 
     if (data.bniTermsList && data.selectedStartDate) {
       renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
-    }
-  }
-
-  function updateKpiMiniVisuals(m, c, t, allActionPlans) {
-    // 1. 入会数 ドーナツ円グラフ
-    const ringJoined = document.getElementById('kpi-ring-joined');
-    const ringLabelJoined = document.getElementById('kpi-ring-label-joined');
-    const joinedAchRate = Math.min(100, Math.max(0, Number(m.achievementRate) || 0));
-    if (ringJoined) {
-      ringJoined.setAttribute('stroke-dasharray', `${joinedAchRate}, 100`);
-    }
-    if (ringLabelJoined) {
-      ringLabelJoined.innerText = `${joinedAchRate}%`;
-    }
-
-    // 2. 申込ビジター スパークライン (SVG)
-    const sparkArea = document.getElementById('kpi-sparkline-area-visitors');
-    const sparkLine = document.getElementById('kpi-sparkline-line-visitors');
-    if (sparkArea && sparkLine) {
-      const values = (c && Array.isArray(c.data) && c.data.length > 0) 
-        ? c.data.slice(-7).map(v => Number(v) || 0)
-        : [2, 4, 3, 5, 4, 6];
-      
-      const maxVal = Math.max(...values, 1);
-      const minVal = Math.min(...values, 0);
-      const range = (maxVal - minVal) || 1;
-      const count = values.length;
-      
-      const pts = values.map((v, idx) => {
-        const x = count > 1 ? (idx / (count - 1)) * 50 : 25;
-        const y = 23 - ((v - minVal) / range) * 18; // Y range: 5 to 23
-        return { x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) };
-      });
-
-      const lineD = pts.reduce((acc, pt, i) => `${acc} ${i === 0 ? 'M' : 'L'} ${pt.x} ${pt.y}`, '');
-      const areaD = `${lineD} L 50 26 L 0 26 Z`;
-
-      sparkLine.setAttribute('d', lineD);
-      sparkArea.setAttribute('d', areaD);
-    }
-
-    // 3. 次回定例会 ドーナツ円グラフ (参加予定規模)
-    const ringMeeting = document.getElementById('kpi-ring-meeting');
-    const ringLabelMeeting = document.getElementById('kpi-ring-label-meeting');
-    const nextCnt = (m.nextThuCount !== undefined ? Number(m.nextThuCount) : (t.nextMeeting || []).length) || 0;
-    // 基準目標 (例: 5名で100%)
-    const meetingGoal = 5;
-    const meetingPct = Math.min(100, Math.round((nextCnt / meetingGoal) * 100));
-    if (ringMeeting) {
-      ringMeeting.setAttribute('stroke-dasharray', `${meetingPct}, 100`);
-    }
-    if (ringLabelMeeting) {
-      ringLabelMeeting.innerText = `${nextCnt}名`;
-    }
-
-    // 4. 要対応アクション ドーナツ円グラフ (消化率)
-    const ringActions = document.getElementById('kpi-ring-actions');
-    const ringLabelActions = document.getElementById('kpi-ring-label-actions');
-    if (ringActions || ringLabelActions) {
-      const totalAp = allActionPlans.length || 1;
-      const completedCount = allActionPlans.filter(p => Number(p.is_completed) === 1).length;
-      const apCompPct = Math.min(100, Math.max(0, Math.round((completedCount / totalAp) * 100)));
-      if (ringActions) {
-        ringActions.setAttribute('stroke-dasharray', `${apCompPct}, 100`);
-      }
-      if (ringLabelActions) {
-        ringLabelActions.innerText = `${apCompPct}%`;
-      }
     }
   }
 
