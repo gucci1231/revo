@@ -2633,6 +2633,28 @@ const ApiService = {
     const fieldName = fieldLabels[field] || field;
     showToast(`${fieldName}を【${value}】に変更中...`);
 
+    // ローカルキャッシュのステータスを即座に更新（画面が飛ばないようUIを即時反映）
+    if (typeof cachedAllVisitors !== 'undefined' && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      cachedAllVisitors.forEach(v => {
+        if (String(v.id) === String(id)) {
+          v[field] = value;
+        }
+      });
+      if (typeof filterAllVisitorsTable === 'function') {
+        filterAllVisitorsTable();
+      }
+    }
+    if (typeof cachedPriorityFollowList !== 'undefined' && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      cachedPriorityFollowList.forEach(v => {
+        if (String(v.id) === String(id) || String(v.visitor_id) === String(id)) {
+          v[field] = value;
+        }
+      });
+      if (typeof renderPriorityFollowCurrentPage === 'function') {
+        renderPriorityFollowCurrentPage();
+      }
+    }
+
     ApiService.call('updateVisitorStatusApi', id, field, value)
       .then(res => {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);
@@ -2950,6 +2972,7 @@ const ApiService = {
   function switchTab(tabName, updateHash = true) {
     if (tabName !== 'visitor-detail') {
       previousTabBeforeDetail = tabName;
+      currentVdVisitorId = null;
     }
     ['dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
@@ -3233,8 +3256,10 @@ const ApiService = {
     fetchDashboardData(true);
     if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
     if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
-    if (currentVdVisitorId) {
-      openVisitorDetailView(currentVdVisitorId, false);
+
+    const detailView = document.getElementById('view-visitor-detail');
+    if (detailView && detailView.classList.contains('active') && currentVdVisitorId) {
+      openVisitorDetailView(currentVdVisitorId, false, false);
     }
   }
 </script>
@@ -4685,7 +4710,7 @@ const ApiService = {
     openVisitorDetailView(id);
   }
 
-  function openVisitorDetailView(id, updateHash = true) {
+  function openVisitorDetailView(id, updateHash = true, scrollToTop = true) {
     if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
       return;
     }
@@ -4693,7 +4718,9 @@ const ApiService = {
     if (updateHash) {
       updateUrlHash('visitor/' + id, { visitorId: id });
     }
-    document.getElementById('loading').style.display = 'flex';
+    if (scrollToTop) {
+      document.getElementById('loading').style.display = 'flex';
+    }
 
     ApiService.call('getVisitorDetailApi', id)
       .then(res => {
@@ -4800,13 +4827,16 @@ const ApiService = {
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-visitor-detail').classList.add('active');
 
-        switchVdTab('action-plan');
-        window.scrollTo(0, 0);
+        if (scrollToTop) {
+          switchVdTab('action-plan');
+          window.scrollTo(0, 0);
+        }
       })
       .catch(handleError);
   }
 
   function closeVisitorDetailView() {
+    currentVdVisitorId = null;
     switchTab(previousTabBeforeDetail || 'dashboard', true);
   }
 

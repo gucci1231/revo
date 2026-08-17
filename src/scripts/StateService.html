@@ -228,8 +228,10 @@
     fetchDashboardData(true);
     if (cachedAllVisitors.length > 0) fetchAllVisitorsData(true);
     if (cachedPriorityFollowList.length > 0) fetchPriorityFollowData(true);
-    if (currentVdVisitorId) {
-      openVisitorDetailView(currentVdVisitorId, false);
+
+    const detailView = document.getElementById('view-visitor-detail');
+    if (detailView && detailView.classList.contains('active') && currentVdVisitorId) {
+      openVisitorDetailView(currentVdVisitorId, false, false);
     }
   }
 </script>

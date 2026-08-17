@@ -32,6 +32,28 @@
     const fieldName = fieldLabels[field] || field;
     showToast(`${fieldName}を【${value}】に変更中...`);
 
+    // ローカルキャッシュのステータスを即座に更新（画面が飛ばないようUIを即時反映）
+    if (typeof cachedAllVisitors !== 'undefined' && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      cachedAllVisitors.forEach(v => {
+        if (String(v.id) === String(id)) {
+          v[field] = value;
+        }
+      });
+      if (typeof filterAllVisitorsTable === 'function') {
+        filterAllVisitorsTable();
+      }
+    }
+    if (typeof cachedPriorityFollowList !== 'undefined' && cachedPriorityFollowList && cachedPriorityFollowList.length > 0) {
+      cachedPriorityFollowList.forEach(v => {
+        if (String(v.id) === String(id) || String(v.visitor_id) === String(id)) {
+          v[field] = value;
+        }
+      });
+      if (typeof renderPriorityFollowCurrentPage === 'function') {
+        renderPriorityFollowCurrentPage();
+      }
+    }
+
     ApiService.call('updateVisitorStatusApi', id, field, value)
       .then(res => {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);

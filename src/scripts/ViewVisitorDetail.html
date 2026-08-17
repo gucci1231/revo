@@ -11,7 +11,7 @@
     openVisitorDetailView(id);
   }
 
-  function openVisitorDetailView(id, updateHash = true) {
+  function openVisitorDetailView(id, updateHash = true, scrollToTop = true) {
     if (!id || String(id).trim() === '' || String(id).trim() === 'undefined' || String(id).trim() === 'null') {
       return;
     }
@@ -19,7 +19,9 @@
     if (updateHash) {
       updateUrlHash('visitor/' + id, { visitorId: id });
     }
-    document.getElementById('loading').style.display = 'flex';
+    if (scrollToTop) {
+      document.getElementById('loading').style.display = 'flex';
+    }
 
     ApiService.call('getVisitorDetailApi', id)
       .then(res => {
@@ -126,13 +128,16 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('view-visitor-detail').classList.add('active');
 
-        switchVdTab('action-plan');
-        window.scrollTo(0, 0);
+        if (scrollToTop) {
+          switchVdTab('action-plan');
+          window.scrollTo(0, 0);
+        }
       })
       .catch(handleError);
   }
 
   function closeVisitorDetailView() {
+    currentVdVisitorId = null;
     switchTab(previousTabBeforeDetail || 'dashboard', true);
   }
 
