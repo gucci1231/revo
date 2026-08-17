@@ -499,77 +499,64 @@
   padding: 3px 10px; border-radius: 10px;
 }
 
-/* --- 📊 Modern Intuitive Dashboard Styles --- */
+/* --- 📊 Apple / Modern SaaS Inspired KPI Cards --- */
 .dash-hero-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .dash-hero-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-}
-/* --- 🍏 Apple-Inspired Dashboard UI --- */
-.dash-hero-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 18px;
-}
-@media (max-width: 1024px) {
-  .dash-hero-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 12px;
   }
 }
 @media (max-width: 640px) {
   .dash-hero-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .dash-hero-card {
-    padding: 12px 14px !important;
-    border-radius: 14px !important;
-  }
-  .dash-hero-val {
-    font-size: 24px !important;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
   }
 }
 
 .dash-hero-card {
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 16px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   user-select: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
 .dash-hero-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
   border-color: #cbd5e1;
 }
 .dash-hero-card:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
-.dash-hero-header {
+.dash-hero-split {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Left side: Icon, Title, Sub-meta */
+.dash-hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
 }
 .dash-hero-icon-title {
   display: flex;
@@ -577,48 +564,145 @@
   gap: 8px;
 }
 .dash-hero-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  background: #f2f2f7;
-  color: #1d1d1f;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
-.dash-hero-icon.gold,
-.dash-hero-icon.blue,
-.dash-hero-icon.green,
+.dash-hero-card:hover .dash-hero-icon {
+  transform: scale(1.08);
+}
+.dash-hero-icon.gold {
+  background: #fef3c7;
+  color: #d97706;
+}
+.dash-hero-icon.blue {
+  background: #e0e7ff;
+  color: #3b82f6;
+}
+.dash-hero-icon.green {
+  background: #dcfce7;
+  color: #10b981;
+}
 .dash-hero-icon.rose {
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #ffe4e6;
+  color: #f43f5e;
 }
 
 .dash-hero-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #86868b;
+  color: #334155;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
-.dash-hero-val {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1d1d1f;
-  line-height: 1;
-  letter-spacing: -0.03em;
+
+.dash-hero-meta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dash-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dash-hero-sub-text {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Right side: Giant Numbers & Units */
+.dash-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+  text-align: right;
+}
+.dash-hero-val-container {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 2px;
 }
-.dash-hero-sub {
+.dash-hero-number {
+  font-size: 38px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.dash-hero-card.card-kpi-joined .dash-hero-number {
+  color: #d97706;
+}
+.dash-hero-card.card-kpi-visitors .dash-hero-number {
+  color: #2563eb;
+}
+.dash-hero-card.card-kpi-meeting .dash-hero-number {
+  color: #059669;
+}
+.dash-hero-card.card-kpi-actions .dash-hero-number {
+  color: #6366f1;
+}
+
+.dash-hero-goal-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 4px;
+  letter-spacing: -0.02em;
+}
+.dash-hero-unit-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 2px;
+  letter-spacing: -0.01em;
+}
+.dash-hero-caption {
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-top: 4px;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 640px) {
+  .dash-hero-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+  .dash-hero-number {
+    font-size: 32px;
+  }
+  .dash-hero-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .dash-hero-title {
+    font-size: 12px;
+  }
 }
 
 /* iOS-Style Segmented Navigation */

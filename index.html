@@ -1149,77 +1149,64 @@ tr:last-child td { border-bottom: none; }
   padding: 3px 10px; border-radius: 10px;
 }
 
-/* --- 📊 Modern Intuitive Dashboard Styles --- */
+/* --- 📊 Apple / Modern SaaS Inspired KPI Cards --- */
 .dash-hero-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   .dash-hero-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-}
-/* --- 🍏 Apple-Inspired Dashboard UI --- */
-.dash-hero-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 18px;
-}
-@media (max-width: 1024px) {
-  .dash-hero-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 12px;
   }
 }
 @media (max-width: 640px) {
   .dash-hero-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-bottom: 14px;
-  }
-  .dash-hero-card {
-    padding: 12px 14px !important;
-    border-radius: 14px !important;
-  }
-  .dash-hero-val {
-    font-size: 24px !important;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
   }
 }
 
 .dash-hero-card {
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 16px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   user-select: none;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
 .dash-hero-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
   border-color: #cbd5e1;
 }
 .dash-hero-card:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
-.dash-hero-header {
+.dash-hero-split {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+/* Left side: Icon, Title, Sub-meta */
+.dash-hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
 }
 .dash-hero-icon-title {
   display: flex;
@@ -1227,48 +1214,145 @@ tr:last-child td { border-bottom: none; }
   gap: 8px;
 }
 .dash-hero-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
-  background: #f2f2f7;
-  color: #1d1d1f;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
-.dash-hero-icon.gold,
-.dash-hero-icon.blue,
-.dash-hero-icon.green,
+.dash-hero-card:hover .dash-hero-icon {
+  transform: scale(1.08);
+}
+.dash-hero-icon.gold {
+  background: #fef3c7;
+  color: #d97706;
+}
+.dash-hero-icon.blue {
+  background: #e0e7ff;
+  color: #3b82f6;
+}
+.dash-hero-icon.green {
+  background: #dcfce7;
+  color: #10b981;
+}
 .dash-hero-icon.rose {
-  background: #f2f2f7;
-  color: #1d1d1f;
+  background: #ffe4e6;
+  color: #f43f5e;
 }
 
 .dash-hero-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: #86868b;
+  color: #334155;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
-.dash-hero-val {
-  font-size: 28px;
-  font-weight: 800;
-  color: #1d1d1f;
-  line-height: 1;
-  letter-spacing: -0.03em;
+
+.dash-hero-meta-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.dash-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dash-hero-sub-text {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Right side: Giant Numbers & Units */
+.dash-hero-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+  text-align: right;
+}
+.dash-hero-val-container {
   display: flex;
   align-items: baseline;
-  gap: 4px;
+  justify-content: flex-end;
+  gap: 2px;
 }
-.dash-hero-sub {
+.dash-hero-number {
+  font-size: 38px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.dash-hero-card.card-kpi-joined .dash-hero-number {
+  color: #d97706;
+}
+.dash-hero-card.card-kpi-visitors .dash-hero-number {
+  color: #2563eb;
+}
+.dash-hero-card.card-kpi-meeting .dash-hero-number {
+  color: #059669;
+}
+.dash-hero-card.card-kpi-actions .dash-hero-number {
+  color: #6366f1;
+}
+
+.dash-hero-goal-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 4px;
+  letter-spacing: -0.02em;
+}
+.dash-hero-unit-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 2px;
+  letter-spacing: -0.01em;
+}
+.dash-hero-caption {
   font-size: 11px;
   font-weight: 600;
   color: #94a3b8;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-top: 4px;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 640px) {
+  .dash-hero-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+  .dash-hero-number {
+    font-size: 32px;
+  }
+  .dash-hero-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .dash-hero-title {
+    font-size: 12px;
+  }
 }
 
 /* iOS-Style Segmented Navigation */
@@ -2116,78 +2200,94 @@ tr:last-child td { border-bottom: none; }
   <!-- 1. 4大主要KPIサマリー -->
   <div class="dash-hero-grid">
     <!-- KPI 1: 入会数 / 目標 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-trophy"></i></div>
-          <span class="dash-hero-title">入会数</span>
+    <div class="dash-hero-card card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon gold"><i class="fa-solid fa-trophy"></i></div>
+            <span class="dash-hero-title">入会数</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-badge" id="val-achievement-rate">0%達成</span>
+            <span class="dash-hero-sub-text">入会率 <strong id="val-join-rate" class="font-bold text-slate-800">-%</strong></span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="val-achievement-rate">0%</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="val-joined-count">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">/ <span id="val-target-goal">12</span>名</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>入会率 <strong id="val-join-rate" style="color: #1d1d1f;">-%</strong></span>
-        <span>今期目標</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-joined-count">-</span>
+            <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
+          </div>
+          <span class="dash-hero-caption">今期目標</span>
+        </div>
       </div>
     </div>
 
     <!-- KPI 2: 申込ビジター総数 -->
-    <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-users"></i></div>
-          <span class="dash-hero-title">申込ビジター</span>
+    <div class="dash-hero-card card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon blue"><i class="fa-solid fa-users"></i></div>
+            <span class="dash-hero-title">申込ビジター</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-badge">今期累計</span>
+            <span class="dash-hero-sub-text">平均 <strong id="val-avg-visitors" class="font-bold text-slate-800">-</strong>/回 ・ 提出 <strong id="val-hearing-rate" class="font-bold text-slate-800">-%</strong></span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#86868b; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">今期累計</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="val-apply-count">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">名</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>平均 <strong id="val-avg-visitors" style="color: #1d1d1f;">-</strong>名/回</span>
-        <span>提出 <strong id="val-hearing-rate" style="color: #1d1d1f;">-%</strong></span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-apply-count">-</span>
+            <span class="dash-hero-unit-text">名</span>
+          </div>
+          <span class="dash-hero-caption">累計申込</span>
+        </div>
       </div>
     </div>
 
     <!-- KPI 3: 次回定例会 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-calendar-check"></i></div>
-          <span class="dash-hero-title">次回定例会</span>
+    <div class="dash-hero-card card-kpi-meeting" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon green"><i class="fa-solid fa-calendar-check"></i></div>
+            <span class="dash-hero-title">次回定例会</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-badge" id="date-next-thu">--/--</span>
+            <span class="dash-hero-sub-text">次々回 (<span id="date-after-next-thu">--/--</span>) <strong id="val-after-next-thu-count" class="font-bold text-slate-800">-</strong>名</span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="date-next-thu">--/--</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="val-next-thu-count">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">名予定</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>次々回 (<span id="date-after-next-thu">--/--</span>)</span>
-        <span><strong id="val-after-next-thu-count" style="color: #1d1d1f;">-</strong>名</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-next-thu-count">-</span>
+            <span class="dash-hero-unit-text">名</span>
+          </div>
+          <span class="dash-hero-caption">参加予定</span>
+        </div>
       </div>
     </div>
 
     <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
-      <div class="dash-hero-header">
-        <div class="dash-hero-icon-title">
-          <div class="dash-hero-icon"><i class="fa-solid fa-bullseye"></i></div>
-          <span class="dash-hero-title">要対応アクション</span>
+    <div class="dash-hero-card card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon rose"><i class="fa-solid fa-bullseye"></i></div>
+            <span class="dash-hero-title">要対応アクション</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-badge" id="badge-overdue-summary">進行中</span>
+            <span class="dash-hero-sub-text">HOT <strong id="val-hot-count" class="font-bold text-slate-800">-</strong>名 ・ 超過 <strong id="val-overdue-action-plans" class="font-bold text-rose-600">0</strong>件</span>
+          </div>
         </div>
-        <span class="badge" style="background:#f2f2f7; color:#1d1d1f; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;" id="badge-overdue-summary">進行中</span>
-      </div>
-      <div class="dash-hero-val">
-        <span id="val-pending-action-plans">-</span>
-        <span style="font-size: 14px; font-weight: 600; color: #86868b;">件</span>
-      </div>
-      <div class="dash-hero-sub">
-        <span>HOT <strong id="val-hot-count" style="color: #1d1d1f;">-</strong>名</span>
-        <span>超過 <strong id="val-overdue-action-plans" style="color: #ff3b30;">0</strong>件</span>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-pending-action-plans">-</span>
+            <span class="dash-hero-unit-text">件</span>
+          </div>
+          <span class="dash-hero-caption">進行中タスク</span>
+        </div>
       </div>
     </div>
   </div>
