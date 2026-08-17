@@ -8990,8 +8990,7 @@ window.CelebrationEffect = (function() {
       if (navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
         navigator.share({
           title: `【REvo】アクション共有: ${visitorName}`,
-          text: shareText,
-          url: shareUrl
+          text: shareText
         }).catch(() => {
           copyTextToClipboard(shareText, '✅ 共有用メッセージとURLをコピーしました！');
         });
