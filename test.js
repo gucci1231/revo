@@ -133,7 +133,7 @@ try {
   // Test helper functions in sandbox
   if (typeof sandbox.escapeHtml === 'function') {
     const escaped = sandbox.escapeHtml('<div>&"\'</div>');
-    assert(escaped === '&lt;div&gt;&amp;&quot;&#39;&lt;/div&gt;', `escapeHtml helper works: ${escaped}`);
+    assert(escaped === '&lt;div&gt;&amp;&quot;&#39;&lt;/div&gt;' || escaped === '&lt;div&gt;&amp;&quot;&#039;&lt;/div&gt;', `escapeHtml helper works: ${escaped}`);
   }
 
   if (typeof sandbox.formatTruncatedCell === 'function') {

@@ -38,7 +38,12 @@
         google.script.run.logClientErrorApi(errInfo);
       }
     });
-
+    // Sidebar state initialization (prevent layout shift on reload)
+    try {
+      if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth >= 1024) {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    } catch(e) {}
   </script>
   <style>
 /* --- variables.css --- */
@@ -94,7 +99,7 @@ body {
 .view-content { display: none; }
 .view-content.active { display: block; }
 
-/* Left Drawer Menu */
+  /* Left Drawer Menu */
 .btn-drawer-trigger {
   background: #f1f5f9;
   border: 1px solid var(--border-color);
@@ -111,6 +116,26 @@ body {
   transition: all 0.15s ease;
 }
 .btn-drawer-trigger:hover {
+  background: #e2e8f0;
+  color: var(--primary-accent);
+}
+
+.btn-sidebar-toggle-pc {
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  color: #475569;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-right: 8px;
+}
+.btn-sidebar-toggle-pc:hover {
   background: #e2e8f0;
   color: var(--primary-accent);
 }
@@ -137,27 +162,31 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 290px;
+  width: 260px;
   height: 100vh;
   background: #ffffff;
   z-index: 9995;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
   transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  user-select: none;
 }
 .left-drawer.open {
   transform: translateX(0);
 }
 
 .drawer-header {
-  padding: 20px;
+  height: 64px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #f8fafc;
+  flex-shrink: 0;
 }
 .drawer-brand {
   font-weight: 800;
@@ -166,70 +195,257 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
 }
+.drawer-brand i {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.drawer-brand-text {
+  transition: opacity 0.2s ease, width 0.2s ease;
+  white-space: nowrap;
+}
+
 .btn-drawer-close {
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 18px;
   color: #64748b;
   cursor: pointer;
-  padding: 4px 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 6px;
+  transition: all 0.15s ease;
 }
 .btn-drawer-close:hover {
   background: #e2e8f0;
   color: #0f172a;
 }
 
+.btn-sidebar-collapse {
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  color: #64748b;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.btn-sidebar-collapse:hover {
+  background: #e2e8f0;
+  color: var(--primary-accent);
+}
+.btn-sidebar-collapse i {
+  transition: transform 0.25s ease;
+}
+
 .drawer-nav-list {
-  padding: 16px 12px;
+  padding: 12px 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
+
+.drawer-action-wrap {
+  padding: 0 2px 10px 2px;
+  display: flex;
+  justify-content: center;
+}
+.drawer-action-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+}
+
 .drawer-nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
   width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.drawer-nav-item i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #64748b;
+  transition: color 0.15s ease;
 }
 .drawer-nav-item:hover {
   background: #f1f5f9;
   color: #0f172a;
 }
+.drawer-nav-item:hover i {
+  color: var(--primary-accent);
+}
 .drawer-nav-item.active {
   background: #eff6ff;
   color: var(--primary-accent);
-  font-weight: 800;
-  border-left: 4px solid var(--primary-accent);
+  font-weight: 700;
 }
-.drawer-footer {
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-  background: #f8fafc;
+.drawer-nav-item.active i {
+  color: var(--primary-accent);
 }
 
+.drawer-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  background: #f8fafc;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+}
+.drawer-footer-text {
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- PC Responsive & Collapsed Mode --- */
 @media (min-width: 1024px) {
-  body { padding-left: 280px; }
+  body {
+    padding-left: 276px;
+    transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
   .left-drawer {
     transform: translateX(0) !important;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
     border-right: 1px solid var(--border-color);
   }
   .drawer-backdrop, .btn-drawer-trigger, .btn-drawer-close { display: none !important; }
+  .btn-sidebar-collapse { display: inline-flex; }
+  .btn-sidebar-toggle-pc { display: inline-flex; }
   .container { max-width: 1380px; margin: 0 auto; }
+
+  /* Collapsed Mode (Icons Only) */
+  body.sidebar-collapsed {
+    padding-left: 90px;
+  }
+  body.sidebar-collapsed .left-drawer {
+    width: 74px;
+  }
+  body.sidebar-collapsed .drawer-header {
+    padding: 0 10px;
+    justify-content: center;
+    position: relative;
+  }
+  body.sidebar-collapsed .drawer-brand-text {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-brand {
+    gap: 0;
+    justify-content: center;
+  }
+  body.sidebar-collapsed .btn-sidebar-collapse {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  body.sidebar-collapsed .btn-sidebar-collapse i {
+    transform: rotate(180deg);
+  }
+  body.sidebar-collapsed .drawer-action-wrap {
+    padding: 0 0 10px 0;
+  }
+  body.sidebar-collapsed .drawer-action-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+  body.sidebar-collapsed .drawer-action-btn .nav-label {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-action-btn i {
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed .drawer-nav-list {
+    padding: 12px 8px;
+    gap: 6px;
+  }
+  body.sidebar-collapsed .drawer-nav-item {
+    padding: 11px 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  body.sidebar-collapsed .drawer-nav-item .nav-label {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-nav-item i {
+    font-size: 18px;
+    width: auto;
+    margin: 0;
+  }
+  body.sidebar-collapsed .drawer-footer {
+    padding: 8px;
+    justify-content: center;
+  }
+  body.sidebar-collapsed .drawer-footer-text {
+    display: none;
+  }
+
+  /* Floating Tooltips on Collapsed Mode Hover */
+  body.sidebar-collapsed .drawer-nav-item:hover::after,
+  body.sidebar-collapsed .drawer-action-btn:hover::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    left: 82px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    animation: fadeInTooltip 0.15s ease-out;
+  }
+
+  @keyframes fadeInTooltip {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
 }
 
 @media (max-width: 1023px) {
@@ -2507,7 +2723,13 @@ tr:last-child td { border-bottom: none; }
 
 </style>
 </head>
-<body>
+<body class="<?!= '' ?>">
+  <script>
+    // Sync body class immediately with documentElement class if set
+    if (document.documentElement.classList.contains('sidebar-collapsed')) {
+      document.body.classList.add('sidebar-collapsed');
+    }
+  </script>
 
   <!-- Loading Overlay -->
   <div id="loading" class="loading-overlay" style="display: none;">
@@ -2799,46 +3021,49 @@ tr:last-child td { border-bottom: none; }
     <div class="drawer-header">
       <div class="drawer-brand">
         <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
-        <span>REvo ビジター管理</span>
+        <span class="drawer-brand-text">REvo ビジター管理</span>
       </div>
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
+      </button>
+      <button class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+        <i class="fa-solid fa-angles-left"></i>
       </button>
     </div>
 
     <div class="drawer-nav-list">
       <!-- ➕ 新規登録メインボタン -->
-      <div style="padding: 0 4px 12px 4px;">
-        <button class="btn-action-primary" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px;" onclick="openAddVisitorModal()">
-          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+      <div class="drawer-action-wrap">
+        <button class="btn-action-primary drawer-action-btn" onclick="openAddVisitorModal()" title="新規ビジター登録" data-tooltip="新規ビジター登録">
+          <i class="fa-solid fa-plus"></i> <span class="nav-label">新規ビジター登録</span>
         </button>
       </div>
 
-      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
-        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')" title="ダッシュボード" data-tooltip="ダッシュボード">
+        <i class="fa-solid fa-chart-pie"></i> <span class="nav-label">ダッシュボード</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')">
-        <i class="fa-solid fa-bullseye"></i> アクション管理
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
+        <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
-        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
+        <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')">
-        <i class="fa-solid fa-users"></i> 全ビジター統合管理名簿
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="全ビジター統合管理名簿" data-tooltip="全ビジター統合管理名簿">
+        <i class="fa-solid fa-users"></i> <span class="nav-label">全ビジター統合管理名簿</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')">
-        <i class="fa-solid fa-file-lines"></i> ヒアリングシート一覧
+      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')" title="ヒアリングシート一覧" data-tooltip="ヒアリングシート一覧">
+        <i class="fa-solid fa-file-lines"></i> <span class="nav-label">ヒアリングシート一覧</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')">
-        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
+        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')">
-        <i class="fa-solid fa-gear"></i> 各種設定・メンバー管理
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
+        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
     </div>
 
     <div class="drawer-footer">
-      <div style="font-size: 11px; color: #94a3b8; text-align: center;">REvo Chapter Visitor Host v2.0</div>
+      <div class="drawer-footer-text">REvo Chapter Visitor Host v2.0</div>
     </div>
   </aside>
 
@@ -2849,6 +3074,9 @@ tr:last-child td { border-bottom: none; }
       <div class="logo-area flex items-center gap-2.5">
         <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200" onclick="toggleLeftDrawer()" title="メニューを開く">
           <i class="fa-solid fa-bars"></i>
+        </button>
+        <button class="btn-sidebar-toggle-pc" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+          <i class="fa-solid fa-bars-staggered"></i>
         </button>
         <h1 class="logo-title text-base sm:text-xl font-extrabold text-slate-900 tracking-tight">REvo ビジター管理</h1>
       </div>
@@ -4558,7 +4786,7 @@ const ApiService = {
     }
   }
 
-  /* --- ☰ Left Drawer Controller --- */
+  /* --- ☰ Left Drawer & Sidebar Controller --- */
   function toggleLeftDrawer() {
     const drawer = document.getElementById('left-drawer');
     if (drawer && drawer.classList.contains('open')) {
@@ -4580,6 +4808,46 @@ const ApiService = {
     const backdrop = document.getElementById('drawer-backdrop');
     if (drawer) drawer.classList.remove('open');
     if (backdrop) backdrop.classList.remove('open');
+  }
+
+  function toggleSidebarCollapse() {
+    if (window.innerWidth < 1024) {
+      // On mobile/tablet, open/close drawer instead
+      toggleLeftDrawer();
+      return;
+    }
+    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+    if (document.documentElement) {
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+      }
+    }
+    try {
+      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+    } catch (e) {}
+
+    // Dispatch resize event so charts or custom grids adjust immediately
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 260);
+  }
+
+  function initSidebarState() {
+    try {
+      const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+      if (isCollapsed && window.innerWidth >= 1024) {
+        document.body.classList.add('sidebar-collapsed');
+        if (document.documentElement) document.documentElement.classList.add('sidebar-collapsed');
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarState);
+  } else {
+    initSidebarState();
   }
 
   /* --- Tab Navigation Controller --- */

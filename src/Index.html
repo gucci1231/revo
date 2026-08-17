@@ -38,11 +38,22 @@
         google.script.run.logClientErrorApi(errInfo);
       }
     });
-
+    // Sidebar state initialization (prevent layout shift on reload)
+    try {
+      if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth >= 1024) {
+        document.documentElement.classList.add('sidebar-collapsed');
+      }
+    } catch(e) {}
   </script>
   <?!= include('Styles'); ?>
 </head>
-<body>
+<body class="<?!= '' ?>">
+  <script>
+    // Sync body class immediately with documentElement class if set
+    if (document.documentElement.classList.contains('sidebar-collapsed')) {
+      document.body.classList.add('sidebar-collapsed');
+    }
+  </script>
 
   <!-- Loading Overlay -->
   <div id="loading" class="loading-overlay" style="display: none;">
@@ -65,46 +76,49 @@
     <div class="drawer-header">
       <div class="drawer-brand">
         <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
-        <span>REvo ビジター管理</span>
+        <span class="drawer-brand-text">REvo ビジター管理</span>
       </div>
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
+      </button>
+      <button class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+        <i class="fa-solid fa-angles-left"></i>
       </button>
     </div>
 
     <div class="drawer-nav-list">
       <!-- ➕ 新規登録メインボタン -->
-      <div style="padding: 0 4px 12px 4px;">
-        <button class="btn-action-primary" style="width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px;" onclick="openAddVisitorModal()">
-          <i class="fa-solid fa-plus"></i> 新規ビジター登録
+      <div class="drawer-action-wrap">
+        <button class="btn-action-primary drawer-action-btn" onclick="openAddVisitorModal()" title="新規ビジター登録" data-tooltip="新規ビジター登録">
+          <i class="fa-solid fa-plus"></i> <span class="nav-label">新規ビジター登録</span>
         </button>
       </div>
 
-      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')">
-        <i class="fa-solid fa-chart-pie"></i> ダッシュボード
+      <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')" title="ダッシュボード" data-tooltip="ダッシュボード">
+        <i class="fa-solid fa-chart-pie"></i> <span class="nav-label">ダッシュボード</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')">
-        <i class="fa-solid fa-bullseye"></i> アクション管理
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
+        <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')">
-        <i class="fa-solid fa-fire"></i> 最優先フォロー
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
+        <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')">
-        <i class="fa-solid fa-users"></i> 全ビジター統合管理名簿
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="全ビジター統合管理名簿" data-tooltip="全ビジター統合管理名簿">
+        <i class="fa-solid fa-users"></i> <span class="nav-label">全ビジター統合管理名簿</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')">
-        <i class="fa-solid fa-file-lines"></i> ヒアリングシート一覧
+      <button class="drawer-nav-item" id="drawer-item-hearings" onclick="switchTab('hearings')" title="ヒアリングシート一覧" data-tooltip="ヒアリングシート一覧">
+        <i class="fa-solid fa-file-lines"></i> <span class="nav-label">ヒアリングシート一覧</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')">
-        <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
+        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')">
-        <i class="fa-solid fa-gear"></i> 各種設定・メンバー管理
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
+        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
     </div>
 
     <div class="drawer-footer">
-      <div style="font-size: 11px; color: #94a3b8; text-align: center;">REvo Chapter Visitor Host v2.0</div>
+      <div class="drawer-footer-text">REvo Chapter Visitor Host v2.0</div>
     </div>
   </aside>
 
@@ -115,6 +129,9 @@
       <div class="logo-area flex items-center gap-2.5">
         <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200" onclick="toggleLeftDrawer()" title="メニューを開く">
           <i class="fa-solid fa-bars"></i>
+        </button>
+        <button class="btn-sidebar-toggle-pc" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+          <i class="fa-solid fa-bars-staggered"></i>
         </button>
         <h1 class="logo-title text-base sm:text-xl font-extrabold text-slate-900 tracking-tight">REvo ビジター管理</h1>
       </div>
