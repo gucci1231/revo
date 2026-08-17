@@ -310,38 +310,100 @@
 
   function renderHotVisitorsTable(records) {
     const tbody = document.getElementById('table-hot-visitors');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const cardsContainer = document.getElementById('cards-hot-visitors');
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
 
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-fire text-2xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">現在フォロー対象のホットビジターはいません</div>
+          </div>
+        `;
+      }
       return;
     }
 
     records.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatEventDateWithElapsed(r.eventDate)}</td>
-        <td>
-          <div>
-            ${renderVisitorNameLinkHtml(r.id, r.name)}
-            ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(r.id);
+        };
+        tr.innerHTML = `
+          <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(r.id, r.name)}
+              ${r.company ? `<div style="font-size:11px; color:#64748b;">${escapeHtml(r.company)}</div>` : ''}
+            </div>
+          </td>
+          <td>
+            <div>
+              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
+              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+            </div>
+          </td>
+          <td>${renderCurrentStatusColumnHtml(r)}</td>
+          <td class="text-center">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+              詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = 'dash-ap-card';
+        card.onclick = function() {
+          openVisitorDetailView(r.id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              <span class="badge" style="background:#ffe3e3; color:#e03131; font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">
+                <i class="fa-solid fa-fire mr-1"></i>HOT A
+              </span>
+              ${formatEventDateWithElapsed(r.eventDate)}
+            </div>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
+              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
           </div>
-        </td>
-        <td>
-          <div>
-            <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-            ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-rose-600 text-xs"></i>
+            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(r.company)})</span>` : ''}
           </div>
-        </td>
-        <td>${renderCurrentStatusColumnHtml(r)}</td>
-        <td class="text-center">
-          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
-            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+
+          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
+            <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
+            ${r.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(r.orientUser)}</span></span>` : ''}
+          </div>
+
+          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
+            ${renderCurrentStatusColumnHtml(r)}
+          </div>
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> タップしてカルテ・詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 

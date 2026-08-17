@@ -101,7 +101,9 @@
           最優先フォロー管理で全件見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
         </button>
       </div>
-      <div class="table-container">
+
+      <!-- 🖥️ PC表示用: テーブルビュー -->
+      <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
             <tr>
@@ -115,6 +117,9 @@
           <tbody id="table-hot-visitors"></tbody>
         </table>
       </div>
+
+      <!-- 📱 スマホ表示用: カードグリッド -->
+      <div id="cards-hot-visitors" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
@@ -162,7 +167,9 @@
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-calendar-days text-blue-600"></i> <span id="title-next-meeting-date">次回</span>定例会のビジター名簿</h2>
       </div>
-      <div class="table-container">
+
+      <!-- 🖥️ PC表示用 -->
+      <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
             <tr>
@@ -178,6 +185,9 @@
           <tbody id="table-next-meeting"></tbody>
         </table>
       </div>
+
+      <!-- 📱 スマホ表示用 -->
+      <div id="cards-next-meeting" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
 
     <!-- 直近定例会 -->
@@ -185,7 +195,9 @@
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-calendar-check text-slate-500"></i> <span id="title-last-meeting-date">今週</span>定例会のビジター名簿</h2>
       </div>
-      <div class="table-container">
+
+      <!-- 🖥️ PC表示用 -->
+      <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
             <tr>
@@ -195,11 +207,15 @@
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
               <th class="text-center col-w-sm">出欠</th>
+              <th class="text-center col-w-sm">操作</th>
             </tr>
           </thead>
           <tbody id="table-last-meeting"></tbody>
         </table>
       </div>
+
+      <!-- 📱 スマホ表示用 -->
+      <div id="cards-last-meeting" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 
@@ -212,7 +228,9 @@
           <div class="section-sub">定例会参加から30日以内のビジター進捗と次の一手</div>
         </div>
       </div>
-      <div class="table-container">
+
+      <!-- 🖥️ PC表示用 -->
+      <div class="table-container dash-ap-table-wrap">
         <table>
           <thead>
             <tr>
@@ -227,6 +245,9 @@
           <tbody id="table-one-month"></tbody>
         </table>
       </div>
+
+      <!-- 📱 スマホ表示用 -->
+      <div id="cards-one-month" class="dash-ap-grid dash-ap-cards-wrap"></div>
     </section>
   </div>
 

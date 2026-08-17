@@ -92,35 +92,105 @@
 
   function renderMeetingVisitorTable(tbodyId, records, showActions) {
     const tbody = document.getElementById(tbodyId);
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const cardsContainerId = tbodyId === 'table-next-meeting' ? 'cards-next-meeting' : 'cards-last-meeting';
+    const cardsContainer = document.getElementById(cardsContainerId);
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
+
     if (!records || records.length === 0) {
       const cols = showActions ? 7 : 6;
-      tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align: center; color: #868e96; padding: 15px;">該当なし</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align: center; color: #868e96; padding: 24px;">該当するビジターはいません</td></tr>`;
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 32px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-users text-2xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">該当するビジターはいません</div>
+          </div>
+        `;
+      }
       return;
     }
+
     records.forEach((r, idx) => {
-      const tr = document.createElement('tr');
       const companyPart = formatTruncatedCell(r.company, 12);
       const profPart = formatTruncatedCell(r.profession, 12);
       const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
-      const actionsCell = showActions ? `
-        <td>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <button class="btn-icon-action" onclick="openHearingFormModal('${r.id}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
-            <button class="btn-icon-action" onclick="openEditVisitorModal('${r.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(r.id);
+        };
+
+        const actionsCell = `
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              ${showActions ? `
+                <button class="btn-icon-action" onclick="event.stopPropagation(); openHearingFormModal('${r.id}')" title="ヒアリングシート"><i class="fa-solid fa-file-lines"></i></button>
+                <button class="btn-icon-action" onclick="event.stopPropagation(); openEditVisitorModal('${r.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
+              ` : ''}
+              <button class="btn-action-secondary vd-quick-chip" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
+                詳細
+              </button>
+            </div>
+          </td>`;
+
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+          <td>${companyCell}</td>
+          <td>${formatTruncatedCell(r.inviter, 10)}</td>
+          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
+          <td class="text-center">${renderAttendButtonHtml(r.id, r.isAttended)}</td>
+          ${actionsCell}
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = 'dash-ap-card';
+        card.onclick = function() {
+          openVisitorDetailView(r.id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              <span class="badge" style="background:#f1f5f9; color:#475569; font-weight:800; font-size:10px; padding:2px 6px;">No.${idx + 1}</span>
+              ${renderRankBadgeHtml(r.feelAbc)}
+              ${renderAttendButtonHtml(r.id, r.isAttended)}
+            </div>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
+              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
           </div>
-        </td>` : '';
-      tr.innerHTML = `
-        <td>${idx + 1}</td>
-        <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
-        <td>${companyCell}</td>
-        <td>${formatTruncatedCell(r.inviter, 10)}</td>
-        <td>${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td>${renderAttendButtonHtml(r.id, r.isAttended)}</td>
-        ${actionsCell}
-      `;
-      tbody.appendChild(tr);
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-blue-600 text-xs"></i>
+            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+          </div>
+
+          <div style="font-size: 11px; color: #64748b;">
+            ${escapeHtml(r.company || '-')} ${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
+          </div>
+
+          <div style="font-size: 11px; color: #475569;">
+            <span><strong>招待者:</strong> ${escapeHtml(r.inviter || '-')}</span>
+          </div>
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> タップして詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 
@@ -134,37 +204,100 @@
 
   function renderOneMonthTable(records) {
     const tbody = document.getElementById('table-one-month');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const cardsContainer = document.getElementById('cards-one-month');
+
+    if (tbody) tbody.innerHTML = '';
+    if (cardsContainer) cardsContainer.innerHTML = '';
+
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 24px;">該当するフォローアップ対象者はいません</td></tr>';
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fa-solid fa-comments text-2xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">該当するフォローアップ対象者はいません</div>
+          </div>
+        `;
+      }
       return;
     }
+
     records.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatEventDateWithElapsed(r.eventDate)}</td>
-        <td>
-          <div>
-            ${renderVisitorNameLinkHtml(r.id, r.name)}
-            <div style="font-size:11px; color:#64748b;">${escapeHtml(r.company || '-')} / ${escapeHtml(r.profession || '-')}</div>
+      // 1. PCテーブル行
+      if (tbody) {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openVisitorDetailView(r.id);
+        };
+
+        tr.innerHTML = `
+          <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+          <td>
+            <div>
+              ${renderVisitorNameLinkHtml(r.id, r.name)}
+              <div style="font-size:11px; color:#64748b;">${escapeHtml(r.company || '-')} / ${escapeHtml(r.profession || '-')}</div>
+            </div>
+          </td>
+          <td>
+            <div>
+              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
+              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+            </div>
+          </td>
+          <td>${renderCurrentStatusColumnHtml(r)}</td>
+          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
+          <td class="text-center">
+            <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
+              詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // 2. スマホカード
+      if (cardsContainer) {
+        const card = document.createElement('div');
+        card.className = 'dash-ap-card';
+        card.onclick = function() {
+          openVisitorDetailView(r.id);
+        };
+
+        card.innerHTML = `
+          <div class="dash-ap-card-header">
+            <div class="dash-ap-card-badges">
+              ${renderRankBadgeHtml(r.feelAbc)}
+              ${formatEventDateWithElapsed(r.eventDate)}
+            </div>
+            <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:10px; padding:2px 8px;" onclick="event.stopPropagation(); openVisitorDetailView('${r.id}')">
+              詳細 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
           </div>
-        </td>
-        <td>
-          <div>
-            <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-            ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+
+          <div class="dash-ap-card-visitor">
+            <i class="fa-solid fa-user-tag text-indigo-600 text-xs"></i>
+            <span>${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
+            ${r.company ? `<span style="font-size:11px; font-weight:normal; color:#64748b;">(${escapeHtml(r.company)})</span>` : ''}
           </div>
-        </td>
-        <td>${renderCurrentStatusColumnHtml(r)}</td>
-        <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-        <td class="text-center">
-          <button type="button" class="btn-action-secondary vd-quick-chip" onclick="openVisitorDetailView('${r.id}')">
-            詳細 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
+
+          <div style="font-size: 11px; color: #475569; display: flex; gap: 8px; flex-wrap: wrap;">
+            <span><strong>招待:</strong> ${escapeHtml(r.inviter || '-')}</span>
+            ${r.orientUser ? `<span><strong>担当:</strong> <span style="color:#5f3dc4; font-weight:700;">${escapeHtml(r.orientUser)}</span></span>` : ''}
+          </div>
+
+          <div style="background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 2px;">
+            ${renderCurrentStatusColumnHtml(r)}
+          </div>
+
+          <div class="dash-ap-card-footer">
+            <span><i class="fa-solid fa-address-card mr-1"></i> タップしてカルテ・詳細を開く</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+          </div>
+        `;
+        cardsContainer.appendChild(card);
+      }
     });
   }
 </script>
