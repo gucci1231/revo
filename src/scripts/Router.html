@@ -50,7 +50,7 @@
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }
@@ -91,6 +91,7 @@
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
+    'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
     'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
     'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
   };
@@ -112,7 +113,7 @@
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -150,6 +151,8 @@
       fetchHearingListData(true);
     } else if (tabName === 'email-schedule') {
       fetchScheduledEmailsData(true);
+    } else if (tabName === 'email-templates') {
+      fetchEmailTemplatesData(true);
     } else if (tabName === 'settings') {
       fetchMembersMasterData();
     }

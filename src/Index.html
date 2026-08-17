@@ -102,6 +102,9 @@
       <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
         <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
       </button>
+      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
+        <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
+      </button>
       <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
         <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
@@ -156,6 +159,9 @@
       <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
         <i class="fa-solid fa-clock"></i> メール送信予定一覧
       </button>
+      <button class="tab-btn" id="tab-btn-email-templates" onclick="switchTab('email-templates')">
+        <i class="fa-solid fa-envelope-open-text"></i> メールテンプレート
+      </button>
       <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
         <i class="fa-solid fa-gear"></i> 設定
       </button>
@@ -170,6 +176,7 @@
     <?!= include('ViewVisitorDetail'); ?>
     <?!= include('ViewSettings'); ?>
     <?!= include('ViewEmailSchedule'); ?>
+    <?!= include('ViewEmailTemplates'); ?>
 
   </div>
 

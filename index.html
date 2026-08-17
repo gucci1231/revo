@@ -3189,6 +3189,9 @@ tr:last-child td { border-bottom: none; }
       <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
         <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
       </button>
+      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
+        <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
+      </button>
       <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
         <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
@@ -3242,6 +3245,9 @@ tr:last-child td { border-bottom: none; }
       </button>
       <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
         <i class="fa-solid fa-clock"></i> メール送信予定一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-email-templates" onclick="switchTab('email-templates')">
+        <i class="fa-solid fa-envelope-open-text"></i> メールテンプレート
       </button>
       <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
         <i class="fa-solid fa-gear"></i> 設定
@@ -4373,6 +4379,388 @@ tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+    <!-- VIEW 7: メールテンプレート管理ビュー (時系列タイムライン > 編集 > バリデーション > サンプル確認 > OK) -->
+<div id="view-email-templates" class="view-content">
+
+  <!-- ==================== SUBVIEW 1: メールテンプレート一覧 & タイムライン ==================== -->
+  <div id="et-view-list" class="space-y-6">
+    <!-- Header & Mode Switcher -->
+    <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-blue-600 font-bold text-xs tracking-wider uppercase mb-1">
+          <i class="fa-solid fa-route"></i>
+          <span>Visitor Lifecycle Email Timeline</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">メールテンプレート・配信フロー</h2>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          ビジター申込から定例会当日、1ヶ月後フォローまでの<strong>時系列ステップメール配信フロー</strong>です。属性や出欠状況による条件分岐もひと目で確認・編集できます。
+        </p>
+      </div>
+      
+      <!-- Right Toolbar -->
+      <div class="flex items-center gap-2 shrink-0 flex-wrap">
+        <!-- View Mode Switch -->
+        <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+          <button type="button" id="et-mode-btn-timeline" class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-white text-blue-600 shadow-sm" onclick="switchEmailViewMode('timeline')">
+            <i class="fa-solid fa-timeline mr-1"></i> 時系列フロー
+          </button>
+          <button type="button" id="et-mode-btn-grid" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all" onclick="switchEmailViewMode('grid')">
+            <i class="fa-solid fa-table-cells-large mr-1"></i> カード一覧
+          </button>
+        </div>
+
+        <button type="button" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 border border-slate-200" onclick="fetchEmailTemplatesData(true)">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>再読込</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= 1. 時系列タイムライン表示 (デフォルト) ================= -->
+    <div id="et-timeline-container" class="space-y-16 sm:space-y-24 relative py-4 sm:py-6">
+      <!-- Loading Skeleton -->
+      <div class="py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
+        <p class="text-xs">メールテンプレート配信フローを読み込み中...</p>
+      </div>
+    </div>
+
+    <!-- ================= 2. カードグリッド表示 (切り替え時) ================= -->
+    <div id="et-grid-container" class="space-y-5" style="display: none;">
+      <!-- Category Filter Tabs -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition shrink-0" data-category="all" onclick="filterEmailTemplates('all')">
+          すべて <span id="et-count-all" class="ml-1 text-xs opacity-80">(0)</span>
+        </button>
+        <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="welcome" onclick="filterEmailTemplates('welcome')">
+          参加案内・Welcome <span id="et-count-welcome" class="ml-1 text-xs opacity-80">(0)</span>
+        </button>
+        <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="remind" onclick="filterEmailTemplates('remind')">
+          リマインド <span id="et-count-remind" class="ml-1 text-xs opacity-80">(0)</span>
+        </button>
+        <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="thanks" onclick="filterEmailTemplates('thanks')">
+          御礼・欠席 <span id="et-count-thanks" class="ml-1 text-xs opacity-80">(0)</span>
+        </button>
+        <button type="button" class="et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0" data-category="follow" onclick="filterEmailTemplates('follow')">
+          中長期フォロー <span id="et-count-follow" class="ml-1 text-xs opacity-80">(0)</span>
+        </button>
+      </div>
+
+      <!-- Template Card Grid -->
+      <div id="et-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </div>
+  </div>
+
+  <!-- ==================== SUBVIEW 2: テンプレート編集ウィザード ==================== -->
+  <div id="et-view-editor" class="space-y-6" style="display: none;">
+    <!-- Step Wizard Bar -->
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-sm">
+      <div class="flex items-center justify-between gap-2 max-w-3xl mx-auto">
+        <!-- Step 1 (Completed / Nav) -->
+        <button type="button" onclick="cancelEmailTemplateEdit()" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition group text-left">
+          <div class="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-blue-50 text-slate-600 group-hover:text-blue-600 flex items-center justify-center font-bold text-xs border border-slate-200 group-hover:border-blue-300">
+            <i class="fa-solid fa-arrow-left"></i>
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 1</div>
+            <div class="text-xs font-bold text-slate-700 group-hover:text-blue-600">一覧に戻る</div>
+          </div>
+        </button>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 2: 編集 -->
+        <div id="et-step-indicator-edit" class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-blue-500/20">
+            2
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-blue-600 uppercase font-extrabold tracking-wider">Step 2</div>
+            <div class="text-xs font-black text-slate-900">文面編集</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 3: 検証 -->
+        <div id="et-step-indicator-validate" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            3
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 3</div>
+            <div class="text-xs font-bold text-slate-700">バリデーション</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 4: サンプル確認 -->
+        <div id="et-step-indicator-preview" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            4
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 4</div>
+            <div class="text-xs font-bold text-slate-700">サンプル確認</div>
+          </div>
+        </div>
+
+        <div class="h-0.5 flex-1 bg-slate-200 max-w-[40px] sm:max-w-[80px]"></div>
+
+        <!-- Step 5: 保存 -->
+        <div id="et-step-indicator-save" class="flex items-center gap-2 opacity-50">
+          <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs border border-slate-200">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div class="hidden sm:block">
+            <div class="text-[10px] text-slate-400 uppercase font-extrabold tracking-wider">Step 5</div>
+            <div class="text-xs font-bold text-slate-700">完了・同期</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Main Form Area -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Left Column: Edit Inputs (8 cols on lg) -->
+      <div class="lg:col-span-8 space-y-5">
+        <div class="bg-white rounded-2xl p-5 sm:p-7 border border-slate-200/80 shadow-sm space-y-5">
+          <!-- Template Title & Key Badge -->
+          <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <span id="et-edit-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold tracking-wide uppercase bg-blue-50 text-blue-700 border border-blue-200">WELCOME</span>
+              <h3 id="et-edit-name" class="text-lg sm:text-xl font-black text-slate-900 mt-1.5">新規ビジター参加案内 (Welcome)</h3>
+              <p id="et-edit-desc" class="text-xs text-slate-500 mt-0.5">初めてお申し込みいただいたビジター様へ送信する初回案内メールです。</p>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[10px] text-slate-400 block font-mono">Template Key</span>
+              <code id="et-edit-key" class="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">EMAIL_VISITOR_INTRO</code>
+            </div>
+          </div>
+
+          <!-- Subject Input -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="et-edit-subject" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-heading text-blue-600"></i>
+                <span>メール件名 (Subject)</span>
+                <span class="text-red-500 font-bold text-xs">*</span>
+              </label>
+              <span id="et-subject-len" class="text-[11px] text-slate-400 font-mono">0 文字</span>
+            </div>
+            <input type="text" id="et-edit-subject" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium text-slate-900 transition" placeholder="件名を入力してください..." oninput="onTemplateInputChange()">
+          </div>
+
+          <!-- Body Textarea -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="et-edit-body" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-align-left text-blue-600"></i>
+                <span>メール本文 (Body)</span>
+                <span class="text-red-500 font-bold text-xs">*</span>
+              </label>
+              <div class="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+                <span id="et-body-lines">0 行</span>
+                <span>•</span>
+                <span id="et-body-chars">0 文字</span>
+              </div>
+            </div>
+            <textarea id="et-edit-body" rows="14" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-xs sm:text-sm font-mono text-slate-800 leading-relaxed transition" placeholder="メール本文を入力してください..." oninput="onTemplateInputChange()"></textarea>
+          </div>
+
+          <!-- Validation Warning / Error Box -->
+          <div id="et-validation-box" class="rounded-xl p-4 border transition-all" style="display: none;">
+            <div class="flex items-start gap-3">
+              <div id="et-val-icon" class="text-base shrink-0 mt-0.5"></div>
+              <div class="space-y-1 flex-1">
+                <h4 id="et-val-title" class="text-xs font-bold"></h4>
+                <ul id="et-val-list" class="text-xs space-y-0.5 list-disc list-inside"></ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+            <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-bold transition flex items-center justify-center gap-2" onclick="cancelEmailTemplateEdit()">
+              <i class="fa-solid fa-xmark"></i>
+              <span>キャンセルして一覧へ戻る</span>
+            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" id="btn-et-validate-preview" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-extrabold shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2" onclick="runValidationAndProceedToPreview()">
+                <span>バリデーション ＆ メールサンプル確認へ</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Placeholder Tag Palette (4 cols on lg) -->
+      <div class="lg:col-span-4 space-y-5">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 sticky top-20">
+          <div class="flex items-center gap-2 text-slate-800 font-black text-sm">
+            <i class="fa-solid fa-tags text-blue-600"></i>
+            <span>差し込みタグパレット</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            クリックすると、現在カーソルがある位置（件名または本文）にタグが自動挿入されます。
+          </p>
+
+          <div class="space-y-3">
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">👤 ビジター基本情報</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$name}')" title="ビジター氏名">
+                  <code>{$name}</code>
+                  <span>氏名</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$event_date}')" title="定例会参加日">
+                  <code>{$event_date}</code>
+                  <span>参加日</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$profession}')" title="専門分野・業種">
+                  <code>{$profession}</code>
+                  <span>専門分野</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$company}')" title="会社名・屋号">
+                  <code>{$company}</code>
+                  <span>会社名</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$inviter}')" title="ご紹介者様氏名">
+                  <code>{$inviter}</code>
+                  <span>紹介者</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">🏛 定例会・メインプレゼン</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$main_presenter}')" title="メインプレゼンター氏名">
+                  <code>{$main_presenter}</code>
+                  <span>メインプレゼンター</span>
+                </button>
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$wanted}')" title="求めている紹介・リファーラル">
+                  <code>{$wanted}</code>
+                  <span>求める紹介</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">🌟 動的カスタムブロック</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" class="et-tag-chip" onclick="insertTagToTemplate('{$matching_status}')" title="マッチング要望案内ブロック (要望記入時のみ表示)">
+                  <code>{$matching_status}</code>
+                  <span>マッチング要望</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 rounded-xl p-3 border border-amber-200/70 text-[11px] text-amber-800 flex items-start gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-600 mt-0.5 shrink-0"></i>
+            <span>タグは <code>{$...}</code> の形式で本文中に直接記述することも可能です。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Sample Preview Modal / Overlay Section -->
+    <div id="et-preview-section" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
+      <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        
+        <!-- Preview Modal Header -->
+        <div class="p-5 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-blue-100 text-blue-700 uppercase">Step 4: サンプル確認</span>
+                <span id="et-preview-tmpl-key" class="text-xs font-mono text-slate-500">EMAIL_VISITOR_INTRO</span>
+              </div>
+              <h3 class="text-base sm:text-lg font-black text-slate-900 mt-0.5">メール送信サンプルプレビュー</h3>
+            </div>
+          </div>
+          <button type="button" class="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition" onclick="closeEmailSamplePreview()">
+            <i class="fa-solid fa-xmark text-base"></i>
+          </button>
+        </div>
+
+        <!-- Preview Modal Content -->
+        <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 bg-slate-50/50">
+          
+          <!-- Sample Visitor Selector Toolbar -->
+          <div class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+              <i class="fa-solid fa-user-gear text-blue-600"></i>
+              <span>サンプルデータ切替:</span>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="et-sample-selector" class="text-xs font-bold bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-800 focus:ring-2 focus:ring-blue-500" onchange="updateEmailSamplePreview()">
+                <option value="first_time">1. 初回ビジター (マッチング要望あり)</option>
+                <option value="first_time_no_req">2. 初回ビジター (マッチング要望なし)</option>
+                <option value="repeater">3. 再参加リピーター</option>
+                <option value="guest">4. 他チャプターゲスト</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Email Client Mockup Frame -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
+            <!-- Mail Client Header -->
+            <div class="bg-slate-100/90 border-b border-slate-200 p-3.5 sm:p-4 space-y-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-14 text-slate-400 font-bold shrink-0">差出人:</span>
+                <span class="font-bold text-slate-800">BNI REvoチャプター ビジターホストチーム &lt;visitorhost@revo.k-d-o.biz&gt;</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-14 text-slate-400 font-bold shrink-0">宛先:</span>
+                <span id="et-preview-recipient" class="font-bold text-slate-800">山田 太郎 様 &lt;yamada@example.com&gt;</span>
+              </div>
+              <div class="flex items-start gap-2 pt-1 border-t border-slate-200/60">
+                <span class="w-14 text-slate-400 font-bold shrink-0 mt-0.5">件名:</span>
+                <span id="et-preview-subject" class="font-black text-slate-900 text-sm leading-snug">【BNI REvoチャプター】定例会ご参加のお申し込みありがとうございます（09/04開催）</span>
+              </div>
+            </div>
+
+            <!-- Mail Client Body Area -->
+            <div class="p-5 sm:p-6 text-xs sm:text-sm text-slate-800 font-sans leading-relaxed whitespace-pre-wrap select-text" id="et-preview-body">
+            </div>
+          </div>
+
+          <!-- Synchronize Alert Note -->
+          <div class="bg-blue-50 rounded-2xl p-4 border border-blue-200/80 flex items-start gap-3 text-xs text-blue-900">
+            <i class="fa-solid fa-cloud-arrow-up text-blue-600 text-base mt-0.5 shrink-0"></i>
+            <div class="space-y-0.5">
+              <div class="font-black">保存時の自動連携について</div>
+              <div class="text-blue-800">「OK」をクリックすると、SQLiteデータベースおよびGoogleスプレッドシート（<code>FollowMail_template</code>）の文面が即座に更新されます。次回以降のメール送信時にこの文面が使用されます。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Modal Footer -->
+        <div class="p-4 sm:p-5 border-t border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <button type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2" onclick="closeEmailSamplePreview()">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>修正に戻る (Step 2)</span>
+          </button>
+          
+          <button type="button" id="btn-et-save-confirm" class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-black shadow-lg shadow-green-600/20 transition flex items-center justify-center gap-2" onclick="saveEmailTemplateConfirm()">
+            <i class="fa-solid fa-check"></i>
+            <span>OK (この内容で保存してスプレッドシートに同期)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
   </div>
 
@@ -4565,6 +4953,20 @@ const ApiService = {
           url: '/api/action_plans.php?action=delete',
           method: 'POST',
           body: { id: args[0], visitorId: args[1] }
+        };
+      case 'getEmailTemplatesApi':
+        return { url: '/api/email_templates.php?action=list', method: 'GET' };
+      case 'updateEmailTemplateApi':
+        return {
+          url: '/api/email_templates.php?action=update',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0], subject: args[1], body: args[2] }
+        };
+      case 'sendEmailViaGasApi':
+        return {
+          url: '/api/email_templates.php?action=send',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { visitorId: args[0], templateKey: args[1], customSubject: args[2], customBody: args[3] }
         };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
@@ -5382,7 +5784,7 @@ window.CelebrationEffect = (function() {
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }
@@ -5423,6 +5825,7 @@ window.CelebrationEffect = (function() {
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
+    'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
     'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
     'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
   };
@@ -5444,7 +5847,7 @@ window.CelebrationEffect = (function() {
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -5482,6 +5885,8 @@ window.CelebrationEffect = (function() {
       fetchHearingListData(true);
     } else if (tabName === 'email-schedule') {
       fetchScheduledEmailsData(true);
+    } else if (tabName === 'email-templates') {
+      fetchEmailTemplatesData(true);
     } else if (tabName === 'settings') {
       fetchMembersMasterData();
     }
@@ -7627,6 +8032,719 @@ window.CelebrationEffect = (function() {
 </script>
 
 <script>
+  /* --- Email Templates Management & Timeline Flow Controller --- */
+  let rawEmailTemplates = [];
+  let currentEditingTemplate = null;
+  let activeTemplateCategory = 'all';
+  let emailViewMode = 'timeline'; // 'timeline' or 'grid'
+  let lastActiveInputTarget = 'body'; // 'subject' or 'body'
+
+  const SAMPLE_VISITOR_PRESETS = {
+    first_time: {
+      name: '山田 太郎',
+      eventDate: '09/04',
+      profession: '税理士・事業承継コンサルティング',
+      company: '山田総合会計事務所',
+      inviter: '高橋 健一',
+      email: 'yamada@example.com',
+      matchingReq: 'IT企業の経営者やWeb制作会社の方と協業したいと考えております。',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    first_time_no_req: {
+      name: '田中 幸子',
+      eventDate: '09/04',
+      profession: 'パーソナルスタイリスト',
+      company: 'Style Grace',
+      inviter: '鈴木 恵子',
+      email: 'tanaka.grace@example.com',
+      matchingReq: '',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    repeater: {
+      name: '渡辺 健二',
+      eventDate: '09/04',
+      profession: '不動産売買仲介・リノベーション',
+      company: '株式会社リノベエステート',
+      inviter: '小林 大介',
+      email: 'watanabe@renove-estate.jp',
+      matchingReq: '士業（司法書士・弁護士）の方と連携パートナーになりたい。',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    },
+    guest: {
+      name: '木村 慎一',
+      eventDate: '09/04',
+      profession: 'サイバーセキュリティ・ネットワーク構築',
+      company: 'セキュアネット合同会社 (BNIサンライズチャプター)',
+      inviter: '伊藤 拓也',
+      email: 'kimura@secure-net.co.jp',
+      matchingReq: 'クロスチャプターで協業できるITコンサルタント',
+      mainPresenter: '佐藤 雅人',
+      wanted: 'Webサイトリニューアルを検討中の年商1億円以上の企業経営者'
+    }
+  };
+
+  function switchEmailViewMode(mode) {
+    emailViewMode = mode;
+    const timelineContainer = document.getElementById('et-timeline-container');
+    const gridContainer = document.getElementById('et-grid-container');
+    const btnTimeline = document.getElementById('et-mode-btn-timeline');
+    const btnGrid = document.getElementById('et-mode-btn-grid');
+
+    if (mode === 'timeline') {
+      if (timelineContainer) timelineContainer.style.display = 'block';
+      if (gridContainer) gridContainer.style.display = 'none';
+      if (btnTimeline) btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-white text-blue-600 shadow-sm';
+      if (btnGrid) btnGrid.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all';
+    } else {
+      if (timelineContainer) timelineContainer.style.display = 'none';
+      if (gridContainer) gridContainer.style.display = 'block';
+      if (btnTimeline) btnTimeline.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all';
+      if (btnGrid) btnGrid.className = 'px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-white text-blue-600 shadow-sm';
+    }
+  }
+
+  function fetchEmailTemplatesData(force = false) {
+    const timelineContainer = document.getElementById('et-timeline-container');
+    if (timelineContainer && rawEmailTemplates.length === 0) {
+      timelineContainer.innerHTML = `
+        <div class="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+          <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
+          <p class="text-xs font-bold">メールテンプレート配信フローを読み込み中...</p>
+        </div>
+      `;
+    }
+
+    ApiService.call('getEmailTemplatesApi')
+      .then(res => {
+        if (res && res.success && Array.isArray(res.templates)) {
+          rawEmailTemplates = res.templates;
+          renderEmailTemplatesList();
+          updateEmailTemplateCategoryCounts();
+        } else {
+          showToast('メールテンプレートの取得に失敗しました');
+        }
+      })
+      .catch(err => {
+        console.error('Fetch email templates error:', err);
+        handleError(err);
+      });
+  }
+
+  function updateEmailTemplateCategoryCounts() {
+    const counts = { all: rawEmailTemplates.length, welcome: 0, remind: 0, thanks: 0, follow: 0 };
+    rawEmailTemplates.forEach(t => {
+      const cat = t.category || 'welcome';
+      if (counts[cat] !== undefined) counts[cat]++;
+    });
+
+    ['all', 'welcome', 'remind', 'thanks', 'follow'].forEach(c => {
+      const el = document.getElementById(`et-count-${c}`);
+      if (el) el.innerText = `(${counts[c] || 0})`;
+    });
+  }
+
+  function filterEmailTemplates(category) {
+    activeTemplateCategory = category;
+    document.querySelectorAll('.et-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-category') === category) {
+        btn.className = 'et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-blue-600 text-white shadow-sm transition shrink-0 active';
+      } else {
+        btn.className = 'et-filter-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80 transition shrink-0';
+      }
+    });
+    renderEmailTemplatesGrid();
+  }
+
+  function renderEmailTemplatesList() {
+    renderEmailTimeline();
+    renderEmailTemplatesGrid();
+  }
+
+  function renderTemplateCardHtml(t, customBadge = null, subLabel = null) {
+    const safeSubject = escapeHtml(t.subject || '');
+    const bodySnippet = escapeHtml((t.body || '').slice(0, 130) + ((t.body || '').length > 130 ? '...' : ''));
+    const safeDesc = escapeHtml(t.description || '');
+    const updatedAt = t.updated_at ? escapeHtml(t.updated_at) : '未設定';
+
+    return `
+      <div class="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group h-full">
+        <div class="space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            ${customBadge ? customBadge : `
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase border bg-blue-50 text-blue-700 border-blue-200">
+                <i class="fa-solid fa-envelope"></i>
+                <span>${(t.category || 'STEP').toUpperCase()}</span>
+              </span>
+            `}
+            <code class="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${escapeHtml(t.id)}</code>
+          </div>
+
+          <div>
+            ${subLabel ? `<div class="text-[11px] font-extrabold text-blue-600 mb-0.5 flex items-center gap-1">${subLabel}</div>` : ''}
+            <h4 class="text-sm sm:text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">${escapeHtml(t.name)}</h4>
+            ${safeDesc ? `<p class="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">${safeDesc}</p>` : ''}
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1">
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-heading text-blue-500"></i>
+              <span>件名</span>
+            </div>
+            <div class="text-xs font-bold text-slate-800 line-clamp-2 leading-snug">${safeSubject}</div>
+          </div>
+
+          <div class="bg-slate-50/60 rounded-xl p-2.5 border border-slate-100/80 space-y-1">
+            <div class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <i class="fa-solid fa-align-left text-slate-400"></i>
+              <span>本文プレビュー</span>
+            </div>
+            <div class="text-[11px] text-slate-600 font-mono whitespace-pre-wrap leading-relaxed line-clamp-3">${bodySnippet}</div>
+          </div>
+        </div>
+
+        <div class="pt-5 mt-5 border-t border-slate-100 flex items-center justify-between gap-3">
+          <span class="text-xs text-slate-400 flex items-center gap-1.5">
+            <i class="fa-regular fa-clock"></i>
+            <span>${updatedAt}</span>
+          </span>
+          <button type="button" class="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white text-xs sm:text-sm font-extrabold transition-all border border-blue-200 hover:border-blue-600 shadow-sm flex items-center gap-2" onclick="startEditEmailTemplate('${escapeHtml(t.id)}')">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>編集する</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEmailTimeline() {
+    const container = document.getElementById('et-timeline-container');
+    if (!container) return;
+
+    if (rawEmailTemplates.length === 0) {
+      container.innerHTML = `
+        <div class="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+          <i class="fa-solid fa-envelope-open text-3xl mb-2 text-slate-300"></i>
+          <p class="text-xs font-bold text-slate-500">メールテンプレートが登録されていません</p>
+        </div>
+      `;
+      return;
+    }
+
+    const map = {};
+    rawEmailTemplates.forEach(t => { map[t.id] = t; });
+
+    const tmplVisitorIntro = map['EMAIL_VISITOR_INTRO'] || { id: 'EMAIL_VISITOR_INTRO', name: '新規ビジター参加案内 (Welcome)', subject: '', body: '', description: '' };
+    const tmplGuestIntro = map['EMAIL_GUEST_INTRO'] || { id: 'EMAIL_GUEST_INTRO', name: '他チャプターゲスト参加案内 (Welcome)', subject: '', body: '', description: '' };
+    const tmplRepeaterIntro = map['EMAIL_REPEATER_INTRO'] || { id: 'EMAIL_REPEATER_INTRO', name: '再参加リピーター案内 (Welcome)', subject: '', body: '', description: '' };
+
+    const tmplRemind2Days = map['EMAIL_REMIND_2DAYS'] || { id: 'EMAIL_REMIND_2DAYS', name: '定例会 2日前リマインド', subject: '', body: '', description: '' };
+    const tmplRemind1Day = map['EMAIL_REMIND_1DAY'] || { id: 'EMAIL_REMIND_1DAY', name: '定例会 前日リマインド', subject: '', body: '', description: '' };
+
+    const tmplThanksAttended = map['EMAIL_THANKS_ATTENDED'] || { id: 'EMAIL_THANKS_ATTENDED', name: '定例会ご参加御礼メール', subject: '', body: '', description: '' };
+    const tmplThanksAbsent = map['EMAIL_THANKS_ABSENT'] || { id: 'EMAIL_THANKS_ABSENT', name: '定例会欠席フォローメール', subject: '', body: '', description: '' };
+
+    const tmplFollow7Days = map['EMAIL_FOLLOW_7DAYS'] || { id: 'EMAIL_FOLLOW_7DAYS', name: '参加1週間後フォローメール', subject: '', body: '', description: '' };
+    const tmplFollow30Days = map['EMAIL_FOLLOW_30DAYS'] || { id: 'EMAIL_FOLLOW_30DAYS', name: '参加1ヶ月後フォローメール', subject: '', body: '', description: '' };
+
+    container.innerHTML = `
+      <!-- Timeline Connector Line (Clean Blue) -->
+      <div class="hidden lg:block absolute left-7 top-10 bottom-10 w-1 bg-blue-200/80 rounded-full z-0"></div>
+
+      <!-- ================= PHASE 1: 申込時 (Welcome) ================= -->
+      <div class="relative z-10 space-y-6 sm:space-y-8">
+        <!-- Phase Header -->
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-600/25 shrink-0 ring-4 ring-white">
+            1
+          </div>
+          <div class="flex-1 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-bolt text-blue-600"></i> 申込直後 (即時配信)
+                </span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 1</span>
+              </div>
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> ビジター属性で3分岐
+              </span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900">初回受付・参加案内 (Welcome メール)</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Googleフォームからの参加申込時に、申込者の属性（初参加・他チャプター・再参加）に応じて適切な文面が自動選択されます。</p>
+          </div>
+        </div>
+
+        <!-- Phase 1 Branch Cards Grid (3 Columns) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            ${renderTemplateCardHtml(tmplVisitorIntro, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-user-plus text-blue-600"></i> 初参加</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 初回ビジター向け`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplGuestIntro, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-handshake text-blue-600"></i> ゲスト</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 他チャプターメンバー向け`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplRepeaterIntro, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-rotate-right text-blue-600"></i> リピーター</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 2回目以降の再参加向け`
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PHASE 2: 開催前リマインド (Remind) ================= -->
+      <div class="relative z-10 space-y-6 sm:space-y-8">
+        <!-- Phase Header -->
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-600/25 shrink-0 ring-4 ring-white">
+            2
+          </div>
+          <div class="flex-1 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-clock text-blue-600"></i> 定例会 2日前 & 前日
+                </span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 2</span>
+              </div>
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-calendar-check text-blue-600 mr-1.5"></i> 定例会直前 2段階ステップ
+              </span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900">定例会直前リマインドメール</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">定例会開催直前に、日時・場所・持ち物および当日のメインプレゼンター情報を案内し、参加率と当日の期待感を高めます。</p>
+          </div>
+        </div>
+
+        <!-- Phase 2 Cards Grid (2 Columns) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            ${renderTemplateCardHtml(tmplRemind2Days, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-day text-blue-600"></i> 2日前 (火曜)</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> メインプレゼンター予告・準備`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplRemind1Day, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-bell text-blue-600"></i> 前日 (水曜)</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> 明朝の開催時間・最終確認`
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PHASE 3: 定例会当日 (Thanks / Absent) ================= -->
+      <div class="relative z-10 space-y-6 sm:space-y-8">
+        <!-- Phase Header -->
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-600/25 shrink-0 ring-4 ring-white">
+            3
+          </div>
+          <div class="flex-1 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-flag-checkered text-blue-600"></i> 定例会当日 (木曜午後)
+                </span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 3</span>
+              </div>
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> 出席・欠席で2分岐
+              </span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900">当日フォローメール (御礼 / 欠席フォロー)</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">定例会終了後、出欠確認の結果に応じて「参加御礼＆1to1促進」または「欠席時のお見舞い＆次回日程案内」に自動分岐します。</p>
+          </div>
+        </div>
+
+        <!-- Phase 3 Branch Cards Grid (2 Columns) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            ${renderTemplateCardHtml(tmplThanksAttended, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-circle-check text-blue-600"></i> 出席時</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 当日参加御礼 ＆ 1to1面談案内`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplThanksAbsent, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-circle-xmark text-slate-500"></i> 欠席時</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 欠席フォロー ＆ 次回振替案内`
+            )}
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PHASE 4: 中長期フォロー (Follow) ================= -->
+      <div class="relative z-10 space-y-6 sm:space-y-8">
+        <!-- Phase Header -->
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-600/25 shrink-0 ring-4 ring-white">
+            4
+          </div>
+          <div class="flex-1 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrows-rotate text-blue-600"></i> 参加後 1週間 & 1ヶ月
+                </span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 4</span>
+              </div>
+              <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+                <i class="fa-solid fa-hand-holding-heart text-blue-600 mr-1.5"></i> 中長期リコネクト
+              </span>
+            </div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900">中長期ステップフォローメール</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">参加から時間が経ったビジターへ、ビジネスの進捗伺いやチャプターとの協業・再参加の機会をご案内します。</p>
+          </div>
+        </div>
+
+        <!-- Phase 4 Cards Grid (2 Columns) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            ${renderTemplateCardHtml(tmplFollow7Days, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-week text-blue-600"></i> 1週間後</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> ビジネス進捗伺い ＆ メンバー紹介`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplFollow30Days, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-days text-blue-600"></i> 1ヶ月後</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> 定期フォロー ＆ 再参加リコネクト`
+            )}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderEmailTemplatesGrid() {
+    const cardsGrid = document.getElementById('et-cards-grid');
+    if (!cardsGrid) return;
+
+    const filtered = activeTemplateCategory === 'all'
+      ? rawEmailTemplates
+      : rawEmailTemplates.filter(t => t.category === activeTemplateCategory);
+
+    if (filtered.length === 0) {
+      cardsGrid.innerHTML = `
+        <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200/80">
+          <i class="fa-solid fa-envelope-open text-3xl mb-2 text-slate-300"></i>
+          <p class="text-xs font-bold text-slate-500">該当するメールテンプレートがありません</p>
+        </div>
+      `;
+      return;
+    }
+
+    cardsGrid.innerHTML = filtered.map(t => renderTemplateCardHtml(t)).join('');
+  }
+
+  function startEditEmailTemplate(tmplId) {
+    const tmpl = rawEmailTemplates.find(t => t.id === tmplId);
+    if (!tmpl) {
+      showToast('テンプレートが見つかりません');
+      return;
+    }
+
+    currentEditingTemplate = JSON.parse(JSON.stringify(tmpl));
+
+    // Fill Form Inputs
+    document.getElementById('et-edit-name').innerText = tmpl.name;
+    document.getElementById('et-edit-key').innerText = tmpl.id;
+    document.getElementById('et-edit-desc').innerText = tmpl.description || '';
+    document.getElementById('et-edit-subject').value = tmpl.subject || '';
+    document.getElementById('et-edit-body').value = tmpl.body || '';
+
+    // Update Badge
+    const badgeEl = document.getElementById('et-edit-badge');
+    if (badgeEl) {
+      badgeEl.innerText = (tmpl.category || 'STEP').toUpperCase();
+    }
+
+    // Reset Validation Box
+    const valBox = document.getElementById('et-validation-box');
+    if (valBox) valBox.style.display = 'none';
+
+    // Track Focus Target
+    const subjInput = document.getElementById('et-edit-subject');
+    const bodyInput = document.getElementById('et-edit-body');
+    subjInput.onfocus = () => { lastActiveInputTarget = 'subject'; };
+    bodyInput.onfocus = () => { lastActiveInputTarget = 'body'; };
+
+    onTemplateInputChange();
+
+    // Switch View from List to Editor
+    document.getElementById('et-view-list').style.display = 'none';
+    document.getElementById('et-view-editor').style.display = 'block';
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelEmailTemplateEdit() {
+    currentEditingTemplate = null;
+    document.getElementById('et-view-editor').style.display = 'none';
+    document.getElementById('et-view-list').style.display = 'block';
+  }
+
+  function onTemplateInputChange() {
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const subjLenEl = document.getElementById('et-subject-len');
+    if (subjLenEl) subjLenEl.innerText = `${subject.length} 文字`;
+
+    const bodyLines = body ? body.split('\n').length : 0;
+    const bodyChars = body ? body.length : 0;
+
+    const linesEl = document.getElementById('et-body-lines');
+    const charsEl = document.getElementById('et-body-chars');
+    if (linesEl) linesEl.innerText = `${bodyLines} 行`;
+    if (charsEl) charsEl.innerText = `${bodyChars} 文字`;
+
+    // Hide validation box on typing
+    const valBox = document.getElementById('et-validation-box');
+    if (valBox) valBox.style.display = 'none';
+  }
+
+  function insertTagToTemplate(tag) {
+    const targetInput = lastActiveInputTarget === 'subject'
+      ? document.getElementById('et-edit-subject')
+      : document.getElementById('et-edit-body');
+
+    if (!targetInput) return;
+
+    const startPos = targetInput.selectionStart || targetInput.value.length;
+    const endPos = targetInput.selectionEnd || targetInput.value.length;
+    const beforeText = targetInput.value.substring(0, startPos);
+    const afterText = targetInput.value.substring(endPos, targetInput.value.length);
+
+    targetInput.value = beforeText + tag + afterText;
+    targetInput.focus();
+    targetInput.selectionStart = startPos + tag.length;
+    targetInput.selectionEnd = startPos + tag.length;
+
+    onTemplateInputChange();
+    showToast(`タグ ${tag} を挿入しました`);
+  }
+
+  function validateEmailTemplate(subject, body) {
+    const errors = [];
+    const warnings = [];
+
+    if (!subject || subject.trim() === '') {
+      errors.push('件名 (Subject) を入力してください。');
+    }
+    if (!body || body.trim() === '') {
+      errors.push('本文 (Body) を入力してください。');
+    }
+
+    // Check for unmatched {$
+    const combined = (subject || '') + '\n' + (body || '');
+    const tagMatches = combined.match(/\{\$[a-zA-Z0-9_]+/g) || [];
+    const fullTagMatches = combined.match(/\{\$[a-zA-Z0-9_]+\}/g) || [];
+
+    if (tagMatches.length !== fullTagMatches.length) {
+      warnings.push('閉じ括弧 "}" が抜けているタグが存在する可能性があります。');
+    }
+
+    // Check valid known tags
+    const validTags = [
+      'name', 'visitor_name', 'event_date', 'date', 'profession',
+      'company', 'inviter', 'main_presenter', 'wanted', 'matching_status',
+      'ras_message', 'referral_message'
+    ];
+    const extractedTags = [];
+    const tagRegex = /\{\$([a-zA-Z0-9_]+)\}/g;
+    let match;
+    while ((match = tagRegex.exec(combined)) !== null) {
+      extractedTags.push(match[1]);
+      if (!validTags.includes(match[1])) {
+        warnings.push(`未定義の差し込みタグ "{$${match[1]}}" が含まれています。`);
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings,
+      extractedTags: [...new Set(extractedTags)]
+    };
+  }
+
+  function runValidationAndProceedToPreview() {
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const valResult = validateEmailTemplate(subject, body);
+    const valBox = document.getElementById('et-validation-box');
+    const valTitle = document.getElementById('et-val-title');
+    const valList = document.getElementById('et-val-list');
+    const valIcon = document.getElementById('et-val-icon');
+
+    if (!valResult.isValid) {
+      valBox.style.display = 'block';
+      valBox.className = 'rounded-xl p-4 border bg-red-50 border-red-200 text-red-900 transition-all';
+      valIcon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-red-600"></i>';
+      valTitle.innerText = 'バリデーションエラー: 入力内容をご確認ください';
+      valList.innerHTML = valResult.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
+      showToast('❌ 入力エラーがあります');
+      return;
+    }
+
+    if (valResult.warnings.length > 0) {
+      valBox.style.display = 'block';
+      valBox.className = 'rounded-xl p-4 border bg-amber-50 border-amber-200 text-amber-900 transition-all';
+      valIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-600"></i>';
+      valTitle.innerText = 'バリデーション警告（確認後、そのまま進むことができます）';
+      valList.innerHTML = valResult.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
+    } else {
+      valBox.style.display = 'none';
+    }
+
+    // Step 4: Open Sample Preview
+    openEmailSamplePreview();
+  }
+
+  function renderTemplateTextWithVisitor(text, visitor) {
+    if (!text) return '';
+    let res = text;
+    const vName = visitor.name || '';
+    const vDate = visitor.eventDate || '';
+    const vProf = visitor.profession || '';
+    const vComp = visitor.company || '';
+    const vInviter = visitor.inviter || '';
+    const mainPresenter = visitor.mainPresenter || '未定';
+    const wanted = visitor.wanted || 'なし';
+
+    let matchingBlock = '';
+    if (visitor.matchingReq && visitor.matchingReq !== '') {
+      matchingBlock =
+        "\n━━━━━━━━━━━━━━━━━━━━\n" +
+        "🌟 マッチングのご要望について\n" +
+        "「" + visitor.matchingReq + "」に関するご要望、承知いたしました！\n" +
+        "当日、最適なメンバーとお繋ぎできるよう現在調整を進めております。楽しみにしていてくださいね！\n" +
+        "━━━━━━━━━━━━━━━━━━━━\n";
+    }
+
+    res = res.replace(/\{\$(name|visitor_name)\}/g, vName)
+             .replace(/\{\$(event_date|date)\}/g, vDate)
+             .replace(/\{\$profession\}/g, vProf)
+             .replace(/\{\$company\}/g, vComp)
+             .replace(/\{\$inviter\}/g, vInviter)
+             .replace(/\{\$main_presenter\}/g, mainPresenter)
+             .replace(/\{\$wanted\}/g, wanted)
+             .replace(/\{\$matching_status\}/g, matchingBlock);
+
+    return res;
+  }
+
+  function openEmailSamplePreview() {
+    if (!currentEditingTemplate) return;
+
+    document.getElementById('et-preview-tmpl-key').innerText = currentEditingTemplate.id;
+    updateEmailSamplePreview();
+
+    const previewSec = document.getElementById('et-preview-section');
+    if (previewSec) {
+      previewSec.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeEmailSamplePreview() {
+    const previewSec = document.getElementById('et-preview-section');
+    if (previewSec) {
+      previewSec.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  function updateEmailSamplePreview() {
+    const selector = document.getElementById('et-sample-selector');
+    const selectedKey = selector ? selector.value : 'first_time';
+    const visitor = SAMPLE_VISITOR_PRESETS[selectedKey] || SAMPLE_VISITOR_PRESETS.first_time;
+
+    const rawSubject = document.getElementById('et-edit-subject').value;
+    const rawBody = document.getElementById('et-edit-body').value;
+
+    const renderedSubject = renderTemplateTextWithVisitor(rawSubject, visitor);
+    const renderedBody = renderTemplateTextWithVisitor(rawBody, visitor);
+
+    const recipientEl = document.getElementById('et-preview-recipient');
+    if (recipientEl) {
+      recipientEl.innerText = `${visitor.name} 様 <${visitor.email}>`;
+    }
+
+    const subjectEl = document.getElementById('et-preview-subject');
+    if (subjectEl) {
+      subjectEl.innerText = renderedSubject;
+    }
+
+    const bodyEl = document.getElementById('et-preview-body');
+    if (bodyEl) {
+      bodyEl.innerText = renderedBody;
+    }
+  }
+
+  function saveEmailTemplateConfirm() {
+    if (!currentEditingTemplate) return;
+
+    const subject = document.getElementById('et-edit-subject').value;
+    const body = document.getElementById('et-edit-body').value;
+
+    const valResult = validateEmailTemplate(subject, body);
+    if (!valResult.isValid) {
+      closeEmailSamplePreview();
+      runValidationAndProceedToPreview();
+      return;
+    }
+
+    const saveBtn = document.getElementById('btn-et-save-confirm');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>保存＆同期中...</span>';
+
+    ApiService.call('updateEmailTemplateApi', currentEditingTemplate.id, subject, body)
+      .then(res => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+
+        if (res && res.success) {
+          showToast('✅ メールテンプレートを更新・スプレッドシートへ同期しました！');
+          closeEmailSamplePreview();
+          
+          // Update local memory cache
+          const idx = rawEmailTemplates.findIndex(t => t.id === currentEditingTemplate.id);
+          if (idx !== -1) {
+            rawEmailTemplates[idx].subject = subject;
+            rawEmailTemplates[idx].body = body;
+            rawEmailTemplates[idx].updated_at = new Date().toISOString().replace('T', ' ').slice(0, 19);
+          }
+
+          cancelEmailTemplateEdit();
+          renderEmailTemplatesList();
+        } else {
+          showToast('❌ 保存に失敗しました: ' + (res.error || '不明なエラー'));
+        }
+      })
+      .catch(err => {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        console.error('Save email template error:', err);
+        showToast('❌ 通信エラーが発生しました');
+      });
+  }
+</script>
+
+<script>
   /* --- 👤 Visitor Detail Full-Page View Controls (VIEW 4) --- */
   let currentVdVisitorId = null;
   let currentVisitorDetail = null;
@@ -9248,7 +10366,7 @@ window.CelebrationEffect = (function() {
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

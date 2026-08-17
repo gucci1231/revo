@@ -9,6 +9,7 @@
 <?!= include('scripts/ViewVisitors'); ?>
 <?!= include('scripts/ViewHearings'); ?>
 <?!= include('scripts/ViewEmailSchedule'); ?>
+<?!= include('scripts/ViewEmailTemplates'); ?>
 <?!= include('scripts/ViewVisitorDetail'); ?>
 <?!= include('scripts/ModalVisitorCrud'); ?>
 <?!= include('scripts/ModalHearingForm'); ?>
@@ -53,7 +54,7 @@
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);
