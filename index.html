@@ -1461,8 +1461,31 @@ tr:last-child td { border-bottom: none; }
   margin-top: 2px;
 }
 
-
-
+/* Visitor Detail: Hearing Empty Actions Box */
+.vd-hearing-empty-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.vd-hearing-empty-desc {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+.vd-hearing-empty-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 
 </style>
@@ -2538,6 +2561,21 @@ tr:last-child td { border-bottom: none; }
           </select>
         </div>
       </div>
+
+      <!-- ヒアリングシート未登録時のクイック作成・LINE共有バー -->
+      <div id="vd-hearing-empty-actions" class="vd-hearing-empty-box" style="display: none;">
+        <div class="vd-hearing-empty-desc">
+          <i class="fa-solid fa-circle-exclamation text-slate-400 mr-1"></i> ヒアリングシート未登録
+        </div>
+        <div class="vd-hearing-empty-btns">
+          <button type="button" class="btn-action-primary text-xs" onclick="openHearingFormModal(currentVdVisitorId)">
+            <i class="fa-solid fa-plus mr-1"></i> 作成する
+          </button>
+          <button type="button" class="btn-action-secondary text-xs" onclick="shareHearingFormForCurrentVisitor()" title="LINE等で入力依頼URLを共有">
+            <i class="fa-brands fa-line text-emerald-600 mr-1"></i> LINEで依頼
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 超省スペース・スリムメタインフォバー -->
@@ -2678,9 +2716,14 @@ tr:last-child td { border-bottom: none; }
               <h3 class="vd-box-title text-slate-800">
                 <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
               </h3>
-              <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
-                <i class="fa-solid fa-pen-to-square"></i> 編集
-              </button>
+              <div class="flex items-center gap-2">
+                <button type="button" class="btn-action-secondary text-xs flex items-center gap-1 px-2.5 py-1.5 font-bold" onclick="shareHearingFormForCurrentVisitor()" title="LINE等でヒアリング記入依頼URLを共有">
+                  <i class="fa-brands fa-line text-emerald-600"></i> LINE依頼
+                </button>
+                <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
+                  <i class="fa-solid fa-pen-to-square"></i> 編集
+                </button>
+              </div>
             </div>
 
             <div class="vd-hearing-list">
@@ -3374,6 +3417,14 @@ const ApiService = {
       const apId = hash.replace('action/', '').trim();
       if (apId && typeof openActionReportDirectly === 'function') {
         openActionReportDirectly(apId);
+      }
+    } else if (hash.startsWith('hearing/')) {
+      const vid = hash.replace('hearing/', '').trim();
+      if (vid) {
+        openVisitorDetailView(vid, false);
+        setTimeout(() => {
+          if (typeof openHearingFormModal === 'function') openHearingFormModal(vid);
+        }, 300);
       }
     } else if (hash.startsWith('visitor/')) {
       const vid = hash.replace('visitor/', '').trim();
@@ -5528,6 +5579,19 @@ const ApiService = {
         document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
         document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
 
+        // ヒアリング未登録時のアクションバー制御
+        const hasHearingData = !!(
+          (h.feelAbc && h.feelAbc.trim()) ||
+          (h.q1 && h.q1.trim()) ||
+          (h.q2 && h.q2.trim()) ||
+          (h.orientUser && h.orientUser.trim()) ||
+          (h.orientMemo && h.orientMemo.trim())
+        );
+        const emptyActionsEl = document.getElementById('vd-hearing-empty-actions');
+        if (emptyActionsEl) {
+          emptyActionsEl.style.display = hasHearingData ? 'none' : 'flex';
+        }
+
         // アクションプランの担当者セレクト＆サジェスト初期化
         initActionPlanForm(v, h);
         renderActionPlansList(currentVdActionPlans);
@@ -5567,6 +5631,26 @@ const ApiService = {
         }
       })
       .catch(handleError);
+  }
+
+  function shareHearingFormForCurrentVisitor() {
+    if (!currentVdVisitorId) return;
+    const v = currentVisitorDetail || {};
+    const visitorName = v.name || 'ビジター';
+    const company = v.company ? `（${v.company}）` : '';
+    const origin = window.location.origin + window.location.pathname;
+    const shareUrl = `${origin}#hearing/${currentVdVisitorId}`;
+
+    const text = `【REvo ヒアリング入力依頼】\n${visitorName} 様${company}のヒアリングシートの記入・入力をお願いいたします。\n\n▼ 入力ページを開く:\n${shareUrl}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 LINE用依頼文とURLをコピーしました！');
+      }).catch(() => {});
+    }
+
+    const lineShareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+    window.open(lineShareUrl, '_blank');
   }
 
   function closeVisitorDetailView() {
@@ -6597,6 +6681,14 @@ const ApiService = {
       const apId = hash.replace('action/', '').trim();
       if (apId && typeof openActionReportDirectly === 'function') {
         setTimeout(() => openActionReportDirectly(apId), 150);
+      }
+    } else if (hash.startsWith('hearing/')) {
+      const vid = hash.replace('hearing/', '').trim();
+      if (vid) {
+        openVisitorDetailView(vid, false);
+        setTimeout(() => {
+          if (typeof openHearingFormModal === 'function') openHearingFormModal(vid);
+        }, 300);
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);

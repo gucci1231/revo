@@ -26,6 +26,14 @@
       if (apId && typeof openActionReportDirectly === 'function') {
         openActionReportDirectly(apId);
       }
+    } else if (hash.startsWith('hearing/')) {
+      const vid = hash.replace('hearing/', '').trim();
+      if (vid) {
+        openVisitorDetailView(vid, false);
+        setTimeout(() => {
+          if (typeof openHearingFormModal === 'function') openHearingFormModal(vid);
+        }, 300);
+      }
     } else if (hash.startsWith('visitor/')) {
       const vid = hash.replace('visitor/', '').trim();
       if (vid && vid !== currentVdVisitorId) {

@@ -42,6 +42,14 @@
       if (apId && typeof openActionReportDirectly === 'function') {
         setTimeout(() => openActionReportDirectly(apId), 150);
       }
+    } else if (hash.startsWith('hearing/')) {
+      const vid = hash.replace('hearing/', '').trim();
+      if (vid) {
+        openVisitorDetailView(vid, false);
+        setTimeout(() => {
+          if (typeof openHearingFormModal === 'function') openHearingFormModal(vid);
+        }, 300);
+      }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
     } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings'].includes(hash)) {

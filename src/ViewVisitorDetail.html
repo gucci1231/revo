@@ -61,6 +61,21 @@
           </select>
         </div>
       </div>
+
+      <!-- ヒアリングシート未登録時のクイック作成・LINE共有バー -->
+      <div id="vd-hearing-empty-actions" class="vd-hearing-empty-box" style="display: none;">
+        <div class="vd-hearing-empty-desc">
+          <i class="fa-solid fa-circle-exclamation text-slate-400 mr-1"></i> ヒアリングシート未登録
+        </div>
+        <div class="vd-hearing-empty-btns">
+          <button type="button" class="btn-action-primary text-xs" onclick="openHearingFormModal(currentVdVisitorId)">
+            <i class="fa-solid fa-plus mr-1"></i> 作成する
+          </button>
+          <button type="button" class="btn-action-secondary text-xs" onclick="shareHearingFormForCurrentVisitor()" title="LINE等で入力依頼URLを共有">
+            <i class="fa-brands fa-line text-emerald-600 mr-1"></i> LINEで依頼
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 超省スペース・スリムメタインフォバー -->
@@ -201,9 +216,14 @@
               <h3 class="vd-box-title text-slate-800">
                 <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
               </h3>
-              <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
-                <i class="fa-solid fa-pen-to-square"></i> 編集
-              </button>
+              <div class="flex items-center gap-2">
+                <button type="button" class="btn-action-secondary text-xs flex items-center gap-1 px-2.5 py-1.5 font-bold" onclick="shareHearingFormForCurrentVisitor()" title="LINE等でヒアリング記入依頼URLを共有">
+                  <i class="fa-brands fa-line text-emerald-600"></i> LINE依頼
+                </button>
+                <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 px-3 py-1.5 font-bold" id="vd-btn-open-hearing-page">
+                  <i class="fa-solid fa-pen-to-square"></i> 編集
+                </button>
+              </div>
             </div>
 
             <div class="vd-hearing-list">

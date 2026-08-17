@@ -100,6 +100,19 @@
         document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
         document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
 
+        // ヒアリング未登録時のアクションバー制御
+        const hasHearingData = !!(
+          (h.feelAbc && h.feelAbc.trim()) ||
+          (h.q1 && h.q1.trim()) ||
+          (h.q2 && h.q2.trim()) ||
+          (h.orientUser && h.orientUser.trim()) ||
+          (h.orientMemo && h.orientMemo.trim())
+        );
+        const emptyActionsEl = document.getElementById('vd-hearing-empty-actions');
+        if (emptyActionsEl) {
+          emptyActionsEl.style.display = hasHearingData ? 'none' : 'flex';
+        }
+
         // アクションプランの担当者セレクト＆サジェスト初期化
         initActionPlanForm(v, h);
         renderActionPlansList(currentVdActionPlans);
@@ -139,6 +152,26 @@
         }
       })
       .catch(handleError);
+  }
+
+  function shareHearingFormForCurrentVisitor() {
+    if (!currentVdVisitorId) return;
+    const v = currentVisitorDetail || {};
+    const visitorName = v.name || 'ビジター';
+    const company = v.company ? `（${v.company}）` : '';
+    const origin = window.location.origin + window.location.pathname;
+    const shareUrl = `${origin}#hearing/${currentVdVisitorId}`;
+
+    const text = `【REvo ヒアリング入力依頼】\n${visitorName} 様${company}のヒアリングシートの記入・入力をお願いいたします。\n\n▼ 入力ページを開く:\n${shareUrl}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 LINE用依頼文とURLをコピーしました！');
+      }).catch(() => {});
+    }
+
+    const lineShareUrl = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+    window.open(lineShareUrl, '_blank');
   }
 
   function closeVisitorDetailView() {
