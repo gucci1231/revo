@@ -191,11 +191,15 @@ body {
 }
 
 @media (max-width: 1023px) {
-  body { padding-left: 16px; }
+  body {
+    padding-left: 16px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
   .left-drawer { transform: translateX(-100%); }
   .left-drawer.open { transform: translateX(0); }
   .btn-drawer-trigger { display: inline-flex; }
 }
+
 
 
 /* --- components.css --- */
@@ -629,6 +633,92 @@ tr:last-child td { border-bottom: none; }
 .btn-action-indigo:hover { background: #2b3a8a !important; }
 .btn-action-emerald { background: #2b8a3e !important; }
 .btn-action-emerald:hover { background: #237032 !important; }
+
+/* Mobile Bottom Navigation Bar */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-bottom-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.05);
+    z-index: 990;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    text-decoration: none;
+    padding: 4px 2px;
+    color: #64748b;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .mobile-nav-btn:active {
+    transform: scale(0.92);
+  }
+
+  .mobile-nav-icon-wrap {
+    width: 34px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    margin-bottom: 2px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-nav-emoji {
+    font-size: 18px;
+    line-height: 1;
+    display: inline-block;
+  }
+
+  .mobile-nav-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #64748b;
+    transition: color 0.15s ease;
+  }
+
+  .mobile-nav-btn.active .mobile-nav-icon-wrap {
+    background: #eff6ff;
+  }
+
+  .mobile-nav-btn.active .mobile-nav-label {
+    color: var(--primary-accent);
+    font-weight: 800;
+  }
+}
+
 
 
 /* --- views.css --- */

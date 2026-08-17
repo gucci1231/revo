@@ -172,8 +172,12 @@ body {
 }
 
 @media (max-width: 1023px) {
-  body { padding-left: 16px; }
+  body {
+    padding-left: 16px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
   .left-drawer { transform: translateX(-100%); }
   .left-drawer.open { transform: translateX(0); }
   .btn-drawer-trigger { display: inline-flex; }
 }
+

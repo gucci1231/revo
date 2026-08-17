@@ -157,6 +157,34 @@
 
   </div>
 
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav id="mobile-bottom-nav" class="mobile-bottom-nav">
+    <button type="button" class="mobile-nav-btn active" id="mobile-nav-dashboard" onclick="switchTab('dashboard')">
+      <div class="mobile-nav-icon-wrap">
+        <span class="mobile-nav-emoji">📊</span>
+      </div>
+      <span class="mobile-nav-label">TOP</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" id="mobile-nav-actions" onclick="switchTab('actions')">
+      <div class="mobile-nav-icon-wrap">
+        <span class="mobile-nav-emoji">🎯</span>
+      </div>
+      <span class="mobile-nav-label">アクション</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" id="mobile-nav-priority-follow" onclick="switchTab('priority-follow')">
+      <div class="mobile-nav-icon-wrap">
+        <span class="mobile-nav-emoji">🔥</span>
+      </div>
+      <span class="mobile-nav-label">フォロー</span>
+    </button>
+    <button type="button" class="mobile-nav-btn" id="mobile-nav-visitors" onclick="switchTab('visitors')">
+      <div class="mobile-nav-icon-wrap">
+        <span class="mobile-nav-emoji">👥</span>
+      </div>
+      <span class="mobile-nav-label">ビジター</span>
+    </button>
+  </nav>
+
   <!-- Client-side Scripts -->
   <?!= include('ApiService'); ?>
   <?!= include('Scripts'); ?>

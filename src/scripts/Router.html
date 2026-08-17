@@ -88,17 +88,21 @@
     ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
+      const mobileNavBtn = document.getElementById('mobile-nav-' + t);
       const view = document.getElementById('view-' + t);
       if (btn) btn.classList.remove('active');
       if (drawerItem) drawerItem.classList.remove('active');
+      if (mobileNavBtn) mobileNavBtn.classList.remove('active');
       if (view) view.classList.remove('active');
     });
 
     const targetBtn = document.getElementById('tab-btn-' + tabName);
     const targetDrawerItem = document.getElementById('drawer-item-' + tabName);
+    const targetMobileBtn = document.getElementById('mobile-nav-' + tabName);
     const targetView = document.getElementById('view-' + tabName);
     if (targetBtn) targetBtn.classList.add('active');
     if (targetDrawerItem) targetDrawerItem.classList.add('active');
+    if (targetMobileBtn) targetMobileBtn.classList.add('active');
     if (targetView) targetView.classList.add('active');
 
     if (window.innerWidth < 1024) {
