@@ -3149,6 +3149,120 @@ tr:last-child td { border-bottom: none; }
   box-sizing: border-box;
 }
 
+/* --- 🖼️ OGP Rich Link Preview Card Styles (Apple & Notion Inspired) --- */
+.ogp-cards-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  max-width: 100%;
+}
+.ogp-rich-card {
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+  text-decoration: none !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  overflow: hidden !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.ogp-rich-card:hover {
+  border-color: #93c5fd !important;
+  background: #f8fafc !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08) !important;
+}
+.ogp-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  text-align: left;
+}
+.ogp-card-domain {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+.ogp-card-favicon {
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.ogp-card-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.ogp-card-desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+  margin-top: 2px;
+}
+.ogp-card-image-wrap {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ogp-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 480px) {
+  .ogp-rich-card {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+  .ogp-card-image-wrap {
+    width: 60px;
+    height: 60px;
+  }
+  .ogp-card-title {
+    font-size: 12px;
+  }
+  .ogp-card-desc {
+    font-size: 10.5px;
+  }
+}
+
 
 
 </style>
@@ -5310,6 +5424,8 @@ const ApiService = {
         };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getOgpApi':
+        return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getScheduledEmailsApi':
         return null;
       default:
@@ -5535,10 +5651,10 @@ const ApiService = {
       return `
         <div style="display:flex; flex-direction:column; gap:2px; min-width:0; width:100%; white-space:normal; word-break:break-word;">
           <div style="font-size:12.5px; font-weight:700; color:${isCompleted ? '#94a3b8' : '#0f172a'}; line-height:1.4; ${isCompleted ? 'text-decoration:line-through;' : ''}">
-            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeAndLinkify(ap.action_text, false)}
+            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeAndLinkify(ap.action_text, false, false)}
           </div>
           ${metaInfo.length > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:1px;">${metaInfo.join(' · ')}</div>` : ''}
-          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeAndLinkify(ap.report_text, false)}</div>` : ''}
+          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeAndLinkify(ap.report_text, false, false)}</div>` : ''}
         </div>
       `;
     }
@@ -5547,7 +5663,7 @@ const ApiService = {
     if (note) {
       return `
         <div style="font-size:12px; color:#475569; line-height:1.4; white-space:normal; word-break:break-word;" title="${escapeHtml(note)}">
-          ${escapeAndLinkify(note, true)}
+          ${escapeAndLinkify(note, true, false)}
         </div>
       `;
     }
@@ -5570,7 +5686,9 @@ const ApiService = {
       .replace(/'/g, '&#39;');
   }
 
-  function escapeAndLinkify(text, nl2br = false) {
+  const ogpMemoryCache = new Map();
+
+  function escapeAndLinkify(text, nl2br = false, showCard = true) {
     if (text === null || text === undefined) return '';
     const str = String(text);
     if (!str.trim()) return '';
@@ -5578,8 +5696,10 @@ const ApiService = {
     // 1. 基本のHTMLエスケープ
     let escaped = escapeHtml(str);
 
-    // 2. URLを検出して <a> タグに変換 (全角文字や句読点を巻き込まない正規表現)
+    // 2. 含まれるURLを収集
+    const foundUrls = [];
     const urlRegex = /https?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$*+,;=%]|&amp;)+/gi;
+
     let linkified = escaped.replace(urlRegex, (rawUrl) => {
       let url = rawUrl;
       let trailing = '';
@@ -5588,6 +5708,9 @@ const ApiService = {
         trailing = tailPunct[1];
         url = url.slice(0, -trailing.length);
       }
+      if (!foundUrls.includes(url)) {
+        foundUrls.push(url);
+      }
       return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="auto-url-link text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" style="word-break:break-all; overflow-wrap:anywhere; display:inline;" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
     });
 
@@ -5595,9 +5718,99 @@ const ApiService = {
     if (nl2br) {
       linkified = linkified.replace(/\r?\n/g, '<br>');
     }
+
+    // 4. OGPカードプレースホルダーを追加 (最大2枚まで)
+    if (showCard && foundUrls.length > 0) {
+      const cardsHtml = foundUrls.slice(0, 2).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
+      linkified += `<div class="ogp-cards-wrap mt-2 flex flex-col gap-2">${cardsHtml}</div>`;
+      setTimeout(() => {
+        if (typeof OgpCardService !== 'undefined' && OgpCardService.renderAll) {
+          OgpCardService.renderAll();
+        }
+      }, 50);
+    }
+
     return linkified;
   }
   window.escapeAndLinkify = escapeAndLinkify;
+
+  const OgpCardService = {
+    renderAll: function(root = document) {
+      const containers = root.querySelectorAll('.ogp-card-container:not(.ogp-loaded)');
+      if (!containers || containers.length === 0) return;
+
+      containers.forEach(container => {
+        const url = container.getAttribute('data-ogp-url');
+        if (!url) return;
+        container.classList.add('ogp-loaded');
+
+        if (ogpMemoryCache.has(url)) {
+          this.renderCard(container, ogpMemoryCache.get(url));
+          return;
+        }
+
+        // スケルトン表示
+        container.innerHTML = `
+          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 52px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+            <div style="width: 16px; height: 16px; border-radius: 4px; background: #cbd5e1;"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+              <div style="width: 60%; height: 12px; border-radius: 4px; background: #cbd5e1;"></div>
+              <div style="width: 90%; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
+            </div>
+          </div>
+        `;
+
+        if (typeof ApiService !== 'undefined' && ApiService.call) {
+          ApiService.call('getOgpApi', url)
+            .then(res => {
+              if (res && res.success && res.data) {
+                ogpMemoryCache.set(url, res.data);
+                OgpCardService.renderCard(container, res.data);
+              } else {
+                container.style.display = 'none';
+              }
+            })
+            .catch(() => {
+              container.style.display = 'none';
+            });
+        }
+      });
+    },
+
+    renderCard: function(container, data) {
+      if (!data || (!data.title && !data.description && !data.image)) {
+        container.style.display = 'none';
+        return;
+      }
+
+      const domain = data.domain || '';
+      const siteName = data.site_name || domain;
+      const title = data.title || domain;
+      const desc = data.description || '';
+      const image = data.image || '';
+      const favicon = data.favicon || `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+      const targetUrl = data.url || container.getAttribute('data-ogp-url');
+
+      container.innerHTML = `
+        <a href="${escapeHtml(targetUrl)}" target="_blank" rel="noopener noreferrer" class="ogp-rich-card" onclick="event.stopPropagation();">
+          <div class="ogp-card-content">
+            <div class="ogp-card-domain">
+              <img src="${escapeHtml(favicon)}" class="ogp-card-favicon" alt="" onerror="this.style.display='none'">
+              <span class="truncate">${escapeHtml(siteName)}</span>
+            </div>
+            <div class="ogp-card-title">${escapeHtml(title)}</div>
+            ${desc ? `<div class="ogp-card-desc">${escapeHtml(desc)}</div>` : ''}
+          </div>
+          ${image ? `
+            <div class="ogp-card-image-wrap">
+              <img src="${escapeHtml(image)}" class="ogp-card-image" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+            </div>
+          ` : ''}
+        </a>
+      `;
+    }
+  };
+  window.OgpCardService = OgpCardService;
 
   function escapeJsParam(str) {
     if (str === null || str === undefined) return '';

@@ -159,6 +159,8 @@ const ApiService = {
         };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getOgpApi':
+        return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getScheduledEmailsApi':
         return null;
       default:
