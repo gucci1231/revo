@@ -5870,7 +5870,7 @@ const ApiService = {
         <a href="${escapeHtml(targetUrl)}" target="_blank" rel="noopener noreferrer" class="ogp-rich-card" onclick="event.stopPropagation();">
           <div class="ogp-card-content">
             <div class="ogp-card-domain">
-              <img src="${escapeHtml(favicon)}" class="ogp-card-favicon" alt="" onerror="this.style.display='none'">
+              <img src="${escapeHtml(favicon)}" class="ogp-card-favicon" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'">
               <span class="truncate">${escapeHtml(siteName)}</span>
             </div>
             <div class="ogp-card-title">${escapeHtml(title)}</div>
@@ -5878,7 +5878,7 @@ const ApiService = {
           </div>
           ${image ? `
             <div class="ogp-card-image-wrap">
-              <img src="${escapeHtml(image)}" class="ogp-card-image" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+              <img src="${escapeHtml(image)}" class="ogp-card-image" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentElement.style.display='none'">
             </div>
           ` : ''}
         </a>

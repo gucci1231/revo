@@ -193,21 +193,44 @@ class OgpController {
             $description = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
 
-        // 3. og:image
-        if (preg_match('/<meta[^>]+property=[\'"]og:image[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m) ||
-            preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"]og:image[\'"]/i', $html, $m)) {
+        // 3. og:image / twitter:image / link image_src / 本文画像
+        if (preg_match('/<meta[^>]+property=[\'"](?:og:image|og:image:url)[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m) ||
+            preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"](?:og:image|og:image:url)[\'"]/i', $html, $m) ||
+            preg_match('/<meta[^>]+name=[\'"](?:twitter:image|twitter:image:src)[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m) ||
+            preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+name=[\'"](?:twitter:image|twitter:image:src)[\'"]/i', $html, $m) ||
+            preg_match('/<link[^>]+rel=[\'"]image_src[\'"][^>]+href=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
             $image = trim($m[1]);
-            // 相対URLを絶対URLに解決
-            if ($image && !preg_match('/^https?:\/\//i', $image)) {
-                $base = $parsed['scheme'] . '://' . $parsed['host'] . ($parsed['port'] ? ':' . $parsed['port'] : '');
-                $image = (str_starts_with($image, '/') ? $base : $base . '/') . ltrim($image, '/');
+        } elseif (preg_match('/<img[^>]+src=[\'"]([^"\'>]+\.(?:jpg|jpeg|png|webp)(?:\?[^"\'>]*)?)[\'"]/i', $html, $m)) {
+            $candidate = trim($m[1]);
+            // トラッキングピクセルや極小アイコンを除外
+            if (!preg_match('/(beacon|track|1x1|spacer|clear|pixel)/i', $candidate)) {
+                $image = $candidate;
             }
+        }
+
+        // 相対URLを絶対URLに解決
+        if ($image && !preg_match('/^https?:\/\//i', $image)) {
+            $base = $parsed['scheme'] . '://' . $parsed['host'] . ($parsed['port'] ? ':' . $parsed['port'] : '');
+            $image = (str_starts_with($image, '/') ? $base : $base . '/') . ltrim($image, '/');
         }
 
         // 4. og:site_name
         if (preg_match('/<meta[^>]+property=[\'"]og:site_name[\'"][^>]+content=[\'"]([^\'"]+)[\'"]/i', $html, $m) ||
             preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+property=[\'"]og:site_name[\'"]/i', $html, $m)) {
             $siteName = html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
+        // ドメイン固有のデフォルト対応 (Instagram / Hotpepperなど)
+        if (str_contains($domain, 'instagram.com')) {
+            $siteName = $siteName ?: 'Instagram';
+            if (!$image) {
+                $image = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/600px-Instagram_icon.png';
+            }
+            if ($title === 'Instagram' && preg_match('/instagram\.com\/([^\/?#]+)/i', $url, $im)) {
+                $title = '@' . $im[1] . ' (Instagram)';
+            }
+        } elseif (str_contains($domain, 'hotpepper.jp')) {
+            $siteName = $siteName ?: 'ホットペッパーグルメ';
         }
 
         if (!$title) {
