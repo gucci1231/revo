@@ -806,6 +806,12 @@
       `;
     }
 
+    // アクションプランが0件の場合、スマホ画面ではプラン一覧ボックス自体を非表示にする
+    const apListBox = document.getElementById('vd-ap-list-box');
+    if (apListBox) {
+      apListBox.classList.toggle('is-empty', currentVdActionPlans.length === 0);
+    }
+
     // 未完了アクションがない場合、ヒアリングシートや共有メモのフォールバックエリアを表示
     const fallbackEl = document.getElementById('vd-ap-no-action-fallback');
     if (fallbackEl) {

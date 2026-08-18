@@ -1674,10 +1674,19 @@ tr:last-child td { border-bottom: none; }
   .vd-ap-no-action-fallback {
     display: none !important;
   }
+  .vd-ap-list-box {
+    display: block !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .vd-ap-list-box.is-empty {
+    display: none !important;
+  }
 }
 
 .vd-ap-no-action-fallback {
-  margin-top: 16px;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -4399,7 +4408,7 @@ tr:last-child td { border-bottom: none; }
               </div>
 
               <!-- 一覧 -->
-              <div class="vd-box">
+              <div id="vd-ap-list-box" class="vd-box vd-ap-list-box">
                 <div class="vd-box-header">
                   <h3 class="vd-box-title">
                     <i class="fa-solid fa-list-check text-emerald-600"></i> プラン一覧
@@ -10654,6 +10663,12 @@ window.CelebrationEffect = (function() {
       completedList.innerHTML = `
         <div class="vd-ap-submeta" style="padding: 10px; text-align: center;">完了済みのアクションはありません</div>
       `;
+    }
+
+    // アクションプランが0件の場合、スマホ画面ではプラン一覧ボックス自体を非表示にする
+    const apListBox = document.getElementById('vd-ap-list-box');
+    if (apListBox) {
+      apListBox.classList.toggle('is-empty', currentVdActionPlans.length === 0);
     }
 
     // 未完了アクションがない場合、ヒアリングシートや共有メモのフォールバックエリアを表示
