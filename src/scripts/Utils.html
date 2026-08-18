@@ -478,7 +478,8 @@
   }
 
   function copyCurrentPageUrl() {
-    let cleanUrl = window.location.href.split('?')[0];
+    const origin = window.location.origin + window.location.pathname;
+    let cleanUrl = origin.split('?')[0].split('#')[0];
     const rawHash = decodeURIComponent(window.location.hash || '');
     const hash = rawHash.replace(/^#+/, '');
     if (hash && hash !== 'dashboard') {

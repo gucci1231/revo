@@ -332,6 +332,10 @@
           return;
         }
 
+        if (window.innerWidth >= 1024) {
+          restoreApModalToSlot();
+        }
+
         currentVdWebAppUrl = res.webAppUrl || "";
         const v = res.visitor || {};
         currentVisitorDetail = v;
@@ -1007,11 +1011,28 @@
     }
   }
 
+  function restoreApModalToSlot() {
+    const modal = document.getElementById('vd-ap-form-modal');
+    const slot = document.getElementById('vd-ap-form-slot');
+    if (modal && slot && modal.parentElement !== slot) {
+      slot.appendChild(modal);
+    }
+  }
+
   function openActionPlanModal() {
     const modal = document.getElementById('vd-ap-form-modal');
-    if (modal) {
-      modal.classList.add('is-open');
+    if (!modal) return;
+
+    // スマホ時は包含ブロックの干渉を完全回避するため body 直下に配置
+    if (window.innerWidth < 1024) {
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+    } else {
+      restoreApModalToSlot();
     }
+
+    modal.classList.add('is-open');
     const input = document.getElementById('vd-ap-action-text');
     if (input) {
       setTimeout(() => input.focus(), 150);
@@ -1024,7 +1045,17 @@
       modal.classList.remove('is-open');
     }
     cancelApEdit();
+    if (window.innerWidth >= 1024) {
+      restoreApModalToSlot();
+    }
   }
+
+  // 画面リサイズ時にPC幅であればスロットへ戻す
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) {
+      restoreApModalToSlot();
+    }
+  });
 
   function handleApModalOverlayClick(event) {
     if (event.target === document.getElementById('vd-ap-form-modal')) {
