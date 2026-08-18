@@ -13,7 +13,7 @@ class OgpController {
 
     public function __construct() {
         try {
-            $this->db = Database::getInstance();
+            $this->db = Database::getInstance()->getPdo();
             $this->initTable();
         } catch (\Throwable $e) {
             $this->db = null;
