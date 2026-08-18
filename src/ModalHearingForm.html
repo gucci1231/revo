@@ -8,8 +8,7 @@
           <i class="fa-solid fa-file-signature"></i>
         </div>
         <div>
-          <h2 class="hearing-modal-title">REvo オリエンテーション＆ヒアリングシート</h2>
-          <p class="hearing-modal-subtitle">GROWモデルに沿った課題・目標の把握とネクストアクション設定</p>
+          <h2 class="hearing-modal-title">オリエンテーション ＆ ヒアリング</h2>
         </div>
       </div>
       <button type="button" class="modal-close-btn" onclick="closeHearingModal()" title="閉じる">
@@ -61,12 +60,12 @@
           <!-- Staff Selector -->
           <div class="hearing-config-group">
             <label class="hearing-section-label" for="hf-orient-user">
-              <i class="fa-solid fa-user-check text-blue-600"></i> オリエン担当者名 (DB連動)
+              <i class="fa-solid fa-user-check text-blue-600"></i> オリエン担当者
             </label>
             <div class="hearing-select-wrapper">
               <i class="fa-solid fa-user-tie select-icon"></i>
               <select id="hf-orient-user" class="hearing-modern-select">
-                <option value="">-- DB読み込み中... --</option>
+                <option value="">-- 選択してください --</option>
               </select>
             </div>
           </div>
@@ -74,7 +73,7 @@
           <!-- ABC Rating -->
           <div class="hearing-config-group">
             <label class="hearing-section-label">
-              <i class="fa-solid fa-gauge-high text-indigo-600"></i> 入会への感触 (ABC評価)
+              <i class="fa-solid fa-gauge-high text-indigo-600"></i> 入会への感触
             </label>
             <input type="hidden" id="hf-feel-abc">
             <div class="hearing-abc-selector">
@@ -82,25 +81,19 @@
                 <div class="abc-badge">A</div>
                 <div class="abc-text">
                   <div class="abc-title">好印象・即入会</div>
-                  <div class="abc-desc">前向き/次回申込</div>
                 </div>
-                <i class="fa-solid fa-check abc-check-icon"></i>
               </button>
               <button type="button" class="hearing-abc-btn abc-btn-b" id="abc-B" onclick="selectAbc('B')">
                 <div class="abc-badge">B</div>
                 <div class="abc-text">
-                  <div class="abc-title">好印象・検討中</div>
-                  <div class="abc-desc">日程・費用の検討</div>
+                  <div class="abc-title">検討中・ハードル</div>
                 </div>
-                <i class="fa-solid fa-check abc-check-icon"></i>
               </button>
               <button type="button" class="hearing-abc-btn abc-btn-c" id="abc-C" onclick="selectAbc('C')">
                 <div class="abc-badge">C</div>
                 <div class="abc-text">
-                  <div class="abc-title">時間要 / 見送り</div>
-                  <div class="abc-desc">現状合わず・保留</div>
+                  <div class="abc-title">時間要・見送り</div>
                 </div>
-                <i class="fa-solid fa-check abc-check-icon"></i>
               </button>
             </div>
           </div>
@@ -110,7 +103,7 @@
         <div class="hearing-step-section">
           <div class="hearing-step-header">
             <span class="hearing-step-number">Step 1</span>
-            <span class="hearing-step-title">💬 お礼・感想 ＆ お仕事の確認</span>
+            <span class="hearing-step-title">お礼・感想 ＆ お仕事</span>
           </div>
 
           <div class="hearing-q-grid">
@@ -142,7 +135,7 @@
         <div class="hearing-step-section">
           <div class="hearing-step-header">
             <span class="hearing-step-number step-grow">Step 2</span>
-            <span class="hearing-step-title">🎯 目標・課題・解決アイディア（GROWモデル）</span>
+            <span class="hearing-step-title">目標・課題・解決策</span>
           </div>
 
           <div class="hearing-q-grid">
@@ -185,7 +178,7 @@
         <div class="hearing-step-section">
           <div class="hearing-step-header">
             <span class="hearing-step-number step-action">Step 3</span>
-            <span class="hearing-step-title">🤝 REvoでの支援 ＆ 次のアクション</span>
+            <span class="hearing-step-title">支援 ＆ 次のアクション</span>
           </div>
 
           <div class="hearing-q-grid">
@@ -204,7 +197,7 @@
               <div class="hearing-q-card-header">
                 <span class="hearing-q-badge badge-q7">Q7</span>
                 <div class="hearing-q-title-wrap">
-                  <label class="hearing-q-title text-blue-900" for="hf-q7">【次のアクション】促し内容・ネクストステップ</label>
+                  <label class="hearing-q-title text-blue-900" for="hf-q7">【次のアクション】促し内容</label>
                   <span class="hearing-q-hint">例：入会申込 / 繋がりたいメンバーへの1to1紹介 / 再度定例会参加 / BOD / コーヒーMTG等</span>
                 </div>
               </div>
@@ -217,7 +210,7 @@
         <div class="hearing-step-section notes-section">
           <div class="hearing-step-header">
             <span class="hearing-step-number step-notes">Memo</span>
-            <span class="hearing-step-title">📝 内部共有・フォロー用メモ</span>
+            <span class="hearing-step-title">内部メモ</span>
           </div>
 
           <div class="hearing-notes-grid">
@@ -226,7 +219,7 @@
                 <i class="fa-solid fa-comment-dots text-amber-600"></i>
                 <label class="hearing-note-label" for="hf-orient-memo">定例会直後のオリエン感想メモ</label>
               </div>
-              <textarea id="hf-orient-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-yellow" placeholder="オリエン直後の様子、雰囲気、メンバーへの共有事項など..."></textarea>
+              <textarea id="hf-orient-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-yellow" placeholder="オリエン直後の様子、雰囲気、共有事項など..."></textarea>
             </div>
 
             <div class="hearing-note-card note-follow">
@@ -234,7 +227,7 @@
                 <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
                 <label class="hearing-note-label" for="hf-follow-memo">追跡フォローメモ</label>
               </div>
-              <textarea id="hf-follow-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-blue" placeholder="その後の追跡フォローでのやり取り・進捗メモなど..."></textarea>
+              <textarea id="hf-follow-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-blue" placeholder="追跡フォローでのやり取り・進捗メモなど..."></textarea>
             </div>
           </div>
         </div>
@@ -243,7 +236,7 @@
         <div class="hearing-links-card">
           <div class="hearing-links-header">
             <i class="fa-solid fa-link text-indigo-500"></i>
-            <span class="hearing-links-title">入会手続き・案内用 公式URL</span>
+            <span class="hearing-links-title">公式手続きURL</span>
           </div>
           <div class="hearing-links-buttons">
             <a href="https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376" target="_blank" rel="noopener noreferrer" class="hearing-link-action-btn">
@@ -265,15 +258,12 @@
 
     <!-- Sticky Modal Footer -->
     <div class="hearing-modal-footer">
-      <div class="hearing-footer-hint">
-        <i class="fa-regular fa-keyboard text-slate-400"></i>
-        <span>入力内容はリアルタイム同期されます</span>
-      </div>
+      <div class="hearing-footer-left"></div>
       <div class="hearing-footer-actions">
         <button type="button" class="hearing-btn-cancel" onclick="closeHearingModal()">キャンセル</button>
         <button type="button" class="hearing-btn-save" onclick="submitHearingForm()">
-          <i class="fa-solid fa-cloud-arrow-up"></i>
-          <span>ヒアリング内容を保存</span>
+          <i class="fa-solid fa-check"></i>
+          <span>保存する</span>
         </button>
       </div>
     </div>
