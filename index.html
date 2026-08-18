@@ -1671,6 +1671,16 @@ tr:last-child td { border-bottom: none; }
     display: block !important;
     animation: none;
   }
+  .vd-ap-no-action-fallback {
+    display: none !important;
+  }
+}
+
+.vd-ap-no-action-fallback {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* アクションプラン モバイル用トリガー & レスポンシブモーダル */
@@ -4347,6 +4357,53 @@ tr:last-child td { border-bottom: none; }
                     <span class="vd-ap-dot completed"></span> 完了済
                   </div>
                   <div id="vd-ap-completed-list" class="vd-ap-list"></div>
+                </div>
+              </div>
+
+              <!-- アクションがない場合の共有メモ & ヒアリングシート表示エリア -->
+              <div id="vd-ap-no-action-fallback" class="vd-ap-no-action-fallback" style="display: none;">
+                <!-- 共有メモ -->
+                <div class="vd-box mt-4">
+                  <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+                  <textarea id="vd-ap-fb-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+                  <div class="vd-form-actions mt-3">
+                    <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                      <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                    </button>
+                  </div>
+                </div>
+
+                <!-- ヒアリングシート -->
+                <div class="vd-box mt-4">
+                  <div class="vd-box-header py-1 pb-3 border-b border-slate-100 mb-3">
+                    <h3 class="vd-box-title text-slate-800">
+                      <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
+                    </h3>
+                    <div class="flex items-center gap-1.5">
+                      <button type="button" class="btn-action-secondary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="shareHearingFormForCurrentVisitor()" title="LINE等でヒアリング記入依頼URLを共有">
+                        <i class="fa-brands fa-line text-emerald-600 text-base"></i>
+                      </button>
+                      <button type="button" class="btn-action-primary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="if(currentVdVisitorId) openHearingFormModal(currentVdVisitorId)" title="ヒアリングシートを編集">
+                        <i class="fa-solid fa-pen-to-square text-sm"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="vd-hearing-list">
+                    <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
+                      <span class="vd-spec-label">担当者</span>
+                      <span id="vd-ap-fb-orient-user" class="font-bold text-sm text-slate-800">-</span>
+                    </div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">お礼と感想</div> <p id="vd-ap-fb-q1" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">仕事内容</div> <p id="vd-ap-fb-q2" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">目標・計画 (Goal)</div> <p id="vd-ap-fb-q3" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">課題・悩み (Reality)</div> <p id="vd-ap-fb-q4" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">解決策・アイディア (Options)</div> <p id="vd-ap-fb-q5" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">力になれそうなメンバー (Way Forward)</div> <p id="vd-ap-fb-q6" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">次回促し・クロージング</div> <p id="vd-ap-fb-q7" class="vd-hearing-a">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">オリエンメモ</div> <p id="vd-ap-fb-orient-memo" class="vd-hearing-a memo-yellow">-</p></div>
+                    <div class="vd-hearing-item"><div class="vd-hearing-q">追跡メモ</div> <p id="vd-ap-fb-follow-memo" class="vd-hearing-a memo-blue">-</p></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -10054,7 +10111,27 @@ window.CelebrationEffect = (function() {
         document.getElementById('vd-attendance-count').innerText = countText;
 
         // 自由メモ
-        document.getElementById('vd-free-memo').value = v.remarks || '';
+        const freeMemoEl = document.getElementById('vd-free-memo');
+        const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+        const memoVal = v.remarks || '';
+        if (freeMemoEl) freeMemoEl.value = memoVal;
+        if (fbMemoEl) fbMemoEl.value = memoVal;
+
+        // 自由メモの双方向同期
+        if (freeMemoEl && !freeMemoEl.dataset.synced) {
+          freeMemoEl.dataset.synced = 'true';
+          freeMemoEl.addEventListener('input', () => {
+            const fb = document.getElementById('vd-ap-fb-memo');
+            if (fb && fb !== document.activeElement) fb.value = freeMemoEl.value;
+          });
+        }
+        if (fbMemoEl && !fbMemoEl.dataset.synced) {
+          fbMemoEl.dataset.synced = 'true';
+          fbMemoEl.addEventListener('input', () => {
+            const orig = document.getElementById('vd-free-memo');
+            if (orig && orig !== document.activeElement) orig.value = fbMemoEl.value;
+          });
+        }
 
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
@@ -10101,6 +10178,22 @@ window.CelebrationEffect = (function() {
         document.getElementById('vd-q7').innerText = h.q7 || '-';
         document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
         document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
+
+        // フォールバックヒアリング内容
+        const setFbText = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = val;
+        };
+        setFbText('vd-ap-fb-orient-user', h.orientUser || '未設定');
+        setFbText('vd-ap-fb-q1', h.q1 || '-');
+        setFbText('vd-ap-fb-q2', h.q2 || '-');
+        setFbText('vd-ap-fb-q3', h.q3 || '-');
+        setFbText('vd-ap-fb-q4', h.q4 || '-');
+        setFbText('vd-ap-fb-q5', h.q5 || '-');
+        setFbText('vd-ap-fb-q6', h.q6 || '-');
+        setFbText('vd-ap-fb-q7', h.q7 || '-');
+        setFbText('vd-ap-fb-orient-memo', h.orientMemo || '-');
+        setFbText('vd-ap-fb-follow-memo', h.followMemo || '-');
 
         // ヒアリング未登録時のアクションバー制御
         const hasHearingData = !!(
@@ -10469,6 +10562,12 @@ window.CelebrationEffect = (function() {
         <div class="vd-ap-submeta" style="padding: 10px; text-align: center;">完了済みのアクションはありません</div>
       `;
     }
+
+    // 未完了アクションがない場合、ヒアリングシートや共有メモのフォールバックエリアを表示
+    const fallbackEl = document.getElementById('vd-ap-no-action-fallback');
+    if (fallbackEl) {
+      fallbackEl.style.display = pendingItems.length === 0 ? 'block' : 'none';
+    }
   }
 
   function openActionPlanModal() {
@@ -10636,8 +10735,19 @@ window.CelebrationEffect = (function() {
 
   function saveVisitorFreeMemo() {
     if (!currentVdVisitorId) return;
-    const memoText = document.getElementById('vd-free-memo').value.trim();
-    showToast(`自由メモを保存中...`);
+    const freeMemoEl = document.getElementById('vd-free-memo');
+    const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+    let memoText = '';
+    if (document.activeElement === fbMemoEl && fbMemoEl) {
+      memoText = fbMemoEl.value.trim();
+      if (freeMemoEl) freeMemoEl.value = fbMemoEl.value;
+    } else if (freeMemoEl) {
+      memoText = freeMemoEl.value.trim();
+      if (fbMemoEl) fbMemoEl.value = freeMemoEl.value;
+    } else if (fbMemoEl) {
+      memoText = fbMemoEl.value.trim();
+    }
+    showToast(`共有メモを保存中...`);
 
     ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
       .then(res => {

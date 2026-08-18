@@ -156,6 +156,28 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(completedItems.length, 1);
     assert.strictEqual(completedItems[0].id, '4');
   });
+
+  it('correctly toggles no-action fallback display based on pending items count', () => {
+    function shouldShowNoActionFallback(plans) {
+      const pendingItems = (plans || []).filter(p => Number(p.is_completed) === 0);
+      return pendingItems.length === 0;
+    }
+
+    // 1. アクションが0件の場合 -> true
+    assert.strictEqual(shouldShowNoActionFallback([]), true);
+
+    // 2. 完了済みアクションのみの場合 -> true (未完了が0件なのでヒアリング・メモを表示)
+    assert.strictEqual(shouldShowNoActionFallback([
+      { id: '1', action_text: '完了タスク', is_completed: 1 }
+    ]), true);
+
+    // 3. 未完了アクションが存在する場合 -> false (フォールバックは非表示)
+    assert.strictEqual(shouldShowNoActionFallback([
+      { id: '1', action_text: '進行中タスク', is_completed: 0 },
+      { id: '2', action_text: '完了タスク', is_completed: 1 }
+    ]), false);
+  });
 });
+
 
 

@@ -354,7 +354,27 @@
         document.getElementById('vd-attendance-count').innerText = countText;
 
         // 自由メモ
-        document.getElementById('vd-free-memo').value = v.remarks || '';
+        const freeMemoEl = document.getElementById('vd-free-memo');
+        const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+        const memoVal = v.remarks || '';
+        if (freeMemoEl) freeMemoEl.value = memoVal;
+        if (fbMemoEl) fbMemoEl.value = memoVal;
+
+        // 自由メモの双方向同期
+        if (freeMemoEl && !freeMemoEl.dataset.synced) {
+          freeMemoEl.dataset.synced = 'true';
+          freeMemoEl.addEventListener('input', () => {
+            const fb = document.getElementById('vd-ap-fb-memo');
+            if (fb && fb !== document.activeElement) fb.value = freeMemoEl.value;
+          });
+        }
+        if (fbMemoEl && !fbMemoEl.dataset.synced) {
+          fbMemoEl.dataset.synced = 'true';
+          fbMemoEl.addEventListener('input', () => {
+            const orig = document.getElementById('vd-free-memo');
+            if (orig && orig !== document.activeElement) orig.value = fbMemoEl.value;
+          });
+        }
 
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
@@ -401,6 +421,22 @@
         document.getElementById('vd-q7').innerText = h.q7 || '-';
         document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
         document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
+
+        // フォールバックヒアリング内容
+        const setFbText = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = val;
+        };
+        setFbText('vd-ap-fb-orient-user', h.orientUser || '未設定');
+        setFbText('vd-ap-fb-q1', h.q1 || '-');
+        setFbText('vd-ap-fb-q2', h.q2 || '-');
+        setFbText('vd-ap-fb-q3', h.q3 || '-');
+        setFbText('vd-ap-fb-q4', h.q4 || '-');
+        setFbText('vd-ap-fb-q5', h.q5 || '-');
+        setFbText('vd-ap-fb-q6', h.q6 || '-');
+        setFbText('vd-ap-fb-q7', h.q7 || '-');
+        setFbText('vd-ap-fb-orient-memo', h.orientMemo || '-');
+        setFbText('vd-ap-fb-follow-memo', h.followMemo || '-');
 
         // ヒアリング未登録時のアクションバー制御
         const hasHearingData = !!(
@@ -769,6 +805,12 @@
         <div class="vd-ap-submeta" style="padding: 10px; text-align: center;">完了済みのアクションはありません</div>
       `;
     }
+
+    // 未完了アクションがない場合、ヒアリングシートや共有メモのフォールバックエリアを表示
+    const fallbackEl = document.getElementById('vd-ap-no-action-fallback');
+    if (fallbackEl) {
+      fallbackEl.style.display = pendingItems.length === 0 ? 'block' : 'none';
+    }
   }
 
   function openActionPlanModal() {
@@ -936,8 +978,19 @@
 
   function saveVisitorFreeMemo() {
     if (!currentVdVisitorId) return;
-    const memoText = document.getElementById('vd-free-memo').value.trim();
-    showToast(`自由メモを保存中...`);
+    const freeMemoEl = document.getElementById('vd-free-memo');
+    const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+    let memoText = '';
+    if (document.activeElement === fbMemoEl && fbMemoEl) {
+      memoText = fbMemoEl.value.trim();
+      if (freeMemoEl) freeMemoEl.value = fbMemoEl.value;
+    } else if (freeMemoEl) {
+      memoText = freeMemoEl.value.trim();
+      if (fbMemoEl) fbMemoEl.value = freeMemoEl.value;
+    } else if (fbMemoEl) {
+      memoText = fbMemoEl.value.trim();
+    }
+    showToast(`共有メモを保存中...`);
 
     ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
       .then(res => {
