@@ -375,10 +375,16 @@
                 OgpCardService.renderCard(container, res.data);
               } else {
                 container.style.display = 'none';
+                if (container.closest('.ogp-inline-card-slot')) {
+                  container.closest('.ogp-inline-card-slot').style.display = 'none';
+                }
               }
             })
             .catch(() => {
               container.style.display = 'none';
+              if (container.closest('.ogp-inline-card-slot')) {
+                container.closest('.ogp-inline-card-slot').style.display = 'none';
+              }
             });
         }
       });
@@ -387,6 +393,9 @@
     renderCard: function(container, data) {
       if (!data || (!data.title && !data.description && !data.image)) {
         container.style.display = 'none';
+        if (container.closest('.ogp-inline-card-slot')) {
+          container.closest('.ogp-inline-card-slot').style.display = 'none';
+        }
         return;
       }
 

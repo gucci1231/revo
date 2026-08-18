@@ -3200,9 +3200,31 @@ tr:last-child td { border-bottom: none; }
   margin: 6px 0;
   width: 100%;
   max-width: 100%;
+  height: auto;
+  min-height: 0;
+  white-space: normal !important;
+  line-height: normal !important;
+}
+.ogp-inline-card-slot:empty,
+.ogp-inline-card-slot:has(> .ogp-card-container[style*="display: none"]),
+.ogp-inline-card-slot:has(> .ogp-card-container:empty) {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
 }
 .ogp-inline-card-slot + .ogp-inline-card-slot {
   margin-top: 6px !important;
+}
+.ogp-card-container {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: 0;
+  white-space: normal !important;
+  line-height: normal !important;
 }
 .ogp-cards-wrap {
   display: flex;
@@ -3211,6 +3233,9 @@ tr:last-child td { border-bottom: none; }
   margin-top: 4px;
   width: 100%;
   max-width: 100%;
+  height: auto;
+  min-height: 0;
+  white-space: normal !important;
 }
 .ogp-rich-card {
   display: flex !important;
@@ -5928,10 +5953,16 @@ const ApiService = {
                 OgpCardService.renderCard(container, res.data);
               } else {
                 container.style.display = 'none';
+                if (container.closest('.ogp-inline-card-slot')) {
+                  container.closest('.ogp-inline-card-slot').style.display = 'none';
+                }
               }
             })
             .catch(() => {
               container.style.display = 'none';
+              if (container.closest('.ogp-inline-card-slot')) {
+                container.closest('.ogp-inline-card-slot').style.display = 'none';
+              }
             });
         }
       });
@@ -5940,6 +5971,9 @@ const ApiService = {
     renderCard: function(container, data) {
       if (!data || (!data.title && !data.description && !data.image)) {
         container.style.display = 'none';
+        if (container.closest('.ogp-inline-card-slot')) {
+          container.closest('.ogp-inline-card-slot').style.display = 'none';
+        }
         return;
       }
 
