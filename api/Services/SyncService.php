@@ -118,6 +118,23 @@ class SyncService {
                     ], ['id']);
                 }
             }
+
+            if (!empty($json['email_templates'])) {
+                foreach ($json['email_templates'] as $t) {
+                    $tId = (string)($t['id'] ?? $t['key'] ?? '');
+                    if (!$tId) continue;
+
+                    $this->db->upsert('email_templates', [
+                        'id' => $tId,
+                        'name' => $t['name'] ?? $tId,
+                        'category' => $t['category'] ?? 'welcome',
+                        'subject' => $t['subject'] ?? '',
+                        'body' => $t['body'] ?? '',
+                        'description' => $t['description'] ?? '',
+                        'updated_at' => $now
+                    ], ['id']);
+                }
+            }
         }
 
         return [
@@ -270,10 +287,143 @@ class SyncService {
             ];
         }
 
+        $templatesRaw = $this->fetchSheetCsv($spreadsheetId, 'FollowMail_template');
+        $emailTemplates = [];
+        if (!empty($templatesRaw)) {
+            foreach ($templatesRaw as $tRow) {
+                $key = trim((string)($tRow['Key'] ?? ''));
+                if (!$key || $key === 'Key') continue;
+
+                $subject = trim((string)($tRow['Subject'] ?? ''));
+                $body = trim((string)($tRow['Template'] ?? ''));
+                $desc = trim((string)($tRow['Description'] ?? ''));
+
+                $meta = $this->getTemplateMetadata($key);
+
+                $emailTemplates[] = [
+                    'id' => $key,
+                    'name' => $meta['name'],
+                    'category' => $meta['category'],
+                    'subject' => $subject,
+                    'body' => $body,
+                    'description' => $desc ?: $meta['description']
+                ];
+
+                // フロントエンド標準キーへのエイリアスも同期
+                if (!empty($meta['aliases'])) {
+                    foreach ($meta['aliases'] as $aliasKey) {
+                        $emailTemplates[] = [
+                            'id' => $aliasKey,
+                            'name' => $meta['name'],
+                            'category' => $meta['category'],
+                            'subject' => $subject,
+                            'body' => $body,
+                            'description' => $desc ?: $meta['description']
+                        ];
+                    }
+                }
+            }
+        }
+
         return [
             'visitors' => $visitors,
             'hearings' => $hearings,
-            'members' => $members
+            'members' => $members,
+            'email_templates' => $emailTemplates
+        ];
+    }
+
+    private function getTemplateMetadata(string $key): array {
+        $map = [
+            'EMAIL_INTRO' => [
+                'name' => '新規ビジター参加案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '初めてお申し込みいただいたビジター様へ送信する初回案内メールです。',
+                'aliases' => ['EMAIL_VISITOR_INTRO']
+            ],
+            'EMAIL_GUEST_INTRO' => [
+                'name' => '他チャプターゲスト参加案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '他チャプターからゲスト参加されるメンバー様向けの参加案内メールです。',
+                'aliases' => []
+            ],
+            'EMAIL_URGENT' => [
+                'name' => '直前参加申込案内 (Welcome)',
+                'category' => 'welcome',
+                'description' => '開催直前にお申し込みいただいた方向けの特急案内メールです。',
+                'aliases' => []
+            ],
+            'EMAIL_2DAYS_AGO' => [
+                'name' => '定例会 2日前リマインド',
+                'category' => 'remind',
+                'description' => '定例会開催の2日前に事前準備や日程のリマインドとして送信するメールです。',
+                'aliases' => ['EMAIL_REMIND_2DAYS']
+            ],
+            'EMAIL_PREV_DAY' => [
+                'name' => '定例会 前日リマインド',
+                'category' => 'remind',
+                'description' => '定例会開催の前日に最終確認として送信するメールです。',
+                'aliases' => ['EMAIL_REMIND_1DAY']
+            ],
+            'EMAIL_THANK_YOU' => [
+                'name' => '定例会ご参加御礼メール (出席)',
+                'category' => 'thanks',
+                'description' => '定例会に参加いただいたビジター様へ当日に送信するお礼メールです。',
+                'aliases' => ['EMAIL_THANKS_ATTENDED']
+            ],
+            'EMAIL_THANK_YOU_REPEAT' => [
+                'name' => '再参加リピーターご参加御礼メール',
+                'category' => 'thanks',
+                'description' => '2回目以降の参加となるリピーター様へ当日に送信する御礼メールです。',
+                'aliases' => ['EMAIL_REPEATER_INTRO']
+            ],
+            'EMAIL_ABSENT' => [
+                'name' => '定例会欠席フォローメール',
+                'category' => 'thanks',
+                'description' => '定例会を欠席されたビジター様へお見舞いと次回案内を兼ねて送信するメールです。',
+                'aliases' => ['EMAIL_THANKS_ABSENT']
+            ],
+            'EMAIL_GUEST_THANKS' => [
+                'name' => 'ゲスト参加御礼メール',
+                'category' => 'thanks',
+                'description' => '他チャプターゲスト様へ当日に送信する御礼メールです。',
+                'aliases' => []
+            ],
+            'EMAIL_AFTER_FOLLOW_7' => [
+                'name' => '参加1週間後フォローメール',
+                'category' => 'follow',
+                'description' => '参加から1週間が経過したタイミングで送信するフォローメールです。',
+                'aliases' => ['EMAIL_FOLLOW_7DAYS']
+            ],
+            'EMAIL_ABSENT_FOLLOW_7' => [
+                'name' => '欠席1週間後フォローメール',
+                'category' => 'follow',
+                'description' => '欠席から1週間後に状況伺いとして送信するフォローメールです。',
+                'aliases' => []
+            ],
+            'EMAIL_AFTER_FOLLOW_30' => [
+                'name' => '参加1ヶ月後フォローメール',
+                'category' => 'follow',
+                'description' => '参加から1ヶ月後にビジネスの進捗確認や再参加を促すフォローメールです。',
+                'aliases' => ['EMAIL_FOLLOW_30DAYS']
+            ],
+            'EMAIL_ABSENT_FOLLOW_30' => [
+                'name' => '欠席1ヶ月後フォローメール',
+                'category' => 'follow',
+                'description' => '欠席から1ヶ月後に定期的なお伺いとして送信するフォローメールです。',
+                'aliases' => []
+            ]
+        ];
+
+        if (isset($map[$key])) {
+            return $map[$key];
+        }
+
+        return [
+            'name' => $key,
+            'category' => 'welcome',
+            'description' => '',
+            'aliases' => []
         ];
     }
 

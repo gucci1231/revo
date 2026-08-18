@@ -8236,18 +8236,27 @@ window.CelebrationEffect = (function() {
     const map = {};
     rawEmailTemplates.forEach(t => { map[t.id] = t; });
 
-    const tmplVisitorIntro = map['EMAIL_VISITOR_INTRO'] || { id: 'EMAIL_VISITOR_INTRO', name: '新規ビジター参加案内 (Welcome)', subject: '', body: '', description: '' };
+    // Phase 1: Welcome & Intro
+    const tmplVisitorIntro = map['EMAIL_INTRO'] || map['EMAIL_VISITOR_INTRO'] || { id: 'EMAIL_INTRO', name: '新規ビジター参加案内 (Welcome)', subject: '', body: '', description: '' };
     const tmplGuestIntro = map['EMAIL_GUEST_INTRO'] || { id: 'EMAIL_GUEST_INTRO', name: '他チャプターゲスト参加案内 (Welcome)', subject: '', body: '', description: '' };
-    const tmplRepeaterIntro = map['EMAIL_REPEATER_INTRO'] || { id: 'EMAIL_REPEATER_INTRO', name: '再参加リピーター案内 (Welcome)', subject: '', body: '', description: '' };
+    const tmplRepeaterIntro = map['EMAIL_THANK_YOU_REPEAT'] || map['EMAIL_REPEATER_INTRO'] || { id: 'EMAIL_THANK_YOU_REPEAT', name: '再参加リピーター案内 (Welcome)', subject: '', body: '', description: '' };
+    const tmplUrgent = map['EMAIL_URGENT'] || { id: 'EMAIL_URGENT', name: '直前参加申込案内 (Welcome)', subject: '', body: '', description: '' };
 
-    const tmplRemind2Days = map['EMAIL_REMIND_2DAYS'] || { id: 'EMAIL_REMIND_2DAYS', name: '定例会 2日前リマインド', subject: '', body: '', description: '' };
-    const tmplRemind1Day = map['EMAIL_REMIND_1DAY'] || { id: 'EMAIL_REMIND_1DAY', name: '定例会 前日リマインド', subject: '', body: '', description: '' };
+    // Phase 2: Remind
+    const tmplRemind2Days = map['EMAIL_2DAYS_AGO'] || map['EMAIL_REMIND_2DAYS'] || { id: 'EMAIL_2DAYS_AGO', name: '定例会 2日前リマインド', subject: '', body: '', description: '' };
+    const tmplRemind1Day = map['EMAIL_PREV_DAY'] || map['EMAIL_REMIND_1DAY'] || { id: 'EMAIL_PREV_DAY', name: '定例会 前日リマインド', subject: '', body: '', description: '' };
 
-    const tmplThanksAttended = map['EMAIL_THANKS_ATTENDED'] || { id: 'EMAIL_THANKS_ATTENDED', name: '定例会ご参加御礼メール', subject: '', body: '', description: '' };
-    const tmplThanksAbsent = map['EMAIL_THANKS_ABSENT'] || { id: 'EMAIL_THANKS_ABSENT', name: '定例会欠席フォローメール', subject: '', body: '', description: '' };
+    // Phase 3: Thanks & Absent
+    const tmplThanksAttended = map['EMAIL_THANK_YOU'] || map['EMAIL_THANKS_ATTENDED'] || { id: 'EMAIL_THANK_YOU', name: '定例会ご参加御礼メール (出席)', subject: '', body: '', description: '' };
+    const tmplThanksRepeat = map['EMAIL_THANK_YOU_REPEAT'] || { id: 'EMAIL_THANK_YOU_REPEAT', name: '再参加リピーターご参加御礼メール', subject: '', body: '', description: '' };
+    const tmplThanksAbsent = map['EMAIL_ABSENT'] || map['EMAIL_THANKS_ABSENT'] || { id: 'EMAIL_ABSENT', name: '定例会欠席フォローメール', subject: '', body: '', description: '' };
+    const tmplGuestThanks = map['EMAIL_GUEST_THANKS'] || { id: 'EMAIL_GUEST_THANKS', name: 'ゲスト参加御礼メール', subject: '', body: '', description: '' };
 
-    const tmplFollow7Days = map['EMAIL_FOLLOW_7DAYS'] || { id: 'EMAIL_FOLLOW_7DAYS', name: '参加1週間後フォローメール', subject: '', body: '', description: '' };
-    const tmplFollow30Days = map['EMAIL_FOLLOW_30DAYS'] || { id: 'EMAIL_FOLLOW_30DAYS', name: '参加1ヶ月後フォローメール', subject: '', body: '', description: '' };
+    // Phase 4: Follow up
+    const tmplFollow7Days = map['EMAIL_AFTER_FOLLOW_7'] || map['EMAIL_FOLLOW_7DAYS'] || { id: 'EMAIL_AFTER_FOLLOW_7', name: '参加1週間後フォローメール', subject: '', body: '', description: '' };
+    const tmplAbsentFollow7 = map['EMAIL_ABSENT_FOLLOW_7'] || { id: 'EMAIL_ABSENT_FOLLOW_7', name: '欠席1週間後フォローメール', subject: '', body: '', description: '' };
+    const tmplFollow30Days = map['EMAIL_AFTER_FOLLOW_30'] || map['EMAIL_FOLLOW_30DAYS'] || { id: 'EMAIL_AFTER_FOLLOW_30', name: '参加1ヶ月後フォローメール', subject: '', body: '', description: '' };
+    const tmplAbsentFollow30 = map['EMAIL_ABSENT_FOLLOW_30'] || { id: 'EMAIL_ABSENT_FOLLOW_30', name: '欠席1ヶ月後フォローメール', subject: '', body: '', description: '' };
 
     container.innerHTML = `
       <!-- Timeline Connector Line (Clean Blue) -->
@@ -8269,15 +8278,15 @@ window.CelebrationEffect = (function() {
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 1</span>
               </div>
               <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> ビジター属性で3分岐
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> 属性・申込タイミングで分岐
               </span>
             </div>
             <h3 class="text-lg sm:text-xl font-black text-slate-900">初回受付・参加案内 (Welcome メール)</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Googleフォームからの参加申込時に、申込者の属性（初参加・他チャプター・再参加）に応じて適切な文面が自動選択されます。</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Googleフォームからの参加申込時に、申込者の属性（初参加・他チャプター・直前受付）に応じて適切な文面が自動選択されます。</p>
           </div>
         </div>
 
-        <!-- Phase 1 Branch Cards Grid (3 Columns) -->
+        <!-- Phase 1 Branch Cards Grid -->
         <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             ${renderTemplateCardHtml(tmplVisitorIntro, 
@@ -8292,9 +8301,9 @@ window.CelebrationEffect = (function() {
             )}
           </div>
           <div>
-            ${renderTemplateCardHtml(tmplRepeaterIntro, 
-              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-rotate-right text-blue-600"></i> リピーター</span>`,
-              `<i class="fa-solid fa-arrow-turn-down-right"></i> 2回目以降の再参加向け`
+            ${renderTemplateCardHtml(tmplUrgent, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-bolt text-amber-600"></i> 直前申込</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 開催直前の特急受付`
             )}
           </div>
         </div>
@@ -8357,16 +8366,16 @@ window.CelebrationEffect = (function() {
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Phase 3</span>
               </div>
               <span class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> 出席・欠席で2分岐
+                <i class="fa-solid fa-code-branch text-blue-600 mr-1.5"></i> 出席・リピーター・欠席・ゲストで分岐
               </span>
             </div>
             <h3 class="text-lg sm:text-xl font-black text-slate-900">当日フォローメール (御礼 / 欠席フォロー)</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">定例会終了後、出欠確認の結果に応じて「参加御礼＆1to1促進」または「欠席時のお見舞い＆次回日程案内」に自動分岐します。</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">定例会終了後、出欠確認および属性に応じて「出席御礼」「リピーター御礼」「欠席フォロー」「ゲスト御礼」に自動分岐します。</p>
           </div>
         </div>
 
-        <!-- Phase 3 Branch Cards Grid (2 Columns) -->
-        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Phase 3 Branch Cards Grid (4 Columns on wide, 2 on tablet) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             ${renderTemplateCardHtml(tmplThanksAttended, 
               `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-circle-check text-blue-600"></i> 出席時</span>`,
@@ -8374,9 +8383,21 @@ window.CelebrationEffect = (function() {
             )}
           </div>
           <div>
+            ${renderTemplateCardHtml(tmplThanksRepeat, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-rotate-right text-emerald-600"></i> リピーター</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 再参加御礼 ＆ 関係深化`
+            )}
+          </div>
+          <div>
             ${renderTemplateCardHtml(tmplThanksAbsent, 
               `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-circle-xmark text-slate-500"></i> 欠席時</span>`,
               `<i class="fa-solid fa-arrow-turn-down-right"></i> 欠席フォロー ＆ 次回振替案内`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplGuestThanks, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-purple-50 text-purple-700 border border-purple-200"><i class="fa-solid fa-handshake text-purple-600"></i> ゲスト</span>`,
+              `<i class="fa-solid fa-arrow-turn-down-right"></i> 他チャプター御礼 ＆ 交流促進`
             )}
           </div>
         </div>
@@ -8402,22 +8423,34 @@ window.CelebrationEffect = (function() {
               </span>
             </div>
             <h3 class="text-lg sm:text-xl font-black text-slate-900">中長期ステップフォローメール</h3>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">参加から時間が経ったビジターへ、ビジネスの進捗伺いやチャプターとの協業・再参加の機会をご案内します。</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">参加または欠席から時間が経ったビジターへ、状況に応じた継続的フォローを行います。</p>
           </div>
         </div>
 
-        <!-- Phase 4 Cards Grid (2 Columns) -->
-        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Phase 4 Cards Grid (4 Columns) -->
+        <div class="lg:pl-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             ${renderTemplateCardHtml(tmplFollow7Days, 
-              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-week text-blue-600"></i> 1週間後</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-week text-blue-600"></i> 参加 1週間後</span>`,
               `<i class="fa-solid fa-arrow-right"></i> ビジネス進捗伺い ＆ メンバー紹介`
             )}
           </div>
           <div>
+            ${renderTemplateCardHtml(tmplAbsentFollow7, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-calendar-week text-slate-500"></i> 欠席 1週間後</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> 状況伺い ＆ リベンジ参加`
+            )}
+          </div>
+          <div>
             ${renderTemplateCardHtml(tmplFollow30Days, 
-              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-days text-blue-600"></i> 1ヶ月後</span>`,
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 border border-blue-200"><i class="fa-solid fa-calendar-days text-blue-600"></i> 参加 1ヶ月後</span>`,
               `<i class="fa-solid fa-arrow-right"></i> 定期フォロー ＆ 再参加リコネクト`
+            )}
+          </div>
+          <div>
+            ${renderTemplateCardHtml(tmplAbsentFollow30, 
+              `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-solid fa-calendar-days text-slate-500"></i> 欠席 1ヶ月後</span>`,
+              `<i class="fa-solid fa-arrow-right"></i> 定期お伺い ＆ 課題解決提案`
             )}
           </div>
         </div>
