@@ -56,8 +56,53 @@ body {
 .tab-btn:hover { color: #0f172a; }
 .tab-btn.active { background: #ffffff; color: var(--text-main); font-weight: 700; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
 
-.view-content { display: none; }
-.view-content.active { display: block; }
+/* Page View Transition & Micro-interactions */
+@keyframes viewFadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.view-content {
+  display: none;
+}
+
+.view-content.active {
+  display: block;
+  animation: viewFadeInUp 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Staggered smooth appearance for main cards inside active views */
+.view-content.active .kpi-card,
+.view-content.active .section-card,
+.view-content.active .stat-card-clean {
+  animation: viewFadeInUp 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Header Page Badge Smooth Update Animation */
+@keyframes headerBadgePop {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.header-badge-animated {
+  animation: headerBadgePop 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view-content.active,
+  .view-content.active .kpi-card,
+  .view-content.active .section-card,
+  .view-content.active .stat-card-clean,
+  .header-badge-animated {
+    animation: none !important;
+  }
+}
 
   /* Left Drawer Menu */
 .btn-drawer-trigger {

@@ -100,8 +100,14 @@
     const info = PAGE_NAV_INFO[tabName] || { title: 'ビジター管理', icon: 'fa-solid fa-layer-group' };
     const titleEl = document.getElementById('header-page-title');
     const iconEl = document.getElementById('header-page-icon');
+    const badgeEl = document.getElementById('header-current-page');
     if (titleEl) titleEl.innerText = customTitle || info.title;
     if (iconEl) iconEl.innerHTML = `<i class="${customIcon || info.icon}"></i>`;
+    if (badgeEl) {
+      badgeEl.classList.remove('header-badge-animated');
+      void badgeEl.offsetWidth;
+      badgeEl.classList.add('header-badge-animated');
+    }
   }
 
   /* --- Tab Navigation Controller --- */
