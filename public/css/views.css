@@ -713,15 +713,11 @@
   .vd-ap-no-action-fallback {
     display: none !important;
   }
-  .vd-ap-list-box {
-    display: block !important;
-  }
 }
 
-@media (max-width: 1023px) {
-  .vd-ap-list-box.is-empty {
-    display: none !important;
-  }
+/* アクションプランが0件の場合はPC・スマホ問わずプラン一覧ボックスを非表示 */
+.vd-ap-list-box.is-empty {
+  display: none !important;
 }
 
 .vd-ap-no-action-fallback {
@@ -853,7 +849,10 @@
   .vd-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 14px;
+  }
+  .vd-form-grid > * {
+    min-width: 0;
   }
 }
 
@@ -861,16 +860,22 @@
 .vd-date-input-wrap {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 .vd-ap-date-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: #1e40af;
   background-color: #f8fafc;
   border: 1.5px solid #cbd5e1;
   border-radius: 10px;
-  padding: 8px 12px;
-  height: 42px;
+  padding: 8px 10px;
+  height: 40px;
+  font-size: 13px;
 }
 .vd-ap-date-input:focus {
   background-color: #ffffff;
@@ -881,15 +886,16 @@
 .vd-date-day-badge {
   display: none;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
+  gap: 3px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 1.5px 6px;
+  border-radius: 5px;
   background: #eff6ff;
   color: #1d4ed8;
   border: 1px solid #bfdbfe;
   animation: fadeIn 0.15s ease;
+  white-space: nowrap;
 }
 .vd-date-day-badge.is-urgent {
   background: #fff7ed;
@@ -905,17 +911,18 @@
 .vd-date-pill-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 5px 10px;
-  border-radius: 8px;
+  gap: 3px;
+  padding: 4px 7px;
+  border-radius: 7px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   color: #475569;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  white-space: nowrap;
 }
 .vd-date-pill-btn:hover {
   background: #e2e8f0;
