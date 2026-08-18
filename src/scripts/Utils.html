@@ -266,15 +266,26 @@
       linkified = linkified.replace(/\r?\n/g, '<br>');
     }
 
-    // 4. OGPカードプレースホルダーを追加 (最大2枚まで)
+    // 4. URLのみで構成されているか判定 (文章がない場合は無駄なテキストリンクを出さずカードのみ表示)
+    const pureText = str.replace(/https?:\/\/[^\s]+/gi, '').replace(/[\r\n\s]+/g, '').trim();
+    const isUrlOnly = (pureText === '' && foundUrls.length > 0);
+
     if (showCard && foundUrls.length > 0) {
-      const cardsHtml = foundUrls.slice(0, 2).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
-      linkified += `<div class="ogp-cards-wrap mt-1.5 flex flex-col gap-1">${cardsHtml}</div>`;
+      const cardsHtml = foundUrls.slice(0, 3).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
+      const cardsWrapper = `<div class="ogp-cards-wrap mt-1 flex flex-col gap-1.5">${cardsHtml}</div>`;
+      
+      if (isUrlOnly) {
+        // URLのみの場合は上のテキストリンクを省略してカードのみ表示
+        linkified = cardsWrapper;
+      } else {
+        linkified += cardsWrapper;
+      }
+
       setTimeout(() => {
         if (typeof OgpCardService !== 'undefined' && OgpCardService.renderAll) {
           OgpCardService.renderAll();
         }
-      }, 50);
+      }, 30);
     }
 
     return linkified;
@@ -296,14 +307,18 @@
           return;
         }
 
-        // スケルトン表示
+        // モダンなスケルトンローディング表示
         container.innerHTML = `
-          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 52px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
-            <div style="width: 16px; height: 16px; border-radius: 4px; background: #cbd5e1;"></div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-              <div style="width: 60%; height: 12px; border-radius: 4px; background: #cbd5e1;"></div>
-              <div style="width: 90%; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
+          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 64px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 14px; height: 14px; border-radius: 4px; background: #cbd5e1;"></div>
+                <div style="width: 70px; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
+              </div>
+              <div style="width: 80%; height: 13px; border-radius: 4px; background: #cbd5e1;"></div>
+              <div style="width: 95%; height: 10px; border-radius: 4px; background: #f1f5f9;"></div>
             </div>
+            <div style="width: 68px; height: 68px; border-radius: 8px; background: #e2e8f0; flex-shrink: 0;"></div>
           </div>
         `;
 
@@ -343,7 +358,8 @@
           <div class="ogp-card-content">
             <div class="ogp-card-domain">
               <img src="${escapeHtml(favicon)}" class="ogp-card-favicon" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'">
-              <span class="truncate">${escapeHtml(siteName)}</span>
+              <span class="ogp-card-site-name truncate">${escapeHtml(siteName)}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-slate-400 opacity-60 ml-auto"></i>
             </div>
             <div class="ogp-card-title">${escapeHtml(title)}</div>
             ${desc ? `<div class="ogp-card-desc">${escapeHtml(desc)}</div>` : ''}

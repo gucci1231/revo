@@ -200,11 +200,16 @@ class OgpController {
             preg_match('/<meta[^>]+content=[\'"]([^\'"]+)[\'"][^>]+name=[\'"](?:twitter:image|twitter:image:src)[\'"]/i', $html, $m) ||
             preg_match('/<link[^>]+rel=[\'"]image_src[\'"][^>]+href=[\'"]([^\'"]+)[\'"]/i', $html, $m)) {
             $image = trim($m[1]);
-        } elseif (preg_match('/<img[^>]+src=[\'"]([^"\'>]+\.(?:jpg|jpeg|png|webp)(?:\?[^"\'>]*)?)[\'"]/i', $html, $m)) {
-            $candidate = trim($m[1]);
-            // トラッキングピクセルや極小アイコンを除外
-            if (!preg_match('/(beacon|track|1x1|spacer|clear|pixel)/i', $candidate)) {
-                $image = $candidate;
+        } elseif (preg_match('/https:\/\/imgfp\.hotp\.jp\/IMGH\/[^\/]+\/[^\/]+\/P[0-9]+\/P[0-9]+_(?:480|238|300)\.jpg/i', $html, $m)) {
+            $image = $m[0];
+        } elseif (preg_match_all('/<img[^>]+src=[\'"]([^"\'>]+\.(?:jpg|jpeg|png|webp)(?:\?[^"\'>]*)?)[\'"]/i', $html, $allImgs)) {
+            foreach ($allImgs[1] as $candidate) {
+                $candidate = trim($candidate);
+                // ロゴ・トラッキング・アイコンを除外して写真らしきものを選択
+                if (!preg_match('/(beacon|track|1x1|spacer|clear|pixel|logo|btn_|icn_|arrow|icon)/i', $candidate)) {
+                    $image = $candidate;
+                    break;
+                }
             }
         }
 

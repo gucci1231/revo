@@ -3194,27 +3194,28 @@ tr:last-child td { border-bottom: none; }
   box-sizing: border-box;
 }
 
-/* --- 🖼️ OGP Rich Link Preview Card Styles (Apple & Notion Inspired) --- */
+/* --- 🖼️ Ultra-Modern OGP Rich Link Preview Card Styles (Apple & Notion Inspired) --- */
 .ogp-cards-wrap {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 4px;
+  width: 100%;
   max-width: 100%;
 }
 .ogp-rich-card {
   display: flex !important;
-  align-items: stretch !important;
+  align-items: center !important;
   justify-content: space-between !important;
-  gap: 10px !important;
+  gap: 14px !important;
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 10px !important;
-  padding: 8px 10px !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 12px !important;
+  padding: 12px 14px !important;
   text-decoration: none !important;
   color: #0f172a !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   overflow: hidden !important;
   max-width: 100% !important;
   min-width: 0 !important;
@@ -3222,9 +3223,9 @@ tr:last-child td { border-bottom: none; }
 }
 .ogp-rich-card:hover {
   border-color: #93c5fd !important;
-  background: #f8fafc !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08) !important;
+  background: #ffffff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04) !important;
 }
 .ogp-card-content {
   flex: 1;
@@ -3232,28 +3233,34 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   text-align: left;
 }
 .ogp-card-domain {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #64748b;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   margin-bottom: 2px;
 }
 .ogp-card-favicon {
-  width: 13px;
-  height: 13px;
-  border-radius: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
   flex-shrink: 0;
   object-fit: contain;
 }
+.ogp-card-site-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: -0.01em;
+}
 .ogp-card-title {
-  font-size: 12.5px;
-  font-weight: 800;
+  font-size: 13.5px;
+  font-weight: 700;
   color: #0f172a;
   line-height: 1.35;
   display: -webkit-box;
@@ -3261,25 +3268,30 @@ tr:last-child td { border-bottom: none; }
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
+  letter-spacing: -0.02em;
+}
+.ogp-rich-card:hover .ogp-card-title {
+  color: #2563eb;
 }
 .ogp-card-desc {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #64748b;
-  line-height: 1.35;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .ogp-card-image-wrap {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
-  background: #f1f5f9;
+  background: #f8fafc;
+  border: 1px solid rgba(241, 245, 249, 0.9);
   align-self: center;
   display: flex;
   align-items: center;
@@ -3289,22 +3301,26 @@ tr:last-child td { border-bottom: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.25s ease;
+}
+.ogp-rich-card:hover .ogp-card-image {
+  transform: scale(1.05);
 }
 
 @media (max-width: 480px) {
   .ogp-rich-card {
-    padding: 8px 10px !important;
-    gap: 8px !important;
+    padding: 10px 12px !important;
+    gap: 10px !important;
   }
   .ogp-card-image-wrap {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
   }
   .ogp-card-title {
-    font-size: 12px;
+    font-size: 12.5px;
   }
   .ogp-card-desc {
-    font-size: 10.5px;
+    font-size: 11px;
   }
 }
 
@@ -5794,15 +5810,26 @@ const ApiService = {
       linkified = linkified.replace(/\r?\n/g, '<br>');
     }
 
-    // 4. OGPカードプレースホルダーを追加 (最大2枚まで)
+    // 4. URLのみで構成されているか判定 (文章がない場合は無駄なテキストリンクを出さずカードのみ表示)
+    const pureText = str.replace(/https?:\/\/[^\s]+/gi, '').replace(/[\r\n\s]+/g, '').trim();
+    const isUrlOnly = (pureText === '' && foundUrls.length > 0);
+
     if (showCard && foundUrls.length > 0) {
-      const cardsHtml = foundUrls.slice(0, 2).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
-      linkified += `<div class="ogp-cards-wrap mt-1.5 flex flex-col gap-1">${cardsHtml}</div>`;
+      const cardsHtml = foundUrls.slice(0, 3).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
+      const cardsWrapper = `<div class="ogp-cards-wrap mt-1 flex flex-col gap-1.5">${cardsHtml}</div>`;
+      
+      if (isUrlOnly) {
+        // URLのみの場合は上のテキストリンクを省略してカードのみ表示
+        linkified = cardsWrapper;
+      } else {
+        linkified += cardsWrapper;
+      }
+
       setTimeout(() => {
         if (typeof OgpCardService !== 'undefined' && OgpCardService.renderAll) {
           OgpCardService.renderAll();
         }
-      }, 50);
+      }, 30);
     }
 
     return linkified;
@@ -5824,14 +5851,18 @@ const ApiService = {
           return;
         }
 
-        // スケルトン表示
+        // モダンなスケルトンローディング表示
         container.innerHTML = `
-          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 52px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
-            <div style="width: 16px; height: 16px; border-radius: 4px; background: #cbd5e1;"></div>
-            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-              <div style="width: 60%; height: 12px; border-radius: 4px; background: #cbd5e1;"></div>
-              <div style="width: 90%; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
+          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 64px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 14px; height: 14px; border-radius: 4px; background: #cbd5e1;"></div>
+                <div style="width: 70px; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
+              </div>
+              <div style="width: 80%; height: 13px; border-radius: 4px; background: #cbd5e1;"></div>
+              <div style="width: 95%; height: 10px; border-radius: 4px; background: #f1f5f9;"></div>
             </div>
+            <div style="width: 68px; height: 68px; border-radius: 8px; background: #e2e8f0; flex-shrink: 0;"></div>
           </div>
         `;
 
@@ -5871,7 +5902,8 @@ const ApiService = {
           <div class="ogp-card-content">
             <div class="ogp-card-domain">
               <img src="${escapeHtml(favicon)}" class="ogp-card-favicon" alt="" referrerpolicy="no-referrer" onerror="this.style.display='none'">
-              <span class="truncate">${escapeHtml(siteName)}</span>
+              <span class="ogp-card-site-name truncate">${escapeHtml(siteName)}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-slate-400 opacity-60 ml-auto"></i>
             </div>
             <div class="ogp-card-title">${escapeHtml(title)}</div>
             ${desc ? `<div class="ogp-card-desc">${escapeHtml(desc)}</div>` : ''}
