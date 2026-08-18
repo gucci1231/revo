@@ -172,22 +172,25 @@
             <input type="text" id="et-edit-subject" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-sm font-medium text-slate-900 transition" placeholder="件名を入力してください..." oninput="onTemplateInputChange()">
           </div>
 
-          <!-- Body Textarea -->
-          <div class="space-y-1.5">
-            <div class="flex items-center justify-between">
-              <label for="et-edit-body" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
-                <i class="fa-solid fa-align-left text-blue-600"></i>
-                <span>メール本文 (Body)</span>
-                <span class="text-red-500 font-bold text-xs">*</span>
-              </label>
-              <div class="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
-                <span id="et-body-lines">0 行</span>
-                <span>•</span>
-                <span id="et-body-chars">0 文字</span>
+            <!-- Body Textarea (Auto-expanding & Resizable) -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="et-edit-body" class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                  <i class="fa-solid fa-align-left text-blue-600"></i>
+                  <span>メール本文 (Body)</span>
+                  <span class="text-red-500 font-bold text-xs">*</span>
+                </label>
+                <div class="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+                  <span id="et-body-lines">0 行</span>
+                  <span>•</span>
+                  <span id="et-body-chars">0 文字</span>
+                </div>
               </div>
+              <textarea id="et-edit-body" rows="12" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-xs sm:text-sm font-mono text-slate-800 leading-relaxed transition-all resize-y min-h-[300px] overflow-y-auto" placeholder="メール本文を入力してください..." oninput="onTemplateInputChange()"></textarea>
+              <p class="text-[11px] text-slate-400 flex items-center justify-between">
+                <span><i class="fa-solid fa-arrows-up-down mr-1"></i>テキスト量に応じて自動伸縮します（右下のハンドルで手動サイズ変更も可能）</span>
+              </p>
             </div>
-            <textarea id="et-edit-body" rows="14" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-xs sm:text-sm font-mono text-slate-800 leading-relaxed transition" placeholder="メール本文を入力してください..." oninput="onTemplateInputChange()"></textarea>
-          </div>
 
           <!-- Validation Warning / Error Box -->
           <div id="et-validation-box" class="rounded-xl p-4 border transition-all" style="display: none;">

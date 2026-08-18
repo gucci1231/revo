@@ -484,6 +484,11 @@
     document.getElementById('et-view-list').style.display = 'none';
     document.getElementById('et-view-editor').style.display = 'block';
 
+    // Auto resize after element becomes visible
+    setTimeout(() => {
+      autoResizeBodyTextarea();
+    }, 50);
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -492,6 +497,14 @@
     currentEditingTemplate = null;
     document.getElementById('et-view-editor').style.display = 'none';
     document.getElementById('et-view-list').style.display = 'block';
+  }
+
+  function autoResizeBodyTextarea() {
+    const bodyInput = document.getElementById('et-edit-body');
+    if (!bodyInput) return;
+    bodyInput.style.height = 'auto';
+    const computedHeight = Math.max(300, bodyInput.scrollHeight + 10);
+    bodyInput.style.height = computedHeight + 'px';
   }
 
   function onTemplateInputChange() {
@@ -508,6 +521,8 @@
     const charsEl = document.getElementById('et-body-chars');
     if (linesEl) linesEl.innerText = `${bodyLines} 行`;
     if (charsEl) charsEl.innerText = `${bodyChars} 文字`;
+
+    autoResizeBodyTextarea();
 
     // Hide validation box on typing
     const valBox = document.getElementById('et-validation-box');
