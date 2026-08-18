@@ -1724,14 +1724,14 @@ tr:last-child td { border-bottom: none; }
   color: #0f172a;
 }
 
-@keyframes vdSheetSlideUp {
+@keyframes vdModalPopIn {
   0% {
     opacity: 0;
-    transform: translateY(40px) scale(0.98);
+    transform: scale(0.95) translateY(10px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -1753,8 +1753,8 @@ tr:last-child td { border-bottom: none; }
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    padding: 0;
-    align-items: flex-end;
+    padding: 16px;
+    align-items: center;
     justify-content: center;
     overflow-y: auto;
     overflow-x: hidden;
@@ -1770,19 +1770,18 @@ tr:last-child td { border-bottom: none; }
   }
   .vd-ap-modal-content {
     width: 100%;
-    max-width: 520px;
-    margin: 0 auto;
+    max-width: 500px;
+    margin: auto;
     background: #ffffff;
-    border-radius: 24px 24px 0 0;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(226, 232, 240, 0.9);
-    border-bottom: none;
-    max-height: 88vh;
-    max-height: 88dvh;
+    max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 24px 20px 32px 20px;
-    animation: vdSheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    padding: 22px 20px;
+    animation: vdModalPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   .vd-form-grid {
     display: flex;
