@@ -269,7 +269,7 @@
     // 4. OGPカードプレースホルダーを追加 (最大2枚まで)
     if (showCard && foundUrls.length > 0) {
       const cardsHtml = foundUrls.slice(0, 2).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
-      linkified += `<div class="ogp-cards-wrap mt-2 flex flex-col gap-2">${cardsHtml}</div>`;
+      linkified += `<div class="ogp-cards-wrap mt-1.5 flex flex-col gap-1">${cardsHtml}</div>`;
       setTimeout(() => {
         if (typeof OgpCardService !== 'undefined' && OgpCardService.renderAll) {
           OgpCardService.renderAll();
