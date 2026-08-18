@@ -251,7 +251,7 @@
         trailing = tailPunct[1];
         url = url.slice(0, -trailing.length);
       }
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="auto-url-link text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" style="word-break:break-all; overflow-wrap:anywhere; display:inline;" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
     });
 
     // 3. 改行を <br> に変換
