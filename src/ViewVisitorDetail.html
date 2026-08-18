@@ -243,12 +243,27 @@
               <div id="vd-ap-no-action-fallback" class="vd-ap-no-action-fallback" style="display: none;">
                 <!-- 共有メモ -->
                 <div class="vd-box mt-4">
-                  <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
-                  <textarea id="vd-ap-fb-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
-                  <div class="vd-form-actions mt-3">
-                    <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
-                      <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                  <div class="vd-box-header py-1 pb-2.5 border-b border-slate-100 mb-2.5 flex items-center justify-between">
+                    <h3 class="vd-box-title text-slate-800"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+                    <button type="button" id="vd-ap-fb-memo-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorMemoEdit(true)">
+                      <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
                     </button>
+                  </div>
+
+                  <!-- 閲覧モード (デフォルト) -->
+                  <div id="vd-ap-fb-memo-view" class="vd-memo-view-mode cursor-pointer" onclick="toggleVisitorMemoEdit(true)" title="クリックしてメモを編集">
+                    <div id="vd-ap-fb-memo-display" class="vd-hearing-a memo-yellow" style="min-height: 54px;">-</div>
+                  </div>
+
+                  <!-- 編集モード (非表示) -->
+                  <div id="vd-ap-fb-memo-edit" class="vd-memo-edit-mode" style="display: none;">
+                    <textarea id="vd-ap-fb-memo" class="form-textarea vd-memo-textarea auto-resize-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+                    <div class="vd-form-actions mt-3 flex justify-end gap-2">
+                      <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorMemoEdit(false)">キャンセル</button>
+                      <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -290,12 +305,27 @@
             <!-- Tab Content 2: 自由メモ -->
             <div id="vd-tab-content-memo" class="vd-tab-pane">
               <div class="vd-box">
-                <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
-                <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
-                <div class="vd-form-actions mt-3">
-                  <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                <div class="vd-box-header py-1 pb-2.5 border-b border-slate-100 mb-2.5 flex items-center justify-between">
+                  <h3 class="vd-box-title text-slate-800"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+                  <button type="button" id="vd-memo-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorMemoEdit(true)">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
                   </button>
+                </div>
+
+                <!-- 閲覧モード (デフォルト) -->
+                <div id="vd-memo-view-mode" class="vd-memo-view-mode cursor-pointer" onclick="toggleVisitorMemoEdit(true)" title="クリックしてメモを編集">
+                  <div id="vd-memo-display" class="vd-hearing-a memo-yellow" style="min-height: 80px;">-</div>
+                </div>
+
+                <!-- 編集モード (非表示) -->
+                <div id="vd-memo-edit-mode" class="vd-memo-edit-mode" style="display: none;">
+                  <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea auto-resize-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+                  <div class="vd-form-actions mt-3 flex justify-end gap-2">
+                    <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorMemoEdit(false)">キャンセル</button>
+                    <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                      <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

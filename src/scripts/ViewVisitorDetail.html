@@ -360,19 +360,31 @@
         if (freeMemoEl) freeMemoEl.value = memoVal;
         if (fbMemoEl) fbMemoEl.value = memoVal;
 
-        // 自由メモの双方向同期
+        // 閲覧モード表示の更新
+        updateVisitorMemoDisplay(memoVal);
+        toggleVisitorMemoEdit(false);
+
+        // 自由メモの双方向同期 & 自動リサイズ
         if (freeMemoEl && !freeMemoEl.dataset.synced) {
           freeMemoEl.dataset.synced = 'true';
           freeMemoEl.addEventListener('input', () => {
             const fb = document.getElementById('vd-ap-fb-memo');
-            if (fb && fb !== document.activeElement) fb.value = freeMemoEl.value;
+            if (fb && fb !== document.activeElement) {
+              fb.value = freeMemoEl.value;
+              if (window.autoResizeTextarea) window.autoResizeTextarea(fb);
+            }
+            if (window.autoResizeTextarea) window.autoResizeTextarea(freeMemoEl);
           });
         }
         if (fbMemoEl && !fbMemoEl.dataset.synced) {
           fbMemoEl.dataset.synced = 'true';
           fbMemoEl.addEventListener('input', () => {
             const orig = document.getElementById('vd-free-memo');
-            if (orig && orig !== document.activeElement) orig.value = fbMemoEl.value;
+            if (orig && orig !== document.activeElement) {
+              orig.value = fbMemoEl.value;
+              if (window.autoResizeTextarea) window.autoResizeTextarea(orig);
+            }
+            if (window.autoResizeTextarea) window.autoResizeTextarea(fbMemoEl);
           });
         }
 
@@ -982,6 +994,46 @@
       .replace(/'/g, '&#039;');
   }
 
+  function updateVisitorMemoDisplay(memoText) {
+    const text = memoText ? memoText.trim() : '';
+    const displayHtml = text
+      ? escapeAndLinkify(text, true, true)
+      : '<span class="text-slate-400 font-normal italic"><i class="fa-solid fa-pen mr-1"></i> メモはまだありません（タップ / クリックして追加）</span>';
+
+    const disp1 = document.getElementById('vd-memo-display');
+    const disp2 = document.getElementById('vd-ap-fb-memo-display');
+    if (disp1) disp1.innerHTML = displayHtml;
+    if (disp2) disp2.innerHTML = displayHtml;
+  }
+
+  function toggleVisitorMemoEdit(isEditing) {
+    const view1 = document.getElementById('vd-memo-view-mode');
+    const edit1 = document.getElementById('vd-memo-edit-mode');
+    const btn1 = document.getElementById('vd-memo-btn-edit');
+
+    const view2 = document.getElementById('vd-ap-fb-memo-view');
+    const edit2 = document.getElementById('vd-ap-fb-memo-edit');
+    const btn2 = document.getElementById('vd-ap-fb-memo-btn-edit');
+
+    if (view1) view1.style.display = isEditing ? 'none' : 'block';
+    if (edit1) edit1.style.display = isEditing ? 'block' : 'none';
+    if (btn1) btn1.style.display = isEditing ? 'none' : 'inline-flex';
+
+    if (view2) view2.style.display = isEditing ? 'none' : 'block';
+    if (edit2) edit2.style.display = isEditing ? 'block' : 'none';
+    if (btn2) btn2.style.display = isEditing ? 'none' : 'inline-flex';
+
+    if (isEditing) {
+      const freeMemoEl = document.getElementById('vd-free-memo');
+      const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+      const target = (fbMemoEl && fbMemoEl.offsetParent !== null) ? fbMemoEl : freeMemoEl;
+      if (target) {
+        if (window.autoResizeTextarea) window.autoResizeTextarea(target);
+        setTimeout(() => target.focus(), 80);
+      }
+    }
+  }
+
   function saveVisitorFreeMemo() {
     if (!currentVdVisitorId) return;
     const freeMemoEl = document.getElementById('vd-free-memo');
@@ -1001,6 +1053,8 @@
     ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
       .then(res => {
         showToast(`✅ メモを正常に保存しました！`);
+        updateVisitorMemoDisplay(memoText);
+        toggleVisitorMemoEdit(false);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })

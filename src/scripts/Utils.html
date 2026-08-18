@@ -436,6 +436,26 @@
     setTimeout(() => toast.remove(), 3000);
   }
 
+  function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    const newHeight = Math.max(44, textarea.scrollHeight);
+    textarea.style.height = newHeight + 'px';
+  }
+  window.autoResizeTextarea = autoResizeTextarea;
+
+  function initAutoResizeTextareas(root = document) {
+    const textareas = root.querySelectorAll('textarea.auto-resize-textarea, #modal-hearing-form textarea');
+    textareas.forEach(ta => {
+      if (!ta.dataset.autoresizeBound) {
+        ta.dataset.autoresizeBound = 'true';
+        ta.addEventListener('input', () => autoResizeTextarea(ta));
+      }
+      autoResizeTextarea(ta);
+    });
+  }
+  window.initAutoResizeTextareas = initAutoResizeTextareas;
+
   function handleError(err) {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'none';

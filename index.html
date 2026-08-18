@@ -714,9 +714,25 @@ tr:last-child td { border-bottom: none; }
 /* Search & Inputs */
 .search-box { padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px; width: 260px; }
 .form-group { margin-bottom: 16px; }
-.form-label { font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; display: block; }
-.form-textarea { width: 100%; min-height: 70px; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: inherit; font-size: 13px; }
-.form-input { width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 13px; }
+.form-textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  field-sizing: content;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-textarea:focus {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
 
 /* Modals & Backdrop */
 .modal-backdrop, .modal-overlay {
@@ -1927,9 +1943,38 @@ tr:last-child td { border-bottom: none; }
 .vd-hearing-a.memo-blue { background: #eff6ff; border-color: #bfdbfe; }
 
 .vd-memo-textarea {
-  height: 240px; font-size: 14px; font-family: inherit; line-height: 1.6;
-  font-weight: 700; color: #1e293b; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-  width: 100%; max-width: 100%; box-sizing: border-box; word-break: break-word;
+  min-height: 90px;
+  height: auto;
+  font-size: 13.5px;
+  font-family: inherit;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  field-sizing: content;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.vd-memo-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  outline: none;
+}
+
+.vd-memo-view-mode {
+  transition: all 0.15s ease;
+}
+.vd-memo-view-mode:hover .vd-hearing-a {
+  border-color: #f59e0b;
+  background: #fef3c7;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);
 }
 
 .vd-mail-list { display: flex; flex-direction: column; gap: 12px; }
@@ -3380,37 +3425,37 @@ tr:last-child td { border-bottom: none; }
 
       <div class="form-group">
         <label class="form-label">Q1：【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？</label>
-        <textarea id="hf-q1" class="form-textarea" placeholder="ビジター様からの回答・感想"></textarea>
+        <textarea id="hf-q1" class="form-textarea auto-resize-textarea" placeholder="ビジター様からの回答・感想"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q2：【お仕事について】〇〇さんのお仕事について再度聞かせてください。</label>
-        <textarea id="hf-q2" class="form-textarea" placeholder="仕事内容の補足や詳細"></textarea>
+        <textarea id="hf-q2" class="form-textarea auto-resize-textarea" placeholder="仕事内容の補足や詳細"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q3：【Goal(目標)】夢や目標、〇年後にこうなりたい計画はありますか？</label>
-        <textarea id="hf-q3" class="form-textarea" placeholder="目標や達成したいこと"></textarea>
+        <textarea id="hf-q3" class="form-textarea auto-resize-textarea" placeholder="目標や達成したいこと"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q4：【Reality(現実・課題)】課題と感じることはございますか？いつ頃からですか？</label>
-        <textarea id="hf-q4" class="form-textarea" placeholder="現状の課題や悩み"></textarea>
+        <textarea id="hf-q4" class="form-textarea auto-resize-textarea" placeholder="現状の課題や悩み"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q5：【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？</label>
-        <textarea id="hf-q5" class="form-textarea" placeholder="検討中の選択肢"></textarea>
+        <textarea id="hf-q5" class="form-textarea auto-resize-textarea" placeholder="検討中の選択肢"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q6：【Way Forward(今後の力に)】REvoメンバーでお役に立てること</label>
-        <textarea id="hf-q6" class="form-textarea" placeholder="具体的なお役立ち提案（リファーラル・人脈紹介等）"></textarea>
+        <textarea id="hf-q6" class="form-textarea auto-resize-textarea" placeholder="具体的なお役立ち提案（リファーラル・人脈紹介等）"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">Q7：【次のアクション】促し内容</label>
-        <textarea id="hf-q7" class="form-textarea" placeholder="・入会 / 繋がりたいメンバーへの紹介 / 再度定例会 / BOD / コーヒーミーティング等"></textarea>
+        <textarea id="hf-q7" class="form-textarea auto-resize-textarea" placeholder="・入会 / 繋がりたいメンバーへの紹介 / 再度定例会 / BOD / コーヒーミーティング等"></textarea>
       </div>
 
       <div class="form-group">
@@ -3425,12 +3470,12 @@ tr:last-child td { border-bottom: none; }
 
       <div class="form-group">
         <label class="form-label">定例会直後のオリエン感想メモ</label>
-        <textarea id="hf-orient-memo" class="form-textarea" placeholder="オリエン直後の定例会での様子や感想"></textarea>
+        <textarea id="hf-orient-memo" class="form-textarea auto-resize-textarea" placeholder="オリエン直後の定例会での様子や感想"></textarea>
       </div>
 
       <div class="form-group">
         <label class="form-label">追跡フォローメモ</label>
-        <textarea id="hf-follow-memo" class="form-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
+        <textarea id="hf-follow-memo" class="form-textarea auto-resize-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
       </div>
 
       <div class="link-actions-box">
@@ -4551,12 +4596,27 @@ tr:last-child td { border-bottom: none; }
               <div id="vd-ap-no-action-fallback" class="vd-ap-no-action-fallback" style="display: none;">
                 <!-- 共有メモ -->
                 <div class="vd-box mt-4">
-                  <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
-                  <textarea id="vd-ap-fb-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
-                  <div class="vd-form-actions mt-3">
-                    <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
-                      <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                  <div class="vd-box-header py-1 pb-2.5 border-b border-slate-100 mb-2.5 flex items-center justify-between">
+                    <h3 class="vd-box-title text-slate-800"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+                    <button type="button" id="vd-ap-fb-memo-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorMemoEdit(true)">
+                      <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
                     </button>
+                  </div>
+
+                  <!-- 閲覧モード (デフォルト) -->
+                  <div id="vd-ap-fb-memo-view" class="vd-memo-view-mode cursor-pointer" onclick="toggleVisitorMemoEdit(true)" title="クリックしてメモを編集">
+                    <div id="vd-ap-fb-memo-display" class="vd-hearing-a memo-yellow" style="min-height: 54px;">-</div>
+                  </div>
+
+                  <!-- 編集モード (非表示) -->
+                  <div id="vd-ap-fb-memo-edit" class="vd-memo-edit-mode" style="display: none;">
+                    <textarea id="vd-ap-fb-memo" class="form-textarea vd-memo-textarea auto-resize-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+                    <div class="vd-form-actions mt-3 flex justify-end gap-2">
+                      <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorMemoEdit(false)">キャンセル</button>
+                      <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -4598,12 +4658,27 @@ tr:last-child td { border-bottom: none; }
             <!-- Tab Content 2: 自由メモ -->
             <div id="vd-tab-content-memo" class="vd-tab-pane">
               <div class="vd-box">
-                <h3 class="vd-box-title mb-2"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
-                <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
-                <div class="vd-form-actions mt-3">
-                  <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                <div class="vd-box-header py-1 pb-2.5 border-b border-slate-100 mb-2.5 flex items-center justify-between">
+                  <h3 class="vd-box-title text-slate-800"><i class="fa-solid fa-note-sticky text-amber-500 mr-1.5"></i> 共有メモ</h3>
+                  <button type="button" id="vd-memo-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorMemoEdit(true)">
+                    <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
                   </button>
+                </div>
+
+                <!-- 閲覧モード (デフォルト) -->
+                <div id="vd-memo-view-mode" class="vd-memo-view-mode cursor-pointer" onclick="toggleVisitorMemoEdit(true)" title="クリックしてメモを編集">
+                  <div id="vd-memo-display" class="vd-hearing-a memo-yellow" style="min-height: 80px;">-</div>
+                </div>
+
+                <!-- 編集モード (非表示) -->
+                <div id="vd-memo-edit-mode" class="vd-memo-edit-mode" style="display: none;">
+                  <textarea id="vd-free-memo" class="form-textarea vd-memo-textarea auto-resize-textarea" placeholder="やり取り、興味関心、紹介候補などをメモ"></textarea>
+                  <div class="vd-form-actions mt-3 flex justify-end gap-2">
+                    <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorMemoEdit(false)">キャンセル</button>
+                    <button type="button" class="btn-save text-xs" onclick="saveVisitorFreeMemo()">
+                      <i class="fa-solid fa-floppy-disk mr-1"></i> メモを保存
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -5888,6 +5963,26 @@ const ApiService = {
     container.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
   }
+
+  function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    const newHeight = Math.max(44, textarea.scrollHeight);
+    textarea.style.height = newHeight + 'px';
+  }
+  window.autoResizeTextarea = autoResizeTextarea;
+
+  function initAutoResizeTextareas(root = document) {
+    const textareas = root.querySelectorAll('textarea.auto-resize-textarea, #modal-hearing-form textarea');
+    textareas.forEach(ta => {
+      if (!ta.dataset.autoresizeBound) {
+        ta.dataset.autoresizeBound = 'true';
+        ta.addEventListener('input', () => autoResizeTextarea(ta));
+      }
+      autoResizeTextarea(ta);
+    });
+  }
+  window.initAutoResizeTextareas = initAutoResizeTextareas;
 
   function handleError(err) {
     const loading = document.getElementById('loading');
@@ -10432,19 +10527,31 @@ window.CelebrationEffect = (function() {
         if (freeMemoEl) freeMemoEl.value = memoVal;
         if (fbMemoEl) fbMemoEl.value = memoVal;
 
-        // 自由メモの双方向同期
+        // 閲覧モード表示の更新
+        updateVisitorMemoDisplay(memoVal);
+        toggleVisitorMemoEdit(false);
+
+        // 自由メモの双方向同期 & 自動リサイズ
         if (freeMemoEl && !freeMemoEl.dataset.synced) {
           freeMemoEl.dataset.synced = 'true';
           freeMemoEl.addEventListener('input', () => {
             const fb = document.getElementById('vd-ap-fb-memo');
-            if (fb && fb !== document.activeElement) fb.value = freeMemoEl.value;
+            if (fb && fb !== document.activeElement) {
+              fb.value = freeMemoEl.value;
+              if (window.autoResizeTextarea) window.autoResizeTextarea(fb);
+            }
+            if (window.autoResizeTextarea) window.autoResizeTextarea(freeMemoEl);
           });
         }
         if (fbMemoEl && !fbMemoEl.dataset.synced) {
           fbMemoEl.dataset.synced = 'true';
           fbMemoEl.addEventListener('input', () => {
             const orig = document.getElementById('vd-free-memo');
-            if (orig && orig !== document.activeElement) orig.value = fbMemoEl.value;
+            if (orig && orig !== document.activeElement) {
+              orig.value = fbMemoEl.value;
+              if (window.autoResizeTextarea) window.autoResizeTextarea(orig);
+            }
+            if (window.autoResizeTextarea) window.autoResizeTextarea(fbMemoEl);
           });
         }
 
@@ -11054,6 +11161,46 @@ window.CelebrationEffect = (function() {
       .replace(/'/g, '&#039;');
   }
 
+  function updateVisitorMemoDisplay(memoText) {
+    const text = memoText ? memoText.trim() : '';
+    const displayHtml = text
+      ? escapeAndLinkify(text, true, true)
+      : '<span class="text-slate-400 font-normal italic"><i class="fa-solid fa-pen mr-1"></i> メモはまだありません（タップ / クリックして追加）</span>';
+
+    const disp1 = document.getElementById('vd-memo-display');
+    const disp2 = document.getElementById('vd-ap-fb-memo-display');
+    if (disp1) disp1.innerHTML = displayHtml;
+    if (disp2) disp2.innerHTML = displayHtml;
+  }
+
+  function toggleVisitorMemoEdit(isEditing) {
+    const view1 = document.getElementById('vd-memo-view-mode');
+    const edit1 = document.getElementById('vd-memo-edit-mode');
+    const btn1 = document.getElementById('vd-memo-btn-edit');
+
+    const view2 = document.getElementById('vd-ap-fb-memo-view');
+    const edit2 = document.getElementById('vd-ap-fb-memo-edit');
+    const btn2 = document.getElementById('vd-ap-fb-memo-btn-edit');
+
+    if (view1) view1.style.display = isEditing ? 'none' : 'block';
+    if (edit1) edit1.style.display = isEditing ? 'block' : 'none';
+    if (btn1) btn1.style.display = isEditing ? 'none' : 'inline-flex';
+
+    if (view2) view2.style.display = isEditing ? 'none' : 'block';
+    if (edit2) edit2.style.display = isEditing ? 'block' : 'none';
+    if (btn2) btn2.style.display = isEditing ? 'none' : 'inline-flex';
+
+    if (isEditing) {
+      const freeMemoEl = document.getElementById('vd-free-memo');
+      const fbMemoEl = document.getElementById('vd-ap-fb-memo');
+      const target = (fbMemoEl && fbMemoEl.offsetParent !== null) ? fbMemoEl : freeMemoEl;
+      if (target) {
+        if (window.autoResizeTextarea) window.autoResizeTextarea(target);
+        setTimeout(() => target.focus(), 80);
+      }
+    }
+  }
+
   function saveVisitorFreeMemo() {
     if (!currentVdVisitorId) return;
     const freeMemoEl = document.getElementById('vd-free-memo');
@@ -11073,6 +11220,8 @@ window.CelebrationEffect = (function() {
     ApiService.call('saveVisitorMemoApi', currentVdVisitorId, memoText)
       .then(res => {
         showToast(`✅ メモを正常に保存しました！`);
+        updateVisitorMemoDisplay(memoText);
+        toggleVisitorMemoEdit(false);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
       })
@@ -11239,6 +11388,13 @@ window.CelebrationEffect = (function() {
         document.getElementById('hf-follow-memo').value = form.followMemo || '';
 
         document.getElementById('modal-hearing-form').style.display = 'flex';
+
+        // テキストエリアの高さを自動可変調整
+        if (window.initAutoResizeTextareas) {
+          setTimeout(() => {
+            initAutoResizeTextareas(document.getElementById('modal-hearing-form'));
+          }, 30);
+        }
       })
       .catch(handleError);
   }

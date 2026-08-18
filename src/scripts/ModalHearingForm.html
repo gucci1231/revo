@@ -36,6 +36,13 @@
         document.getElementById('hf-follow-memo').value = form.followMemo || '';
 
         document.getElementById('modal-hearing-form').style.display = 'flex';
+
+        // テキストエリアの高さを自動可変調整
+        if (window.initAutoResizeTextareas) {
+          setTimeout(() => {
+            initAutoResizeTextareas(document.getElementById('modal-hearing-form'));
+          }, 30);
+        }
       })
       .catch(handleError);
   }
