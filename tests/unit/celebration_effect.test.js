@@ -8,14 +8,19 @@ describe('Celebration Effect & Quest Clear Animation Unit Tests', () => {
 
   it('verifies CelebrationEffect module methods and overlay structure', () => {
     assert(effectHtml.includes('window.CelebrationEffect'), 'CelebrationEffect should be attached to window');
+    assert(effectHtml.includes('trigger: trigger'), 'trigger method should be exposed');
     assert(effectHtml.includes('triggerQuestClear'), 'triggerQuestClear method should exist');
     assert(effectHtml.includes('playClearChime'), 'playClearChime method should exist');
-    assert(effectHtml.includes('revo-quest-clear-overlay'), 'HUD overlay ID should be defined');
+    assert(effectHtml.includes('triggerScreenShake'), 'triggerScreenShake method should exist');
+    assert(effectHtml.includes('celebration-sunburst'), 'Sunburst animation class should exist');
+    assert(effectHtml.includes('celebration-shockwave'), 'Shockwave animation class should exist');
+    assert(effectHtml.includes('celebration-screen-shake'), 'Screen shake class should exist');
   });
 
   it('verifies CelebrationEffect is compiled into index.html', () => {
     assert(compiledIndex.includes('CelebrationEffect'), 'Compiled index.html should contain CelebrationEffect');
-    assert(compiledIndex.includes('revo-quest-clear-overlay'), 'Compiled index.html should contain HUD template');
+    assert(compiledIndex.includes('celebration-sunburst'), 'Compiled index.html should contain Sunburst styles');
+    assert(compiledIndex.includes('celebration-shockwave'), 'Compiled index.html should contain Shockwave styles');
   });
 
   it('verifies ModalActionReport triggers Quest Clear animation upon report submission', () => {

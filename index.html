@@ -5481,15 +5481,16 @@ const ApiService = {
 
 <script>
 /**
- * CelebrationEffect - High-Impact Game-Clear Gap Celebration Engine
- * 普段の超シンプルUI ⇆ 完了時だけアーケード/RPG全開の超ド派手演出
- * - ユーザーが自分でタップして閉じるまで永続表示
- * - 閉じた瞬間に画面の最新データリロード（ステータス反映）を確実に実行
+ * CelebrationEffect - High-Impact Micro-interaction & Celebration Engine
+ * - 手応えを生む Screen Shake（400ms, 振幅3px）
+ * - 中央の Sunburst（回転放射光） & Shockwave（波紋リング） & Pop Badge
+ * - ノンブロッキング設計: タップ/クリックで即時スキップ、または指定秒数（デフォルト2.8秒）で滑らかに自動フェードアウト
+ * - 演出消滅後にコールバック（onComplete / onClose / Promise）および最新データ反映を確実に実行
  */
 window.CelebrationEffect = (function() {
   let audioCtx = null;
 
-  // Web Audio による本格的で重厚な勝利ファンファーレ (ブラス＆クリスタル調)
+  // Web Audio による本格的で心地よい完了チャイム (ブラス＆クリスタル調)
   function playClearChime() {
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -5503,18 +5504,13 @@ window.CelebrationEffect = (function() {
 
       const now = audioCtx.currentTime;
 
-      // ファンファーレノート進行 (重厚なメジャーアルペジオ & 和音)
+      // 重厚なメジャーコード & クリスタルベル倍音
       const chordEvents = [
-        // 1. 低音アタック + C4
-        { freqs: [130.81, 261.63], time: 0.00, dur: 0.25, gain: 0.22, type: 'triangle' },
-        // 2. E4 + G4
-        { freqs: [329.63, 392.00], time: 0.09, dur: 0.25, gain: 0.24, type: 'triangle' },
-        // 3. C5 + E5
-        { freqs: [523.25, 659.25], time: 0.18, dur: 0.30, gain: 0.26, type: 'triangle' },
-        // 4. クライマックスの重厚なハイコード (G5 + C6 + E6)
-        { freqs: [783.99, 1046.50, 1318.51], time: 0.28, dur: 1.1, gain: 0.30, type: 'triangle' },
-        // 煌びやかなベル倍音
-        { freqs: [2093.00], time: 0.28, dur: 0.9, gain: 0.12, type: 'sine' }
+        { freqs: [130.81, 261.63], time: 0.00, dur: 0.22, gain: 0.20, type: 'triangle' },
+        { freqs: [329.63, 392.00], time: 0.08, dur: 0.22, gain: 0.22, type: 'triangle' },
+        { freqs: [523.25, 659.25], time: 0.16, dur: 0.28, gain: 0.25, type: 'triangle' },
+        { freqs: [783.99, 1046.50, 1318.51], time: 0.24, dur: 1.0, gain: 0.28, type: 'triangle' },
+        { freqs: [2093.00], time: 0.24, dur: 0.8, gain: 0.12, type: 'sine' }
       ];
 
       chordEvents.forEach(evt => {
@@ -5541,53 +5537,221 @@ window.CelebrationEffect = (function() {
     }
   }
 
-  // 画面シェイク (インパクト感の演出)
+  // 画面シェイク (インパクト感・手応えの演出: 400ms, 振幅3px)
   function triggerScreenShake() {
-    const styleId = 'revo-screen-shake-style';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.innerHTML = `
-        @keyframes revoScreenShake {
-          0% { transform: translate(0, 0) scale(1); }
-          15% { transform: translate(-3px, 4px) scale(1.003); }
-          30% { transform: translate(4px, -3px) scale(0.998); }
-          45% { transform: translate(-3px, -2px) scale(1.002); }
-          60% { transform: translate(2px, 2px) scale(1); }
-          80% { transform: translate(-1px, 1px) scale(1); }
-          100% { transform: translate(0, 0) scale(1); }
-        }
-        .revo-screen-shaking {
-          animation: revoScreenShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
-        }
-        @keyframes revoSunburstSpin {
-          0% { transform: translate(-50%, -50%) rotate(0deg); }
-          100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes revoShockwaveRing {
-          0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; border-width: 8px; }
-          100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-width: 1px; }
-        }
-        @keyframes revoEmblemBounce {
-          0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
-          50% { transform: scale(1.2) rotate(4deg); opacity: 1; }
-          75% { transform: scale(0.95) rotate(-2deg); }
-          100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
+    ensureStylesInjected();
     const appContainer = document.getElementById('app-main-layout') || document.body;
-    appContainer.classList.remove('revo-screen-shaking');
-    void appContainer.offsetWidth; // reflow
-    appContainer.classList.add('revo-screen-shaking');
+    appContainer.classList.remove('celebration-screen-shake');
+    void appContainer.offsetWidth; // 強制リフロー
+    appContainer.classList.add('celebration-screen-shake');
     setTimeout(() => {
-      appContainer.classList.remove('revo-screen-shaking');
-    }, 500);
+      appContainer.classList.remove('celebration-screen-shake');
+    }, 450);
   }
 
-  // 大量の花火・金吹雪・スターパーティクル (Canvas - 永続ループ対応)
+  // CSS スタイル動的注入
+  function ensureStylesInjected() {
+    const styleId = 'revo-celebration-effect-styles';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.innerHTML = `
+      /* 1. 画面全体の微振動 (Screen Shake: 400ms, 振幅 3px) */
+      @keyframes celebrationScreenShake {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        20% { transform: translate(-3px, 2px) scale(1.002); }
+        40% { transform: translate(3px, -2px) scale(0.998); }
+        60% { transform: translate(-2px, -1px) scale(1.001); }
+        80% { transform: translate(2px, 1px) scale(1); }
+      }
+      .celebration-screen-shake {
+        animation: celebrationScreenShake 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+      }
+
+      /* 2. マイクロインタラクション用オーバーレイ */
+      .celebration-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        pointer-events: auto;
+        user-select: none;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0.7) 100%);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        opacity: 0;
+        transform: scale(0.96);
+        transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .celebration-overlay.active {
+        opacity: 1;
+        transform: scale(1);
+      }
+      .celebration-overlay.fading-out {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+        pointer-events: none;
+      }
+
+      /* 3. ショックウェーブ（波紋）リング */
+      @keyframes celebrationShockwave {
+        0% { transform: scale(0.2); opacity: 0.95; border-width: 8px; }
+        60% { opacity: 0.6; border-width: 3px; }
+        100% { transform: scale(3.2); opacity: 0; border-width: 0px; }
+      }
+      .celebration-shockwave {
+        position: absolute;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border-style: solid;
+        border-color: #10B981; /* Emerald */
+        animation: celebrationShockwave 900ms cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        pointer-events: none;
+      }
+      .celebration-shockwave.secondary {
+        border-color: #F59E0B; /* Amber */
+        animation-delay: 120ms;
+      }
+      .celebration-shockwave.tertiary {
+        border-color: #06B6D4; /* Cyan */
+        animation-delay: 240ms;
+      }
+
+      /* 4. サンバースト（回転する放射光） */
+      @keyframes celebrationSunburstSpin {
+        0% { transform: scale(0) rotate(0deg); opacity: 0; }
+        25% { transform: scale(1.1) rotate(45deg); opacity: 0.6; }
+        100% { transform: scale(1.4) rotate(180deg); opacity: 0; }
+      }
+      .celebration-sunburst {
+        position: absolute;
+        width: 380px;
+        height: 380px;
+        background: conic-gradient(
+          from 0deg,
+          rgba(16, 185, 129, 0.35) 0deg 15deg,
+          transparent 15deg 30deg,
+          rgba(245, 158, 11, 0.35) 30deg 45deg,
+          transparent 45deg 60deg,
+          rgba(6, 182, 212, 0.35) 60deg 75deg,
+          transparent 75deg 90deg,
+          rgba(16, 185, 129, 0.35) 90deg 105deg,
+          transparent 105deg 120deg,
+          rgba(245, 158, 11, 0.35) 120deg 135deg,
+          transparent 135deg 150deg,
+          rgba(6, 182, 212, 0.35) 150deg 165deg,
+          transparent 165deg 180deg,
+          rgba(16, 185, 129, 0.35) 180deg 195deg,
+          transparent 195deg 210deg,
+          rgba(245, 158, 11, 0.35) 210deg 225deg,
+          transparent 225deg 240deg,
+          rgba(6, 182, 212, 0.35) 240deg 255deg,
+          transparent 255deg 270deg,
+          rgba(16, 185, 129, 0.35) 270deg 285deg,
+          transparent 285deg 300deg,
+          rgba(245, 158, 11, 0.35) 300deg 315deg,
+          transparent 315deg 330deg,
+          rgba(6, 182, 212, 0.35) 330deg 345deg,
+          transparent 345deg 360deg
+        );
+        border-radius: 50%;
+        animation: celebrationSunburstSpin 1800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        pointer-events: none;
+        mask-image: radial-gradient(circle, black 35%, transparent 70%);
+        -webkit-mask-image: radial-gradient(circle, black 35%, transparent 70%);
+      }
+
+      /* 5. 達成バッジ (Badge Pop & Check Draw) */
+      @keyframes celebrationBadgePop {
+        0% { transform: scale(0.2) rotate(-15deg); opacity: 0; }
+        55% { transform: scale(1.15) rotate(4deg); opacity: 1; }
+        75% { transform: scale(0.95) rotate(-2deg); }
+        100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      }
+      @keyframes celebrationCheckDraw {
+        to { stroke-dashoffset: 0; }
+      }
+      .celebration-badge-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: celebrationBadgePop 550ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        pointer-events: none;
+      }
+      .celebration-badge-circle {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 12px 30px -4px rgba(16, 185, 129, 0.6), 0 0 0 6px rgba(255, 255, 255, 0.95);
+      }
+      .celebration-badge-circle svg {
+        width: 52px;
+        height: 52px;
+        color: white;
+      }
+      .celebration-badge-circle path, .celebration-badge-circle polyline {
+        stroke-dasharray: 60;
+        stroke-dashoffset: 60;
+        animation: celebrationCheckDraw 450ms 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .celebration-badge-title {
+        margin-top: 14px;
+        font-size: 18px;
+        font-weight: 900;
+        color: #FFFFFF;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+        letter-spacing: 0.05em;
+      }
+      .celebration-badge-subtitle {
+        margin-top: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #A7F3D0;
+        background: rgba(6, 78, 59, 0.7);
+        padding: 3px 12px;
+        border-radius: 9999px;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+      }
+      .celebration-dismiss-hint {
+        margin-top: 12px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+      }
+
+      /* フルHUD用互換スタイル */
+      @keyframes revoSunburstSpin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+      }
+      @keyframes revoShockwaveRing {
+        0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; border-width: 8px; }
+        100% { transform: translate(-50%, -50%) scale(2.8); opacity: 0; border-width: 1px; }
+      }
+      @keyframes revoEmblemBounce {
+        0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+        50% { transform: scale(1.2) rotate(4deg); opacity: 1; }
+        75% { transform: scale(0.95) rotate(-2deg); }
+        100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // 大量の花火・金吹雪・スターパーティクル (Canvas)
   function runHeavyParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const width = (canvas.width = window.innerWidth);
@@ -5595,42 +5759,33 @@ window.CelebrationEffect = (function() {
 
     const particles = [];
     const colors = [
-      '#FFD700', // Bright Gold
-      '#F59E0B', // Amber
-      '#FBBF24', // Yellow Gold
-      '#10B981', // Emerald Neon
-      '#06B6D4', // Cyan Neon
-      '#EC4899', // Hot Pink
-      '#8B5CF6', // Purple
-      '#FFFFFF'  // Pure Diamond
+      '#FFD700', '#F59E0B', '#FBBF24', '#10B981', '#06B6D4', '#EC4899', '#8B5CF6', '#FFFFFF'
     ];
 
     const originX = width / 2;
     const originY = height / 2 - 20;
 
-    // 1. 初期の爆発スパーク (80個)
-    for (let i = 0; i < 80; i++) {
-      const angle = (Math.PI * 2 * i) / 80 + (Math.random() - 0.5) * 0.4;
-      const speed = Math.random() * 14 + 6;
+    for (let i = 0; i < 70; i++) {
+      const angle = (Math.PI * 2 * i) / 70 + (Math.random() - 0.5) * 0.4;
+      const speed = Math.random() * 12 + 5;
       particles.push({
         type: 'burst',
         x: originX,
         y: originY,
         vx: Math.cos(angle) * speed * (Math.random() * 0.8 + 0.5),
-        vy: Math.sin(angle) * speed * (Math.random() * 0.8 + 0.5) - 3.5,
+        vy: Math.sin(angle) * speed * (Math.random() * 0.8 + 0.5) - 3,
         size: Math.random() * 6 + 3,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.25,
         shape: Math.random() > 0.35 ? 'star' : 'diamond',
         alpha: 1,
-        decay: Math.random() * 0.012 + 0.008,
+        decay: Math.random() * 0.015 + 0.01,
         gravity: 0.22,
         friction: 0.95
       });
     }
 
-    // 2. 金吹雪リボン生成ヘルパー
     function createConfetti() {
       return {
         type: 'confetti',
@@ -5644,16 +5799,15 @@ window.CelebrationEffect = (function() {
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.12,
         alpha: Math.random() * 0.4 + 0.6,
-        decay: 0, // 画面外に出るまで生き続ける
+        decay: 0,
         wobble: Math.random() * Math.PI * 2,
         wobbleSpeed: Math.random() * 0.08 + 0.04
       };
     }
 
-    // 初期金吹雪
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 40; i++) {
       const c = createConfetti();
-      c.y = Math.random() * height; // 画面全体に散らす
+      c.y = Math.random() * height;
       particles.push(c);
     }
 
@@ -5664,8 +5818,7 @@ window.CelebrationEffect = (function() {
       if (!isRunning) return;
       ctx.clearRect(0, 0, width, height);
 
-      // 定期的に新しい紙吹雪を上部から追加して永続的に舞わせる
-      if (particles.filter(p => p.type === 'confetti').length < 45) {
+      if (particles.filter(p => p.type === 'confetti').length < 40) {
         particles.push(createConfetti());
       }
 
@@ -5718,7 +5871,6 @@ window.CelebrationEffect = (function() {
           p.y += p.vy;
           p.rotation += p.vRot;
 
-          // 画面下に消えたらリサイクル
           if (p.y > height + 20) {
             p.y = -20;
             p.x = Math.random() * width;
@@ -5747,16 +5899,123 @@ window.CelebrationEffect = (function() {
   }
 
   /**
-   * メイン演出トリガー: ギャップを極大化するド派手ゲームクリアHUD
-   * - 自分でタップするまで表示
-   * - 閉じた時に画面の最新リロード (onClose / refreshCurrentActiveView) を実行
+   * 1. マイクロインタラクション演出 (高揚感 & ノンブロッキング)
+   * - 画面シェイク (400ms, 振幅3px)
+   * - サンバースト & ショックウェーブ & チェックマークアニメーション
+   * - 画面タップで即時終了、または3秒(デフォルト)で自動フェードアウト
+   * - 終了時にコールバック (onComplete) および画面データリロードを確実に実行
+   * @param {Object} options
+   * @returns {Promise<void>}
+   */
+  function trigger(options = {}) {
+    return new Promise((resolve) => {
+      const title = options.title || 'COMPLETED !';
+      const subtitle = options.subtitle || 'タスクが完了しました！';
+      const duration = options.duration !== undefined ? options.duration : 2800; // 2.8秒で自動消滅
+      const enableShake = options.enableShake !== false;
+      const onCompleteCallback = options.onComplete || options.onClose || null;
+
+      ensureStylesInjected();
+
+      // 1. 画面シェイク
+      if (enableShake) {
+        triggerScreenShake();
+      }
+
+      // 2. チャイム
+      playClearChime();
+
+      // 既存のオーバーレイをクリーンアップ
+      const existing = document.getElementById('revo-celebration-overlay');
+      if (existing) existing.remove();
+
+      // 3. オーバーレイ作成
+      const overlay = document.createElement('div');
+      overlay.id = 'revo-celebration-overlay';
+      overlay.className = 'celebration-overlay';
+      overlay.innerHTML = `
+        <div class="celebration-sunburst"></div>
+        <div class="celebration-shockwave"></div>
+        <div class="celebration-shockwave secondary"></div>
+        <div class="celebration-shockwave tertiary"></div>
+        <canvas id="revo-celebration-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+        <div class="celebration-badge-card">
+          <div class="celebration-badge-circle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="celebration-badge-title">${title}</div>
+          <div class="celebration-badge-subtitle">${subtitle}</div>
+          <div class="celebration-dismiss-hint">※タップまたは数秒で自動的に閉じます</div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      // パーティクル起動
+      const canvas = overlay.querySelector('#revo-celebration-canvas');
+      let cleanupParticles = null;
+      if (canvas) {
+        cleanupParticles = runHeavyParticles(canvas);
+      }
+
+      // フェードイン
+      requestAnimationFrame(() => {
+        overlay.classList.add('active');
+      });
+
+      let isFinished = false;
+      let autoDismissTimer = null;
+
+      const finish = () => {
+        if (isFinished) return;
+        isFinished = true;
+        if (autoDismissTimer) clearTimeout(autoDismissTimer);
+
+        overlay.classList.remove('active');
+        overlay.classList.add('fading-out');
+
+        setTimeout(() => {
+          if (cleanupParticles) cleanupParticles();
+          if (overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+
+          // コールバックとデータ更新の確実な実行
+          if (typeof onCompleteCallback === 'function') {
+            try { onCompleteCallback(); } catch(e) { console.error(e); }
+          }
+          if (typeof refreshCurrentActiveView === 'function') {
+            try { refreshCurrentActiveView(); } catch(e) { console.error(e); }
+          }
+
+          resolve();
+        }, 320);
+      };
+
+      // ユーザーコントロール: タップ/クリックで即時スキップ
+      overlay.addEventListener('click', finish, { once: true });
+
+      // 自動フェードアウト (duration > 0 の場合)
+      if (duration > 0) {
+        autoDismissTimer = setTimeout(finish, duration);
+      }
+    });
+  }
+
+  /**
+   * 2. フルクエストクリアHUD (モーダル・大画面用)
    */
   function triggerQuestClear(options = {}) {
     const title = options.title || 'QUEST CLEAR !';
     const subtitle = options.subtitle || 'ナイスアクション！目標達成！';
     const detail = options.detail || '';
     const badgeText = options.badgeText || '★ MISSION ACCOMPLISHED ★';
-    const onCloseCallback = options.onClose || null;
+    const onCloseCallback = options.onClose || options.onComplete || null;
+    const duration = options.duration !== undefined ? options.duration : 0; // 0: 手動タップで閉じる
+
+    ensureStylesInjected();
 
     // 既存のエフェクトがあれば即座に削除
     const existing = document.getElementById('revo-quest-clear-overlay');
@@ -5772,63 +6031,42 @@ window.CelebrationEffect = (function() {
     const overlay = document.createElement('div');
     overlay.id = 'revo-quest-clear-overlay';
     overlay.className = 'fixed inset-0 z-[99999] flex items-center justify-center pointer-events-auto select-none overflow-hidden cursor-pointer';
-    overlay.style.backgroundColor = 'rgba(11, 17, 32, 0.7)';
+    overlay.style.backgroundColor = 'rgba(11, 17, 32, 0.75)';
     overlay.style.backdropFilter = 'blur(8px)';
     overlay.style.webkitBackdropFilter = 'blur(8px)';
     overlay.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     overlay.style.opacity = '0';
 
     overlay.innerHTML = `
-      <!-- 背景: 放射状回転サンバースト光線 -->
       <div class="absolute top-1/2 left-1/2 w-[800px] h-[800px] pointer-events-none opacity-25" style="animation: revoSunburstSpin 25s linear infinite; background: repeating-conic-gradient(from 0deg, rgba(245, 158, 11, 0.4) 0deg 15deg, transparent 15deg 30deg);"></div>
-
-      <!-- 背景: 衝撃波リング -->
       <div class="absolute top-1/2 left-1/2 w-48 h-48 rounded-full border-4 border-amber-300 pointer-events-none" style="animation: revoShockwaveRing 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;"></div>
       <div class="absolute top-1/2 left-1/2 w-48 h-48 rounded-full border-4 border-cyan-400 pointer-events-none" style="animation: revoShockwaveRing 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) 0.15s forwards;"></div>
-
-      <!-- Canvas パーティクルレイヤー -->
       <canvas id="revo-celebration-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
       
-      <!-- メイン: ゲームクリアHUDカード -->
       <div id="revo-quest-card" class="relative z-10 mx-4 max-w-sm w-full bg-slate-950/95 text-white border-2 border-amber-400/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center overflow-hidden" style="box-shadow: 0 0 50px rgba(245, 158, 11, 0.45), 0 0 100px rgba(6, 182, 212, 0.2), inset 0 0 20px rgba(245, 158, 11, 0.15); transform: scale(0.7); opacity: 0; transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;">
-        
-        <!-- Ambient Top Gold Glow -->
         <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-amber-400/50 via-yellow-300/30 to-transparent blur-2xl pointer-events-none rounded-full"></div>
-
-        <!-- Top Badge -->
         <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 via-amber-400/30 to-yellow-500/20 border border-amber-300 text-amber-200 text-[11px] font-black tracking-widest uppercase mb-3.5 shadow-lg shadow-amber-500/20">
           <i class="fa-solid fa-crown text-amber-300 text-xs animate-bounce"></i>
           <span>${badgeText}</span>
         </div>
-
-        <!-- 3D Gold Emblem Icon -->
         <div class="relative my-2 flex items-center justify-center">
           <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 flex items-center justify-center text-slate-950 text-3xl shadow-xl shadow-amber-500/60 border-2 border-yellow-100 transform" style="animation: revoEmblemBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;">
             <i class="fa-solid fa-trophy text-slate-950 font-black text-4xl drop-shadow-md"></i>
           </div>
-          <!-- Sparkles -->
           <i class="fa-solid fa-star absolute -top-2 -right-3 text-yellow-200 text-sm animate-spin" style="animation-duration: 3s; filter: drop-shadow(0 0 6px #fde047);"></i>
           <i class="fa-solid fa-star absolute -bottom-2 -left-3 text-amber-300 text-xs animate-spin" style="animation-duration: 4s; filter: drop-shadow(0 0 6px #f59e0b);"></i>
         </div>
-
-        <!-- Title -->
         <h2 class="mt-4 text-2xl font-black tracking-widest bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 bg-clip-text text-transparent drop-shadow-lg font-sans uppercase" style="text-shadow: 0 0 20px rgba(245, 158, 11, 0.6);">
           ${title}
         </h2>
-
-        <!-- Subtitle -->
         <p class="mt-2 text-base font-extrabold text-white drop-shadow leading-snug">
           ${subtitle}
         </p>
-
-        <!-- Detail Snippet -->
         ${detail ? `
           <div class="mt-4 w-full bg-slate-900/90 border border-amber-400/40 rounded-2xl px-4 py-2.5 text-xs text-amber-100 font-bold truncate shadow-inner">
             <span class="text-amber-400 mr-1.5 font-black">✦</span> ${detail}
           </div>
         ` : ''}
-
-        <!-- Interactive Dismiss Button / Hint -->
         <div class="mt-5 w-full">
           <button type="button" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
             <i class="fa-solid fa-arrow-right-to-bracket"></i> 画面に戻る（完了）
@@ -5840,14 +6078,12 @@ window.CelebrationEffect = (function() {
 
     document.body.appendChild(overlay);
 
-    // Canvas パーティクル起動
     const canvas = document.getElementById('revo-celebration-canvas');
     let cleanupParticles = null;
     if (canvas) {
       cleanupParticles = runHeavyParticles(canvas);
     }
 
-    // スムーズイン
     requestAnimationFrame(() => {
       overlay.style.opacity = '1';
       const card = document.getElementById('revo-quest-card');
@@ -5857,11 +6093,13 @@ window.CelebrationEffect = (function() {
       }
     });
 
-    // 破棄処理（クリック時のみ発火 & 画面リロード/リフレッシュ実行）
     let dismissed = false;
+    let autoDismissTimer = null;
+
     function dismiss() {
       if (dismissed) return;
       dismissed = true;
+      if (autoDismissTimer) clearTimeout(autoDismissTimer);
 
       overlay.style.opacity = '0';
       const card = document.getElementById('revo-quest-card');
@@ -5876,7 +6114,6 @@ window.CelebrationEffect = (function() {
           overlay.parentNode.removeChild(overlay);
         }
 
-        // 閉じた瞬間にステータスリロードを実行！
         if (typeof onCloseCallback === 'function') {
           onCloseCallback();
         }
@@ -5887,9 +6124,14 @@ window.CelebrationEffect = (function() {
     }
 
     overlay.onclick = dismiss;
+
+    if (duration > 0) {
+      autoDismissTimer = setTimeout(dismiss, duration);
+    }
   }
 
   return {
+    trigger: trigger,
     triggerQuestClear: triggerQuestClear,
     playClearChime: playClearChime,
     triggerScreenShake: triggerScreenShake
