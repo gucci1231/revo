@@ -274,16 +274,38 @@
                       <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
                     </h3>
                     <div class="flex items-center gap-1.5">
-                      <button type="button" class="btn-action-secondary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="shareHearingFormForCurrentVisitor()" title="LINE等でヒアリング記入依頼URLを共有">
+                      <button type="button" class="btn-action-secondary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="shareHearingFormForSelectedVisit()" title="LINE等でヒアリング記入依頼URLを共有">
                         <i class="fa-brands fa-line text-emerald-600 text-base"></i>
                       </button>
-                      <button type="button" class="btn-action-primary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="if(currentVdVisitorId) openHearingFormModal(currentVdVisitorId)" title="ヒアリングシートを編集">
+                      <button type="button" class="btn-action-primary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="openHearingFormForSelectedVisit()" title="ヒアリングシートを編集">
                         <i class="fa-solid fa-pen-to-square text-sm"></i>
                       </button>
                     </div>
                   </div>
 
-                  <div class="vd-hearing-list">
+                  <!-- 複数参加時の切り替えピル -->
+                  <div id="vd-ap-fb-hearing-visits-nav" class="vd-hearing-visits-nav" style="display: none;"></div>
+
+                  <!-- 未入力時の表示 -->
+                  <div id="vd-ap-fb-hearing-empty-prompt" class="vd-hearing-empty-prompt" style="display: none;">
+                    <div class="vd-hearing-empty-prompt-title">
+                      <i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> ヒアリングシート未登録
+                    </div>
+                    <div class="vd-hearing-empty-prompt-desc">
+                      この参加回のヒアリングシートはまだ入力されていません。
+                    </div>
+                    <div class="flex items-center justify-center gap-2">
+                      <button type="button" class="btn-action-primary text-xs" onclick="openHearingFormForSelectedVisit()">
+                        <i class="fa-solid fa-plus mr-1"></i> 作成する
+                      </button>
+                      <button type="button" class="btn-action-secondary text-xs" onclick="shareHearingFormForSelectedVisit()">
+                        <i class="fa-brands fa-line text-emerald-600 mr-1"></i> LINEで依頼
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 入力済みヒアリング内容 -->
+                  <div id="vd-ap-fb-hearing-detail-content" class="vd-hearing-list">
                     <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
                       <span class="vd-spec-label">担当者</span>
                       <span id="vd-ap-fb-orient-user" class="font-bold text-sm text-slate-800">-</span>
@@ -341,16 +363,38 @@
                     <i class="fa-solid fa-file-lines text-blue-600"></i> ヒアリングシート
                   </h3>
                   <div class="flex items-center gap-1.5">
-                    <button type="button" class="btn-action-secondary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="shareHearingFormForCurrentVisitor()" title="LINE等でヒアリング記入依頼URLを共有">
+                    <button type="button" class="btn-action-secondary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" onclick="shareHearingFormForSelectedVisit()" title="LINE等でヒアリング記入依頼URLを共有">
                       <i class="fa-brands fa-line text-emerald-600 text-base"></i>
                     </button>
-                    <button type="button" class="btn-action-primary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" id="vd-btn-open-hearing-page" title="ヒアリングシートを編集">
+                    <button type="button" class="btn-action-primary" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;" id="vd-btn-open-hearing-page" onclick="openHearingFormForSelectedVisit()" title="ヒアリングシートを編集">
                       <i class="fa-solid fa-pen-to-square text-sm"></i>
                     </button>
                   </div>
                 </div>
 
-                <div class="vd-hearing-list">
+                <!-- 複数参加時の切り替えピル -->
+                <div id="vd-hearing-visits-nav" class="vd-hearing-visits-nav" style="display: none;"></div>
+
+                <!-- 未入力時の表示 -->
+                <div id="vd-hearing-empty-prompt" class="vd-hearing-empty-prompt" style="display: none;">
+                  <div class="vd-hearing-empty-prompt-title">
+                    <i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> ヒアリングシート未登録
+                  </div>
+                  <div class="vd-hearing-empty-prompt-desc">
+                    この参加回のヒアリングシートはまだ入力されていません。
+                  </div>
+                  <div class="flex items-center justify-center gap-2">
+                    <button type="button" class="btn-action-primary text-xs" onclick="openHearingFormForSelectedVisit()">
+                      <i class="fa-solid fa-plus mr-1"></i> 作成する
+                    </button>
+                    <button type="button" class="btn-action-secondary text-xs" onclick="shareHearingFormForSelectedVisit()">
+                      <i class="fa-brands fa-line text-emerald-600 mr-1"></i> LINEで依頼
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 入力済みヒアリング内容 -->
+                <div id="vd-hearing-detail-content" class="vd-hearing-list">
                   <div class="mb-2.5 pb-2 border-b border-slate-100 flex items-baseline gap-2">
                     <span class="vd-spec-label">担当者</span>
                     <span id="vd-orient-user" class="font-bold text-sm text-slate-800">-</span>

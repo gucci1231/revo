@@ -141,15 +141,77 @@ function handleApiRequest(req, res, urlObj) {
       if (action === 'detail') {
         const id = urlObj.searchParams.get('id') || input.id || '';
         const vSql = `SELECT * FROM visitors WHERE id = '${id.replace(/'/g, "''")}';`;
-        const sSql = `SELECT * FROM visitors_status WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
-        const hSql = `SELECT * FROM hearing_sheets WHERE visitor_id = '${id.replace(/'/g, "''")}';`;
-        const apSql = `SELECT * FROM action_plans WHERE visitor_id = '${id.replace(/'/g, "''")}' ORDER BY is_completed ASC, due_date ASC, created_at DESC;`;
-        const mSql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
-
         const v = runSqlJson(vSql)[0] || null;
-        const s = runSqlJson(sSql)[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未' };
-        const h = runSqlJson(hSql)[0] || null;
+        if (!v) return res.end(JSON.stringify({ success: false, message: 'Visitor not found' }));
+
+        // Linked IDs (同一人物判定)
+        const cleanName = (v.visitor_name || '').replace(/[\s\u3000]+/g, '');
+        const email = (v.email || '').trim();
+        let linkedConditions = [`id = '${id.replace(/'/g, "''")}'`];
+        if (email) linkedConditions.push(`LOWER(TRIM(email)) = '${email.toLowerCase().replace(/'/g, "''")}'`);
+        if (cleanName && cleanName.length > 1 && !/^ビジター\s*(no\.?\s*\d+)?$/i.test(v.visitor_name)) {
+          linkedConditions.push(`REPLACE(REPLACE(visitor_name, ' ', ''), '　', '') = '${cleanName.replace(/'/g, "''")}'`);
+        }
+        const linkedRows = runSqlJson(`SELECT id FROM visitors WHERE ${linkedConditions.join(' OR ')};`);
+        const linkedIds = [...new Set(linkedRows.map(r => String(r.id)))];
+        const placeholders = linkedIds.map(lid => `'${lid.replace(/'/g, "''")}'`).join(',');
+
+        const visitsSql = `
+          SELECT 
+            v.id, v.created_at as createdAt, COALESCE(v.inviter, '') as inviter, COALESCE(v.event_date, '') as eventDate,
+            COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || v.id) as name,
+            COALESCE(v.furigana, '') as furigana, COALESCE(v.profession, '') as profession, COALESCE(v.company, '') as company,
+            COALESCE(v.email, '') as email, COALESCE(v.attendance_count, '初めて') as attendanceCount, COALESCE(v.remarks, '') as remarks,
+            COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1, COALESCE(s.is_matched, '未') as matching
+          FROM visitors v
+          LEFT JOIN visitors_status s ON v.id = s.visitor_id
+          WHERE v.id IN (${placeholders})
+          ORDER BY v.event_date ASC, CAST(v.id AS INTEGER) ASC;
+        `;
+        const visits = runSqlJson(visitsSql);
+
+        const sSql = `SELECT * FROM visitors_status WHERE visitor_id IN (${placeholders}) ORDER BY updated_at DESC;`;
+        const sRows = runSqlJson(sSql);
+        const s = sRows[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未' };
+        sRows.forEach(sr => {
+          if (sr.is_attended === '参加') s.is_attended = '参加';
+          if (sr.is_joined === '入会済' || sr.is_joined === '済') s.is_joined = '入会済';
+          if (sr.is_1to1 === '済') s.is_1to1 = '済';
+          if (sr.is_matched === '成功') s.is_matched = '成功';
+        });
+
+        const hSql = `
+          SELECT 
+            h.visitor_id as visitorId, 
+            COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || h.visitor_id) as name, 
+            COALESCE(v.company, '') as company, COALESCE(v.profession, '') as profession, COALESCE(v.inviter, '') as inviter, 
+            COALESCE(v.event_date, '') as eventDate, COALESCE(v.attendance_count, '初めて') as attendanceCount,
+            h.orient_user as orientUser, h.q1, h.q2, h.q3, h.q4, h.q5, h.q6, h.q7, h.feel_abc as feelAbc,
+            h.orient_memo as orientMemo, h.follow_memo as followMemo, h.sheet_url as sheetUrl, h.updated_at as updatedAt,
+            COALESCE(st.is_attended, '未') as isAttended, COALESCE(st.is_joined, '未') as isJoined, COALESCE(st.is_1to1, '未') as is1to1
+          FROM hearing_sheets h
+          LEFT JOIN visitors v ON h.visitor_id = v.id
+          LEFT JOIN visitors_status st ON h.visitor_id = st.visitor_id
+          WHERE h.visitor_id IN (${placeholders})
+          ORDER BY v.event_date ASC, CAST(h.visitor_id AS INTEGER) ASC;
+        `;
+        const allHearings = runSqlJson(hSql);
+
+        const apSql = `
+          SELECT ap.*, 
+                 COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                 COALESCE(v.company, '') as visitor_company, 
+                 COALESCE(v.profession, '') as visitor_profession, 
+                 COALESCE(v.inviter, '') as visitor_inviter, 
+                 COALESCE(v.event_date, '') as visitor_event_date,
+                 COALESCE(v.attendance_count, '初めて') as visitor_attendance_count
+          FROM action_plans ap
+          LEFT JOIN visitors v ON ap.visitor_id = v.id
+          WHERE ap.visitor_id IN (${placeholders})
+          ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC;
+        `;
         const actionPlans = runSqlJson(apSql);
+        const mSql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
         const members = runSqlJson(mSql);
 
         const catMap = {};
@@ -160,22 +222,24 @@ function handleApiRequest(req, res, urlObj) {
         });
         const memberCategories = Object.keys(catMap).map(c => ({ category: c, members: catMap[c] }));
 
-        if (!v) return res.end(JSON.stringify({ success: false, message: 'Visitor not found' }));
+        let directHearing = allHearings.find(h => String(h.visitorId) === String(id)) || null;
+        let fallbackHearing = directHearing || (allHearings.length > 0 ? allHearings[allHearings.length - 1] : null);
 
         return res.end(JSON.stringify({
           success: true,
           visitor: {
             id: v.id, createdAt: v.created_at, inviter: v.inviter, eventDate: v.event_date,
             name: v.visitor_name, furigana: v.furigana, profession: v.profession, company: v.company,
-            email: v.email, attendanceCount: v.attendance_count, remarks: v.remarks
+            email: v.email, attendanceCount: v.attendance_count, remarks: v.remarks,
+            allIds: linkedIds, visitCount: visits.length
           },
+          visits: visits,
           status: {
             isAttended: s.is_attended || '未', isJoined: s.is_joined || '未', is1to1: s.is_1to1 || '未', matching: s.is_matched || '未'
           },
-          hearing: h ? {
-            orientUser: h.orient_user, q1: h.q1, q2: h.q2, q3: h.q3, q4: h.q4, q5: h.q5, q6: h.q6, q7: h.q7,
-            feelAbc: h.feel_abc, orientMemo: h.orient_memo, followMemo: h.follow_memo, sheetUrl: h.sheet_url, updatedAt: h.updated_at
-          } : null,
+          hearing: fallbackHearing,
+          currentHearing: directHearing,
+          hearings: allHearings,
           actionPlans: actionPlans,
           memberCategories: memberCategories,
           mailLogs: []

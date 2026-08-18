@@ -11,10 +11,26 @@ class ActionPlanRepository {
     }
 
     public function getByVisitorId(string $visitorId): array {
-        return $this->db->fetchAll(
-            "SELECT * FROM action_plans WHERE visitor_id = ? ORDER BY is_completed ASC, due_date ASC, created_at DESC",
-            [$visitorId]
-        );
+        return $this->getByVisitorIds([$visitorId]);
+    }
+
+    public function getByVisitorIds(array $visitorIds): array {
+        if (empty($visitorIds)) return [];
+        $placeholders = implode(',', array_fill(0, count($visitorIds), '?'));
+        $sql = "
+            SELECT ap.*, 
+                   COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                   COALESCE(v.company, '') as visitor_company, 
+                   COALESCE(v.profession, '') as visitor_profession, 
+                   COALESCE(v.inviter, '') as visitor_inviter, 
+                   COALESCE(v.event_date, '') as visitor_event_date,
+                   COALESCE(v.attendance_count, '初めて') as visitor_attendance_count
+            FROM action_plans ap
+            LEFT JOIN visitors v ON ap.visitor_id = v.id
+            WHERE ap.visitor_id IN ({$placeholders})
+            ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
+        ";
+        return $this->db->fetchAll($sql, $visitorIds);
     }
 
     public function getAllWithVisitor(?int $isCompleted = null, int $limit = 50): array {

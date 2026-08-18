@@ -76,6 +76,34 @@ class VisitorRepository {
         return array_values(array_unique($ids));
     }
 
+    public function getVisitsByVisitorIds(array $visitorIds): array {
+        if (empty($visitorIds)) return [];
+        $placeholders = implode(',', array_fill(0, count($visitorIds), '?'));
+        $sql = "
+            SELECT 
+                v.id,
+                v.created_at as createdAt,
+                COALESCE(v.inviter, '') as inviter,
+                COALESCE(v.event_date, '') as eventDate,
+                COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || v.id) as name,
+                COALESCE(v.furigana, '') as furigana,
+                COALESCE(v.profession, '') as profession,
+                COALESCE(v.company, '') as company,
+                COALESCE(v.email, '') as email,
+                COALESCE(v.attendance_count, '初めて') as attendanceCount,
+                COALESCE(v.remarks, '') as remarks,
+                COALESCE(s.is_attended, '未') as isAttended,
+                COALESCE(s.is_joined, '未') as isJoined,
+                COALESCE(s.is_1to1, '未') as is1to1,
+                COALESCE(s.is_matched, '未') as matching
+            FROM visitors v
+            LEFT JOIN visitors_status s ON v.id = s.visitor_id
+            WHERE v.id IN ({$placeholders})
+            ORDER BY v.event_date ASC, CAST(v.id AS INTEGER) ASC
+        ";
+        return $this->db->fetchAll($sql, $visitorIds);
+    }
+
     public function getStatusByVisitorId(string $visitorId): ?array {
         $linkedIds = $this->getLinkedVisitorIds($visitorId);
         if (empty($linkedIds)) {

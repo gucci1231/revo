@@ -32,12 +32,41 @@ class HearingRepository {
         return $this->db->fetchAll($sql);
     }
 
+    public function getAllByVisitorIds(array $visitorIds): array {
+        if (empty($visitorIds)) return [];
+        $placeholders = implode(',', array_fill(0, count($visitorIds), '?'));
+        $sql = "
+            SELECT 
+                h.visitor_id as visitorId, 
+                COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || h.visitor_id) as name, 
+                COALESCE(v.company, '') as company, 
+                COALESCE(v.profession, '') as profession, 
+                COALESCE(v.inviter, '') as inviter, 
+                COALESCE(v.event_date, '') as eventDate,
+                COALESCE(v.attendance_count, '初めて') as attendanceCount,
+                h.orient_user as orientUser, h.q1, h.q2, h.q3, h.q4, h.q5, h.q6, h.q7, h.feel_abc as feelAbc,
+                h.orient_memo as orientMemo, h.follow_memo as followMemo, h.sheet_url as sheetUrl, h.updated_at as updatedAt,
+                COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1
+            FROM hearing_sheets h
+            LEFT JOIN visitors v ON h.visitor_id = v.id
+            LEFT JOIN visitors_status s ON h.visitor_id = s.visitor_id
+            WHERE h.visitor_id IN ({$placeholders})
+            ORDER BY v.event_date ASC, CAST(h.visitor_id AS INTEGER) ASC
+        ";
+        return $this->db->fetchAll($sql, $visitorIds);
+    }
+
     public function findByVisitorId(string $visitorId): ?array {
+        $direct = $this->db->fetchOne("SELECT * FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
+        if ($direct) {
+            return $direct;
+        }
+
         $visitorRepo = $this->visitorRepo ?? new VisitorRepository($this->db);
         $linkedIds = $visitorRepo->getLinkedVisitorIds($visitorId);
 
         if (empty($linkedIds)) {
-            return $this->db->fetchOne("SELECT * FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
+            return null;
         }
 
         $placeholders = implode(',', array_fill(0, count($linkedIds), '?'));
@@ -51,18 +80,7 @@ class HearingRepository {
             return false;
         }
 
-        $visitorRepo = $this->visitorRepo ?? new VisitorRepository($this->db);
-        $linkedIds = $visitorRepo->getLinkedVisitorIds($vId);
-
-        $success = true;
-        foreach ($linkedIds as $id) {
-            $row = $data;
-            $row['visitor_id'] = $id;
-            if (!$this->db->upsert('hearing_sheets', $row, ['visitor_id'])) {
-                $success = false;
-            }
-        }
-        return $success;
+        return $this->db->upsert('hearing_sheets', $data, ['visitor_id']);
     }
 
     public function deleteByVisitorId(string $visitorId): int {

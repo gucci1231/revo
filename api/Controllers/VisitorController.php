@@ -81,9 +81,40 @@ class VisitorController extends Controller {
             'is_matched' => '未'
         ];
 
-        $hearing = $this->hearingRepo->findByVisitorId($id);
-        $actionPlans = $this->actionPlanRepo->getByVisitorId($id);
+        $linkedIds = $this->visitorRepo->getLinkedVisitorIds($id);
+        $visits = $this->visitorRepo->getVisitsByVisitorIds($linkedIds);
+        $allHearings = $this->hearingRepo->getAllByVisitorIds($linkedIds);
+        $actionPlans = $this->actionPlanRepo->getByVisitorIds($linkedIds);
         $groupedMembers = $this->memberRepo->getGroupedByCategory();
+
+        // 現在表示中のIDのヒアリングシートを探す（なければ最新のものをフォールバック）
+        $directHearing = null;
+        foreach ($allHearings as $h) {
+            if ((string)$h['visitorId'] === (string)$id) {
+                $directHearing = $h;
+                break;
+            }
+        }
+        $fallbackHearing = $directHearing ?: (!empty($allHearings) ? end($allHearings) : null);
+
+        $formatHearing = function(?array $h): ?array {
+            if (!$h) return null;
+            return [
+                'visitorId' => (string)($h['visitorId'] ?? $h['visitor_id'] ?? ''),
+                'orientUser' => $h['orient_user'] ?? $h['orientUser'] ?? '',
+                'q1' => $h['q1'] ?? '', 'q2' => $h['q2'] ?? '', 'q3' => $h['q3'] ?? '',
+                'q4' => $h['q4'] ?? '', 'q5' => $h['q5'] ?? '', 'q6' => $h['q6'] ?? '', 'q7' => $h['q7'] ?? '',
+                'feelAbc' => $h['feel_abc'] ?? $h['feelAbc'] ?? '',
+                'orientMemo' => $h['orient_memo'] ?? $h['orientMemo'] ?? '',
+                'followMemo' => $h['follow_memo'] ?? $h['followMemo'] ?? '',
+                'sheetUrl' => $h['sheet_url'] ?? $h['sheetUrl'] ?? '',
+                'updatedAt' => $h['updated_at'] ?? $h['updatedAt'] ?? '',
+                'eventDate' => $h['eventDate'] ?? $h['event_date'] ?? '',
+                'attendanceCount' => $h['attendanceCount'] ?? $h['attendance_count'] ?? ''
+            ];
+        };
+
+        $hearingsList = array_map($formatHearing, $allHearings);
 
         Response::success([
             'visitor' => [
@@ -97,24 +128,20 @@ class VisitorController extends Controller {
                 'company' => $visitor['company'],
                 'email' => $visitor['email'],
                 'attendanceCount' => $visitor['attendance_count'],
-                'remarks' => $visitor['remarks']
+                'remarks' => $visitor['remarks'],
+                'allIds' => $linkedIds,
+                'visitCount' => count($visits)
             ],
+            'visits' => $visits,
             'status' => [
                 'isAttended' => $status['is_attended'] ?? '未',
                 'isJoined' => $status['is_joined'] ?? '未',
                 'is1to1' => $status['is_1to1'] ?? '未',
                 'matching' => $status['is_matched'] ?? '未'
             ],
-            'hearing' => $hearing ? [
-                'orientUser' => $hearing['orient_user'],
-                'q1' => $hearing['q1'], 'q2' => $hearing['q2'], 'q3' => $hearing['q3'],
-                'q4' => $hearing['q4'], 'q5' => $hearing['q5'], 'q6' => $hearing['q6'], 'q7' => $hearing['q7'],
-                'feelAbc' => $hearing['feel_abc'],
-                'orientMemo' => $hearing['orient_memo'],
-                'followMemo' => $hearing['follow_memo'],
-                'sheetUrl' => $hearing['sheet_url'],
-                'updatedAt' => $hearing['updated_at']
-            ] : null,
+            'hearing' => $formatHearing($fallbackHearing),
+            'currentHearing' => $formatHearing($directHearing),
+            'hearings' => $hearingsList,
             'actionPlans' => $actionPlans,
             'memberCategories' => $groupedMembers['memberCategories'] ?? [],
             'mailLogs' => []

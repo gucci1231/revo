@@ -2378,3 +2378,84 @@
   }
 }
 
+/* --- 📝 Multi-Visit Hearing Sheets Navigation & Action Plan Badges --- */
+.vd-hearing-visits-nav {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.vd-hearing-visit-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.vd-hearing-visit-tab:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.6);
+}
+.vd-hearing-visit-tab.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.vd-hearing-visit-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+.vd-hearing-visit-status-dot.has-data {
+  background: #10b981;
+}
+.vd-hearing-visit-status-dot.empty {
+  background: #f59e0b;
+}
+
+.vd-hearing-empty-prompt {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  margin-top: 8px;
+}
+.vd-hearing-empty-prompt-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+.vd-hearing-empty-prompt-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+
+.vd-ap-visit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
