@@ -1,16 +1,17 @@
 <script>
-  /* --- VIEW 2: Priority Follow View Controller --- */
+  /* --- VIEW 2: Priority Follow 2-Column Master-Detail View Controller --- */
   let currentPfGradeFilter = 'ALL';
   let filteredPfVisitors = [];
   let pfCurrentPage = 1;
   const PF_PAGE_SIZE = 50;
+  let selectedPfVisitorId = null;
 
   function setPriorityFollowGradeFilter(grade) {
     currentPfGradeFilter = grade;
 
-    const btnAll = document.getElementById('pf-tab-all') || document.getElementById('pf-filter-btn-ALL');
-    const btnA = document.getElementById('pf-tab-a') || document.getElementById('pf-filter-btn-A');
-    const btnB = document.getElementById('pf-tab-b') || document.getElementById('pf-filter-btn-B');
+    const btnAll = document.getElementById('pf-tab-all');
+    const btnA = document.getElementById('pf-tab-a');
+    const btnB = document.getElementById('pf-tab-b');
 
     const map = { 'ALL': btnAll, 'A': btnA, 'B': btnB };
     Object.keys(map).forEach(g => {
@@ -65,107 +66,305 @@
     }
   }
 
-  function renderPriorityFollowCurrentPage() {
-    const tbody = document.getElementById('table-priority-follow-page') || document.getElementById('table-priority-follow');
-    const cardsContainer = document.getElementById('cards-priority-follow');
-    const infoEl = document.getElementById('pf-pagination-info');
-    const prevBtn = document.getElementById('btn-pf-prev-page') || document.getElementById('pf-btn-prev');
-    const nextBtn = document.getElementById('btn-pf-next-page') || document.getElementById('pf-btn-next');
-    const pageNumEl = document.getElementById('pf-pagination-page-num');
+  function selectPriorityFollowVisitor(vid) {
+    selectedPfVisitorId = String(vid);
+    
+    // ハイライト更新
+    document.querySelectorAll('.pf-visitor-item').forEach(el => {
+      if (el.getAttribute('data-visitor-id') === selectedPfVisitorId) {
+        el.classList.add('is-selected');
+      } else {
+        el.classList.remove('is-selected');
+      }
+    });
 
-    if (tbody) tbody.innerHTML = '';
-    if (cardsContainer) cardsContainer.innerHTML = '';
+    // 右側詳細パネルを描画
+    renderPfDetailPanel(selectedPfVisitorId);
+
+    // スマホ画面（幅1024px未満）の場合は全画面カルテビューへ直接遷移
+    if (window.innerWidth < 1024) {
+      openPfVisitorFullDetail(selectedPfVisitorId);
+    }
+  }
+
+  function openPfVisitorFullDetail(vid) {
+    currentVisitorNavList = filteredPfVisitors;
+    openVisitorDetailView(vid);
+  }
+
+  function renderPriorityFollowCurrentPage() {
+    const listContainer = document.getElementById('pf-visitor-list');
+    const infoEl = document.getElementById('pf-pagination-info');
+    const prevBtn = document.getElementById('btn-pf-prev-page');
+    const nextBtn = document.getElementById('btn-pf-next-page');
+    const pageNumEl = document.getElementById('pf-pagination-page-num');
+    const totalBadge = document.getElementById('pf-total-badge');
+
+    if (listContainer) listContainer.innerHTML = '';
 
     const total = filteredPfVisitors.length;
+    if (totalBadge) totalBadge.innerText = `${total}件`;
+
     const totalPages = Math.ceil(total / PF_PAGE_SIZE) || 1;
     if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
 
     const startIdx = (pfCurrentPage - 1) * PF_PAGE_SIZE;
     const pageItems = filteredPfVisitors.slice(startIdx, startIdx + PF_PAGE_SIZE);
 
-    if (infoEl) infoEl.innerText = `全 ${total} 件中 ${total > 0 ? startIdx + 1 : 0} - ${Math.min(startIdx + PF_PAGE_SIZE, total)} 件を表示`;
+    if (infoEl) infoEl.innerText = `全 ${total} 件中 ${total > 0 ? startIdx + 1 : 0} - ${Math.min(startIdx + PF_PAGE_SIZE, total)} 件`;
     if (pageNumEl) pageNumEl.innerText = `${pfCurrentPage} / ${totalPages}`;
     if (prevBtn) prevBtn.disabled = (pfCurrentPage <= 1);
     if (nextBtn) nextBtn.disabled = (pfCurrentPage >= totalPages);
 
     if (pageItems.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 24px;">条件に合致する最優先フォロー対象はいません</td></tr>';
-      if (cardsContainer) {
-        cardsContainer.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-            <i class="fa-solid fa-fire text-2xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">条件に合致する最優先フォロー対象はいません</div>
+      if (listContainer) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; margin: 12px;">
+            <i class="fa-solid fa-fire text-3xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">該当する最優先フォロー対象はいません</div>
+          </div>
+        `;
+      }
+      const detailContainer = document.getElementById('pf-detail-content');
+      if (detailContainer) {
+        detailContainer.innerHTML = `
+          <div class="section-card p-12 text-center text-slate-400">
+            <i class="fa-solid fa-user-check text-4xl text-slate-200 mb-3"></i>
+            <p class="font-bold text-sm text-slate-500">ビジターが選択されていません</p>
           </div>
         `;
       }
       return;
     }
 
+    // 選択中IDの検証（現在のページ内またはリスト内にあるか）
+    const exists = pageItems.some(v => String(v.id || v.visitorId) === String(selectedPfVisitorId));
+    if (!exists || !selectedPfVisitorId) {
+      selectedPfVisitorId = String(pageItems[0].id || pageItems[0].visitorId);
+    }
+
     pageItems.forEach(v => {
-      const vid = v.id || v.visitorId;
+      const vid = String(v.id || v.visitorId);
+      const isSelected = (vid === selectedPfVisitorId);
+      const feel = (v.feelAbc || '').toUpperCase().trim();
+      const rankChar = feel || '-';
+      const rankClass = feel ? `rank-${feel}` : '';
+      const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
+      const repeatTag = (typeof count === 'number' && count > 1) ? `<span style="font-size:10px; color:#d97706; background:#fef3c7; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${count}回</span>` : '';
 
-      // 1. PCテーブル行
-      if (tbody) {
-        const tr = document.createElement('tr');
-        tr.style.cursor = 'pointer';
-        tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
-          openVisitorDetailView(vid);
-        };
-        tr.innerHTML = `
-          <td>${formatEventDateWithElapsed(v.eventDate)}</td>
-          <td>${renderRankBadgeHtml(v.feelAbc)}</td>
-          <td>
-            <div style="font-weight:700;">${renderVisitorNameLinkHtml(vid, v.name)}</div>
-            <div style="font-size:11px; color:#64748b;">${formatTruncatedCell(v.company, 12)} / ${formatTruncatedCell(v.profession, 12)}</div>
-          </td>
-          <td>${formatTruncatedCell(v.inviter, 10)}</td>
-          <td>${formatTruncatedCell(v.orientUser, 10)}</td>
-          <td>
-            <div style="font-size:12px; max-width:260px; white-space:normal;">${formatTruncatedCell(v.q7 || v.orientMemo || v.followMemo, 40)}</div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      }
+      const itemEl = document.createElement('div');
+      itemEl.className = `pf-visitor-item ${isSelected ? 'is-selected' : ''}`;
+      itemEl.setAttribute('data-visitor-id', vid);
+      itemEl.onclick = function() {
+        selectPriorityFollowVisitor(vid);
+      };
 
-      // 2. スマホカード
-      if (cardsContainer) {
-        const card = document.createElement('div');
-        card.className = 'dash-ap-card';
-        card.onclick = function() {
-          openVisitorDetailView(vid);
-        };
+      const memoText = v.q7 || v.orientMemo || v.followMemo || '';
 
-        card.innerHTML = `
-          <div class="dash-card-main-row">
-            <div class="dash-card-left">
-              ${renderRankBadgeHtml(v.feelAbc, 'large')}
-              <div class="dash-card-info">
-                <div class="dash-card-name-row">
-                  <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + vid)}</span>
-                  ${renderRepeatBadgeHtml(v)}
-                </div>
-                <div class="dash-card-company">
-                  ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
-                </div>
+      itemEl.innerHTML = `
+        <div class="pf-visitor-item-rank ${rankClass}">
+          ${rankChar}
+        </div>
+        <div class="pf-visitor-item-info">
+          <div class="flex items-center justify-between gap-1">
+            <span class="pf-visitor-item-name">${escapeHtml(v.name || 'ビジター No.' + vid)}${repeatTag}</span>
+            <span class="text-[10px] font-bold text-slate-400 shrink-0">${formatEventDateWithElapsed(v.eventDate)}</span>
+          </div>
+          <div class="pf-visitor-item-company">
+            ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+          </div>
+          <div class="pf-visitor-item-meta">
+            <span><i class="fa-solid fa-user-plus text-rose-500 mr-0.5"></i>${escapeHtml(v.inviter || '-')}</span>
+            ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-0.5"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+          </div>
+          ${memoText ? `<div class="pf-visitor-item-q7">${escapeHtml(memoText)}</div>` : ''}
+        </div>
+      `;
+
+      if (listContainer) listContainer.appendChild(itemEl);
+    });
+
+    // 右側詳細パネルを描画
+    if (selectedPfVisitorId && window.innerWidth >= 1024) {
+      renderPfDetailPanel(selectedPfVisitorId);
+    }
+  }
+
+  /* --- 📄 PC 2-Column Right Detail Panel Renderer --- */
+  function renderPfDetailPanel(vid) {
+    const container = document.getElementById('pf-detail-content');
+    if (!container || !vid) return;
+
+    const rawList = cachedPriorityFollowList || [];
+    const v = rawList.find(item => String(item.id || item.visitorId) === String(vid)) || {};
+
+    const feel = (v.feelAbc || '').toUpperCase().trim();
+    const rankChar = feel || '未';
+    const rankClass = feel ? `rank-${feel}` : '';
+    const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
+    const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
+
+    const isAtt = (v.isAttended === '参加' || v.isAttended === '済');
+    const isAbs = (v.isAttended === '不参加');
+    const is11 = (v.is1to1 === '済');
+    const isProg = (v.is1to1 === '調整中');
+    const isJ = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
+    const isCons = (v.isJoined === '検討中');
+    const isRej = (v.isJoined === '見送り');
+
+    container.innerHTML = `
+      <div class="section-card p-5 sm:p-6 space-y-6 shadow-sm border border-slate-200">
+        
+        <!-- Header: Top Bar with Full Detail Button -->
+        <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-black bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-fire text-rose-600"></i> 最優先フォローカルテ
+            </span>
+            <span class="text-xs font-bold text-slate-400 font-mono">ID: ${escapeHtml(vid)}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" class="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-extrabold transition flex items-center gap-1.5 border border-blue-200 shadow-sm" onclick="openPfVisitorFullDetail('${escapeHtml(vid)}')">
+              <span>全画面詳細で開く</span>
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile Hero Header -->
+        <div class="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+          <div class="vd-hero-rank-badge ${rankClass} shrink-0" style="width:54px; height:54px;" title="感触評価ランク">
+            <span class="vd-hero-rank-label">RANK</span>
+            <span class="vd-hero-rank-char" style="font-size:24px;">${rankChar}</span>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <h3 class="text-xl font-black text-slate-900">${escapeHtml(v.name || 'ビジター No.' + vid)}</h3>
+              <span class="text-xs text-slate-500 font-medium">${escapeHtml(v.furigana || '')}</span>
+              <span class="text-xs font-bold text-amber-600">${countText}</span>
+            </div>
+            <div class="text-xs font-bold text-slate-700 mt-1">
+              ${escapeHtml(v.company || '-')} <span class="text-slate-300">/</span> ${escapeHtml(v.profession || '-')}
+            </div>
+            <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
+              <span><i class="fa-regular fa-calendar text-blue-600 mr-1"></i>参加日: <b>${escapeHtml(v.eventDate || '-')}</b></span>
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>紹介: <b>${escapeHtml(v.inviter || '-')}</b></span>
+              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>担当: <b>${escapeHtml(v.orientUser)}</b></span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Status Pickers -->
+        <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 grid grid-cols-3 gap-2.5">
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 block mb-1">出欠ステータス</label>
+            <select class="vd-status-select w-full ${isAtt ? 'state-attended' : (isAbs ? 'state-absent' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
+              <option value="未" ${!isAtt && !isAbs ? 'selected' : ''}>出欠: 未</option>
+              <option value="参加" ${isAtt ? 'selected' : ''}>出欠: 参加</option>
+              <option value="不参加" ${isAbs ? 'selected' : ''}>出欠: 不参加</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 block mb-1">1to1ステータス</label>
+            <select class="vd-status-select w-full ${is11 ? 'state-done' : (isProg ? 'state-progress' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
+              <option value="未" ${!is11 && !isProg ? 'selected' : ''}>1to1: 未</option>
+              <option value="済" ${is11 ? 'selected' : ''}>1to1: 済</option>
+              <option value="調整中" ${isProg ? 'selected' : ''}>1to1: 調整中</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会ステータス</label>
+            <select class="vd-status-select w-full ${isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : ''))}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
+              <option value="未" ${!isJ && !isCons && !isRej ? 'selected' : ''}>入会: 未</option>
+              <option value="検討中" ${isCons ? 'selected' : ''}>入会: 検討中</option>
+              <option value="入会済" ${isJ ? 'selected' : ''}>入会: 済</option>
+              <option value="見送り" ${isRej ? 'selected' : ''}>入会: 見送り</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Focus: Hearing Memo & Next Step (Q7 & Orient Memo) -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+              <i class="fa-solid fa-comment-dots text-rose-500"></i>
+              <span>ヒアリング内容 ＆ 今後のフォロー方針</span>
+            </h4>
+            <button type="button" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1" onclick="openHearingFormModal('${escapeHtml(vid)}')">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>ヒアリングシート編集</span>
+            </button>
+          </div>
+
+          <!-- Q7: 今後のステップ・紹介先・紹介してほしいメンバー -->
+          <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-200/80 space-y-1.5">
+            <div class="text-[11px] font-extrabold text-rose-800 flex items-center gap-1">
+              <i class="fa-solid fa-bullseye text-rose-600"></i> Q7. 繋ぐべきメンバー・次回アクション
+            </div>
+            <div class="text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+              ${escapeHtml(v.q7 || '未記載')}
+            </div>
+          </div>
+
+          <!-- Direct Memo & Follow Memo -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+              <div class="text-[10px] font-extrabold text-slate-400 flex items-center gap-1">
+                <i class="fa-solid fa-clipboard-user text-indigo-500"></i> オリエン直後メモ
+              </div>
+              <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
+                ${escapeHtml(v.orientMemo || '未記載')}
               </div>
             </div>
-
-            <div class="dash-card-right">
-              ${formatEventDateWithElapsed(v.eventDate)}
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+              <div class="text-[10px] font-extrabold text-slate-400 flex items-center gap-1">
+                <i class="fa-solid fa-hand-holding-heart text-emerald-500"></i> フォロー進捗メモ
+              </div>
+              <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
+                ${escapeHtml(v.followMemo || '未記載')}
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
-              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+        <!-- Hearing Q1 ~ Q6 Summary Cards (Collapsible or 2-column Grid) -->
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <div class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-list-check text-blue-600"></i>
+            <span>ヒアリング項目 詳細回答</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q1. 感想</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q1 || '-')}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q2. ビジネスの課題</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q2 || '-')}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q3. 求めたい紹介</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q3 || '-')}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q4. 入会意欲</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q4 || '-')}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q5. 参加可能度</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q5 || '-')}</span>
+            </div>
+            <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200/60">
+              <span class="text-[10px] font-extrabold text-slate-400 block">Q6. 懸念点</span>
+              <span class="text-slate-800 font-medium">${escapeHtml(v.q6 || '-')}</span>
             </div>
           </div>
-        `;
-        cardsContainer.appendChild(card);
-      }
-    });
+        </div>
+
+      </div>
+    `;
   }
 </script>

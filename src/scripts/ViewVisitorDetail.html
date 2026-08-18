@@ -122,6 +122,15 @@
     const fullList = getVisitorNavSequence();
     let displayList = fullList;
 
+    const titleEl = document.querySelector('.vd-sidebar-title');
+    if (titleEl) {
+      if (previousTabBeforeDetail === 'priority-follow' || (currentVisitorNavList && currentVisitorNavList === filteredPfVisitors)) {
+        titleEl.innerHTML = '<i class="fa-solid fa-fire text-rose-600"></i> 最優先フォロー';
+      } else {
+        titleEl.innerHTML = '<i class="fa-solid fa-users text-blue-600"></i> ビジター一覧';
+      }
+    }
+
     if (vdSidebarSearchQuery) {
       displayList = fullList.filter(v => {
         if (!v) return false;

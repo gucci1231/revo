@@ -1,50 +1,52 @@
-<!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価) -->
+<!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価 2カラム Master-Detail) -->
 <div id="view-priority-follow" class="view-content">
-  <section class="section-card">
-    <div class="section-header flex-col md:flex-row gap-3 items-stretch md:items-center justify-between p-4 md:p-5">
-      <div>
-        <h2 class="section-title text-base md:text-lg font-bold text-slate-800 m-0">
-          <i class="fa-solid fa-fire text-rose-600"></i> 最優先フォロービジター一覧
-        </h2>
-        <div class="section-sub text-xs text-slate-500 mt-0.5">ヒアリングシートで感触 《A》または《B》 と評価されたビジター名簿です。</div>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center w-full md:w-auto">
-        <div class="tab-filter-group flex gap-1.5 bg-slate-100 p-1 rounded-lg">
-          <button type="button" class="tab-btn active px-3 py-1.5 text-xs font-bold" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')">A+B</button>
-          <button type="button" class="tab-btn px-3 py-1.5 text-xs font-bold" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')">A</button>
-          <button type="button" class="tab-btn px-3 py-1.5 text-xs font-bold" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')">B</button>
+  <div class="pf-2col-layout">
+    
+    <!-- 左カラム: 最優先フォロー名簿パネル (Master List) -->
+    <div class="pf-master-panel section-card">
+      <div class="section-header flex-col gap-3 p-4 bg-white">
+        <div class="flex items-center justify-between gap-2 w-full">
+          <div>
+            <h2 class="section-title text-base font-bold text-slate-800 m-0">
+              <i class="fa-solid fa-fire text-rose-600"></i> 最優先フォロー
+            </h2>
+            <div class="section-sub text-[11px] text-slate-500 mt-0.5">ヒアリング感触 《A》《B》 評価名簿</div>
+          </div>
+          <span id="pf-total-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-50 text-rose-600 border border-rose-200">0件</span>
         </div>
-        <input type="text" id="search-priority-follow-input" class="search-box w-full sm:w-60" placeholder="🔍 氏名・会社名・招待者で検索..." onkeyup="filterPriorityFollowTable()">
+
+        <div class="flex items-center gap-2 w-full">
+          <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
+            <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')">A+B</button>
+            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')">A</button>
+            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')">B</button>
+          </div>
+          <div class="relative flex-1">
+            <input type="text" id="search-priority-follow-input" class="search-box w-full text-xs py-1.5 pl-3" placeholder="🔍 氏名・会社・招待者..." onkeyup="filterPriorityFollowTable()">
+          </div>
+        </div>
+      </div>
+
+      <!-- ビジターアイテム一覧 (スクロール可能) -->
+      <div id="pf-visitor-list" class="pf-visitor-list"></div>
+
+      <!-- ページネーションバー -->
+      <div class="pagination-bar p-3 border-t border-slate-100 bg-white">
+        <div class="pagination-info text-[11px]" id="pf-pagination-info">0 件</div>
+        <div class="pagination-controls gap-1">
+          <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" id="btn-pf-prev-page" onclick="changePriorityFollowPage(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+          <span id="pf-pagination-page-num" class="pagination-page-num text-xs">1/1</span>
+          <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" id="btn-pf-next-page" onclick="changePriorityFollowPage(1)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
       </div>
     </div>
 
-    <!-- 🖥️ PC表示用: テーブルビュー -->
-    <div class="dash-ap-table-wrap table-container">
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 95px;">参加日</th>
-            <th style="width: 75px;">評価</th>
-            <th>氏名 / 会社名・専門分野</th>
-            <th style="width: 120px;">招待者</th>
-            <th style="width: 120px;">オリエン担当</th>
-            <th>ヒアリングメモ (Q7 / 直後メモ)</th>
-          </tr>
-        </thead>
-        <tbody id="table-priority-follow-page"></tbody>
-      </table>
-    </div>
-
-    <!-- 📱 スマホ用カード一覧 -->
-    <div id="cards-priority-follow" class="dash-ap-grid dash-ap-cards-wrap"></div>
-
-    <div class="pagination-bar">
-      <div class="pagination-info" id="pf-pagination-info">全 0 件中 0 - 0 件を表示</div>
-      <div class="pagination-controls">
-        <button type="button" class="btn-action-secondary" id="btn-pf-prev-page" onclick="changePriorityFollowPage(-1)"><i class="fa-solid fa-chevron-left"></i> 前の50件</button>
-        <span id="pf-pagination-page-num" class="pagination-page-num">1 / 1</span>
-        <button type="button" class="btn-action-secondary" id="btn-pf-next-page" onclick="changePriorityFollowPage(1)">次の50件 <i class="fa-solid fa-chevron-right"></i></button>
+    <!-- 右カラム: ビジター詳細カルテパネル (Detail View) -->
+    <div class="pf-detail-panel" id="pf-detail-panel">
+      <div id="pf-detail-content" class="pf-detail-content">
+        <!-- JSで選択されたビジターのカルテがここにリアルタイム描画される -->
       </div>
     </div>
-  </section>
+
+  </div>
 </div>
