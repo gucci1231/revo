@@ -240,47 +240,92 @@
     const str = String(text);
     if (!str.trim()) return '';
 
-    // 1. 基本のHTMLエスケープ
-    let escaped = escapeHtml(str);
-
-    // 2. 含まれるURLを収集
-    const foundUrls = [];
     const urlRegex = /https?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$*+,;=%]|&amp;)+/gi;
 
-    let linkified = escaped.replace(urlRegex, (rawUrl) => {
-      let url = rawUrl;
-      let trailing = '';
-      const tailPunct = url.match(/([.,!?:;)]+)$/);
-      if (tailPunct) {
-        trailing = tailPunct[1];
-        url = url.slice(0, -trailing.length);
-      }
-      if (!foundUrls.includes(url)) {
-        foundUrls.push(url);
-      }
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="auto-url-link text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" style="word-break:break-all; overflow-wrap:anywhere; display:inline;" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
-    });
-
-    // 3. 改行を <br> に変換
-    if (nl2br) {
-      linkified = linkified.replace(/\r?\n/g, '<br>');
+    if (!showCard) {
+      // カード表示なし（テーブル一覧セル等）
+      let escaped = escapeHtml(str);
+      let linkified = escaped.replace(urlRegex, (rawUrl) => {
+        let url = rawUrl;
+        let trailing = '';
+        const tailPunct = url.match(/([.,!?:;)]+)$/);
+        if (tailPunct) {
+          trailing = tailPunct[1];
+          url = url.slice(0, -trailing.length);
+        }
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="auto-url-link text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
+      });
+      if (nl2br) linkified = linkified.replace(/\r?\n/g, '<br>');
+      return linkified;
     }
 
-    // 4. URLのみで構成されているか判定 (文章がない場合は無駄なテキストリンクを出さずカードのみ表示)
-    const pureText = str.replace(/https?:\/\/[^\s]+/gi, '').replace(/[\r\n\s]+/g, '').trim();
-    const isUrlOnly = (pureText === '' && foundUrls.length > 0);
+    // 🌟 最先端インラインカード展開モード (Notion / Slack / Linear方式)
+    const lines = str.split(/\r?\n/);
+    const parsedLines = [];
+    const foundCardUrls = [];
 
-    if (showCard && foundUrls.length > 0) {
-      const cardsHtml = foundUrls.slice(0, 3).map(u => `<div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div>`).join('');
-      const cardsWrapper = `<div class="ogp-cards-wrap mt-1 flex flex-col gap-1.5">${cardsHtml}</div>`;
-      
-      if (isUrlOnly) {
-        // URLのみの場合は上のテキストリンクを省略してカードのみ表示
-        linkified = cardsWrapper;
-      } else {
-        linkified += cardsWrapper;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) {
+        parsedLines.push('');
+        continue;
       }
 
+      // 単独URL行の判定 (前後に文章がないURL単独行の場合、URLテキスト自体をカードスロットに直接置換)
+      const isSingleUrlLine = /^https?:\/\/[^\s]+$/i.test(line);
+      if (isSingleUrlLine) {
+        let u = line;
+        let trailing = '';
+        const tailPunct = u.match(/([.,!?:;)]+)$/);
+        if (tailPunct) {
+          trailing = tailPunct[1];
+          u = u.slice(0, -trailing.length);
+        }
+        foundCardUrls.push(u);
+        parsedLines.push(`<div class="ogp-inline-card-slot"><div class="ogp-card-container" data-ogp-url="${escapeHtml(u)}"></div></div>${trailing}`);
+        continue;
+      }
+
+      // 文章とURLが混在している行
+      let escapedLine = escapeHtml(line);
+      let replacedLine = escapedLine.replace(urlRegex, (rawUrl) => {
+        let url = rawUrl;
+        let trailing = '';
+        const tailPunct = url.match(/([.,!?:;)]+)$/);
+        if (tailPunct) {
+          trailing = tailPunct[1];
+          url = url.slice(0, -trailing.length);
+        }
+        if (!foundCardUrls.includes(url)) {
+          foundCardUrls.push(url);
+        }
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="auto-url-link text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}<div class="ogp-inline-card-slot mt-2"><div class="ogp-card-container" data-ogp-url="${escapeHtml(url)}"></div></div>`;
+      });
+
+      parsedLines.push(replacedLine);
+    }
+
+    // 空白行の無駄なスペースをクリーンアップ
+    let result = '';
+    for (let i = 0; i < parsedLines.length; i++) {
+      const cur = parsedLines[i];
+      if (cur === '') {
+        const prev = parsedLines[i - 1] || '';
+        const next = parsedLines[i + 1] || '';
+        // カードスロットの直前直後の空行はマージして巨大な隙間を防止
+        if (prev.includes('ogp-inline-card-slot') || next.includes('ogp-inline-card-slot')) {
+          continue;
+        }
+        if (nl2br && result) result += '<br>';
+      } else {
+        if (result && !result.endsWith('<br>') && !cur.startsWith('<div class="ogp-inline-card-slot"')) {
+          if (nl2br) result += '<br>';
+        }
+        result += cur;
+      }
+    }
+
+    if (foundCardUrls.length > 0) {
       setTimeout(() => {
         if (typeof OgpCardService !== 'undefined' && OgpCardService.renderAll) {
           OgpCardService.renderAll();
@@ -288,7 +333,7 @@
       }, 30);
     }
 
-    return linkified;
+    return result;
   }
   window.escapeAndLinkify = escapeAndLinkify;
 
@@ -309,16 +354,16 @@
 
         // モダンなスケルトンローディング表示
         container.innerHTML = `
-          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 64px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <div class="ogp-rich-card skeleton-loading animate-pulse" style="min-height: 64px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
             <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
               <div style="display: flex; align-items: center; gap: 6px;">
-                <div style="width: 14px; height: 14px; border-radius: 4px; background: #cbd5e1;"></div>
+                <div style="width: 15px; height: 15px; border-radius: 4px; background: #cbd5e1;"></div>
                 <div style="width: 70px; height: 10px; border-radius: 4px; background: #e2e8f0;"></div>
               </div>
               <div style="width: 80%; height: 13px; border-radius: 4px; background: #cbd5e1;"></div>
               <div style="width: 95%; height: 10px; border-radius: 4px; background: #f1f5f9;"></div>
             </div>
-            <div style="width: 68px; height: 68px; border-radius: 8px; background: #e2e8f0; flex-shrink: 0;"></div>
+            <div style="width: 72px; height: 72px; border-radius: 8px; background: #e2e8f0; flex-shrink: 0;"></div>
           </div>
         `;
 
