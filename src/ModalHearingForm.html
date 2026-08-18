@@ -1,99 +1,281 @@
 <!-- Modal for Hearing Form -->
 <div id="modal-hearing-form" class="modal-backdrop">
-  <div class="modal-box-large">
-    <div class="modal-header-title">
-      <i class="fa-solid fa-file-signature"></i> REvo オリエンテーション＆ヒアリングシート
-    </div>
-
-    <div class="info-summary-grid">
-      <div><strong>定例会参加日:</strong> <span id="hf-event-date">-</span></div>
-      <div><strong>お名前:</strong> <span id="hf-name">-</span> 様 (<span id="hf-furigana">-</span>)</div>
-      <div><strong>会社名・屋号:</strong> <span id="hf-company">-</span></div>
-      <div><strong>専門分野:</strong> <span id="hf-profession">-</span></div>
-      <div><strong>紹介者:</strong> <span id="hf-inviter">-</span></div>
-    </div>
-
-    <form id="hearing-form-element">
-      <input type="hidden" id="hf-visitor-id">
-
-      <div class="form-group">
-        <label class="form-label">オリエン担当者名 (DB連動)</label>
-        <select id="hf-orient-user" class="form-input" style="font-weight: 700; color: #343a40;">
-          <option value="">-- DB読み込み中... --</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q1：【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？</label>
-        <textarea id="hf-q1" class="form-textarea auto-resize-textarea" placeholder="ビジター様からの回答・感想"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q2：【お仕事について】〇〇さんのお仕事について再度聞かせてください。</label>
-        <textarea id="hf-q2" class="form-textarea auto-resize-textarea" placeholder="仕事内容の補足や詳細"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q3：【Goal(目標)】夢や目標、〇年後にこうなりたい計画はありますか？</label>
-        <textarea id="hf-q3" class="form-textarea auto-resize-textarea" placeholder="目標や達成したいこと"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q4：【Reality(現実・課題)】課題と感じることはございますか？いつ頃からですか？</label>
-        <textarea id="hf-q4" class="form-textarea auto-resize-textarea" placeholder="現状の課題や悩み"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q5：【Options(選択肢)】解決できる具体的なアイディアはお持ちですか？</label>
-        <textarea id="hf-q5" class="form-textarea auto-resize-textarea" placeholder="検討中の選択肢"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q6：【Way Forward(今後の力に)】REvoメンバーでお役に立てること</label>
-        <textarea id="hf-q6" class="form-textarea auto-resize-textarea" placeholder="具体的なお役立ち提案（リファーラル・人脈紹介等）"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Q7：【次のアクション】促し内容</label>
-        <textarea id="hf-q7" class="form-textarea auto-resize-textarea" placeholder="・入会 / 繋がりたいメンバーへの紹介 / 再度定例会 / BOD / コーヒーミーティング等"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">入会への感触 (ABC評価)</label>
-        <input type="hidden" id="hf-feel-abc">
-        <div class="radio-abc-group">
-          <button type="button" class="btn-abc-option" id="abc-A" onclick="selectAbc('A')">A: 好印象・即入会意向あり</button>
-          <button type="button" class="btn-abc-option" id="abc-B" onclick="selectAbc('B')">B: 好印象だがハードルあり</button>
-          <button type="button" class="btn-abc-option" id="abc-C" onclick="selectAbc('C')">C: 時間がかかる / 見送り</button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">定例会直後のオリエン感想メモ</label>
-        <textarea id="hf-orient-memo" class="form-textarea auto-resize-textarea" placeholder="オリエン直後の定例会での様子や感想"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">追跡フォローメモ</label>
-        <textarea id="hf-follow-memo" class="form-textarea auto-resize-textarea" placeholder="追跡フォローでのやり取り・進捗メモ"></textarea>
-      </div>
-
-      <div class="link-actions-box">
-        <div style="font-size: 13px; font-weight: 800; color: #666666; margin-bottom: 8px;">
-          <i class="fa-solid fa-link"></i> 入会手続き・案内用公式URL
+  <div class="modal-box-large hearing-modal-container">
+    <!-- Header -->
+    <div class="hearing-modal-header">
+      <div class="hearing-modal-header-left">
+        <div class="hearing-header-icon-badge">
+          <i class="fa-solid fa-file-signature"></i>
         </div>
         <div>
-          <a href="https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376" target="_blank" class="link-action-btn"><i class="fa-solid fa-external-link"></i> ① 入会オンライン申込 (ビジホス)</a>
-          <a href="https://docs.google.com/document/d/1P-FZeshUDnzXTOEKI3M1xwoBvxfCKSQL/edit" target="_blank" class="link-action-btn"><i class="fa-solid fa-file-word"></i> ② BNI加入審査案内 (メンバーシップ)</a>
-          <a href="https://www.bniconnectglobal.com/web/applications/register?chapterId=7638" target="_blank" class="link-action-btn"><i class="fa-solid fa-globe"></i> ③ オンラインメンバーシップ申込</a>
+          <h2 class="hearing-modal-title">REvo オリエンテーション＆ヒアリングシート</h2>
+          <p class="hearing-modal-subtitle">GROWモデルに沿った課題・目標の把握とネクストアクション設定</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeHearingModal()" title="閉じる">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Scrollable Body -->
+    <div class="hearing-modal-body">
+      <!-- Visitor Profile Card -->
+      <div class="hearing-visitor-card">
+        <div class="hearing-visitor-profile-row">
+          <div class="hearing-visitor-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+          </div>
+          <div class="hearing-visitor-info-main">
+            <div class="hearing-visitor-name-wrap">
+              <span class="hearing-visitor-name" id="hf-name">-</span>
+              <span class="hearing-visitor-sama">様</span>
+              <span class="hearing-visitor-furigana" id="hf-furigana"></span>
+            </div>
+            <div class="hearing-visitor-meta-chips">
+              <span class="hearing-meta-chip">
+                <i class="fa-solid fa-building text-slate-400"></i>
+                <span id="hf-company">-</span>
+              </span>
+              <span class="hearing-meta-chip">
+                <i class="fa-solid fa-briefcase text-slate-400"></i>
+                <span id="hf-profession">-</span>
+              </span>
+              <span class="hearing-meta-chip chip-date">
+                <i class="fa-regular fa-calendar-check text-blue-500"></i>
+                <span id="hf-event-date">-</span>
+              </span>
+              <span class="hearing-meta-chip chip-inviter">
+                <i class="fa-solid fa-user-plus text-emerald-500"></i>
+                紹介: <span id="hf-inviter">-</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="modal-footer-btns">
-        <button type="button" class="btn-cancel" onclick="closeHearingModal()">キャンセル</button>
-        <button type="button" class="btn-save" onclick="submitHearingForm()">保存する</button>
-      </div>
-    </form>
+      <form id="hearing-form-element" onsubmit="event.preventDefault(); submitHearingForm();">
+        <input type="hidden" id="hf-visitor-id">
 
+        <!-- Orientation Staff & ABC Rating Top Panel -->
+        <div class="hearing-top-config-panel">
+          <!-- Staff Selector -->
+          <div class="hearing-config-group">
+            <label class="hearing-section-label" for="hf-orient-user">
+              <i class="fa-solid fa-user-check text-blue-600"></i> オリエン担当者名 (DB連動)
+            </label>
+            <div class="hearing-select-wrapper">
+              <i class="fa-solid fa-user-tie select-icon"></i>
+              <select id="hf-orient-user" class="hearing-modern-select">
+                <option value="">-- DB読み込み中... --</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ABC Rating -->
+          <div class="hearing-config-group">
+            <label class="hearing-section-label">
+              <i class="fa-solid fa-gauge-high text-indigo-600"></i> 入会への感触 (ABC評価)
+            </label>
+            <input type="hidden" id="hf-feel-abc">
+            <div class="hearing-abc-selector">
+              <button type="button" class="hearing-abc-btn abc-btn-a" id="abc-A" onclick="selectAbc('A')">
+                <div class="abc-badge">A</div>
+                <div class="abc-text">
+                  <div class="abc-title">好印象・即入会意向</div>
+                  <div class="abc-desc">前向き / 次回申込予定</div>
+                </div>
+                <i class="fa-solid fa-check abc-check-icon"></i>
+              </button>
+              <button type="button" class="hearing-abc-btn abc-btn-b" id="abc-B" onclick="selectAbc('B')">
+                <div class="abc-badge">B</div>
+                <div class="abc-text">
+                  <div class="abc-title">好印象だがハードルあり</div>
+                  <div class="abc-desc">日程・費用等の検討</div>
+                </div>
+                <i class="fa-solid fa-check abc-check-icon"></i>
+              </button>
+              <button type="button" class="hearing-abc-btn abc-btn-c" id="abc-C" onclick="selectAbc('C')">
+                <div class="abc-badge">C</div>
+                <div class="abc-text">
+                  <div class="abc-title">時間がかかる / 見送り</div>
+                  <div class="abc-desc">現状合わず・保留</div>
+                </div>
+                <i class="fa-solid fa-check abc-check-icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Icebreak & Business -->
+        <div class="hearing-step-section">
+          <div class="hearing-step-header">
+            <span class="hearing-step-number">Step 1</span>
+            <span class="hearing-step-title">💬 お礼・感想 ＆ お仕事の確認</span>
+          </div>
+
+          <div class="hearing-q-grid">
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q1">Q1</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q1">【お礼と感想】今日はお疲れ様でした！楽しんで頂けましたか？</label>
+                  <span class="hearing-q-hint">例：プレゼンが面白かった、活気があった、雰囲気が良かった等</span>
+                </div>
+              </div>
+              <textarea id="hf-q1" class="hearing-modern-textarea auto-resize-textarea" placeholder="ビジター様からの回答・感想・印象を入力..."></textarea>
+            </div>
+
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q2">Q2</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q2">【お仕事について】〇〇さんのお仕事について再度聞かせてください。</label>
+                  <span class="hearing-q-hint">例：ターゲット顧客、強み、現在注力しているサービス等</span>
+                </div>
+              </div>
+              <textarea id="hf-q2" class="hearing-modern-textarea auto-resize-textarea" placeholder="仕事内容の補足・具体的なターゲット層や商材を入力..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: GROW Model (Goal / Reality / Options) -->
+        <div class="hearing-step-section">
+          <div class="hearing-step-header">
+            <span class="hearing-step-number step-grow">Step 2</span>
+            <span class="hearing-step-title">🎯 目標・課題・解決アイディア（GROWモデル）</span>
+          </div>
+
+          <div class="hearing-q-grid">
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q3">Q3</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q3">【Goal（目標）】夢や目標、〇年後にこうなりたい計画はありますか？</label>
+                  <span class="hearing-q-hint">例：売上〇倍、新規クライアント〇社、新店舗展開など</span>
+                </div>
+              </div>
+              <textarea id="hf-q3" class="hearing-modern-textarea auto-resize-textarea" placeholder="目指している目標やビジョンを入力..."></textarea>
+            </div>
+
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q4">Q4</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q4">【Reality（現実・課題）】課題と感じることはございますか？いつ頃からですか？</label>
+                  <span class="hearing-q-hint">例：見込み客の集客不足、人手不足、紹介ルートの開拓など</span>
+                </div>
+              </div>
+              <textarea id="hf-q4" class="hearing-modern-textarea auto-resize-textarea" placeholder="現状感じているボトルネックや課題を入力..."></textarea>
+            </div>
+
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q5">Q5</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q5">【Options（選択肢）】解決できる具体的なアイディアはお持ちですか？</label>
+                  <span class="hearing-q-hint">例：Web広告の検討、アライアンス先開拓、人脈の強化など</span>
+                </div>
+              </div>
+              <textarea id="hf-q5" class="hearing-modern-textarea auto-resize-textarea" placeholder="検討中・試行中の対策やアイディアを入力..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Way Forward & Next Action -->
+        <div class="hearing-step-section">
+          <div class="hearing-step-header">
+            <span class="hearing-step-number step-action">Step 3</span>
+            <span class="hearing-step-title">🤝 REvoでの支援 ＆ 次のアクション</span>
+          </div>
+
+          <div class="hearing-q-grid">
+            <div class="hearing-q-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q6">Q6</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title" for="hf-q6">【Way Forward（今後の力に）】REvoメンバーでお役に立てること</label>
+                  <span class="hearing-q-hint">例：〇〇業のメンバー紹介、協業先のリファーラル、情報交換など</span>
+                </div>
+              </div>
+              <textarea id="hf-q6" class="hearing-modern-textarea auto-resize-textarea" placeholder="チャプターとして貢献できる具体的な提案や紹介先を入力..."></textarea>
+            </div>
+
+            <div class="hearing-q-card highlight-card">
+              <div class="hearing-q-card-header">
+                <span class="hearing-q-badge badge-q7">Q7</span>
+                <div class="hearing-q-title-wrap">
+                  <label class="hearing-q-title text-blue-900" for="hf-q7">【次のアクション】促し内容・ネクストステップ</label>
+                  <span class="hearing-q-hint">例：入会申込 / 繋がりたいメンバーへの1to1紹介 / 再度定例会参加 / BOD / コーヒーMTG等</span>
+                </div>
+              </div>
+              <textarea id="hf-q7" class="hearing-modern-textarea auto-resize-textarea highlight-textarea" placeholder="次回に向けた具体的な合意内容やアクションを入力..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internal Notes Section -->
+        <div class="hearing-step-section notes-section">
+          <div class="hearing-step-header">
+            <span class="hearing-step-number step-notes">Memo</span>
+            <span class="hearing-step-title">📝 内部共有・フォロー用メモ</span>
+          </div>
+
+          <div class="hearing-notes-grid">
+            <div class="hearing-note-card note-orient">
+              <div class="hearing-note-header">
+                <i class="fa-solid fa-comment-dots text-amber-600"></i>
+                <label class="hearing-note-label" for="hf-orient-memo">定例会直後のオリエン感想メモ</label>
+              </div>
+              <textarea id="hf-orient-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-yellow" placeholder="オリエン直後の様子、雰囲気、メンバーへの共有事項など..."></textarea>
+            </div>
+
+            <div class="hearing-note-card note-follow">
+              <div class="hearing-note-header">
+                <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                <label class="hearing-note-label" for="hf-follow-memo">追跡フォローメモ</label>
+              </div>
+              <textarea id="hf-follow-memo" class="hearing-modern-textarea auto-resize-textarea memo-textarea-blue" placeholder="その後の追跡フォローでのやり取り・進捗メモなど..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Official Registration Links Box -->
+        <div class="hearing-links-card">
+          <div class="hearing-links-header">
+            <i class="fa-solid fa-link text-indigo-500"></i>
+            <span class="hearing-links-title">入会手続き・案内用 公式URL</span>
+          </div>
+          <div class="hearing-links-buttons">
+            <a href="https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376" target="_blank" rel="noopener noreferrer" class="hearing-link-action-btn">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>① 入会オンライン申込 (ビジホス)</span>
+            </a>
+            <a href="https://docs.google.com/document/d/1P-FZeshUDnzXTOEKI3M1xwoBvxfCKSQL/edit" target="_blank" rel="noopener noreferrer" class="hearing-link-action-btn">
+              <i class="fa-solid fa-file-lines"></i>
+              <span>② BNI加入審査案内 (メンバーシップ)</span>
+            </a>
+            <a href="https://www.bniconnectglobal.com/web/applications/register?chapterId=7638" target="_blank" rel="noopener noreferrer" class="hearing-link-action-btn">
+              <i class="fa-solid fa-globe"></i>
+              <span>③ オンラインメンバーシップ申込</span>
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sticky Modal Footer -->
+    <div class="hearing-modal-footer">
+      <div class="hearing-footer-hint">
+        <i class="fa-regular fa-keyboard text-slate-400"></i>
+        <span>入力内容はリアルタイム同期されます</span>
+      </div>
+      <div class="hearing-footer-actions">
+        <button type="button" class="hearing-btn-cancel" onclick="closeHearingModal()">キャンセル</button>
+        <button type="button" class="hearing-btn-save" onclick="submitHearingForm()">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span>ヒアリング内容を保存</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
