@@ -198,10 +198,10 @@
       return `
         <div style="display:flex; flex-direction:column; gap:2px; min-width:0; width:100%; white-space:normal; word-break:break-word;">
           <div style="font-size:12.5px; font-weight:700; color:${isCompleted ? '#94a3b8' : '#0f172a'}; line-height:1.4; ${isCompleted ? 'text-decoration:line-through;' : ''}">
-            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeHtml(ap.action_text)}
+            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeAndLinkify(ap.action_text, false)}
           </div>
           ${metaInfo.length > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:1px;">${metaInfo.join(' · ')}</div>` : ''}
-          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeHtml(ap.report_text)}</div>` : ''}
+          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeAndLinkify(ap.report_text, false)}</div>` : ''}
         </div>
       `;
     }
@@ -210,7 +210,7 @@
     if (note) {
       return `
         <div style="font-size:12px; color:#475569; line-height:1.4; white-space:normal; word-break:break-word;" title="${escapeHtml(note)}">
-          ${escapeHtml(note)}
+          ${escapeAndLinkify(note, true)}
         </div>
       `;
     }
@@ -232,6 +232,35 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+
+  function escapeAndLinkify(text, nl2br = false) {
+    if (text === null || text === undefined) return '';
+    const str = String(text);
+    if (!str.trim()) return '';
+
+    // 1. 基本のHTMLエスケープ
+    let escaped = escapeHtml(str);
+
+    // 2. URLを検出して <a> タグに変換 (全角文字や句読点を巻き込まない正規表現)
+    const urlRegex = /https?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$*+,;=%]|&amp;)+/gi;
+    let linkified = escaped.replace(urlRegex, (rawUrl) => {
+      let url = rawUrl;
+      let trailing = '';
+      const tailPunct = url.match(/([.,!?:;)]+)$/);
+      if (tailPunct) {
+        trailing = tailPunct[1];
+        url = url.slice(0, -trailing.length);
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
+    });
+
+    // 3. 改行を <br> に変換
+    if (nl2br) {
+      linkified = linkified.replace(/\r?\n/g, '<br>');
+    }
+    return linkified;
+  }
+  window.escapeAndLinkify = escapeAndLinkify;
 
   function escapeJsParam(str) {
     if (str === null || str === undefined) return '';

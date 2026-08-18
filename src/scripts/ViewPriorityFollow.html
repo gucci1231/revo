@@ -272,7 +272,7 @@
                 const isOverdue = p.due_date && p.due_date < todayStr;
                 const reportSnippet = p.report_text ? `
                   <div class="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1.5 leading-relaxed">
-                    <strong class="font-bold"><i class="fa-regular fa-comment-dots mr-1"></i>途中経過:</strong> ${escapeHtml(p.report_text)}
+                    <strong class="font-bold"><i class="fa-regular fa-comment-dots mr-1"></i>途中経過:</strong> ${escapeAndLinkify(p.report_text, true)}
                   </div>
                 ` : '';
                 return `
@@ -297,7 +297,7 @@
                       </div>
                     </div>
                     <div class="text-xs font-bold text-slate-800 leading-relaxed">
-                      ${escapeHtml(p.action_text)}
+                      ${escapeAndLinkify(p.action_text, true)}
                     </div>
                     ${reportSnippet}
                   </div>
@@ -314,7 +314,7 @@
                       <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2 text-xs">
                         <div class="flex items-center gap-2 min-w-0">
                           <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] shrink-0 font-bold"><i class="fa-solid fa-check"></i></span>
-                          <span class="font-medium text-slate-500 line-through truncate">${escapeHtml(p.action_text)}</span>
+                          <span class="font-medium text-slate-500 line-through truncate">${escapeAndLinkify(p.action_text, false)}</span>
                         </div>
                         <button type="button" class="text-[10px] text-slate-400 hover:text-slate-600 shrink-0" onclick="togglePfActionPlan('${p.id}', '${vid}', 0)">
                           未完了に戻す
@@ -460,7 +460,7 @@
                   <i class="fa-solid fa-bullseye text-rose-600"></i> Q7. 繋ぐべきメンバー・次回アクション・協業可能性
                 </div>
                 <div class="text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
-                  ${escapeHtml(h.q7 || v.q7 || '未記載')}
+                  ${escapeAndLinkify(h.q7 || v.q7 || '未記載', true)}
                 </div>
               </div>
 
@@ -471,7 +471,7 @@
                     <i class="fa-solid fa-clipboard-user text-indigo-500"></i> オリエン直後メモ
                   </div>
                   <div class="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    ${escapeHtml(h.orientMemo || v.orientMemo || '未記載')}
+                    ${escapeAndLinkify(h.orientMemo || v.orientMemo || '未記載', true)}
                   </div>
                 </div>
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1 shadow-sm">
@@ -479,7 +479,7 @@
                     <i class="fa-solid fa-hand-holding-heart text-emerald-500"></i> フォロー進捗メモ
                   </div>
                   <div class="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    ${escapeHtml(h.followMemo || v.followMemo || '未記載')}
+                    ${escapeAndLinkify(h.followMemo || v.followMemo || '未記載', true)}
                   </div>
                 </div>
               </div>
@@ -495,27 +495,27 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q1. 感想</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q1 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q1 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q2. ビジネスの課題</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q2 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q2 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q3. 求めたい紹介</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q3 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q3 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q4. 入会意欲</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q4 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q4 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q5. 参加可能度</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q5 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q5 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q6. 懸念点</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q6 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q6 || '-', true)}</span>
                 </div>
               </div>
             </div>

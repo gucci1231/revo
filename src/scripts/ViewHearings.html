@@ -88,7 +88,7 @@
 
           ${memoSnippet ? `
             <div style="font-size: 11px; color: #334155; background: #fff9db; border-left: 3px solid #fab005; padding: 6px 10px; border-radius: 6px; line-height: 1.4; margin-top:2px;">
-              ${escapeHtml(memoSnippet)}
+              ${escapeAndLinkify(memoSnippet, true)}
             </div>
           ` : ''}
         `;

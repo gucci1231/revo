@@ -282,7 +282,7 @@
         const actionCellHtml = `
           <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
             <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
-              ${escapeHtml(p.action_text)}
+              ${escapeAndLinkify(p.action_text, true)}
             </div>
             ${reportBoxHtml}
           </div>
@@ -345,7 +345,7 @@
           <!-- 中段: アクション内容と実施報告 -->
           <div class="dash-ap-card-body">
             <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-              ${escapeHtml(p.action_text)}
+              ${escapeAndLinkify(p.action_text, true)}
             </div>
             ${reportBoxHtml}
           </div>

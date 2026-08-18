@@ -31,7 +31,7 @@
     document.getElementById('report-ap-visitor-id').value = plan.visitor_id || optVisitorId || '';
     document.getElementById('report-ap-visitor-name').innerText = plan.visitor_name ? `${plan.visitor_name} 様` : (plan.visitor_id ? `ビジター No.${plan.visitor_id}` : '対象ビジター');
     document.getElementById('report-ap-assignee').innerText = plan.assignee_name || '担当者未設定';
-    document.getElementById('report-ap-action-text').innerText = plan.action_text || '-';
+    document.getElementById('report-ap-action-text').innerHTML = plan.action_text ? escapeAndLinkify(plan.action_text, true) : '-';
 
     const dueBadge = document.getElementById('report-ap-due-badge');
     if (dueBadge) {

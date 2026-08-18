@@ -239,7 +239,7 @@
         </div>
 
         <div class="kanban-card-action-text ${isCompleted ? 'completed' : ''}">
-          ${escapeHtml(p.action_text)}
+          ${escapeAndLinkify(p.action_text, true)}
         </div>
         ${reportBoxHtml}
 
@@ -308,7 +308,7 @@
 
       const reportBoxHtml = p.report_text
         ? `<div class="dash-ap-card-report">
-             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeAndLinkify(p.report_text, true)}
              ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
            </div>`
         : '';
@@ -343,7 +343,7 @@
 
         <div class="dash-ap-card-body">
           <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-            ${escapeHtml(p.action_text)}
+            ${escapeAndLinkify(p.action_text, true)}
           </div>
           ${reportBoxHtml}
         </div>

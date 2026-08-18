@@ -5462,10 +5462,10 @@ const ApiService = {
       return `
         <div style="display:flex; flex-direction:column; gap:2px; min-width:0; width:100%; white-space:normal; word-break:break-word;">
           <div style="font-size:12.5px; font-weight:700; color:${isCompleted ? '#94a3b8' : '#0f172a'}; line-height:1.4; ${isCompleted ? 'text-decoration:line-through;' : ''}">
-            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeHtml(ap.action_text)}
+            <i class="fa-solid fa-circle" style="font-size:7px; color:${dotColor}; vertical-align:1px; margin-right:4px;"></i>${escapeAndLinkify(ap.action_text, false)}
           </div>
           ${metaInfo.length > 0 ? `<div style="font-size:10.5px; color:#64748b; margin-top:1px;">${metaInfo.join(' · ')}</div>` : ''}
-          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeHtml(ap.report_text)}</div>` : ''}
+          ${ap.report_text ? `<div style="font-size:11px; color:#059669; background:#ecfdf5; padding:2px 6px; border-radius:4px; margin-top:2px; line-height:1.35;"><strong>報告:</strong> ${escapeAndLinkify(ap.report_text, false)}</div>` : ''}
         </div>
       `;
     }
@@ -5474,7 +5474,7 @@ const ApiService = {
     if (note) {
       return `
         <div style="font-size:12px; color:#475569; line-height:1.4; white-space:normal; word-break:break-word;" title="${escapeHtml(note)}">
-          ${escapeHtml(note)}
+          ${escapeAndLinkify(note, true)}
         </div>
       `;
     }
@@ -5496,6 +5496,35 @@ const ApiService = {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
+
+  function escapeAndLinkify(text, nl2br = false) {
+    if (text === null || text === undefined) return '';
+    const str = String(text);
+    if (!str.trim()) return '';
+
+    // 1. 基本のHTMLエスケープ
+    let escaped = escapeHtml(str);
+
+    // 2. URLを検出して <a> タグに変換 (全角文字や句読点を巻き込まない正規表現)
+    const urlRegex = /https?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$*+,;=%]|&amp;)+/gi;
+    let linkified = escaped.replace(urlRegex, (rawUrl) => {
+      let url = rawUrl;
+      let trailing = '';
+      const tailPunct = url.match(/([.,!?:;)]+)$/);
+      if (tailPunct) {
+        trailing = tailPunct[1];
+        url = url.slice(0, -trailing.length);
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline underline-offset-2 break-all" onclick="event.stopPropagation();">${url} <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-75"></i></a>${trailing}`;
+    });
+
+    // 3. 改行を <br> に変換
+    if (nl2br) {
+      linkified = linkified.replace(/\r?\n/g, '<br>');
+    }
+    return linkified;
+  }
+  window.escapeAndLinkify = escapeAndLinkify;
 
   function escapeJsParam(str) {
     if (str === null || str === undefined) return '';
@@ -6971,7 +7000,7 @@ window.CelebrationEffect = (function() {
         const actionCellHtml = `
           <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
             <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
-              ${escapeHtml(p.action_text)}
+              ${escapeAndLinkify(p.action_text, true)}
             </div>
             ${reportBoxHtml}
           </div>
@@ -7034,7 +7063,7 @@ window.CelebrationEffect = (function() {
           <!-- 中段: アクション内容と実施報告 -->
           <div class="dash-ap-card-body">
             <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-              ${escapeHtml(p.action_text)}
+              ${escapeAndLinkify(p.action_text, true)}
             </div>
             ${reportBoxHtml}
           </div>
@@ -7614,7 +7643,7 @@ window.CelebrationEffect = (function() {
         </div>
 
         <div class="kanban-card-action-text ${isCompleted ? 'completed' : ''}">
-          ${escapeHtml(p.action_text)}
+          ${escapeAndLinkify(p.action_text, true)}
         </div>
         ${reportBoxHtml}
 
@@ -7683,7 +7712,7 @@ window.CelebrationEffect = (function() {
 
       const reportBoxHtml = p.report_text
         ? `<div class="dash-ap-card-report">
-             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeHtml(p.report_text)}
+             <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> ${escapeAndLinkify(p.report_text, true)}
              ${p.completed_by ? `<span class="text-slate-500 font-normal text-[10px] ml-1">(確認: ${escapeHtml(p.completed_by)})</span>` : ''}
            </div>`
         : '';
@@ -7718,7 +7747,7 @@ window.CelebrationEffect = (function() {
 
         <div class="dash-ap-card-body">
           <div class="dash-ap-card-action ${isCompleted ? 'completed' : ''}">
-            ${escapeHtml(p.action_text)}
+            ${escapeAndLinkify(p.action_text, true)}
           </div>
           ${reportBoxHtml}
         </div>
@@ -8015,7 +8044,7 @@ window.CelebrationEffect = (function() {
                 const isOverdue = p.due_date && p.due_date < todayStr;
                 const reportSnippet = p.report_text ? `
                   <div class="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200 mt-1.5 leading-relaxed">
-                    <strong class="font-bold"><i class="fa-regular fa-comment-dots mr-1"></i>途中経過:</strong> ${escapeHtml(p.report_text)}
+                    <strong class="font-bold"><i class="fa-regular fa-comment-dots mr-1"></i>途中経過:</strong> ${escapeAndLinkify(p.report_text, true)}
                   </div>
                 ` : '';
                 return `
@@ -8040,7 +8069,7 @@ window.CelebrationEffect = (function() {
                       </div>
                     </div>
                     <div class="text-xs font-bold text-slate-800 leading-relaxed">
-                      ${escapeHtml(p.action_text)}
+                      ${escapeAndLinkify(p.action_text, true)}
                     </div>
                     ${reportSnippet}
                   </div>
@@ -8057,7 +8086,7 @@ window.CelebrationEffect = (function() {
                       <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2 text-xs">
                         <div class="flex items-center gap-2 min-w-0">
                           <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] shrink-0 font-bold"><i class="fa-solid fa-check"></i></span>
-                          <span class="font-medium text-slate-500 line-through truncate">${escapeHtml(p.action_text)}</span>
+                          <span class="font-medium text-slate-500 line-through truncate">${escapeAndLinkify(p.action_text, false)}</span>
                         </div>
                         <button type="button" class="text-[10px] text-slate-400 hover:text-slate-600 shrink-0" onclick="togglePfActionPlan('${p.id}', '${vid}', 0)">
                           未完了に戻す
@@ -8203,7 +8232,7 @@ window.CelebrationEffect = (function() {
                   <i class="fa-solid fa-bullseye text-rose-600"></i> Q7. 繋ぐべきメンバー・次回アクション・協業可能性
                 </div>
                 <div class="text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
-                  ${escapeHtml(h.q7 || v.q7 || '未記載')}
+                  ${escapeAndLinkify(h.q7 || v.q7 || '未記載', true)}
                 </div>
               </div>
 
@@ -8214,7 +8243,7 @@ window.CelebrationEffect = (function() {
                     <i class="fa-solid fa-clipboard-user text-indigo-500"></i> オリエン直後メモ
                   </div>
                   <div class="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    ${escapeHtml(h.orientMemo || v.orientMemo || '未記載')}
+                    ${escapeAndLinkify(h.orientMemo || v.orientMemo || '未記載', true)}
                   </div>
                 </div>
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1 shadow-sm">
@@ -8222,7 +8251,7 @@ window.CelebrationEffect = (function() {
                     <i class="fa-solid fa-hand-holding-heart text-emerald-500"></i> フォロー進捗メモ
                   </div>
                   <div class="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
-                    ${escapeHtml(h.followMemo || v.followMemo || '未記載')}
+                    ${escapeAndLinkify(h.followMemo || v.followMemo || '未記載', true)}
                   </div>
                 </div>
               </div>
@@ -8238,27 +8267,27 @@ window.CelebrationEffect = (function() {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q1. 感想</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q1 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q1 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q2. ビジネスの課題</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q2 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q2 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q3. 求めたい紹介</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q3 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q3 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q4. 入会意欲</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q4 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q4 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q5. 参加可能度</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q5 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q5 || '-', true)}</span>
                 </div>
                 <div class="bg-slate-50/90 p-3 rounded-xl border border-slate-200/70 space-y-0.5">
                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-wide block">Q6. 懸念点</span>
-                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeHtml(h.q6 || '-')}</span>
+                  <span class="text-slate-800 font-bold block leading-relaxed">${escapeAndLinkify(h.q6 || '-', true)}</span>
                 </div>
               </div>
             </div>
@@ -8890,7 +8919,7 @@ window.CelebrationEffect = (function() {
 
           ${memoSnippet ? `
             <div style="font-size: 11px; color: #334155; background: #fff9db; border-left: 3px solid #fab005; padding: 6px 10px; border-radius: 6px; line-height: 1.4; margin-top:2px;">
-              ${escapeHtml(memoSnippet)}
+              ${escapeAndLinkify(memoSnippet, true)}
             </div>
           ` : ''}
         `;
@@ -10168,32 +10197,32 @@ window.CelebrationEffect = (function() {
         }
 
         // ヒアリング内容
+        const setHearingField = (id, text) => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = text ? escapeAndLinkify(text, true) : '-';
+        };
         document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
-        document.getElementById('vd-q1').innerText = h.q1 || '-';
-        document.getElementById('vd-q2').innerText = h.q2 || '-';
-        document.getElementById('vd-q3').innerText = h.q3 || '-';
-        document.getElementById('vd-q4').innerText = h.q4 || '-';
-        document.getElementById('vd-q5').innerText = h.q5 || '-';
-        document.getElementById('vd-q6').innerText = h.q6 || '-';
-        document.getElementById('vd-q7').innerText = h.q7 || '-';
-        document.getElementById('vd-orient-memo').innerText = h.orientMemo || '-';
-        document.getElementById('vd-follow-memo').innerText = h.followMemo || '-';
+        setHearingField('vd-q1', h.q1);
+        setHearingField('vd-q2', h.q2);
+        setHearingField('vd-q3', h.q3);
+        setHearingField('vd-q4', h.q4);
+        setHearingField('vd-q5', h.q5);
+        setHearingField('vd-q6', h.q6);
+        setHearingField('vd-q7', h.q7);
+        setHearingField('vd-orient-memo', h.orientMemo);
+        setHearingField('vd-follow-memo', h.followMemo);
 
         // フォールバックヒアリング内容
-        const setFbText = (id, val) => {
-          const el = document.getElementById(id);
-          if (el) el.innerText = val;
-        };
-        setFbText('vd-ap-fb-orient-user', h.orientUser || '未設定');
-        setFbText('vd-ap-fb-q1', h.q1 || '-');
-        setFbText('vd-ap-fb-q2', h.q2 || '-');
-        setFbText('vd-ap-fb-q3', h.q3 || '-');
-        setFbText('vd-ap-fb-q4', h.q4 || '-');
-        setFbText('vd-ap-fb-q5', h.q5 || '-');
-        setFbText('vd-ap-fb-q6', h.q6 || '-');
-        setFbText('vd-ap-fb-q7', h.q7 || '-');
-        setFbText('vd-ap-fb-orient-memo', h.orientMemo || '-');
-        setFbText('vd-ap-fb-follow-memo', h.followMemo || '-');
+        setHearingField('vd-ap-fb-orient-user', h.orientUser || '未設定');
+        setHearingField('vd-ap-fb-q1', h.q1);
+        setHearingField('vd-ap-fb-q2', h.q2);
+        setHearingField('vd-ap-fb-q3', h.q3);
+        setHearingField('vd-ap-fb-q4', h.q4);
+        setHearingField('vd-ap-fb-q5', h.q5);
+        setHearingField('vd-ap-fb-q6', h.q6);
+        setHearingField('vd-ap-fb-q7', h.q7);
+        setHearingField('vd-ap-fb-orient-memo', h.orientMemo);
+        setHearingField('vd-ap-fb-follow-memo', h.followMemo);
 
         // ヒアリング未登録時のアクションバー制御
         const hasHearingData = !!(
@@ -10493,7 +10522,7 @@ window.CelebrationEffect = (function() {
           </div>
 
           <div class="vd-ap-text">
-            ${escapeHtml(item.action_text)}
+            ${escapeAndLinkify(item.action_text, true)}
           </div>
           ${reportSnippet}
 
@@ -10515,7 +10544,7 @@ window.CelebrationEffect = (function() {
 
         const reportBox = item.report_text ? `
           <div class="vd-ap-report-snippet completed">
-            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 実施報告:</strong> ${escapeHtml(item.report_text)}
+            <strong style="color: #0ca678;"><i class="fa-regular fa-comment-dots"></i> 実施報告:</strong> ${escapeAndLinkify(item.report_text, true)}
             ${item.completed_by ? `<span style="color: #64748b; margin-left: 6px; font-weight: normal;">(確認者: ${escapeHtml(item.completed_by)})</span>` : ''}
           </div>
         ` : '';
@@ -10544,7 +10573,7 @@ window.CelebrationEffect = (function() {
           </div>
 
           <div class="vd-ap-text completed">
-            ${escapeHtml(item.action_text)}
+            ${escapeAndLinkify(item.action_text, true)}
           </div>
           ${reportBox}
 
@@ -11171,7 +11200,7 @@ window.CelebrationEffect = (function() {
     document.getElementById('report-ap-visitor-id').value = plan.visitor_id || optVisitorId || '';
     document.getElementById('report-ap-visitor-name').innerText = plan.visitor_name ? `${plan.visitor_name} 様` : (plan.visitor_id ? `ビジター No.${plan.visitor_id}` : '対象ビジター');
     document.getElementById('report-ap-assignee').innerText = plan.assignee_name || '担当者未設定';
-    document.getElementById('report-ap-action-text').innerText = plan.action_text || '-';
+    document.getElementById('report-ap-action-text').innerHTML = plan.action_text ? escapeAndLinkify(plan.action_text, true) : '-';
 
     const dueBadge = document.getElementById('report-ap-due-badge');
     if (dueBadge) {
