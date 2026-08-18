@@ -765,7 +765,50 @@
     }
   }
 
-  function setApDateQuick(daysOffset) {
+  function updateApDateBadge() {
+    const input = document.getElementById('vd-ap-due-date');
+    const badge = document.getElementById('vd-ap-date-day-badge');
+    if (!input || !badge) return;
+
+    const val = input.value;
+    if (!val) {
+      badge.textContent = '';
+      badge.style.display = 'none';
+      return;
+    }
+
+    const d = new Date(val + 'T00:00:00');
+    if (isNaN(d.getTime())) {
+      badge.textContent = '';
+      badge.style.display = 'none';
+      return;
+    }
+
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    const dayStr = days[d.getDay()];
+    const m = d.getMonth() + 1;
+    const dateNum = d.getDate();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(d);
+    target.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+
+    let relativeStr = '';
+    if (diffDays === 0) relativeStr = ' (本日)';
+    else if (diffDays === 1) relativeStr = ' (明日)';
+    else if (diffDays === 2) relativeStr = ' (明後日)';
+    else if (diffDays > 0) relativeStr = ` (${diffDays}日後)`;
+    else if (diffDays === -1) relativeStr = ' (期限切れ)';
+    else relativeStr = ` (${Math.abs(diffDays)}日前/期限切れ)`;
+
+    badge.textContent = `${m}/${dateNum}(${dayStr})${relativeStr}`;
+    badge.className = `vd-date-day-badge ${diffDays < 0 ? 'is-overdue' : (diffDays <= 1 ? 'is-urgent' : '')}`;
+    badge.style.display = 'inline-flex';
+  }
+
+  function setApDateQuick(daysOffset, clickedBtn) {
     const d = new Date();
     d.setDate(d.getDate() + daysOffset);
     const yyyy = d.getFullYear();
@@ -774,6 +817,15 @@
     const input = document.getElementById('vd-ap-due-date');
     if (input) {
       input.value = `${yyyy}-${mm}-${dd}`;
+      updateApDateBadge();
+    }
+
+    const container = document.getElementById('vd-ap-date-quick-chips');
+    if (container) {
+      container.querySelectorAll('.vd-date-pill-btn').forEach(btn => btn.classList.remove('is-active'));
+    }
+    if (clickedBtn && clickedBtn.classList) {
+      clickedBtn.classList.add('is-active');
     }
   }
 
@@ -1071,6 +1123,7 @@
 
     document.getElementById('vd-ap-edit-id').value = item.id;
     document.getElementById('vd-ap-due-date').value = item.due_date || '';
+    updateApDateBadge();
     setApAssigneeQuick(item.assignee_name || '');
     document.getElementById('vd-ap-action-text').value = item.action_text || '';
 
@@ -1095,6 +1148,7 @@
     if (cancelBtn) cancelBtn.style.display = 'inline-block';
     const modal = document.getElementById('vd-ap-form-modal');
     if (modal) modal.classList.remove('is-open');
+    updateApDateBadge();
   }
 
   function deleteActionPlan(id) {
