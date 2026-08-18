@@ -2823,6 +2823,18 @@ tr:last-child td { border-bottom: none; }
     display: block;
     flex: 1;
     min-width: 0;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    position: sticky;
+    top: 80px;
+    padding-right: 4px;
+  }
+  .pf-detail-panel::-webkit-scrollbar {
+    width: 6px;
+  }
+  .pf-detail-panel::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
   }
 
   .pf-visitor-list {
