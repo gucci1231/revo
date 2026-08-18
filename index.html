@@ -6129,17 +6129,28 @@ window.CelebrationEffect = (function() {
         existing.eventDates.sort().reverse();
         existing.visitCount = existing.allIds.length;
 
-        const currentAtt = existing.isAttended || '不参加';
-        const newAtt = r.isAttended || '不参加';
-        if (newAtt === '参加' || currentAtt !== '参加') existing.isAttended = newAtt;
+        // 出欠（isAttended）は最新日程（最新の申込レコード）のステータスを優先
+        const isNewer = r.eventDate && (!existing.eventDate || r.eventDate >= existing.eventDate);
+        if (isNewer) {
+          existing.id = r.id;
+          existing.isAttended = r.isAttended || '未';
+          existing.eventDate = r.eventDate;
+          if (r.inviter) existing.inviter = r.inviter;
+          if (r.profession) existing.profession = r.profession;
+          if (r.company) existing.company = r.company;
+          if (r.remarks) existing.remarks = r.remarks;
+        } else if (!existing.isAttended || existing.isAttended === '未') {
+          // 既存が未設定の場合は補完
+          existing.isAttended = r.isAttended || '未';
+        }
 
         const current11 = existing.is1to1 || '未';
         const new11 = r.is1to1 || '未';
-        if (new11 === '済' || current11 !== '済') existing.is1to1 = new11;
+        if (new11 === '済' || current11 === '済') existing.is1to1 = '済';
 
         const currentJoined = existing.isJoined || '未';
         const newJoined = r.isJoined || '未';
-        if (newJoined === '入会済' || currentJoined !== '入会済') existing.isJoined = newJoined;
+        if (newJoined === '入会済' || currentJoined === '入会済') existing.isJoined = '入会済';
 
         const curFeel = parseFeelAbc(existing.feelAbc);
         const newFeel = parseFeelAbc(r.feelAbc);
@@ -6152,13 +6163,6 @@ window.CelebrationEffect = (function() {
             existing[k] = r[k];
           }
         });
-
-        if (r.eventDate && r.eventDate > (existing.eventDate || '')) {
-          existing.eventDate = r.eventDate;
-          if (r.inviter) existing.inviter = r.inviter;
-          if (r.profession) existing.profession = r.profession;
-          if (r.company) existing.company = r.company;
-        }
       } else {
         const item = Object.assign({}, r);
         item.allIds = [item.id];

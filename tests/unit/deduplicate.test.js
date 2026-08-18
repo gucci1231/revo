@@ -52,7 +52,6 @@ function deduplicateVisitorListClient(list) {
       const tNew = new Date(r.eventDate || 0).getTime();
 
       const isJoinedBool = (val) => (val === '入会済' || val === '済' || val === '入会' || val === true);
-      const mergedAttended = (existing.isAttended === '参加' || r.isAttended === '参加') ? '参加' : (r.isAttended || existing.isAttended);
       const mergedJoined = (isJoinedBool(existing.isJoined) || isJoinedBool(r.isJoined)) ? '入会済' : (r.isJoined || existing.isJoined);
       const merged1to1 = (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1);
       const mergedHasHearing = existing.hasHearingSheet || r.hasHearingSheet;
@@ -73,7 +72,7 @@ function deduplicateVisitorListClient(list) {
       if (tNew >= tExisting) {
         Object.assign(existing, r, {
           historyCount: existing.historyCount,
-          isAttended: mergedAttended,
+          isAttended: r.isAttended || '未',
           isJoined: mergedJoined,
           is1to1: merged1to1,
           hasHearingSheet: mergedHasHearing,
@@ -92,7 +91,6 @@ function deduplicateVisitorListClient(list) {
           sheetUrl: mergedSheetUrl
         });
       } else {
-        existing.isAttended = mergedAttended;
         existing.isJoined = mergedJoined;
         existing.is1to1 = merged1to1;
         existing.hasHearingSheet = mergedHasHearing;
@@ -119,9 +117,9 @@ function deduplicateVisitorListClient(list) {
 describe('Visitor Deduplication & Name Variation Normalization', () => {
   it('deduplicates same name with full-width / half-width spaces', () => {
     const list = [
-      { id: '1', name: '山田　太郎', eventDate: '2026/04/01' },
-      { id: '2', name: '山田 太郎', eventDate: '2026/04/08' },
-      { id: '3', name: '山田太郎', eventDate: '2026/04/15' }
+      { id: '1', name: '田中 太郎', email: 'tanaka@example.com' },
+      { id: '2', name: '田中　太郎', email: 'tanaka@example.com' },
+      { id: '3', name: '田中太郎', email: 'tanaka@example.com' }
     ];
     const deduplicated = deduplicateVisitorListClient(list);
     assert.strictEqual(deduplicated.length, 1);
@@ -131,13 +129,14 @@ describe('Visitor Deduplication & Name Variation Normalization', () => {
 
   it('deduplicates Hiragana vs Katakana vs Half-width Katakana variations', () => {
     const list = [
-      { id: '1', name: 'ヤマダ タロウ', furigana: 'ヤマダ タロウ' },
-      { id: '2', name: 'やまだ たろう', furigana: 'やまだ たろう' },
-      { id: '3', name: 'ﾔﾏﾀﾞ ﾀﾛｳ', furigana: 'ﾔﾏﾀﾞ ﾀﾛｳ' }
+      { id: '1', name: '山田 花子', furigana: 'ヤマダ ハナコ', email: 'yamada@example.com' },
+      { id: '2', name: '山田 花子', furigana: 'やまだ はなこ', email: 'yamada@example.com' },
+      { id: '3', name: '山田 花子', furigana: 'ﾔﾏﾀﾞ ﾊﾅｺ', email: 'yamada@example.com' }
     ];
     const deduplicated = deduplicateVisitorListClient(list);
     assert.strictEqual(deduplicated.length, 1);
     assert.strictEqual(deduplicated[0].historyCount, 3);
+    assert.strictEqual(deduplicated[0].id, '3');
   });
 
   it('deduplicates names with middle dots or English case variations', () => {
@@ -151,14 +150,14 @@ describe('Visitor Deduplication & Name Variation Normalization', () => {
     assert.strictEqual(deduplicated[0].historyCount, 3);
   });
 
-  it('merges status flags across multiple records for the same visitor', () => {
+  it('sets isAttended to latest record status (allows new 2nd visit to start as 不参加/未) while preserving isJoined and is1to1', () => {
     const list = [
-      { id: '1', name: '佐藤 花子', isAttended: '参加', isJoined: '未', is1to1: '未' },
-      { id: '2', name: '佐藤花子', isAttended: '不参加', isJoined: '済', is1to1: '済' }
+      { id: '1', name: '佐藤 花子', eventDate: '2026/04/01', isAttended: '参加', isJoined: '未', is1to1: '未' },
+      { id: '2', name: '佐藤花子', eventDate: '2026/05/01', isAttended: '不参加', isJoined: '済', is1to1: '済' }
     ];
     const deduplicated = deduplicateVisitorListClient(list);
     assert.strictEqual(deduplicated.length, 1);
-    assert.strictEqual(deduplicated[0].isAttended, '参加');
+    assert.strictEqual(deduplicated[0].isAttended, '不参加');
     assert.strictEqual(deduplicated[0].isJoined, '入会済');
     assert.strictEqual(deduplicated[0].is1to1, '済');
   });
