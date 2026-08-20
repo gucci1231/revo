@@ -87,6 +87,8 @@
     const achievementRateEl = document.getElementById('val-achievement-rate');
     const avgVisitorsEl = document.getElementById('val-avg-visitors');
     const hearingRateEl = document.getElementById('val-hearing-rate');
+    const targetVisitorsWeeklyEl = document.getElementById('val-target-visitors-weekly');
+    const targetHearingRateEl = document.getElementById('val-target-hearing-rate');
     const pendingApValEl = document.getElementById('val-pending-action-plans');
     const overdueApValEl = document.getElementById('val-overdue-action-plans');
     const hotCountValEl = document.getElementById('val-hot-count');
@@ -96,6 +98,14 @@
     if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%達成`;
     if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
+    if (targetVisitorsWeeklyEl) {
+      const tw = m.targetVisitorsWeekly || (m.currentMonthGoal ? m.currentMonthGoal.target_visitors_weekly : 4);
+      targetVisitorsWeeklyEl.innerText = `${tw}`;
+    }
+    if (targetHearingRateEl) {
+      const th = m.targetHearingRate || (m.currentMonthGoal ? `${m.currentMonthGoal.target_hearing_rate}%` : '100%');
+      targetHearingRateEl.innerText = `${th}`;
+    }
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -158,12 +168,12 @@
   let currentDashboardOneMonthList = [];
   let currentDashboardOneMonthFilter = 'pending';
 
-  function filterDashboardOneMonth(mode) {
-    currentDashboardOneMonthFilter = mode;
-    ['pending', 'all', 'completed'].forEach(m => {
-      const btn = document.getElementById(`dash-onemonth-filter-${m}`);
+  function filterDashboardOneMonth(filterType) {
+    currentDashboardOneMonthFilter = filterType;
+    ['pending', 'all', 'completed'].forEach(t => {
+      const btn = document.getElementById(`dash-onemonth-filter-${t}`);
       if (btn) {
-        if (m === mode) {
+        if (t === filterType) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
@@ -232,7 +242,6 @@
       const isOverdue = !isCompleted && p.due_date && p.due_date < todayStr;
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
-      // 期日 ＆ 進行中・超過・完了ステータス (丸だけに色をつける)
       let scheduleBadgeHtml = '';
       if (isCompleted) {
         scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
@@ -248,8 +257,8 @@
         <div class="flex flex-col items-start justify-center">
           ${scheduleBadgeHtml}
           <div class="flex items-center gap-1 text-[11px] text-slate-500 font-semibold mt-0.5 pl-0.5">
-            <i class="fa-regular fa-user text-[10px] text-slate-400"></i>
-            <span class="truncate max-w-[120px]">${escapeHtml(p.assignee_name || '担当未定')}</span>
+            <i class="fa-solid fa-user text-[10px] text-slate-400"></i>
+            <span>${escapeHtml(p.assignee_name || '担当未設定')}</span>
           </div>
         </div>
       `;
@@ -576,6 +585,8 @@
       if (isMonthly) {
         const targetJoined = row.targetJoined !== undefined ? row.targetJoined : (row.goal ? row.goal.target_joined : 2);
         const targetJoinRate = row.targetJoinRate || (row.goal ? `${row.goal.target_join_rate}%` : '25.0%');
+        const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : (row.goal ? row.goal.target_visitors_weekly : 4);
+        const avgWeekly = row.avgVisitorsWeekly || (row.meetingCount ? (applyVal / Math.max(1, row.meetingCount)).toFixed(1) : applyVal);
         const isGoalAchieved = joinedVal >= targetJoined;
         const joinedColor = isGoalAchieved && joinedVal > 0 ? '#2b8a3e' : '#1e293b';
 
@@ -586,7 +597,10 @@
 
         tr.innerHTML = `
           <td style="font-weight: 700;">${typeBadge}${labelVal}</td>
-          <td style="font-weight: 800; color: #364fc7; text-align: center;">${applyVal}名</td>
+          <td style="text-align: center;">
+            <span style="font-weight: 800; color: #364fc7;">${applyVal}名</span>
+            <span style="font-size: 11px; color: #64748b; display: block;">(週平均 ${avgWeekly} / 目標 ${targetVisitorsWeekly}名)</span>
+          </td>
           <td style="text-align: center;">${attVal}名</td>
           <td style="text-align: center;">${feelRatesHtml}</td>
           <td style="text-align: center;">
@@ -600,9 +614,17 @@
           </td>
         `;
       } else {
+        const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : 4;
+        const isWeeklyGoalAchieved = applyVal >= targetVisitorsWeekly;
+        const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#2b8a3e' : '#364fc7';
+
         tr.innerHTML = `
           <td style="font-weight: 700;">${labelVal}</td>
-          <td style="font-weight: 800; color: #364fc7; text-align: center;">${applyVal}名</td>
+          <td style="text-align: center;">
+            <span style="font-weight: 800; color: ${applyColor};">${applyVal}</span>
+            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/ ${targetVisitorsWeekly}名</span>
+            ${isWeeklyGoalAchieved && applyVal > 0 ? '<span class="ml-1 text-[10px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">達成</span>' : ''}
+          </td>
           <td style="text-align: center;">${attVal}名</td>
           <td style="text-align: center;">${feelRatesHtml}</td>
           <td style="font-weight: 800; color: #2b8a3e; text-align: center;">${joinedVal}名</td>

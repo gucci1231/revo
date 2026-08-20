@@ -154,6 +154,13 @@ class DashboardService {
             }
         }
 
+        // 月ごとの定例会開催数
+        $monthlyMeetingCounts = [];
+        foreach (array_keys($weeklyMap) as $wKey) {
+            $mK = substr($wKey, 0, 7);
+            $monthlyMeetingCounts[$mK] = ($monthlyMeetingCounts[$mK] ?? 0) + 1;
+        }
+
         krsort($weeklyMap);
         $weeklyStats = [];
         foreach ($weeklyMap as $wKey => $wData) {
@@ -163,6 +170,9 @@ class DashboardService {
                 'B' => $total > 0 ? number_format(($wData['feelCounts']['B'] / $total) * 100, 1) . '%' : '0.0%',
                 'C' => $total > 0 ? number_format(($wData['feelCounts']['C'] / $total) * 100, 1) . '%' : '0.0%',
             ];
+            $monthKey = substr($wKey, 0, 7);
+            $wGoal = $this->settingRepo->resolveGoalsForMonth($monthKey);
+            $wData['targetVisitorsWeekly'] = $wGoal['target_visitors_weekly'] ?? 4;
             $weeklyStats[] = $wData;
         }
 
@@ -178,9 +188,14 @@ class DashboardService {
                 'C' => $total > 0 ? number_format(($mData['feelCounts']['C'] / $total) * 100, 1) . '%' : '0.0%',
             ];
             $mResolvedGoal = $this->settingRepo->resolveGoalsForMonth($mKey);
+            $meetingCountMonth = $monthlyMeetingCounts[$mKey] ?? 1;
+            $avgVisitorsWeekly = number_format($total / max(1, $meetingCountMonth), 1);
+
             $mData['goal'] = $mResolvedGoal;
             $mData['targetJoined'] = $mResolvedGoal['target_joined'] ?? 2;
             $mData['targetVisitorsWeekly'] = $mResolvedGoal['target_visitors_weekly'] ?? 4;
+            $mData['avgVisitorsWeekly'] = $avgVisitorsWeekly;
+            $mData['meetingCount'] = $meetingCountMonth;
             $mData['targetJoinRate'] = ($mResolvedGoal['target_join_rate'] ?? 25.0) . '%';
             $mData['targetHearingRate'] = ($mResolvedGoal['target_hearing_rate'] ?? 100.0) . '%';
             $mData['isCustomGoal'] = !empty($mResolvedGoal['is_custom']);
@@ -236,6 +251,9 @@ class DashboardService {
                 'applyCount' => $totalApplyCount,
                 'joinedCount' => $totalJoinedCount,
                 'targetJoinGoal' => $targetJoinGoal,
+                'targetVisitorsWeekly' => $currentMonthGoal['target_visitors_weekly'] ?? 4,
+                'targetHearingRate' => ($currentMonthGoal['target_hearing_rate'] ?? 100.0) . '%',
+                'targetJoinRate' => ($currentMonthGoal['target_join_rate'] ?? 25.0) . '%',
                 'achievementRate' => (string)$achievementRate,
                 'joinRate' => (string)$joinRate,
                 'nextThuCount' => count($nextMeetingVisitors),

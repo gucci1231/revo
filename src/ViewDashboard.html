@@ -34,8 +34,8 @@
             <span class="dash-hero-title">申込ビジター</span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回</span>
-            <span class="dash-hero-sub-line">提出率 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回 <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-visitors-weekly" class="text-blue-600 font-bold">-</strong>名)</span></span>
+            <span class="dash-hero-sub-line">提出率 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong> <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-hearing-rate" class="text-slate-600 font-bold">100%</strong>)</span></span>
           </div>
         </div>
         <div class="dash-hero-right">
@@ -299,16 +299,16 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- 週別 -->
       <section class="section-card overflow-hidden">
-        <div class="section-header py-3 px-4">
+        <div class="section-header py-3 px-4 flex justify-between items-center">
           <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-blue-500 mr-1.5"></i> 定例会別（週別）</span>
-          <span class="text-[11px] text-slate-400">直近順</span>
+          <span class="text-[11px] text-slate-400">直近順 (週別目標対比)</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
           <table>
             <thead>
               <tr>
                 <th>日付</th>
-                <th class="text-center">申込</th>
+                <th class="text-center">申込 / 目標</th>
                 <th class="text-center">参加</th>
                 <th class="text-center">温度感別</th>
                 <th class="text-center">入会</th>
@@ -330,7 +330,7 @@
             <thead>
               <tr>
                 <th>年月</th>
-                <th class="text-center">申込</th>
+                <th class="text-center">申込 (週平均 / 目標)</th>
                 <th class="text-center">参加</th>
                 <th class="text-center">温度感別</th>
                 <th class="text-center">入会 / 目標</th>

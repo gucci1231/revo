@@ -771,7 +771,13 @@ function handleApiRequest(req, res, urlObj) {
           B: total > 0 ? ((w.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
           C: total > 0 ? ((w.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
         };
-        return { ...w, feelRates };
+        const monthKey = k.substring(0, 7);
+        const wGoal = resolveGoalsForMonth(monthKey);
+        return {
+          ...w,
+          feelRates,
+          targetVisitorsWeekly: wGoal.target_visitors_weekly || 4
+        };
       });
 
       const monthlyKeys = Object.keys(monthlyMap).sort().reverse();
@@ -785,6 +791,8 @@ function handleApiRequest(req, res, urlObj) {
           C: total > 0 ? ((m.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
         };
         const g = resolveGoalsForMonth(k);
+        const monthWeeks = weeklyKeys.filter(wk => wk.startsWith(k)).length;
+        const avgPerWeek = (total / Math.max(1, monthWeeks)).toFixed(1);
         return {
           ...m,
           joinRate: rate + "%",
@@ -792,6 +800,8 @@ function handleApiRequest(req, res, urlObj) {
           goal: g,
           targetJoined: g.target_joined || 2,
           targetVisitorsWeekly: g.target_visitors_weekly || 4,
+          avgVisitorsWeekly: avgPerWeek,
+          meetingCount: monthWeeks,
           targetJoinRate: (g.target_join_rate || 25.0) + "%",
           targetHearingRate: (g.target_hearing_rate || 100.0) + "%",
           isCustomGoal: !!g.is_custom,
