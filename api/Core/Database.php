@@ -312,11 +312,12 @@ class Database {
 
     public function insert(string $table, array $data): int {
         $cols = array_keys($data);
+        $escapedCols = array_map(fn($c) => "`{$c}`", $cols);
         $placeholders = array_fill(0, count($cols), '?');
         $sql = sprintf(
-            "INSERT INTO %s (%s) VALUES (%s)",
+            "INSERT INTO `%s` (%s) VALUES (%s)",
             $table,
-            implode(', ', $cols),
+            implode(', ', $escapedCols),
             implode(', ', $placeholders)
         );
         $stmt = $this->pdo->prepare($sql);
@@ -325,9 +326,9 @@ class Database {
     }
 
     public function update(string $table, array $data, string $where, array $whereParams = []): int {
-        $sets = array_map(fn($col) => "{$col} = ?", array_keys($data));
+        $sets = array_map(fn($col) => "`{$col}` = ?", array_keys($data));
         $sql = sprintf(
-            "UPDATE %s SET %s WHERE %s",
+            "UPDATE `%s` SET %s WHERE %s",
             $table,
             implode(', ', $sets),
             $where
@@ -340,28 +341,30 @@ class Database {
 
     public function upsert(string $table, array $data, array $uniqueKeys): bool {
         $cols = array_keys($data);
+        $escapedCols = array_map(fn($c) => "`{$c}`", $cols);
+        $escapedUniqueKeys = array_map(fn($k) => "`{$k}`", $uniqueKeys);
         $placeholders = array_fill(0, count($cols), '?');
 
         $updateCols = array_diff($cols, $uniqueKeys);
         if (empty($updateCols)) {
             $sql = sprintf(
-                "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(%s) DO NOTHING",
+                "INSERT INTO `%s` (%s) VALUES (%s) ON CONFLICT(%s) DO NOTHING",
                 $table,
-                implode(', ', $cols),
+                implode(', ', $escapedCols),
                 implode(', ', $placeholders),
-                implode(', ', $uniqueKeys)
+                implode(', ', $escapedUniqueKeys)
             );
         } else {
             $setClauses = [];
             foreach ($updateCols as $uCol) {
-                $setClauses[] = sprintf("%s = excluded.%s", $uCol, $uCol);
+                $setClauses[] = sprintf("`%s` = excluded.`%s`", $uCol, $uCol);
             }
             $sql = sprintf(
-                "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(%s) DO UPDATE SET %s",
+                "INSERT INTO `%s` (%s) VALUES (%s) ON CONFLICT(%s) DO UPDATE SET %s",
                 $table,
-                implode(', ', $cols),
+                implode(', ', $escapedCols),
                 implode(', ', $placeholders),
-                implode(', ', $uniqueKeys),
+                implode(', ', $escapedUniqueKeys),
                 implode(', ', $setClauses)
             );
         }
