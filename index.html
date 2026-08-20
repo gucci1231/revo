@@ -10943,52 +10943,10 @@ window.CelebrationEffect = (function() {
                   <span>フォロー・アクションプラン</span>
                   <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">${pendingAps.length}件進行中</span>
                 </h4>
-                <button type="button" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1" onclick="togglePfAddActionForm()">
+                <button type="button" class="btn-action-primary text-xs flex items-center gap-1.5 py-1 px-3 rounded-lg font-bold shadow-sm" onclick="openActionPlanModal('${escapeHtml(vid)}')">
                   <i class="fa-solid fa-plus-circle"></i>
                   <span>アクションを追加</span>
                 </button>
-              </div>
-
-              <!-- Quick Add Action Plan Form (Collapsible) -->
-              <div id="pf-quick-ap-form" class="bg-blue-50/40 p-3.5 rounded-xl border border-blue-200/80 space-y-2.5" style="display: none;">
-                <div class="text-[11px] font-black text-blue-900 flex items-center gap-1">
-                  <i class="fa-solid fa-plus text-blue-600"></i> 新規アクションプランを登録
-                </div>
-
-                <!-- アクション種別ピル選択 -->
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 block mb-1">アクション種別（タイプ）</label>
-                  <div class="ap-type-pill-group" id="pf-ap-type-group">
-                    <button type="button" class="ap-type-pill-btn active text-[11px] py-1 px-2.5" data-type="1to1" onclick="setPfApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
-                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="リファーラル" onclick="setPfApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
-                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="定例会案内" onclick="setPfApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
-                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="入会案内" onclick="setPfApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
-                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="電話フォロー" onclick="setPfApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
-                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="その他" onclick="setPfApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
-                  </div>
-                  <input type="hidden" id="pf-ap-type-val" value="1to1">
-                </div>
-
-                <!-- アクション内容 -->
-                <div>
-                  <label class="text-[10px] font-bold text-slate-500 block mb-1">アクション内容（詳細）</label>
-                  <input type="text" id="pf-ap-text-input" class="w-full px-3 py-1.5 text-xs bg-white rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 font-medium" placeholder="例: zoom日程調整、案件打診...">
-                </div>
-
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[10px] font-bold text-slate-500 block mb-0.5">担当者</label>
-                    <input type="text" id="pf-ap-assignee-input" class="w-full px-2.5 py-1.5 text-xs bg-white rounded-lg border border-slate-300 font-medium" placeholder="担当メンバー名" value="${escapeHtml(h.orientUser || v.inviter || '')}">
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-slate-500 block mb-0.5">期日</label>
-                    <input type="date" id="pf-ap-date-input" class="w-full px-2.5 py-1.5 text-xs bg-white rounded-lg border border-slate-300 font-medium">
-                  </div>
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-1">
-                  <button type="button" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100" onclick="togglePfAddActionForm()">キャンセル</button>
-                  <button type="button" class="px-4 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-sm" onclick="savePfNewActionPlan('${vid}')">保存する</button>
-                </div>
               </div>
 
               <!-- Action Plans List Container -->
@@ -13635,9 +13593,19 @@ window.CelebrationEffect = (function() {
     }
   }
 
-  function openActionPlanModal() {
+  function openActionPlanModal(optVisitorId) {
     const modal = document.getElementById('vd-ap-form-modal');
     if (!modal) return;
+
+    if (optVisitorId) {
+      currentVdVisitorId = String(optVisitorId);
+      const v = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+        ? cachedAllVisitors.find(item => String(item.id) === String(optVisitorId))
+        : (currentVisitorDetail && String(currentVisitorDetail.id) === String(optVisitorId) ? currentVisitorDetail : null);
+      if (v) {
+        initActionPlanForm(v, v);
+      }
+    }
 
     if (modal.parentElement !== document.body) {
       document.body.appendChild(modal);
@@ -13705,6 +13673,9 @@ window.CelebrationEffect = (function() {
         .then(res => {
           showToast('✅ アクションプランを更新しました！');
           if (res.list) renderActionPlansList(res.list);
+          if (typeof fetchPriorityFollowData === 'function' && document.getElementById('view-priority-follow') && !document.getElementById('view-priority-follow').classList.contains('hidden')) {
+            fetchPriorityFollowData(true);
+          }
           closeActionPlanModal();
         })
         .catch(handleError);
@@ -13714,6 +13685,9 @@ window.CelebrationEffect = (function() {
         .then(res => {
           showToast('✅ アクションプランを登録しました！');
           if (res.list) renderActionPlansList(res.list);
+          if (typeof fetchPriorityFollowData === 'function' && document.getElementById('view-priority-follow') && !document.getElementById('view-priority-follow').classList.contains('hidden')) {
+            fetchPriorityFollowData(true);
+          }
           document.getElementById('vd-ap-action-text').value = '';
           setApTypeSelected('1to1');
           setApDateQuick(3);

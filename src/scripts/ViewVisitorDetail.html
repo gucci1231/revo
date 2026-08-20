@@ -1059,9 +1059,19 @@
     }
   }
 
-  function openActionPlanModal() {
+  function openActionPlanModal(optVisitorId) {
     const modal = document.getElementById('vd-ap-form-modal');
     if (!modal) return;
+
+    if (optVisitorId) {
+      currentVdVisitorId = String(optVisitorId);
+      const v = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+        ? cachedAllVisitors.find(item => String(item.id) === String(optVisitorId))
+        : (currentVisitorDetail && String(currentVisitorDetail.id) === String(optVisitorId) ? currentVisitorDetail : null);
+      if (v) {
+        initActionPlanForm(v, v);
+      }
+    }
 
     if (modal.parentElement !== document.body) {
       document.body.appendChild(modal);
@@ -1129,6 +1139,9 @@
         .then(res => {
           showToast('✅ アクションプランを更新しました！');
           if (res.list) renderActionPlansList(res.list);
+          if (typeof fetchPriorityFollowData === 'function' && document.getElementById('view-priority-follow') && !document.getElementById('view-priority-follow').classList.contains('hidden')) {
+            fetchPriorityFollowData(true);
+          }
           closeActionPlanModal();
         })
         .catch(handleError);
@@ -1138,6 +1151,9 @@
         .then(res => {
           showToast('✅ アクションプランを登録しました！');
           if (res.list) renderActionPlansList(res.list);
+          if (typeof fetchPriorityFollowData === 'function' && document.getElementById('view-priority-follow') && !document.getElementById('view-priority-follow').classList.contains('hidden')) {
+            fetchPriorityFollowData(true);
+          }
           document.getElementById('vd-ap-action-text').value = '';
           setApTypeSelected('1to1');
           setApDateQuick(3);
