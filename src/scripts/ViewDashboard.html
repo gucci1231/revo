@@ -139,19 +139,25 @@
     if (overdueApValEl) overdueApValEl.innerText = overdueCount;
     if (hotCountValEl) hotCountValEl.innerText = hotList.length;
 
-    // Action Status Disc Micro-interaction
-    const discActionStatus = document.getElementById('disc-action-status');
-    const iconActionStatus = document.getElementById('icon-action-status');
-    if (discActionStatus && iconActionStatus) {
+    // Action Status Minimal Ring & Text
+    const actionStatusText = document.getElementById('val-action-status-text');
+    const ringActionStatus = document.getElementById('ring-action-status');
+    if (actionStatusText && ringActionStatus) {
       if (overdueCount > 0) {
-        discActionStatus.className = 'kpi-action-icon-disc overdue';
-        iconActionStatus.className = 'fa-solid fa-triangle-exclamation';
+        actionStatusText.innerText = `!${overdueCount}`;
+        actionStatusText.style.color = '#ef4444';
+        ringActionStatus.style.stroke = '#ef4444';
+        ringActionStatus.style.strokeDashoffset = '30';
       } else if (pendingCount > 0) {
-        discActionStatus.className = 'kpi-action-icon-disc pending';
-        iconActionStatus.className = 'fa-solid fa-bolt';
+        actionStatusText.innerText = `${pendingCount}`;
+        actionStatusText.style.color = '#f59e0b';
+        ringActionStatus.style.stroke = 'url(#grad-action)';
+        ringActionStatus.style.strokeDashoffset = '60';
       } else {
-        discActionStatus.className = 'kpi-action-icon-disc clean';
-        iconActionStatus.className = 'fa-solid fa-check';
+        actionStatusText.innerText = 'OK';
+        actionStatusText.style.color = '#10b981';
+        ringActionStatus.style.stroke = '#10b981';
+        ringActionStatus.style.strokeDashoffset = '0';
       }
     }
 
