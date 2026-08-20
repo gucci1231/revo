@@ -966,6 +966,16 @@ tr:last-child td { border-bottom: none; }
   transition: all 0.15s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
+select.form-input, select.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 11px 11px;
+  padding-right: 32px;
+  cursor: pointer;
+}
 .form-input:focus, .form-select:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -6266,41 +6276,44 @@ tr:last-child td { border-bottom: none; }
                     <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
                       <input type="hidden" id="vd-ap-edit-id" value="">
 
-                      <div class="vd-form-grid">
-                        <!-- 期日 (カレンダー登録UI) -->
-                        <div class="form-group mb-0">
-                          <div class="flex items-center justify-between flex-wrap gap-1 mb-1.5">
-                            <label class="form-label text-xs font-bold text-slate-600 mb-0 flex items-center gap-1.5">
-                              <i class="fa-regular fa-calendar text-blue-600"></i> 期日
-                            </label>
-                            <span id="vd-ap-date-day-badge" class="vd-date-day-badge"></span>
+                      <!-- セクション1: 期日 ＆ 担当 -->
+                      <div class="vd-form-section mb-5">
+                        <div class="vd-form-grid gap-4">
+                          <!-- 期日 -->
+                          <div class="form-group mb-0">
+                            <div class="flex items-center justify-between flex-wrap gap-1 mb-1.5">
+                              <label class="form-label text-xs font-bold text-slate-600 mb-0 flex items-center gap-1.5">
+                                <i class="fa-regular fa-calendar text-blue-600"></i> 期日
+                              </label>
+                              <span id="vd-ap-date-day-badge" class="vd-date-day-badge"></span>
+                            </div>
+                            <div class="vd-date-input-wrap">
+                              <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight vd-ap-date-input" onchange="updateApDateBadge()" required>
+                            </div>
+                            <div class="vd-quick-chips mt-2" id="vd-ap-date-quick-chips">
+                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(0, this)">今日</button>
+                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(1, this)">明日</button>
+                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(3, this)">3日後</button>
+                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(7, this)">1週間後</button>
+                            </div>
                           </div>
-                          <div class="vd-date-input-wrap">
-                            <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight vd-ap-date-input" onchange="updateApDateBadge()" required>
-                          </div>
-                          <div class="vd-quick-chips mt-2" id="vd-ap-date-quick-chips">
-                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(0, this)"><i class="fa-solid fa-bolt text-amber-500"></i> 今日</button>
-                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(1, this)"><i class="fa-solid fa-sun text-orange-500"></i> 明日</button>
-                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(3, this)"><i class="fa-solid fa-bullseye text-blue-500"></i> 3日後</button>
-                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(7, this)"><i class="fa-regular fa-calendar-check text-emerald-500"></i> 1週間後</button>
-                          </div>
-                        </div>
 
-                        <!-- 担当者 -->
-                        <div class="form-group mb-0">
-                          <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                            <i class="fa-regular fa-user text-indigo-600"></i> 担当メンバー
-                          </label>
-                          <select id="vd-ap-assignee-select" class="form-input form-input-highlight" required>
-                            <option value="">-- 選択してください --</option>
-                          </select>
-                          <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2"></div>
+                          <!-- 担当メンバー -->
+                          <div class="form-group mb-0">
+                            <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                              <i class="fa-regular fa-user text-indigo-600"></i> 担当メンバー
+                            </label>
+                            <select id="vd-ap-assignee-select" class="form-input form-select form-input-highlight" required>
+                              <option value="">-- 担当メンバーを選択 --</option>
+                            </select>
+                            <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2 flex flex-wrap gap-1.5"></div>
+                          </div>
                         </div>
                       </div>
 
-                      <!-- アクション種別（タイプ） -->
-                      <div class="form-group mt-3.5 mb-0">
-                        <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                      <!-- セクション2: アクション種別（タイプ） -->
+                      <div class="vd-form-section mb-5">
+                        <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
                           <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
                         </label>
                         <div class="ap-type-pill-group" id="vd-ap-type-group">
@@ -6314,15 +6327,15 @@ tr:last-child td { border-bottom: none; }
                         <input type="hidden" id="vd-ap-type-val" value="1to1">
                       </div>
 
-                      <!-- アクション内容（詳細） -->
-                      <div class="form-group mt-3.5 mb-0">
-                        <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                      <!-- セクション3: アクション内容（詳細） -->
+                      <div class="vd-form-section mb-6">
+                        <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
                           <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
                         </label>
                         <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
                       </div>
 
-                      <div class="vd-form-actions mt-4">
+                      <div class="vd-form-actions mt-6">
                         <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" onclick="closeActionPlanModal()">閉じる</button>
                         <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
                           <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
@@ -13256,28 +13269,9 @@ window.CelebrationEffect = (function() {
 
   /* --- 🎯 Action Plan Specific Controls --- */
   function initActionPlanForm(visitor, hearing) {
-    // 担当者セレクトをチャプターメンバーで構築
-    const select = document.getElementById('vd-ap-assignee-select');
-    if (select) {
-      select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
-      if (cachedMemberCategories && cachedMemberCategories.length > 0) {
-        cachedMemberCategories.forEach(catObj => {
-          const grp = document.createElement('optgroup');
-          grp.label = catObj.category;
-          if (catObj.members && catObj.members.length > 0) {
-            catObj.members.forEach(m => {
-              const opt = document.createElement('option');
-              opt.value = m.name;
-              opt.textContent = `${m.name} (${m.profession || ''})`;
-              grp.appendChild(opt);
-            });
-          }
-          select.appendChild(grp);
-        });
-      }
-    }
+    populateAssigneeSelectOptions(cachedMemberCategories);
 
-    // 担当者クイックサジェストボタン
+    // 担当者クイックサジェストボタン (モノトーン・統一デザイン)
     const quickContainer = document.getElementById('vd-ap-quick-assignees');
     if (quickContainer) {
       quickContainer.innerHTML = '';
@@ -13287,9 +13281,8 @@ window.CelebrationEffect = (function() {
       if (inviter && inviter !== '-') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'seg-pill-btn';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #be185d; background: #fdf2f8; border: 1px solid #fbcfe8;';
-        btn.innerHTML = `<i class="fa-solid fa-user-tag text-[10px] mr-1"></i> 招待者: ${escapeHtml(inviter)}`;
+        btn.className = 'ap-type-pill-btn text-[11px] py-1 px-2.5';
+        btn.innerHTML = `<i class="fa-solid fa-user-plus text-[10px]"></i> 招待者: ${escapeHtml(inviter)}`;
         btn.onclick = () => setApAssigneeQuick(inviter);
         quickContainer.appendChild(btn);
       }
@@ -13297,9 +13290,8 @@ window.CelebrationEffect = (function() {
       if (orientUser && orientUser !== '-' && orientUser !== '未設定') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'seg-pill-btn';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;';
-        btn.innerHTML = `<i class="fa-solid fa-user-check text-[10px] mr-1"></i> オリエン: ${escapeHtml(orientUser)}`;
+        btn.className = 'ap-type-pill-btn text-[11px] py-1 px-2.5';
+        btn.innerHTML = `<i class="fa-solid fa-user-check text-[10px]"></i> 担当: ${escapeHtml(orientUser)}`;
         btn.onclick = () => setApAssigneeQuick(orientUser);
         quickContainer.appendChild(btn);
       }
@@ -13308,6 +13300,43 @@ window.CelebrationEffect = (function() {
     // デフォルト期日（3日後）
     setApDateQuick(3);
     cancelApEdit();
+  }
+
+  function populateAssigneeSelectOptions(cats) {
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
+
+    if (cats && cats.length > 0) {
+      cats.forEach(catObj => {
+        const grp = document.createElement('optgroup');
+        grp.label = catObj.category;
+        if (catObj.members && catObj.members.length > 0) {
+          catObj.members.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.profession || ''})`;
+            grp.appendChild(opt);
+          });
+        }
+        select.appendChild(grp);
+      });
+    } else {
+      // フォールバック: getMembersApi を呼んで取得
+      ApiService.call('getMembersApi')
+        .then(res => {
+          if (res && res.memberCategories) {
+            cachedMemberCategories = res.memberCategories;
+            populateAssigneeSelectOptions(cachedMemberCategories);
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (currentVal) {
+      select.value = currentVal;
+    }
   }
 
   function setApAssigneeQuick(name) {
@@ -13624,6 +13653,11 @@ window.CelebrationEffect = (function() {
       }
     } else {
       restoreApModalToSlot();
+    }
+
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (select && select.options.length <= 1) {
+      populateAssigneeSelectOptions(cachedMemberCategories);
     }
 
     modal.classList.add('is-open');

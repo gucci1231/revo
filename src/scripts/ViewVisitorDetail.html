@@ -698,28 +698,9 @@
 
   /* --- 🎯 Action Plan Specific Controls --- */
   function initActionPlanForm(visitor, hearing) {
-    // 担当者セレクトをチャプターメンバーで構築
-    const select = document.getElementById('vd-ap-assignee-select');
-    if (select) {
-      select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
-      if (cachedMemberCategories && cachedMemberCategories.length > 0) {
-        cachedMemberCategories.forEach(catObj => {
-          const grp = document.createElement('optgroup');
-          grp.label = catObj.category;
-          if (catObj.members && catObj.members.length > 0) {
-            catObj.members.forEach(m => {
-              const opt = document.createElement('option');
-              opt.value = m.name;
-              opt.textContent = `${m.name} (${m.profession || ''})`;
-              grp.appendChild(opt);
-            });
-          }
-          select.appendChild(grp);
-        });
-      }
-    }
+    populateAssigneeSelectOptions(cachedMemberCategories);
 
-    // 担当者クイックサジェストボタン
+    // 担当者クイックサジェストボタン (モノトーン・統一デザイン)
     const quickContainer = document.getElementById('vd-ap-quick-assignees');
     if (quickContainer) {
       quickContainer.innerHTML = '';
@@ -729,9 +710,8 @@
       if (inviter && inviter !== '-') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'seg-pill-btn';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #be185d; background: #fdf2f8; border: 1px solid #fbcfe8;';
-        btn.innerHTML = `<i class="fa-solid fa-user-tag text-[10px] mr-1"></i> 招待者: ${escapeHtml(inviter)}`;
+        btn.className = 'ap-type-pill-btn text-[11px] py-1 px-2.5';
+        btn.innerHTML = `<i class="fa-solid fa-user-plus text-[10px]"></i> 招待者: ${escapeHtml(inviter)}`;
         btn.onclick = () => setApAssigneeQuick(inviter);
         quickContainer.appendChild(btn);
       }
@@ -739,9 +719,8 @@
       if (orientUser && orientUser !== '-' && orientUser !== '未設定') {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'seg-pill-btn';
-        btn.style.cssText = 'padding: 3px 8px; font-size: 11px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe;';
-        btn.innerHTML = `<i class="fa-solid fa-user-check text-[10px] mr-1"></i> オリエン: ${escapeHtml(orientUser)}`;
+        btn.className = 'ap-type-pill-btn text-[11px] py-1 px-2.5';
+        btn.innerHTML = `<i class="fa-solid fa-user-check text-[10px]"></i> 担当: ${escapeHtml(orientUser)}`;
         btn.onclick = () => setApAssigneeQuick(orientUser);
         quickContainer.appendChild(btn);
       }
@@ -750,6 +729,43 @@
     // デフォルト期日（3日後）
     setApDateQuick(3);
     cancelApEdit();
+  }
+
+  function populateAssigneeSelectOptions(cats) {
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
+
+    if (cats && cats.length > 0) {
+      cats.forEach(catObj => {
+        const grp = document.createElement('optgroup');
+        grp.label = catObj.category;
+        if (catObj.members && catObj.members.length > 0) {
+          catObj.members.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.textContent = `${m.name} (${m.profession || ''})`;
+            grp.appendChild(opt);
+          });
+        }
+        select.appendChild(grp);
+      });
+    } else {
+      // フォールバック: getMembersApi を呼んで取得
+      ApiService.call('getMembersApi')
+        .then(res => {
+          if (res && res.memberCategories) {
+            cachedMemberCategories = res.memberCategories;
+            populateAssigneeSelectOptions(cachedMemberCategories);
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (currentVal) {
+      select.value = currentVal;
+    }
   }
 
   function setApAssigneeQuick(name) {
@@ -1066,6 +1082,11 @@
       }
     } else {
       restoreApModalToSlot();
+    }
+
+    const select = document.getElementById('vd-ap-assignee-select');
+    if (select && select.options.length <= 1) {
+      populateAssigneeSelectOptions(cachedMemberCategories);
     }
 
     modal.classList.add('is-open');
