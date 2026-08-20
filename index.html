@@ -9383,17 +9383,17 @@ window.CelebrationEffect = (function() {
 
     // Weekly Achievement Rate Calculation
     const weeklyRate = targetWeeklyGoal > 0 ? (nextThuCount / targetWeeklyGoal) * 100 : 0;
-    const isWeeklyGoalAchieved = weeklyRate >= 100;
+    const isWeeklyZero = nextThuCount === 0;
 
-    // Toggle Weekly Complete Badge & Card Glow State
-    const weeklyBadgeEl = document.getElementById('badge-weekly-complete');
+    // Toggle Weekly Card State (0 is bad / red, >0 is normal / blue)
     const weeklyCardEl = document.getElementById('card-kpi-weekly');
-    if (weeklyBadgeEl) weeklyBadgeEl.style.display = isWeeklyGoalAchieved ? 'inline-flex' : 'none';
     if (weeklyCardEl) {
-      if (isWeeklyGoalAchieved) {
-        weeklyCardEl.classList.add('goal-achieved');
+      if (isWeeklyZero) {
+        weeklyCardEl.classList.add('status-bad');
+        weeklyCardEl.classList.remove('status-normal');
       } else {
-        weeklyCardEl.classList.remove('goal-achieved');
+        weeklyCardEl.classList.remove('status-bad');
+        weeklyCardEl.classList.add('status-normal');
       }
     }
 
@@ -9429,8 +9429,8 @@ window.CelebrationEffect = (function() {
     }
 
     // 🎯 Update Circular Progress Rings with strict color semantics (Blue = Normal, Red = Bad)
-    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false);
-    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, false);
+    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false, isWeeklyZero ? 'red' : 'blue');
+    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, false, 'blue');
     
     // Hearing rate: Red if < 80%, Blue if >= 80%
     const hRate = parseFloat(m.hearingRate) || 0;
