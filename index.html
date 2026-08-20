@@ -5362,31 +5362,32 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- KPI 2: 入会目標 -->
-    <div class="dash-hero-card hero-join" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
+    <!-- KPI 2: 要対応アクション (入れ替え後: 2番目) -->
+    <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-top-row">
-        <span class="dash-hero-text-label">入会目標</span>
-        <span id="val-join-rate" style="display: none;">0%</span>
-        <span id="val-achievement-rate" style="display: none;">0%</span>
-        <span id="val-achievement-ring-num" style="display: none;">0</span>
+        <span class="dash-hero-text-label">要対応</span>
+        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
+        <span id="val-hot-count" style="display: none;">0</span>
+        <span id="val-overdue-action-plans" style="display: none;">0</span>
+        <span id="indicator-overdue-dot" style="display: none;"></span>
+        <span id="val-action-status-text" style="display: none;">0</span>
       </div>
       <div class="dash-hero-center-widget">
-        <div class="kpi-hero-ring-wrap" id="wrap-joined-ring">
+        <div class="kpi-hero-ring-wrap" id="wrap-action-status">
           <svg class="kpi-ring-svg" viewBox="0 0 48 48">
             <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-            <circle id="ring-joined-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            <circle id="ring-action-status" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
           </svg>
           <div class="kpi-ring-content">
             <div class="dash-hero-val-container">
-              <span class="dash-hero-main-number" id="val-joined-count">-</span>
-              <span class="dash-hero-main-goal">/<span id="val-target-goal">12</span></span>
+              <span class="dash-hero-main-number" id="val-pending-action-plans">-</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- KPI 3: 申込ビジター総数 -->
+    <!-- KPI 3: 申込ビジター総数 (3番目) -->
     <div class="dash-hero-card hero-visitors" id="card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
       <div class="dash-hero-top-row">
         <span class="dash-hero-text-label">申込ビジター</span>
@@ -5411,25 +5412,24 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
+    <!-- KPI 4: 入会目標 (入れ替え後: 4番目) -->
+    <div class="dash-hero-card hero-join" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
       <div class="dash-hero-top-row">
-        <span class="dash-hero-text-label">要対応</span>
-        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
-        <span id="val-hot-count" style="display: none;">0</span>
-        <span id="val-overdue-action-plans" style="display: none;">0</span>
-        <span id="indicator-overdue-dot" style="display: none;"></span>
-        <span id="val-action-status-text" style="display: none;">0</span>
+        <span class="dash-hero-text-label">入会目標</span>
+        <span id="val-join-rate" style="display: none;">0%</span>
+        <span id="val-achievement-rate" style="display: none;">0%</span>
+        <span id="val-achievement-ring-num" style="display: none;">0</span>
       </div>
       <div class="dash-hero-center-widget">
-        <div class="kpi-hero-ring-wrap" id="wrap-action-status">
+        <div class="kpi-hero-ring-wrap" id="wrap-joined-ring">
           <svg class="kpi-ring-svg" viewBox="0 0 48 48">
             <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-            <circle id="ring-action-status" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            <circle id="ring-joined-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
           </svg>
           <div class="kpi-ring-content">
             <div class="dash-hero-val-container">
-              <span class="dash-hero-main-number" id="val-pending-action-plans">-</span>
+              <span class="dash-hero-main-number" id="val-joined-count">-</span>
+              <span class="dash-hero-main-goal">/<span id="val-target-goal">12</span></span>
             </div>
           </div>
         </div>
