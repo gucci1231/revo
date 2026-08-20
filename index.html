@@ -2442,7 +2442,7 @@ tr:last-child td { border-bottom: none; }
   background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 20px;
-  padding: 22px 24px;
+  padding: 20px 22px;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.025), 0 1px 3px rgba(0, 0, 0, 0.015);
   cursor: pointer;
   user-select: none;
@@ -2463,17 +2463,18 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
-/* Left side: Icon, Title, Sub-meta */
+/* Left side: Icon, Title, Numbers, Sub-meta */
 .dash-hero-left {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
+  flex: 1;
 }
 .dash-hero-icon-title {
   display: flex;
@@ -2481,13 +2482,13 @@ tr:last-child td { border-bottom: none; }
   gap: 8px;
 }
 .dash-hero-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
   background: rgba(0, 113, 227, 0.08);
   color: #0071e3;
@@ -2503,6 +2504,19 @@ tr:last-child td { border-bottom: none; }
   color: #64748b;
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+/* Target Tag */
+.dash-hero-target-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 3px;
 }
 
 /* Status Dot for Actions */
@@ -2529,7 +2543,7 @@ tr:last-child td { border-bottom: none; }
   gap: 3px;
 }
 .dash-hero-sub-line {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #64748b;
   font-weight: 500;
   line-height: 1.35;
@@ -2557,7 +2571,7 @@ tr:last-child td { border-bottom: none; }
   background-color: #ef4444;
 }
 
-/* Right side: Giant Typographic Focus Numbers (1.5x scale) */
+/* Right side: Numbers or Visual Gauges */
 .dash-hero-right {
   display: flex;
   flex-direction: column;
@@ -2569,32 +2583,100 @@ tr:last-child td { border-bottom: none; }
 .dash-hero-val-container {
   display: flex;
   align-items: baseline;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 2px;
 }
+.dash-hero-right .dash-hero-val-container {
+  justify-content: flex-end;
+}
 .dash-hero-number {
-  font-size: 82px;
+  font-size: 60px;
   font-weight: 600;
   color: #2563eb;
-  line-height: 0.85;
+  line-height: 0.9;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   font-family: 'Barlow Semi Condensed', 'DIN Alternate', 'DIN Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
+.dash-hero-right .dash-hero-number {
+  font-size: 72px;
+}
 
 .dash-hero-goal-text {
-  font-size: 17px;
-  font-weight: 600;
-  color: #64748b;
-  margin-left: 5px;
-  letter-spacing: -0.02em;
-}
-.dash-hero-unit-text {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: #64748b;
   margin-left: 4px;
+  letter-spacing: -0.02em;
+}
+.dash-hero-unit-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 3px;
   letter-spacing: -0.01em;
+}
+
+/* 🍏 Circular Progress Ring Gauge */
+.kpi-ring-widget {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kpi-ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* 12 o'clock start */
+}
+.kpi-ring-track {
+  fill: none;
+  stroke: rgba(148, 163, 184, 0.15);
+  stroke-width: 4.5;
+}
+.kpi-ring-fill {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+}
+.kpi-ring-fill.teal {
+  stroke: #0d9488;
+}
+.kpi-ring-fill.amber {
+  stroke: #f59e0b;
+}
+.kpi-ring-fill.success {
+  stroke: #10b981;
+}
+
+.kpi-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  margin-top: 24px;
+}
+.kpi-ring-value {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+  font-family: 'Barlow Semi Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.02em;
+}
+.kpi-ring-unit {
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 1px;
 }
 
 @media (max-width: 640px) {
@@ -2604,65 +2686,80 @@ tr:last-child td { border-bottom: none; }
     margin-bottom: 20px;
   }
   .dash-hero-card {
-    padding: 16px 14px;
+    padding: 14px 12px;
     border-radius: 16px;
-    min-height: 125px;
+    min-height: 120px;
   }
   .dash-hero-split {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
     height: 100%;
-    gap: 10px;
+    gap: 6px;
   }
   
-  /* Top: Icon + Title & Lines */
+  /* Left */
   .dash-hero-left {
     width: 100%;
-    gap: 5px;
+    gap: 4px;
   }
   .dash-hero-icon-title {
-    gap: 6px;
+    gap: 5px;
     width: 100%;
   }
   .dash-hero-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-    border-radius: 7px;
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+    border-radius: 6px;
   }
   .dash-hero-title {
-    font-size: 11.5px;
+    font-size: 11px;
   }
   .dash-hero-meta-stack {
-    gap: 2px;
+    gap: 1px;
   }
   .dash-hero-sub-line {
-    font-size: 10px;
-    line-height: 1.25;
+    font-size: 9.5px;
+    line-height: 1.2;
   }
 
-  /* Bottom: 1.5x Giant Number */
+  /* Right */
   .dash-hero-right {
-    width: 100%;
-    align-items: flex-end;
-    margin-top: auto;
-  }
-  .dash-hero-val-container {
-    justify-content: flex-end;
+    flex-shrink: 0;
   }
   .dash-hero-number {
-    font-size: 48px;
+    font-size: 40px;
     line-height: 0.9;
   }
+  .dash-hero-right .dash-hero-number {
+    font-size: 44px;
+  }
   .dash-hero-goal-text {
-    font-size: 13px;
-    margin-left: 3px;
+    font-size: 11px;
+    margin-left: 2px;
   }
   .dash-hero-unit-text {
+    font-size: 11px;
+    margin-left: 2px;
+  }
+
+  .kpi-ring-widget {
+    width: 48px;
+    height: 48px;
+  }
+  .kpi-ring-track, .kpi-ring-fill {
+    stroke-width: 4;
+  }
+  .kpi-ring-center {
+    margin-top: 17px;
+  }
+  .kpi-ring-value {
     font-size: 13px;
-    margin-left: 3px;
+  }
+  .kpi-ring-unit {
+    font-size: 8px;
   }
 }
 
@@ -5384,15 +5481,26 @@ tr:last-child td { border-bottom: none; }
             <div class="dash-hero-icon"><i class="fa-solid fa-trophy"></i></div>
             <span class="dash-hero-title">入会数</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line"><strong id="val-achievement-rate" class="text-blue-600 font-bold">0%達成</strong></span>
-            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-joined-count">-</span>
             <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span id="val-achievement-rate" style="display: none;">0%</span>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- 達成率 ビジュアル プログレスリング -->
+          <div class="kpi-ring-widget" title="目標達成率">
+            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+              <circle id="ring-joined-achievement" class="kpi-ring-fill" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            </svg>
+            <div class="kpi-ring-center">
+              <span id="val-achievement-ring-num" class="kpi-ring-value">0</span>
+              <span class="kpi-ring-unit">%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -5406,15 +5514,27 @@ tr:last-child td { border-bottom: none; }
             <div class="dash-hero-icon"><i class="fa-solid fa-users"></i></div>
             <span class="dash-hero-title">申込ビジター</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回 <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-visitors-weekly" class="text-blue-600 font-bold">-</strong>名)</span></span>
-            <span class="dash-hero-sub-line">提出率 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong> <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-hearing-rate" class="text-slate-600 font-bold">100%</strong>)</span></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-apply-count">-</span>
             <span class="dash-hero-unit-text">名</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>名 <span class="dash-hero-target-tag">/週 <strong id="val-target-visitors-weekly" class="font-bold">-</strong></span></span>
+            <span id="val-hearing-rate" style="display: none;">0%</span>
+            <span id="val-target-hearing-rate" style="display: none;">100%</span>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- 提出率 ビジュアル プログレスリング -->
+          <div class="kpi-ring-widget" title="ヒアリング提出率">
+            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+              <circle id="ring-hearing-rate" class="kpi-ring-fill teal" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            </svg>
+            <div class="kpi-ring-center">
+              <span id="val-hearing-ring-num" class="kpi-ring-value">0</span>
+              <span class="kpi-ring-unit">%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -9291,8 +9411,8 @@ window.CelebrationEffect = (function() {
     const overdueBadgeEl = document.getElementById('badge-overdue-summary');
 
     if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
-    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%達成`;
-    if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
+    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
+    if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
     if (targetVisitorsWeeklyEl) {
       const tw = m.targetVisitorsWeekly || (m.currentMonthGoal ? m.currentMonthGoal.target_visitors_weekly : 4);
@@ -9302,6 +9422,10 @@ window.CelebrationEffect = (function() {
       const th = m.targetHearingRate || (m.currentMonthGoal ? `${m.currentMonthGoal.target_hearing_rate}%` : '100%');
       targetHearingRateEl.innerText = `${th}`;
     }
+
+    // 🎯 Update Circular Progress Rings (Visual Gauges)
+    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, true);
+    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', m.hearingRate || 0, false);
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -9943,6 +10067,30 @@ window.CelebrationEffect = (function() {
         }
       }
     });
+  }
+
+  function updateKpiProgressRing(circleId, textId, rate, isEmeraldOnFull = true) {
+    const circle = document.getElementById(circleId);
+    const text = document.getElementById(textId);
+    const numRate = parseFloat(rate) || 0;
+    const radius = 20;
+    const circumference = 2 * Math.PI * radius; // 125.6637...
+
+    if (text) {
+      text.innerText = Math.round(numRate);
+    }
+    if (circle) {
+      const clampedRate = Math.min(Math.max(numRate, 0), 100);
+      const offset = circumference - (clampedRate / 100) * circumference;
+      circle.style.strokeDasharray = `${circumference}`;
+      circle.style.strokeDashoffset = `${offset}`;
+
+      if (isEmeraldOnFull && numRate >= 100) {
+        circle.classList.add('success');
+      } else {
+        circle.classList.remove('success');
+      }
+    }
   }
 
   function changeStartDate(newVal) {

@@ -57,4 +57,38 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     const htmlNull = sandbox.renderFeelRatesBadgeHtml(null);
     assert(htmlNull.includes('-'), 'Returns hyphen placeholder for null');
   });
+
+  it('correctly updates SVG circular progress rings and applies success class for >= 100%', () => {
+    const sandbox = getSandbox();
+    const mockCircle = {
+      style: {},
+      classList: {
+        classes: new Set(),
+        add(c) { this.classes.add(c); },
+        remove(c) { this.classes.delete(c); },
+        contains(c) { return this.classes.has(c); }
+      }
+    };
+    const mockText = { innerText: '' };
+
+    sandbox.document.getElementById = (id) => {
+      if (id === 'test-circle') return mockCircle;
+      if (id === 'test-text') return mockText;
+      return null;
+    };
+
+    // Test 75%
+    sandbox.updateKpiProgressRing('test-circle', 'test-text', 75, true);
+    assert.strictEqual(mockText.innerText, 75);
+    assert(!mockCircle.classList.contains('success'), 'Does not have success class at 75%');
+    const expectedOffset75 = (2 * Math.PI * 20) * (1 - 0.75);
+    assert(Math.abs(parseFloat(mockCircle.style.strokeDashoffset) - expectedOffset75) < 0.01, 'Correct offset for 75%');
+
+    // Test 120% (>= 100%)
+    sandbox.updateKpiProgressRing('test-circle', 'test-text', 120, true);
+    assert.strictEqual(mockText.innerText, 120);
+    assert(mockCircle.classList.contains('success'), 'Has success class at >= 100%');
+    assert.strictEqual(parseFloat(mockCircle.style.strokeDashoffset), 0, 'Offset is 0 for 100%+');
+  });
 });
+

@@ -11,15 +11,26 @@
             <div class="dash-hero-icon"><i class="fa-solid fa-trophy"></i></div>
             <span class="dash-hero-title">入会数</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line"><strong id="val-achievement-rate" class="text-blue-600 font-bold">0%達成</strong></span>
-            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-joined-count">-</span>
             <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span id="val-achievement-rate" style="display: none;">0%</span>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- 達成率 ビジュアル プログレスリング -->
+          <div class="kpi-ring-widget" title="目標達成率">
+            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+              <circle id="ring-joined-achievement" class="kpi-ring-fill" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            </svg>
+            <div class="kpi-ring-center">
+              <span id="val-achievement-ring-num" class="kpi-ring-value">0</span>
+              <span class="kpi-ring-unit">%</span>
+            </div>
           </div>
         </div>
       </div>
@@ -33,15 +44,27 @@
             <div class="dash-hero-icon"><i class="fa-solid fa-users"></i></div>
             <span class="dash-hero-title">申込ビジター</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>/回 <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-visitors-weekly" class="text-blue-600 font-bold">-</strong>名)</span></span>
-            <span class="dash-hero-sub-line">提出率 <strong id="val-hearing-rate" class="text-slate-800 font-bold">-%</strong> <span class="text-slate-400 font-normal text-[11px]">(目標: <strong id="val-target-hearing-rate" class="text-slate-600 font-bold">100%</strong>)</span></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-apply-count">-</span>
             <span class="dash-hero-unit-text">名</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>名 <span class="dash-hero-target-tag">/週 <strong id="val-target-visitors-weekly" class="font-bold">-</strong></span></span>
+            <span id="val-hearing-rate" style="display: none;">0%</span>
+            <span id="val-target-hearing-rate" style="display: none;">100%</span>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- 提出率 ビジュアル プログレスリング -->
+          <div class="kpi-ring-widget" title="ヒアリング提出率">
+            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+              <circle id="ring-hearing-rate" class="kpi-ring-fill teal" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            </svg>
+            <div class="kpi-ring-center">
+              <span id="val-hearing-ring-num" class="kpi-ring-value">0</span>
+              <span class="kpi-ring-unit">%</span>
+            </div>
           </div>
         </div>
       </div>

@@ -95,8 +95,8 @@
     const overdueBadgeEl = document.getElementById('badge-overdue-summary');
 
     if (joinRateEl) joinRateEl.innerText = `${m.joinRate || 0}%`;
-    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%達成`;
-    if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}名`;
+    if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
+    if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
     if (targetVisitorsWeeklyEl) {
       const tw = m.targetVisitorsWeekly || (m.currentMonthGoal ? m.currentMonthGoal.target_visitors_weekly : 4);
@@ -106,6 +106,10 @@
       const th = m.targetHearingRate || (m.currentMonthGoal ? `${m.currentMonthGoal.target_hearing_rate}%` : '100%');
       targetHearingRateEl.innerText = `${th}`;
     }
+
+    // 🎯 Update Circular Progress Rings (Visual Gauges)
+    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, true);
+    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', m.hearingRate || 0, false);
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -747,6 +751,30 @@
         }
       }
     });
+  }
+
+  function updateKpiProgressRing(circleId, textId, rate, isEmeraldOnFull = true) {
+    const circle = document.getElementById(circleId);
+    const text = document.getElementById(textId);
+    const numRate = parseFloat(rate) || 0;
+    const radius = 20;
+    const circumference = 2 * Math.PI * radius; // 125.6637...
+
+    if (text) {
+      text.innerText = Math.round(numRate);
+    }
+    if (circle) {
+      const clampedRate = Math.min(Math.max(numRate, 0), 100);
+      const offset = circumference - (clampedRate / 100) * circumference;
+      circle.style.strokeDasharray = `${circumference}`;
+      circle.style.strokeDashoffset = `${offset}`;
+
+      if (isEmeraldOnFull && numRate >= 100) {
+        circle.classList.add('success');
+      } else {
+        circle.classList.remove('success');
+      }
+    }
   }
 
   function changeStartDate(newVal) {
