@@ -1,12 +1,13 @@
 <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual) -->
+  <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual with Minimal Status Dots) -->
   <div class="dash-hero-grid">
-    <!-- KPI 1: 次回定例会 (日付ラベル & 中央特大数字リング) -->
+    <!-- KPI 1: 次回定例会 (日付ラベル & 右上ステータスドット & 中央特大数字リング) -->
     <div class="dash-hero-card hero-weekly" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-top-row">
         <span class="dash-hero-date-label" id="date-next-thu">--/--</span>
+        <span id="badge-weekly-status" class="kpi-status-dot blue" title="正常"></span>
         <span id="date-after-next-thu" style="display: none;"></span>
         <span id="val-after-next-thu-count" style="display: none;"></span>
         <span id="badge-weekly-complete" style="display: none;"></span>
@@ -81,10 +82,10 @@
     <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-top-row">
         <span class="dash-hero-text-label">要対応</span>
+        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
         <span id="val-hot-count" style="display: none;">0</span>
         <span id="val-overdue-action-plans" style="display: none;">0</span>
         <span id="indicator-overdue-dot" style="display: none;"></span>
-        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
         <span id="val-action-status-text" style="display: none;">0</span>
       </div>
       <div class="dash-hero-center-widget">

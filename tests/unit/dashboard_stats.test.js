@@ -121,7 +121,7 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
 
     sandbox.document.getElementById = (id) => getMock(id);
 
-    // Test with >0 (normal / blue)
+    // Test with >0 (normal / blue dot)
     const testDataNormal = {
       metrics: {
         nextThuCount: 4,
@@ -139,10 +139,9 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
 
     assert.strictEqual(getMock('val-next-thu-count').innerText, 4);
     assert.strictEqual(getMock('val-target-weekly-goal').innerText, 4);
-    assert(getMock('card-kpi-weekly').classList.contains('status-normal'), 'Weekly card has status-normal when >0');
-    assert(!getMock('card-kpi-weekly').classList.contains('status-bad'), 'Weekly card does not have status-bad when >0');
+    assert.strictEqual(getMock('badge-weekly-status').className, 'kpi-status-dot blue');
 
-    // Test with 0 (bad / red)
+    // Test with 0 (warning / red dot)
     const testDataZero = {
       metrics: {
         nextThuCount: 0,
@@ -158,8 +157,7 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
 
     sandbox.renderDashboard(testDataZero);
     assert.strictEqual(getMock('val-next-thu-count').innerText, 0);
-    assert(getMock('card-kpi-weekly').classList.contains('status-bad'), 'Weekly card has status-bad when 0');
-    assert(!getMock('card-kpi-weekly').classList.contains('status-normal'), 'Weekly card does not have status-normal when 0');
+    assert.strictEqual(getMock('badge-weekly-status').className, 'kpi-status-dot red');
   });
 });
 

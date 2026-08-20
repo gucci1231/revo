@@ -84,15 +84,15 @@
     const weeklyRate = targetWeeklyGoal > 0 ? (nextThuCount / targetWeeklyGoal) * 100 : 0;
     const isWeeklyZero = nextThuCount === 0;
 
-    // Toggle Weekly Card State (0 is bad / red, >0 is normal / blue)
-    const weeklyCardEl = document.getElementById('card-kpi-weekly');
-    if (weeklyCardEl) {
+    // Toggle Weekly Top-Right Status Dot (🔴 for 0, 🔵 for >0)
+    const weeklyStatusBadgeEl = document.getElementById('badge-weekly-status');
+    if (weeklyStatusBadgeEl) {
       if (isWeeklyZero) {
-        weeklyCardEl.classList.add('status-bad');
-        weeklyCardEl.classList.remove('status-normal');
+        weeklyStatusBadgeEl.className = 'kpi-status-dot red';
+        weeklyStatusBadgeEl.title = '未登録 (0名)';
       } else {
-        weeklyCardEl.classList.remove('status-bad');
-        weeklyCardEl.classList.add('status-normal');
+        weeklyStatusBadgeEl.className = 'kpi-status-dot blue';
+        weeklyStatusBadgeEl.title = '正常';
       }
     }
 
@@ -127,14 +127,10 @@
       targetHearingRateEl.innerText = `${th}`;
     }
 
-    // 🎯 Update Circular Progress Rings with strict color semantics (Blue = Normal, Red = Bad)
-    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false, isWeeklyZero ? 'red' : 'blue');
+    // 🎯 Update Circular Progress Rings (All clean Blue)
+    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false, 'blue');
     updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, false, 'blue');
-    
-    // Hearing rate: Red if < 80%, Blue if >= 80%
-    const hRate = parseFloat(m.hearingRate) || 0;
-    const isHearingBad = hRate > 0 && hRate < 80;
-    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', hRate, false, isHearingBad ? 'red' : 'blue');
+    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', parseFloat(m.hearingRate) || 0, false, 'blue');
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -143,42 +139,21 @@
     if (overdueApValEl) overdueApValEl.innerText = overdueCount;
     if (hotCountValEl) hotCountValEl.innerText = hotList.length;
 
-    // Action Status Minimal Ring: Red if overdue > 0, Blue if normal (0 overdue)
-    const actionStatusText = document.getElementById('val-action-status-text');
+    // Action Status Ring (Blue, offset based on pending/completed)
     const ringActionStatus = document.getElementById('ring-action-status');
-    const actionCardEl = document.getElementById('card-kpi-actions');
-
-    if (actionStatusText && ringActionStatus) {
-      if (overdueCount > 0) {
-        actionStatusText.innerText = `${overdueCount}`;
-        actionStatusText.className = 'kpi-ring-value text-red-600';
-        ringActionStatus.className = 'kpi-ring-fill red';
-        ringActionStatus.style.strokeDashoffset = '20';
-        if (actionCardEl) {
-          actionCardEl.classList.add('status-bad');
-          actionCardEl.classList.remove('status-normal');
-        }
-      } else {
-        actionStatusText.innerText = `${pendingCount}`;
-        actionStatusText.className = 'kpi-ring-value text-blue-600';
-        ringActionStatus.className = 'kpi-ring-fill blue';
-        ringActionStatus.style.strokeDashoffset = pendingCount === 0 ? '0' : '60';
-        if (actionCardEl) {
-          actionCardEl.classList.add('status-normal');
-          actionCardEl.classList.remove('status-bad');
-        }
-      }
+    if (ringActionStatus) {
+      ringActionStatus.className = 'kpi-ring-fill blue';
+      ringActionStatus.style.strokeDashoffset = pendingCount === 0 ? '0' : '60';
     }
 
+    // Action Top-Right Status Dot (🔴 for overdue > 0, 🔵 for normal)
     if (overdueBadgeEl) {
       if (overdueCount > 0) {
         overdueBadgeEl.className = 'kpi-status-dot red';
         overdueBadgeEl.title = `超過 ${overdueCount}件`;
-        overdueBadgeEl.innerText = '';
       } else {
         overdueBadgeEl.className = 'kpi-status-dot blue';
         overdueBadgeEl.title = '正常';
-        overdueBadgeEl.innerText = '';
       }
     }
 

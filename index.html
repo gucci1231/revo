@@ -2493,21 +2493,6 @@ tr:last-child td { border-bottom: none; }
   transform: scale(0.98);
 }
 
-/* 🔴 BAD / OVERDUE / 0 STATE (Red Semantic) */
-.dash-hero-card.status-bad {
-  background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%);
-  border: 1.5px solid rgba(239, 68, 68, 0.45);
-  box-shadow: 0 6px 30px -2px rgba(239, 68, 68, 0.18), 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-.dash-hero-card.status-bad::before {
-  background: radial-gradient(circle, #ef4444 0%, #f43f5e 100%);
-  opacity: 0.26;
-}
-.dash-hero-card.status-bad:hover {
-  border-color: rgba(239, 68, 68, 0.75);
-  box-shadow: 0 24px 54px -8px rgba(239, 68, 68, 0.32);
-}
-
 /* Top Label Row */
 .dash-hero-top-row {
   display: flex;
@@ -2522,9 +2507,6 @@ tr:last-child td { border-bottom: none; }
   letter-spacing: -0.02em;
   font-family: 'Barlow Semi Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
-.status-bad .dash-hero-date-label {
-  color: #dc2626;
-}
 .dash-hero-text-label {
   font-size: 13px;
   font-weight: 700;
@@ -2532,26 +2514,26 @@ tr:last-child td { border-bottom: none; }
   letter-spacing: 0.03em;
 }
 
-/* Status Dot for Actions */
+/* Status Dot (Top-Right Indicator: Red for Warning, Blue for Normal) */
 .kpi-status-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 9999px;
   display: inline-block;
   flex-shrink: 0;
 }
 .kpi-status-dot.blue {
   background-color: #0071e3;
-  box-shadow: 0 0 0 2.5px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 0 0 2.5px rgba(0, 113, 227, 0.2);
 }
 .kpi-status-dot.red {
   background-color: #ef4444;
-  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.28);
   animation: red-dot-pulse 2s infinite ease-in-out;
 }
 @keyframes red-dot-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.25); opacity: 0.75; }
+  50% { transform: scale(1.25); opacity: 0.8; }
 }
 
 /* Center Widget: Ring with Number Inside */
@@ -5379,12 +5361,13 @@ tr:last-child td { border-bottom: none; }
     <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual) -->
+  <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual with Minimal Status Dots) -->
   <div class="dash-hero-grid">
-    <!-- KPI 1: 次回定例会 (日付ラベル & 中央特大数字リング) -->
+    <!-- KPI 1: 次回定例会 (日付ラベル & 右上ステータスドット & 中央特大数字リング) -->
     <div class="dash-hero-card hero-weekly" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-top-row">
         <span class="dash-hero-date-label" id="date-next-thu">--/--</span>
+        <span id="badge-weekly-status" class="kpi-status-dot blue" title="正常"></span>
         <span id="date-after-next-thu" style="display: none;"></span>
         <span id="val-after-next-thu-count" style="display: none;"></span>
         <span id="badge-weekly-complete" style="display: none;"></span>
@@ -5459,10 +5442,10 @@ tr:last-child td { border-bottom: none; }
     <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-top-row">
         <span class="dash-hero-text-label">要対応</span>
+        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
         <span id="val-hot-count" style="display: none;">0</span>
         <span id="val-overdue-action-plans" style="display: none;">0</span>
         <span id="indicator-overdue-dot" style="display: none;"></span>
-        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
         <span id="val-action-status-text" style="display: none;">0</span>
       </div>
       <div class="dash-hero-center-widget">
@@ -9295,15 +9278,15 @@ window.CelebrationEffect = (function() {
     const weeklyRate = targetWeeklyGoal > 0 ? (nextThuCount / targetWeeklyGoal) * 100 : 0;
     const isWeeklyZero = nextThuCount === 0;
 
-    // Toggle Weekly Card State (0 is bad / red, >0 is normal / blue)
-    const weeklyCardEl = document.getElementById('card-kpi-weekly');
-    if (weeklyCardEl) {
+    // Toggle Weekly Top-Right Status Dot (🔴 for 0, 🔵 for >0)
+    const weeklyStatusBadgeEl = document.getElementById('badge-weekly-status');
+    if (weeklyStatusBadgeEl) {
       if (isWeeklyZero) {
-        weeklyCardEl.classList.add('status-bad');
-        weeklyCardEl.classList.remove('status-normal');
+        weeklyStatusBadgeEl.className = 'kpi-status-dot red';
+        weeklyStatusBadgeEl.title = '未登録 (0名)';
       } else {
-        weeklyCardEl.classList.remove('status-bad');
-        weeklyCardEl.classList.add('status-normal');
+        weeklyStatusBadgeEl.className = 'kpi-status-dot blue';
+        weeklyStatusBadgeEl.title = '正常';
       }
     }
 
@@ -9338,14 +9321,10 @@ window.CelebrationEffect = (function() {
       targetHearingRateEl.innerText = `${th}`;
     }
 
-    // 🎯 Update Circular Progress Rings with strict color semantics (Blue = Normal, Red = Bad)
-    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false, isWeeklyZero ? 'red' : 'blue');
+    // 🎯 Update Circular Progress Rings (All clean Blue)
+    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false, 'blue');
     updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, false, 'blue');
-    
-    // Hearing rate: Red if < 80%, Blue if >= 80%
-    const hRate = parseFloat(m.hearingRate) || 0;
-    const isHearingBad = hRate > 0 && hRate < 80;
-    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', hRate, false, isHearingBad ? 'red' : 'blue');
+    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', parseFloat(m.hearingRate) || 0, false, 'blue');
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -9354,42 +9333,21 @@ window.CelebrationEffect = (function() {
     if (overdueApValEl) overdueApValEl.innerText = overdueCount;
     if (hotCountValEl) hotCountValEl.innerText = hotList.length;
 
-    // Action Status Minimal Ring: Red if overdue > 0, Blue if normal (0 overdue)
-    const actionStatusText = document.getElementById('val-action-status-text');
+    // Action Status Ring (Blue, offset based on pending/completed)
     const ringActionStatus = document.getElementById('ring-action-status');
-    const actionCardEl = document.getElementById('card-kpi-actions');
-
-    if (actionStatusText && ringActionStatus) {
-      if (overdueCount > 0) {
-        actionStatusText.innerText = `${overdueCount}`;
-        actionStatusText.className = 'kpi-ring-value text-red-600';
-        ringActionStatus.className = 'kpi-ring-fill red';
-        ringActionStatus.style.strokeDashoffset = '20';
-        if (actionCardEl) {
-          actionCardEl.classList.add('status-bad');
-          actionCardEl.classList.remove('status-normal');
-        }
-      } else {
-        actionStatusText.innerText = `${pendingCount}`;
-        actionStatusText.className = 'kpi-ring-value text-blue-600';
-        ringActionStatus.className = 'kpi-ring-fill blue';
-        ringActionStatus.style.strokeDashoffset = pendingCount === 0 ? '0' : '60';
-        if (actionCardEl) {
-          actionCardEl.classList.add('status-normal');
-          actionCardEl.classList.remove('status-bad');
-        }
-      }
+    if (ringActionStatus) {
+      ringActionStatus.className = 'kpi-ring-fill blue';
+      ringActionStatus.style.strokeDashoffset = pendingCount === 0 ? '0' : '60';
     }
 
+    // Action Top-Right Status Dot (🔴 for overdue > 0, 🔵 for normal)
     if (overdueBadgeEl) {
       if (overdueCount > 0) {
         overdueBadgeEl.className = 'kpi-status-dot red';
         overdueBadgeEl.title = `超過 ${overdueCount}件`;
-        overdueBadgeEl.innerText = '';
       } else {
         overdueBadgeEl.className = 'kpi-status-dot blue';
         overdueBadgeEl.title = '正常';
-        overdueBadgeEl.innerText = '';
       }
     }
 
