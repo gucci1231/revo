@@ -86,18 +86,18 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
       return null;
     };
 
-    // Test 75%
-    sandbox.updateKpiProgressRing('test-circle', 'test-text', 75, true);
+    // Test 75% (Blue by default)
+    sandbox.updateKpiProgressRing('test-circle', 'test-text', 75, false, 'blue');
     assert.strictEqual(mockText.innerText, 75);
-    assert(!mockCircle.classList.contains('success'), 'Does not have success class at 75%');
+    assert.strictEqual(mockCircle.className, 'kpi-ring-fill blue');
     const expectedOffset75 = (2 * Math.PI * 20) * (1 - 0.75);
     assert(Math.abs(parseFloat(mockCircle.style.strokeDashoffset) - expectedOffset75) < 0.01, 'Correct offset for 75%');
 
-    // Test 120% (>= 100%)
-    sandbox.updateKpiProgressRing('test-circle', 'test-text', 120, true);
-    assert.strictEqual(mockText.innerText, 120);
-    assert(mockCircle.classList.contains('success'), 'Has success class at >= 100%');
-    assert.strictEqual(parseFloat(mockCircle.style.strokeDashoffset), 0, 'Offset is 0 for 100%+');
+    // Test Red forcedColor (e.g. Warning / Bad state)
+    sandbox.updateKpiProgressRing('test-circle', 'test-text', 40, false, 'red');
+    assert.strictEqual(mockText.innerText, 40);
+    assert.strictEqual(mockCircle.className, 'kpi-ring-fill red');
+    assert.strictEqual(mockText.className, 'kpi-ring-value text-red-600');
   });
 
   it('correctly calculates weekly goal achievement and updates UI elements', () => {

@@ -2438,103 +2438,79 @@ tr:last-child td { border-bottom: none; }
   }
 }
 
+/* 🌟 DASHBOARD MAIN VISUAL HERO CARDS (Blue = Normal, Red = Bad) */
+.dash-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
 .dash-hero-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  border-radius: 20px;
-  padding: 22px 24px;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.025), 0 1px 3px rgba(0, 0, 0, 0.015);
+  border: 1px solid rgba(0, 113, 227, 0.1);
+  border-radius: 24px;
+  padding: 24px 26px;
+  box-shadow: 0 4px 24px -2px rgba(0, 113, 227, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   user-select: none;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: 140px;
 }
+
+/* Ambient Blue Aura for Normal State */
 .dash-hero-card::before {
   content: '';
   position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 140px;
-  height: 140px;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
   border-radius: 9999px;
-  filter: blur(40px);
-  opacity: 0.1;
+  background: radial-gradient(circle, #0071e3 0%, #38bdf8 100%);
+  filter: blur(48px);
+  opacity: 0.12;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
 .dash-hero-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 40px -8px rgba(0, 113, 227, 0.14), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 113, 227, 0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 48px -8px rgba(0, 113, 227, 0.2), 0 4px 16px -2px rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 113, 227, 0.4);
 }
 .dash-hero-card:hover::before {
-  opacity: 0.2;
+  opacity: 0.25;
   transform: scale(1.15);
 }
 .dash-hero-card:active {
   transform: scale(0.985);
 }
 
-/* 🌟 Ambient Aura Backlights */
-#card-kpi-weekly::before {
-  background: radial-gradient(circle, #06b6d4 0%, #3b82f6 100%);
+/* 🔴 BAD / OVERDUE STATE (Red Semantic) */
+.dash-hero-card.status-bad {
+  background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%);
+  border: 1.5px solid rgba(239, 68, 68, 0.4);
+  box-shadow: 0 6px 28px -2px rgba(239, 68, 68, 0.16), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
-#card-kpi-joined::before {
-  background: radial-gradient(circle, #8b5cf6 0%, #3b82f6 100%);
-}
-#card-kpi-visitors::before {
-  background: radial-gradient(circle, #10b981 0%, #06b6d4 100%);
-}
-#card-kpi-actions::before {
-  background: radial-gradient(circle, #f59e0b 0%, #ef4444 100%);
-}
-
-/* 🌟 Hero Emphasis for Weekly Goal Card */
-.dash-hero-card.hero-emphasis {
-  background: linear-gradient(145deg, #ffffff 0%, #f6f9ff 100%);
-  border: 1px solid rgba(37, 99, 235, 0.18);
-  box-shadow: 0 6px 24px -2px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-.dash-hero-card.hero-emphasis:hover {
-  border-color: rgba(37, 99, 235, 0.45);
-  box-shadow: 0 20px 44px -8px rgba(37, 99, 235, 0.2);
-}
-
-/* 🎉 Goal Achieved Celebration Glow & Pulse */
-.dash-hero-card.goal-achieved {
-  background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 8px 28px -2px rgba(16, 185, 129, 0.18), 0 1px 3px rgba(0, 0, 0, 0.02);
-}
-.dash-hero-card.goal-achieved::before {
-  background: radial-gradient(circle, #10b981 0%, #34d399 100%);
+.dash-hero-card.status-bad::before {
+  background: radial-gradient(circle, #ef4444 0%, #f43f5e 100%);
   opacity: 0.25;
 }
-.dash-hero-card.goal-achieved:hover {
-  border-color: rgba(16, 185, 129, 0.65);
-  box-shadow: 0 20px 46px -8px rgba(16, 185, 129, 0.28);
-}
-.dash-hero-card.goal-achieved .kpi-ring-widget {
-  animation: ring-celebration-pulse 2.6s ease-in-out infinite;
-}
-
-@keyframes ring-celebration-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 0 rgba(16, 185, 129, 0));
-    transform: scale(1);
-  }
-  50% {
-    filter: drop-shadow(0 0 14px rgba(16, 185, 129, 0.55));
-    transform: scale(1.05);
-  }
+.dash-hero-card.status-bad:hover {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 22px 50px -8px rgba(239, 68, 68, 0.3);
 }
 
 .dash-hero-split {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
 }
 
@@ -2543,138 +2519,103 @@ tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   flex: 1;
 }
 
-/* 🏷 Pure Minimalist Label Row */
+/* 🏷 Pure Minimalist Category Label */
 .dash-hero-label-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .dash-hero-minimal-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #64748b;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
 }
 .dash-hero-minimal-tag {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
-  color: #0284c7;
+  color: #0071e3;
   letter-spacing: -0.01em;
-}
-.dash-hero-minimal-achieved {
-  font-size: 10px;
-  font-weight: 700;
-  color: #059669;
-  background: rgba(16, 185, 129, 0.12);
-  padding: 1px 6px;
-  border-radius: 4px;
-  letter-spacing: 0.02em;
-}
-
-.dash-hero-minimal-sub {
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #94a3b8;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
-}
-.dash-hero-minimal-sub strong {
-  color: #475569;
 }
 
 /* Status Dot for Actions */
 .kpi-status-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 9999px;
   display: inline-block;
   flex-shrink: 0;
   margin-left: 2px;
 }
-.kpi-status-dot.green {
-  background-color: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+.kpi-status-dot.blue {
+  background-color: #0071e3;
+  box-shadow: 0 0 0 2.5px rgba(0, 113, 227, 0.25);
 }
 .kpi-status-dot.red {
   background-color: #ef4444;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.25);
+  animation: red-dot-pulse 2s infinite ease-in-out;
+}
+@keyframes red-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.75; }
 }
 
-.dash-hero-meta-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* Right side: Numbers or Visual Gauges */
-.dash-hero-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  flex-shrink: 0;
-  text-align: right;
-}
+/* Right side: Giant Numbers */
 .dash-hero-val-container {
   display: flex;
   align-items: baseline;
   justify-content: flex-start;
-  gap: 2px;
-}
-.dash-hero-right .dash-hero-val-container {
-  justify-content: flex-end;
+  gap: 3px;
 }
 .dash-hero-number {
-  font-size: 64px;
+  font-size: 72px;
   font-weight: 700;
   color: #0f172a;
-  line-height: 0.88;
-  letter-spacing: -0.04em;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums;
   font-family: 'Barlow Semi Condensed', 'DIN Alternate', 'DIN Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
-.dash-hero-card.hero-emphasis .dash-hero-number {
-  color: #0284c7;
-}
-.dash-hero-card.goal-achieved .dash-hero-number {
-  color: #059669;
-}
-.dash-hero-right .dash-hero-number {
-  font-size: 72px;
+.status-bad .dash-hero-number {
+  color: #dc2626;
 }
 
 .dash-hero-goal-text {
+  font-size: 17px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-left: 4px;
+  letter-spacing: -0.02em;
+}
+.dash-hero-unit-text {
   font-size: 16px;
   font-weight: 700;
   color: #cbd5e1;
   margin-left: 3px;
-  letter-spacing: -0.02em;
-}
-.dash-hero-unit-text {
-  font-size: 15px;
-  font-weight: 700;
-  color: #cbd5e1;
-  margin-left: 2px;
   letter-spacing: -0.01em;
 }
 
-/* 🍏 Dynamic Circular Progress Ring Gauge */
+/* 🔵 Dynamic Circular Progress Ring Gauge (Blue = Normal, Red = Bad) */
 .kpi-ring-widget {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 82px;
+  height: 82px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.04));
+  filter: drop-shadow(0 4px 12px rgba(0, 113, 227, 0.08));
+}
+.status-bad .kpi-ring-widget {
+  filter: drop-shadow(0 4px 12px rgba(239, 68, 68, 0.15));
 }
 .dash-hero-card:hover .kpi-ring-widget {
   transform: scale(1.08);
@@ -2686,32 +2627,20 @@ tr:last-child td { border-bottom: none; }
 }
 .kpi-ring-track {
   fill: none;
-  stroke: rgba(241, 245, 249, 0.9);
-  stroke-width: 4.8;
+  stroke: rgba(241, 245, 249, 0.95);
+  stroke-width: 5.5;
 }
 .kpi-ring-fill {
   fill: none;
-  stroke-width: 4.8;
+  stroke-width: 5.5;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
 }
-.kpi-ring-fill.weekly {
-  stroke: url(#grad-weekly);
+.kpi-ring-fill.blue {
+  stroke: #0071e3;
 }
-.kpi-ring-fill.weekly.success {
-  stroke: url(#grad-weekly-success);
-}
-.kpi-ring-fill.joined {
-  stroke: url(#grad-joined);
-}
-.kpi-ring-fill.joined.success {
-  stroke: #10b981;
-}
-.kpi-ring-fill.hearing {
-  stroke: url(#grad-hearing);
-}
-.kpi-ring-fill.actions {
-  stroke: #10b981;
+.kpi-ring-fill.red {
+  stroke: #ef4444;
 }
 
 .kpi-ring-center {
@@ -2722,15 +2651,18 @@ tr:last-child td { border-bottom: none; }
   justify-content: center;
   text-align: center;
   pointer-events: none;
-  margin-top: 28px;
+  margin-top: 30px;
 }
 .kpi-ring-value {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
-  color: #0f172a;
+  color: #0071e3;
   line-height: 1;
   font-family: 'Barlow Semi Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.03em;
+}
+.status-bad .kpi-ring-value {
+  color: #dc2626;
 }
 .kpi-ring-unit {
   font-size: 11px;
@@ -2746,9 +2678,9 @@ tr:last-child td { border-bottom: none; }
     margin-bottom: 20px;
   }
   .dash-hero-card {
-    padding: 14px 12px;
-    border-radius: 16px;
-    min-height: 116px;
+    padding: 16px 14px;
+    border-radius: 18px;
+    min-height: 110px;
   }
   .dash-hero-split {
     display: flex;
@@ -2762,58 +2694,45 @@ tr:last-child td { border-bottom: none; }
   /* Left */
   .dash-hero-left {
     width: 100%;
-    gap: 3px;
+    gap: 2px;
   }
   .dash-hero-label-row {
     gap: 4px;
     width: 100%;
   }
   .dash-hero-minimal-title {
-    font-size: 10.5px;
+    font-size: 11px;
   }
   .dash-hero-minimal-tag {
     font-size: 10px;
   }
-  .dash-hero-minimal-achieved {
-    font-size: 8.5px;
-    padding: 1px 4px;
-  }
-  .dash-hero-minimal-sub {
-    font-size: 9.5px;
-  }
 
   /* Right */
-  .dash-hero-right {
-    flex-shrink: 0;
-  }
   .dash-hero-number {
-    font-size: 42px;
+    font-size: 46px;
     line-height: 0.9;
   }
-  .dash-hero-right .dash-hero-number {
-    font-size: 44px;
-  }
   .dash-hero-goal-text {
-    font-size: 11px;
+    font-size: 12px;
     margin-left: 2px;
   }
   .dash-hero-unit-text {
-    font-size: 11px;
+    font-size: 12px;
     margin-left: 2px;
   }
 
   .kpi-ring-widget {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
   }
   .kpi-ring-track, .kpi-ring-fill {
-    stroke-width: 4.2;
+    stroke-width: 4.5;
   }
   .kpi-ring-center {
-    margin-top: 18px;
+    margin-top: 19px;
   }
   .kpi-ring-value {
-    font-size: 13.5px;
+    font-size: 14.5px;
   }
   .kpi-ring-unit {
     font-size: 8px;
@@ -5528,41 +5447,29 @@ tr:last-child td { border-bottom: none; }
     <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. 4大主要KPIサマリー (Ultimate Minimalist & Pure Typography) -->
+  <!-- 1. 4大主要KPIサマリー (Ultra Radical Minimalist & Main Visual Hero) -->
   <div class="dash-hero-grid">
-    <!-- KPI 1 (最重要・毎週の目標): 次回定例会 & 毎週の達成率 -->
-    <div class="dash-hero-card hero-emphasis" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
+    <!-- KPI 1: 次回定例会 (毎週目標) -->
+    <div class="dash-hero-card hero-weekly" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-label-row">
             <span class="dash-hero-minimal-title">次回定例会</span>
             <span class="dash-hero-minimal-tag" id="date-next-thu">--/--</span>
-            <span id="badge-weekly-complete" class="dash-hero-minimal-achieved" style="display: none;">達成</span>
+            <span id="date-after-next-thu" style="display: none;"></span>
+            <span id="val-after-next-thu-count" style="display: none;"></span>
+            <span id="badge-weekly-complete" style="display: none;"></span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-next-thu-count">-</span>
             <span class="dash-hero-goal-text">/ <span id="val-target-weekly-goal">4</span></span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-minimal-sub">次 <span id="date-after-next-thu">--/--</span> <strong id="val-after-next-thu-count" class="font-bold">-</strong>名</span>
-          </div>
         </div>
         <div class="dash-hero-right">
-          <!-- 毎週の達成率 プログレスリング -->
           <div class="kpi-ring-widget" id="wrap-weekly-ring" title="毎週の目標達成率">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <defs>
-                <linearGradient id="grad-weekly" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#06b6d4" />
-                  <stop offset="100%" stop-color="#3b82f6" />
-                </linearGradient>
-                <linearGradient id="grad-weekly-success" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#10b981" />
-                  <stop offset="100%" stop-color="#059669" />
-                </linearGradient>
-              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-weekly-achievement" class="kpi-ring-fill weekly" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-weekly-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
               <span id="val-weekly-ring-num" class="kpi-ring-value">0</span>
@@ -5573,34 +5480,25 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- KPI 2: 入会数 / 期目標 -->
-    <div class="dash-hero-card" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
+    <!-- KPI 2: 入会目標 (期目標) -->
+    <div class="dash-hero-card hero-join" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-label-row">
             <span class="dash-hero-minimal-title">入会目標</span>
+            <span id="val-join-rate" style="display: none;">0%</span>
+            <span id="val-achievement-rate" style="display: none;">0%</span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-joined-count">-</span>
             <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span></span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-minimal-sub">入会率 <strong id="val-join-rate" class="font-bold">-%</strong></span>
-            <span id="val-achievement-rate" style="display: none;">0%</span>
-          </div>
         </div>
         <div class="dash-hero-right">
-          <!-- 入会達成率 プログレスリング -->
           <div class="kpi-ring-widget" id="wrap-joined-ring" title="入会目標達成率">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <defs>
-                <linearGradient id="grad-joined" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#8b5cf6" />
-                  <stop offset="100%" stop-color="#3b82f6" />
-                </linearGradient>
-              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-joined-achievement" class="kpi-ring-fill joined" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-joined-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
               <span id="val-achievement-ring-num" class="kpi-ring-value">0</span>
@@ -5611,36 +5509,27 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- KPI 3: 申込ビジター総数 & 提出率 -->
-    <div class="dash-hero-card" id="card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
+    <!-- KPI 3: 申込ビジター総数 -->
+    <div class="dash-hero-card hero-visitors" id="card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-label-row">
             <span class="dash-hero-minimal-title">申込ビジター</span>
+            <span id="val-avg-visitors" style="display: none;">-</span>
+            <span id="val-target-visitors-weekly" style="display: none;">-</span>
+            <span id="val-hearing-rate" style="display: none;">0%</span>
+            <span id="val-target-hearing-rate" style="display: none;">100%</span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-apply-count">-</span>
             <span class="dash-hero-unit-text">名</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-minimal-sub">週平均 <strong id="val-avg-visitors" class="font-bold">-</strong>名</span>
-            <span id="val-target-visitors-weekly" style="display: none;">-</span>
-            <span id="val-hearing-rate" style="display: none;">0%</span>
-            <span id="val-target-hearing-rate" style="display: none;">100%</span>
-          </div>
         </div>
         <div class="dash-hero-right">
-          <!-- 提出率 プログレスリング -->
           <div class="kpi-ring-widget" id="wrap-hearing-ring" title="ヒアリング提出率">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <defs>
-                <linearGradient id="grad-hearing" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#14b8a6" />
-                  <stop offset="100%" stop-color="#06b6d4" />
-                </linearGradient>
-              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-hearing-rate" class="kpi-ring-fill hearing" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-hearing-rate" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
               <span id="val-hearing-ring-num" class="kpi-ring-value">0</span>
@@ -5652,37 +5541,29 @@ tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
+    <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-label-row">
-            <span class="dash-hero-minimal-title">アクション</span>
-            <span id="badge-overdue-summary" class="kpi-status-dot green" title="順調"></span>
+            <span class="dash-hero-minimal-title">要対応</span>
+            <span id="val-hot-count" style="display: none;">0</span>
+            <span id="val-overdue-action-plans" style="display: none;">0</span>
+            <span id="indicator-overdue-dot" style="display: none;"></span>
+            <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-pending-action-plans">-</span>
             <span class="dash-hero-unit-text">件</span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-minimal-sub">最優先 <strong id="val-hot-count">0</strong> <span class="mx-1 text-slate-300">/</span> 超過 <strong id="val-overdue-action-plans">0</strong></span>
-            <span id="indicator-overdue-dot" style="display: none;"></span>
-          </div>
         </div>
         <div class="dash-hero-right">
-          <!-- アクションステータス ミニマルリング / インジケーター -->
           <div class="kpi-ring-widget" id="wrap-action-status" title="アクション状態">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <defs>
-                <linearGradient id="grad-action" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#f59e0b" />
-                  <stop offset="100%" stop-color="#ef4444" />
-                </linearGradient>
-              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-action-status" class="kpi-ring-fill actions" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-action-status" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
-              <span id="val-action-status-text" class="kpi-ring-value">OK</span>
+              <span id="val-action-status-text" class="kpi-ring-value">0</span>
             </div>
           </div>
         </div>
@@ -9547,10 +9428,14 @@ window.CelebrationEffect = (function() {
       targetHearingRateEl.innerText = `${th}`;
     }
 
-    // 🎯 Update Circular Progress Rings (Weekly Goal, Joined Target, Hearing Rate)
-    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, true);
-    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, true);
-    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', m.hearingRate || 0, false);
+    // 🎯 Update Circular Progress Rings with strict color semantics (Blue = Normal, Red = Bad)
+    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, false);
+    updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, false);
+    
+    // Hearing rate: Red if < 80%, Blue if >= 80%
+    const hRate = parseFloat(m.hearingRate) || 0;
+    const isHearingBad = hRate > 0 && hRate < 80;
+    updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', hRate, false, isHearingBad ? 'red' : 'blue');
 
     const pendingCount = m.pendingActionPlansCount !== undefined ? m.pendingActionPlansCount : allActionPlans.filter(p => Number(p.is_completed) === 0).length;
     const overdueCount = m.overdueActionPlansCount !== undefined ? m.overdueActionPlansCount : 0;
@@ -9559,25 +9444,30 @@ window.CelebrationEffect = (function() {
     if (overdueApValEl) overdueApValEl.innerText = overdueCount;
     if (hotCountValEl) hotCountValEl.innerText = hotList.length;
 
-    // Action Status Minimal Ring & Text
+    // Action Status Minimal Ring: Red if overdue > 0, Blue if normal (0 overdue)
     const actionStatusText = document.getElementById('val-action-status-text');
     const ringActionStatus = document.getElementById('ring-action-status');
+    const actionCardEl = document.getElementById('card-kpi-actions');
+
     if (actionStatusText && ringActionStatus) {
       if (overdueCount > 0) {
-        actionStatusText.innerText = `!${overdueCount}`;
-        actionStatusText.style.color = '#ef4444';
-        ringActionStatus.style.stroke = '#ef4444';
-        ringActionStatus.style.strokeDashoffset = '30';
-      } else if (pendingCount > 0) {
-        actionStatusText.innerText = `${pendingCount}`;
-        actionStatusText.style.color = '#f59e0b';
-        ringActionStatus.style.stroke = 'url(#grad-action)';
-        ringActionStatus.style.strokeDashoffset = '60';
+        actionStatusText.innerText = `${overdueCount}`;
+        actionStatusText.className = 'kpi-ring-value text-red-600';
+        ringActionStatus.className = 'kpi-ring-fill red';
+        ringActionStatus.style.strokeDashoffset = '20';
+        if (actionCardEl) {
+          actionCardEl.classList.add('status-bad');
+          actionCardEl.classList.remove('status-normal');
+        }
       } else {
-        actionStatusText.innerText = 'OK';
-        actionStatusText.style.color = '#10b981';
-        ringActionStatus.style.stroke = '#10b981';
-        ringActionStatus.style.strokeDashoffset = '0';
+        actionStatusText.innerText = `${pendingCount}`;
+        actionStatusText.className = 'kpi-ring-value text-blue-600';
+        ringActionStatus.className = 'kpi-ring-fill blue';
+        ringActionStatus.style.strokeDashoffset = pendingCount === 0 ? '0' : '60';
+        if (actionCardEl) {
+          actionCardEl.classList.add('status-normal');
+          actionCardEl.classList.remove('status-bad');
+        }
       }
     }
 
@@ -9587,8 +9477,8 @@ window.CelebrationEffect = (function() {
         overdueBadgeEl.title = `超過 ${overdueCount}件`;
         overdueBadgeEl.innerText = '';
       } else {
-        overdueBadgeEl.className = 'kpi-status-dot green';
-        overdueBadgeEl.title = '順調';
+        overdueBadgeEl.className = 'kpi-status-dot blue';
+        overdueBadgeEl.title = '正常';
         overdueBadgeEl.innerText = '';
       }
     }
@@ -10216,7 +10106,7 @@ window.CelebrationEffect = (function() {
     });
   }
 
-  function updateKpiProgressRing(circleId, textId, rate, isEmeraldOnFull = true) {
+  function updateKpiProgressRing(circleId, textId, rate, isEmeraldOnFull = false, forcedColor = 'blue') {
     const circle = document.getElementById(circleId);
     const text = document.getElementById(textId);
     const numRate = Math.max(0, parseFloat(rate) || 0);
@@ -10244,6 +10134,12 @@ window.CelebrationEffect = (function() {
       } else {
         text.innerText = targetVal;
       }
+
+      if (forcedColor === 'red') {
+        text.className = 'kpi-ring-value text-red-600';
+      } else {
+        text.className = 'kpi-ring-value text-blue-600';
+      }
     }
 
     if (circle) {
@@ -10252,10 +10148,10 @@ window.CelebrationEffect = (function() {
       circle.style.strokeDasharray = `${circumference}`;
       circle.style.strokeDashoffset = `${offset}`;
 
-      if (isEmeraldOnFull && numRate >= 100) {
-        circle.classList.add('success');
+      if (forcedColor === 'red') {
+        circle.className = 'kpi-ring-fill red';
       } else {
-        circle.classList.remove('success');
+        circle.className = 'kpi-ring-fill blue';
       }
     }
   }
