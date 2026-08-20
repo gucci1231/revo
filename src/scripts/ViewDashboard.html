@@ -335,7 +335,7 @@
           <div class="flex items-center justify-center" onclick="event.stopPropagation();">
             ${!isCompleted ? `
               <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告する
               </button>
             ` : `
               <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
@@ -375,7 +375,7 @@
             <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
               ${!isCompleted ? `
                 <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-clipboard-check"></i> 報告
+                  <i class="fa-solid fa-clipboard-check"></i> 報告する
                 </button>
               ` : `
                 <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">

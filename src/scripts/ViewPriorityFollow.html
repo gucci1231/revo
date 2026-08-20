@@ -288,12 +288,9 @@
                         </span>
                       </div>
                       <div class="flex items-center gap-1.5">
-                        <button type="button" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black shadow-sm transition flex items-center gap-1" onclick="togglePfActionPlan('${p.id}', '${vid}', 1)">
-                          <i class="fa-solid fa-check"></i>
-                          <span>完了</span>
-                        </button>
-                        <button type="button" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition" onclick="openActionReportDirectly('${p.id}')" title="途中経過を報告">
-                          <i class="fa-regular fa-comment-dots"></i>
+                        <button type="button" class="btn-action-primary text-xs flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold" onclick="openActionReportModal('${p.id}', '${vid}')">
+                          <i class="fa-solid fa-clipboard-check"></i>
+                          <span>報告する</span>
                         </button>
                       </div>
                     </div>

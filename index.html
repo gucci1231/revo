@@ -9645,7 +9645,7 @@ window.CelebrationEffect = (function() {
           <div class="flex items-center justify-center" onclick="event.stopPropagation();">
             ${!isCompleted ? `
               <button type="button" class="btn-action-primary text-xs" style="padding: 5px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告する
               </button>
             ` : `
               <button type="button" class="btn-action-secondary text-xs" style="padding: 5px 10px; font-size: 11px; font-weight: 600; white-space: nowrap; border-radius: 8px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
@@ -9685,7 +9685,7 @@ window.CelebrationEffect = (function() {
             <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
               ${!isCompleted ? `
                 <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                  <i class="fa-solid fa-clipboard-check"></i> 報告
+                  <i class="fa-solid fa-clipboard-check"></i> 報告する
                 </button>
               ` : `
                 <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
@@ -10417,7 +10417,7 @@ window.CelebrationEffect = (function() {
             </button>
             ${!isCompleted ? `
               <button type="button" class="btn-action-primary text-xs" style="padding: 4px 10px; font-size:11.5px; font-weight:700; border-radius:6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告
+                <i class="fa-solid fa-clipboard-check mr-1"></i> 報告する
               </button>
             ` : `
               <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 8px; font-size:11px; font-weight:600; border-radius:6px;" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
@@ -10494,7 +10494,7 @@ window.CelebrationEffect = (function() {
           <div class="dash-ap-card-btn-right" onclick="event.stopPropagation()">
             ${!isCompleted ? `
               <button type="button" class="dash-ap-btn-report" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
-                <i class="fa-solid fa-clipboard-check"></i> 報告
+                <i class="fa-solid fa-clipboard-check"></i> 報告する
               </button>
             ` : `
               <button type="button" class="dash-ap-btn-confirmed" onclick="openActionReportModal('${p.id}', '${p.visitor_id}')">
@@ -10820,12 +10820,9 @@ window.CelebrationEffect = (function() {
                         </span>
                       </div>
                       <div class="flex items-center gap-1.5">
-                        <button type="button" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black shadow-sm transition flex items-center gap-1" onclick="togglePfActionPlan('${p.id}', '${vid}', 1)">
-                          <i class="fa-solid fa-check"></i>
-                          <span>完了</span>
-                        </button>
-                        <button type="button" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition" onclick="openActionReportDirectly('${p.id}')" title="途中経過を報告">
-                          <i class="fa-regular fa-comment-dots"></i>
+                        <button type="button" class="btn-action-primary text-xs flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold" onclick="openActionReportModal('${p.id}', '${vid}')">
+                          <i class="fa-solid fa-clipboard-check"></i>
+                          <span>報告する</span>
                         </button>
                       </div>
                     </div>
@@ -13502,7 +13499,7 @@ window.CelebrationEffect = (function() {
 
           <div class="vd-ap-card-bottom">
             <button type="button" class="vd-ap-btn-report" onclick="openActionReportModal('${item.id}', '${item.visitor_id || currentVdVisitorId || ''}')">
-              <i class="fa-solid fa-clipboard-check" style="margin-right: 4px;"></i> 報告して完了
+              <i class="fa-solid fa-clipboard-check" style="margin-right: 4px;"></i> 報告する
             </button>
           </div>
         `;
