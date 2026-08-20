@@ -342,12 +342,29 @@ class Database {
         $cols = array_keys($data);
         $placeholders = array_fill(0, count($cols), '?');
 
-        $sql = sprintf(
-            "INSERT OR REPLACE INTO %s (%s) VALUES (%s)",
-            $table,
-            implode(', ', $cols),
-            implode(', ', $placeholders)
-        );
+        $updateCols = array_diff($cols, $uniqueKeys);
+        if (empty($updateCols)) {
+            $sql = sprintf(
+                "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(%s) DO NOTHING",
+                $table,
+                implode(', ', $cols),
+                implode(', ', $placeholders),
+                implode(', ', $uniqueKeys)
+            );
+        } else {
+            $setClauses = [];
+            foreach ($updateCols as $uCol) {
+                $setClauses[] = sprintf("%s = excluded.%s", $uCol, $uCol);
+            }
+            $sql = sprintf(
+                "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT(%s) DO UPDATE SET %s",
+                $table,
+                implode(', ', $cols),
+                implode(', ', $placeholders),
+                implode(', ', $uniqueKeys),
+                implode(', ', $setClauses)
+            );
+        }
 
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute(array_values($data));

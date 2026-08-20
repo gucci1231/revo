@@ -154,10 +154,10 @@ class VisitorRepository {
     }
 
     public function updateStatus(string $visitorId, string $column, string $value, string $now): bool {
-        $linkedIds = $this->getLinkedVisitorIds($visitorId);
+        $targetIds = ($column === 'is_attended') ? [$visitorId] : $this->getLinkedVisitorIds($visitorId);
         $success = true;
 
-        foreach ($linkedIds as $id) {
+        foreach ($targetIds as $id) {
             $ok = $this->db->upsert('visitors_status', [
                 'visitor_id' => $id,
                 $column => $value,
