@@ -10165,6 +10165,22 @@ window.CelebrationEffect = (function() {
   let cachedAllActionPlans = [];
   let currentActionsFilter = 'pending';
 
+  function resolveVisitorFeel(p) {
+    if (!p) return '';
+    if (p.feelAbc) return p.feelAbc;
+    if (p.feel_abc) return p.feel_abc;
+    const vid = String(p.visitor_id || '');
+    if (vid && typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) {
+      const v = cachedAllVisitors.find(item => String(item.id) === vid);
+      if (v && v.feelAbc) return v.feelAbc;
+    }
+    if (vid && typeof cachedAllHearings !== 'undefined' && Array.isArray(cachedAllHearings)) {
+      const h = cachedAllHearings.find(item => String(item.visitor_id || item.id) === vid);
+      if (h && (h.feelAbc || h.feel_abc)) return h.feelAbc || h.feel_abc;
+    }
+    return '';
+  }
+
   function fetchActionsManagementData(forceRefresh = false) {
     if (!forceRefresh && cachedAllActionPlans && cachedAllActionPlans.length > 0) {
       filterActionsList();
@@ -10389,6 +10405,8 @@ window.CelebrationEffect = (function() {
         openVisitorDetailView(p.visitor_id);
       };
 
+      const feelRank = resolveVisitorFeel(p);
+
       card.innerHTML = `
         <div class="kanban-card-top">
           <div class="min-w-0 flex-1">
@@ -10397,7 +10415,7 @@ window.CelebrationEffect = (function() {
             </div>
             ${p.visitor_company ? `<div class="kanban-card-sub truncate">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
-          ${renderRankBadgeHtml(p.feelAbc || '', 'small')}
+          ${renderRankBadgeHtml(feelRank, 'small')}
         </div>
 
         <div class="kanban-card-action-text ${isCompleted ? 'completed' : ''}">

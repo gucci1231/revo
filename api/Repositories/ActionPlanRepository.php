@@ -42,9 +42,12 @@ class ActionPlanRepository {
                    COALESCE(v.profession, '') as visitor_profession, 
                    COALESCE(v.inviter, '') as visitor_inviter, 
                    COALESCE(v.event_date, '') as visitor_event_date,
-                   COALESCE(v.attendance_count, '初めて') as visitor_attendance_count
+                   COALESCE(v.attendance_count, '初めて') as visitor_attendance_count,
+                   COALESCE(h.feel_abc, '') as feelAbc,
+                   COALESCE(h.feel_abc, '') as feel_abc
             FROM action_plans ap
             LEFT JOIN visitors v ON ap.visitor_id = v.id
+            LEFT JOIN hearing_sheets h ON ap.visitor_id = h.visitor_id
             WHERE ap.visitor_id IN ({$placeholders})
             ORDER BY ap.is_completed ASC, ap.due_date ASC, ap.created_at DESC
         ";
@@ -58,9 +61,12 @@ class ActionPlanRepository {
                        COALESCE(v.company, '') as visitor_company, 
                        COALESCE(v.profession, '') as visitor_profession, 
                        COALESCE(v.inviter, '') as visitor_inviter, 
-                       COALESCE(v.event_date, '') as visitor_event_date
+                       COALESCE(v.event_date, '') as visitor_event_date,
+                       COALESCE(h.feel_abc, '') as feelAbc,
+                       COALESCE(h.feel_abc, '') as feel_abc
                 FROM action_plans ap
-                LEFT JOIN visitors v ON ap.visitor_id = v.id";
+                LEFT JOIN visitors v ON ap.visitor_id = v.id
+                LEFT JOIN hearing_sheets h ON ap.visitor_id = h.visitor_id";
         $params = [];
         if ($isCompleted !== null) {
             $sql .= " WHERE ap.is_completed = ?";
@@ -76,9 +82,12 @@ class ActionPlanRepository {
                        COALESCE(v.company, '') as visitor_company, 
                        COALESCE(v.profession, '') as visitor_profession, 
                        COALESCE(v.inviter, '') as visitor_inviter, 
-                       COALESCE(v.event_date, '') as visitor_event_date
+                       COALESCE(v.event_date, '') as visitor_event_date,
+                       COALESCE(h.feel_abc, '') as feelAbc,
+                       COALESCE(h.feel_abc, '') as feel_abc
                 FROM action_plans ap
                 LEFT JOIN visitors v ON ap.visitor_id = v.id
+                LEFT JOIN hearing_sheets h ON ap.visitor_id = h.visitor_id
                 WHERE ap.id = ?";
         return $this->db->fetchOne($sql, [$id]);
     }
