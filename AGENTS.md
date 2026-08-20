@@ -40,6 +40,11 @@
 ## 🎨 UI & Design Principles (Strict)
 - **戻るボタン等のアイコンボタンに説明テキスト（「一覧に戻る」等）を絶対に追加しない**:
   - 詳細画面の戻るボタン（`.vd-back-btn`）をはじめとするアイコン操作ボタンは、Appleスタイルのミニマルなアイコン（`<i class="fa-solid fa-chevron-left"></i>`）単体で維持すること。余計な説明文言を追加してはならない。
+- **KPIボード デザインスタイル（Ultimate Minimal & Integrated Gauge）**:
+  - **一体型ウィジェット**: `%` や余計な説明テキスト・アイコンを排除し、大型プログレスリング（126px）の中心に特大メイン数字（56px）を直接内包する構造を維持すること。
+  - **純白カード & クリーンホバー**: カードは純白（`#ffffff`）、極薄境界線（`#e2e8f0`）とし、過剰な着色・オーラ・ホバー時の濃色化は行わないこと（軽い微動リフトのみ）。
+  - **カラーセマンティクス（正常＝青 🔵 / 警告＝赤 🔴）**: カード全体を赤く着色せず、右上のスマートなステータスドット（`kpi-status-dot`）として 🔴 / 🔵 を表示すること（次回定例会0名時や要対応超過時）。
+  - **4大KPIカード並び順**: 1: `次回定例会(日付のみ)`、2: `要対応`、3: `申込ビジター`、4: `入会目標`。
 
 ## 📁 Project Documentation
 - **Tasks & Backlog**: [TASKS.md](file:///Users/kawaguchiyouhei/Library/CloudStorage/GoogleDrive-yk571231@gmail.com/マイドライブ/BNI/02_チャプター運営/ビジホス/VisitorHostRevolution/TASKS.md)
