@@ -68,10 +68,33 @@
     const oneMonthList = t.oneMonthFollowup || t.oneMonthFollowupVisitors || [];
     const allActionPlans = t.actionPlans || [];
 
+    const nextThuCount = m.nextThuCount !== undefined ? Number(m.nextThuCount) : nextMeetingList.length;
+    const afterNextThuCount = m.afterNextThuCount !== undefined ? m.afterNextThuCount : '-';
+    const targetWeeklyGoal = m.targetVisitorsWeekly || (m.currentMonthGoal ? m.currentMonthGoal.target_visitors_weekly : 4);
+
     const nextThuValEl = document.getElementById('val-next-thu-count');
     const afterNextThuValEl = document.getElementById('val-after-next-thu-count');
-    if (nextThuValEl) nextThuValEl.innerText = (m.nextThuCount !== undefined ? m.nextThuCount : nextMeetingList.length);
-    if (afterNextThuValEl) afterNextThuValEl.innerText = (m.afterNextThuCount !== undefined ? m.afterNextThuCount : '-');
+    const targetWeeklyGoalEl = document.getElementById('val-target-weekly-goal');
+
+    if (nextThuValEl) nextThuValEl.innerText = nextThuCount;
+    if (afterNextThuValEl) afterNextThuValEl.innerText = afterNextThuCount;
+    if (targetWeeklyGoalEl) targetWeeklyGoalEl.innerText = targetWeeklyGoal;
+
+    // Weekly Achievement Rate Calculation
+    const weeklyRate = targetWeeklyGoal > 0 ? (nextThuCount / targetWeeklyGoal) * 100 : 0;
+    const isWeeklyGoalAchieved = weeklyRate >= 100;
+
+    // Toggle Weekly Complete Badge & Card Glow State
+    const weeklyBadgeEl = document.getElementById('badge-weekly-complete');
+    const weeklyCardEl = document.getElementById('card-kpi-weekly');
+    if (weeklyBadgeEl) weeklyBadgeEl.style.display = isWeeklyGoalAchieved ? 'inline-flex' : 'none';
+    if (weeklyCardEl) {
+      if (isWeeklyGoalAchieved) {
+        weeklyCardEl.classList.add('goal-achieved');
+      } else {
+        weeklyCardEl.classList.remove('goal-achieved');
+      }
+    }
 
     // Main KPI counters
     const applyCountEl = document.getElementById('val-apply-count');
@@ -98,16 +121,14 @@
     if (achievementRateEl) achievementRateEl.innerText = `${m.achievementRate || 0}%`;
     if (avgVisitorsEl) avgVisitorsEl.innerText = `${m.avgVisitorCount || m.avgVisitors || 0}`;
     if (hearingRateEl) hearingRateEl.innerText = `${m.hearingRate || 0}%`;
-    if (targetVisitorsWeeklyEl) {
-      const tw = m.targetVisitorsWeekly || (m.currentMonthGoal ? m.currentMonthGoal.target_visitors_weekly : 4);
-      targetVisitorsWeeklyEl.innerText = `${tw}`;
-    }
+    if (targetVisitorsWeeklyEl) targetVisitorsWeeklyEl.innerText = `${targetWeeklyGoal}`;
     if (targetHearingRateEl) {
       const th = m.targetHearingRate || (m.currentMonthGoal ? `${m.currentMonthGoal.target_hearing_rate}%` : '100%');
       targetHearingRateEl.innerText = `${th}`;
     }
 
-    // 🎯 Update Circular Progress Rings (Visual Gauges)
+    // 🎯 Update Circular Progress Rings (Weekly Goal, Joined Target, Hearing Rate)
+    updateKpiProgressRing('ring-weekly-achievement', 'val-weekly-ring-num', weeklyRate, true);
     updateKpiProgressRing('ring-joined-achievement', 'val-achievement-ring-num', m.achievementRate || 0, true);
     updateKpiProgressRing('ring-hearing-rate', 'val-hearing-ring-num', m.hearingRate || 0, false);
 
@@ -117,6 +138,22 @@
     if (pendingApValEl) pendingApValEl.innerText = pendingCount;
     if (overdueApValEl) overdueApValEl.innerText = overdueCount;
     if (hotCountValEl) hotCountValEl.innerText = hotList.length;
+
+    // Action Status Disc Micro-interaction
+    const discActionStatus = document.getElementById('disc-action-status');
+    const iconActionStatus = document.getElementById('icon-action-status');
+    if (discActionStatus && iconActionStatus) {
+      if (overdueCount > 0) {
+        discActionStatus.className = 'kpi-action-icon-disc overdue';
+        iconActionStatus.className = 'fa-solid fa-triangle-exclamation';
+      } else if (pendingCount > 0) {
+        discActionStatus.className = 'kpi-action-icon-disc pending';
+        iconActionStatus.className = 'fa-solid fa-bolt';
+      } else {
+        discActionStatus.className = 'kpi-action-icon-disc clean';
+        iconActionStatus.className = 'fa-solid fa-check';
+      }
+    }
 
     if (overdueBadgeEl) {
       if (overdueCount > 0) {

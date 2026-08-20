@@ -1266,17 +1266,53 @@
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.025), 0 1px 3px rgba(0, 0, 0, 0.015);
   cursor: pointer;
   user-select: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
 }
 .dash-hero-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 32px -4px rgba(0, 0, 0, 0.07), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 113, 227, 0.25);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -6px rgba(0, 113, 227, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 113, 227, 0.3);
 }
 .dash-hero-card:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
+}
+
+/* 🌟 Hero Emphasis for Weekly Goal Card */
+.dash-hero-card.hero-emphasis {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  box-shadow: 0 6px 24px -2px rgba(37, 99, 235, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.dash-hero-card.hero-emphasis:hover {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 18px 40px -6px rgba(37, 99, 235, 0.18);
+}
+
+/* 🎉 Goal Achieved Celebration Glow & Pulse */
+.dash-hero-card.goal-achieved {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 8px 28px -2px rgba(16, 185, 129, 0.15), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.dash-hero-card.goal-achieved:hover {
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 18px 42px -6px rgba(16, 185, 129, 0.25);
+}
+.dash-hero-card.goal-achieved .kpi-ring-widget {
+  animation: ring-celebration-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes ring-celebration-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 0 rgba(16, 185, 129, 0));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.45));
+    transform: scale(1.04);
+  }
 }
 
 .dash-hero-split {
@@ -1287,7 +1323,7 @@
   width: 100%;
 }
 
-/* Left side: Icon, Title, Numbers, Sub-meta */
+/* Left side */
 .dash-hero-left {
   display: flex;
   flex-direction: column;
@@ -1299,50 +1335,104 @@
 .dash-hero-icon-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 .dash-hero-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   flex-shrink: 0;
   background: rgba(0, 113, 227, 0.08);
   color: #0071e3;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dash-hero-icon.weekly {
+  background: rgba(6, 182, 212, 0.1);
+  color: #0891b2;
+}
+.dash-hero-icon.join {
+  background: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+.dash-hero-icon.users {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+.dash-hero-icon.actions {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
 }
 .dash-hero-card:hover .dash-hero-icon {
-  transform: scale(1.08);
+  transform: scale(1.12) rotate(-4deg);
 }
 
 .dash-hero-title {
   font-size: 13px;
-  font-weight: 600;
-  color: #64748b;
+  font-weight: 700;
+  color: #475569;
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
-/* Target Tag */
-.dash-hero-target-tag {
+/* 🏷 Apple-Style Modern Badges & Pills */
+.dash-hero-badge-pill {
   display: inline-flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0284c7;
+  background: rgba(2, 132, 199, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: -0.02em;
+}
+.dash-hero-achieved-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+  animation: achieved-badge-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes achieved-badge-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.dash-hero-sub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
   font-weight: 500;
   color: #64748b;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 1px 5px;
-  border-radius: 4px;
-  margin-left: 3px;
+  background: rgba(241, 245, 249, 0.9);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  width: fit-content;
+}
+.dash-hero-sub-pill.hot {
+  background: rgba(245, 158, 11, 0.08);
+  color: #b45309;
+}
+.dash-hero-sub-pill.overdue {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
 }
 
 /* Status Dot for Actions */
 .kpi-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 9999px;
   display: inline-block;
   flex-shrink: 0;
@@ -1362,21 +1452,11 @@
   flex-direction: column;
   gap: 3px;
 }
-.dash-hero-sub-line {
-  font-size: 11.5px;
-  color: #64748b;
-  font-weight: 500;
-  line-height: 1.35;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
 
 /* Sub Indicator Dots */
 .kpi-sub-indicator {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 9999px;
   display: inline-block;
   flex-shrink: 0;
@@ -1410,42 +1490,52 @@
   justify-content: flex-end;
 }
 .dash-hero-number {
-  font-size: 60px;
-  font-weight: 600;
-  color: #2563eb;
+  font-size: 56px;
+  font-weight: 700;
+  color: #1e293b;
   line-height: 0.9;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   font-family: 'Barlow Semi Condensed', 'DIN Alternate', 'DIN Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
+.dash-hero-card.hero-emphasis .dash-hero-number {
+  color: #0284c7;
+}
+.dash-hero-card.goal-achieved .dash-hero-number {
+  color: #059669;
+}
 .dash-hero-right .dash-hero-number {
-  font-size: 72px;
+  font-size: 64px;
 }
 
 .dash-hero-goal-text {
   font-size: 15px;
   font-weight: 600;
-  color: #64748b;
-  margin-left: 4px;
+  color: #94a3b8;
+  margin-left: 3px;
   letter-spacing: -0.02em;
 }
 .dash-hero-unit-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: #64748b;
-  margin-left: 3px;
+  color: #94a3b8;
+  margin-left: 2px;
   letter-spacing: -0.01em;
 }
 
 /* 🍏 Circular Progress Ring Gauge */
 .kpi-ring-widget {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 66px;
+  height: 66px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dash-hero-card:hover .kpi-ring-widget {
+  transform: scale(1.06);
 }
 .kpi-ring-svg {
   width: 100%;
@@ -1454,24 +1544,29 @@
 }
 .kpi-ring-track {
   fill: none;
-  stroke: rgba(148, 163, 184, 0.15);
+  stroke: rgba(226, 232, 240, 0.8);
   stroke-width: 4.5;
 }
 .kpi-ring-fill {
   fill: none;
-  stroke: #2563eb;
   stroke-width: 4.5;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
 }
-.kpi-ring-fill.teal {
-  stroke: #0d9488;
+.kpi-ring-fill.weekly {
+  stroke: url(#grad-weekly);
 }
-.kpi-ring-fill.amber {
-  stroke: #f59e0b;
+.kpi-ring-fill.weekly.success {
+  stroke: url(#grad-weekly-success);
 }
-.kpi-ring-fill.success {
+.kpi-ring-fill.joined {
+  stroke: url(#grad-joined);
+}
+.kpi-ring-fill.joined.success {
   stroke: #10b981;
+}
+.kpi-ring-fill.hearing {
+  stroke: url(#grad-hearing);
 }
 
 .kpi-ring-center {
@@ -1482,7 +1577,7 @@
   justify-content: center;
   text-align: center;
   pointer-events: none;
-  margin-top: 24px;
+  margin-top: 25px;
 }
 .kpi-ring-value {
   font-size: 17px;
@@ -1495,8 +1590,51 @@
 .kpi-ring-unit {
   font-size: 10px;
   font-weight: 600;
-  color: #64748b;
+  color: #94a3b8;
   margin-left: 1px;
+}
+
+/* 🔘 Action Status Disc Widget */
+.kpi-action-status-widget {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+}
+.kpi-action-icon-disc {
+  width: 46px;
+  height: 46px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.kpi-action-icon-disc.clean {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.kpi-action-icon-disc.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+.kpi-action-icon-disc.overdue {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  animation: overdue-wiggle 2s infinite ease-in-out;
+}
+@keyframes overdue-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20%, 60% { transform: rotate(-8deg); }
+  40%, 80% { transform: rotate(8deg); }
+}
+.dash-hero-card:hover .kpi-action-icon-disc {
+  transform: scale(1.12);
 }
 
 @media (max-width: 640px) {
@@ -1506,9 +1644,9 @@
     margin-bottom: 20px;
   }
   .dash-hero-card {
-    padding: 14px 12px;
+    padding: 13px 11px;
     border-radius: 16px;
-    min-height: 120px;
+    min-height: 115px;
   }
   .dash-hero-split {
     display: flex;
@@ -1516,16 +1654,16 @@
     align-items: center;
     justify-content: space-between;
     height: 100%;
-    gap: 6px;
+    gap: 4px;
   }
   
   /* Left */
   .dash-hero-left {
     width: 100%;
-    gap: 4px;
+    gap: 3px;
   }
   .dash-hero-icon-title {
-    gap: 5px;
+    gap: 4px;
     width: 100%;
   }
   .dash-hero-icon {
@@ -1537,12 +1675,17 @@
   .dash-hero-title {
     font-size: 11px;
   }
-  .dash-hero-meta-stack {
-    gap: 1px;
+  .dash-hero-badge-pill {
+    font-size: 10.5px;
+    padding: 1px 5px;
   }
-  .dash-hero-sub-line {
+  .dash-hero-achieved-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  .dash-hero-sub-pill {
     font-size: 9.5px;
-    line-height: 1.2;
+    padding: 1px 5px;
   }
 
   /* Right */
@@ -1550,11 +1693,11 @@
     flex-shrink: 0;
   }
   .dash-hero-number {
-    font-size: 40px;
+    font-size: 38px;
     line-height: 0.9;
   }
   .dash-hero-right .dash-hero-number {
-    font-size: 44px;
+    font-size: 40px;
   }
   .dash-hero-goal-text {
     font-size: 11px;
@@ -1580,6 +1723,16 @@
   }
   .kpi-ring-unit {
     font-size: 8px;
+  }
+
+  .kpi-action-status-widget {
+    width: 44px;
+    height: 44px;
+  }
+  .kpi-action-icon-disc {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
   }
 }
 

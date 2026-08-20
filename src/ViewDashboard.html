@@ -1,31 +1,80 @@
 <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. 4大主要KPIサマリー -->
+  <!-- 1. 4大主要KPIサマリー (Weekly Goal First & Micro-interactive) -->
   <div class="dash-hero-grid">
-    <!-- KPI 1: 入会数 / 目標 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
+    <!-- KPI 1 (最重要・毎週の目標): 次回定例会 & 毎週の達成率 -->
+    <div class="dash-hero-card hero-emphasis" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-icon-title">
-            <div class="dash-hero-icon"><i class="fa-solid fa-trophy"></i></div>
-            <span class="dash-hero-title">入会数</span>
+            <div class="dash-hero-icon weekly"><i class="fa-solid fa-calendar-check"></i></div>
+            <span class="dash-hero-badge-pill" id="date-next-thu">--/--</span>
+            <span id="badge-weekly-complete" class="dash-hero-achieved-badge" style="display: none;"><i class="fa-solid fa-check"></i> 達成</span>
+          </div>
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="val-next-thu-count">-</span>
+            <span class="dash-hero-goal-text">/ <span id="val-target-weekly-goal">4</span></span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <span class="dash-hero-sub-pill">次 <span id="date-after-next-thu">--/--</span>: <strong id="val-after-next-thu-count" class="font-bold">-</strong>名</span>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- 毎週の達成率 プログレスリング -->
+          <div class="kpi-ring-widget" id="wrap-weekly-ring" title="毎週の目標達成率">
+            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <defs>
+                <linearGradient id="grad-weekly" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#06b6d4" />
+                  <stop offset="100%" stop-color="#3b82f6" />
+                </linearGradient>
+                <linearGradient id="grad-weekly-success" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#10b981" />
+                  <stop offset="100%" stop-color="#059669" />
+                </linearGradient>
+              </defs>
+              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+              <circle id="ring-weekly-achievement" class="kpi-ring-fill weekly" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+            </svg>
+            <div class="kpi-ring-center">
+              <span id="val-weekly-ring-num" class="kpi-ring-value">0</span>
+              <span class="kpi-ring-unit">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI 2: 入会数 / 期目標 -->
+    <div class="dash-hero-card" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left">
+          <div class="dash-hero-icon-title">
+            <div class="dash-hero-icon join"><i class="fa-solid fa-trophy"></i></div>
+            <span class="dash-hero-title">入会目標</span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-joined-count">-</span>
-            <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span>名</span>
+            <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span></span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">入会率 <strong id="val-join-rate" class="text-slate-800 font-bold">-%</strong></span>
+            <span class="dash-hero-sub-pill">入会率 <strong id="val-join-rate" class="font-bold">-%</strong></span>
             <span id="val-achievement-rate" style="display: none;">0%</span>
           </div>
         </div>
         <div class="dash-hero-right">
-          <!-- 達成率 ビジュアル プログレスリング -->
-          <div class="kpi-ring-widget" title="目標達成率">
+          <!-- 入会達成率 プログレスリング -->
+          <div class="kpi-ring-widget" id="wrap-joined-ring" title="入会目標達成率">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <defs>
+                <linearGradient id="grad-joined" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#8b5cf6" />
+                  <stop offset="100%" stop-color="#3b82f6" />
+                </linearGradient>
+              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-joined-achievement" class="kpi-ring-fill" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-joined-achievement" class="kpi-ring-fill joined" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
               <span id="val-achievement-ring-num" class="kpi-ring-value">0</span>
@@ -36,30 +85,37 @@
       </div>
     </div>
 
-    <!-- KPI 2: 申込ビジター総数 -->
-    <div class="dash-hero-card" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
+    <!-- KPI 3: 申込ビジター総数 & 提出率 -->
+    <div class="dash-hero-card" id="card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-icon-title">
-            <div class="dash-hero-icon"><i class="fa-solid fa-users"></i></div>
-            <span class="dash-hero-title">申込ビジター</span>
+            <div class="dash-hero-icon users"><i class="fa-solid fa-users"></i></div>
+            <span class="dash-hero-title">申込総数</span>
           </div>
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-apply-count">-</span>
             <span class="dash-hero-unit-text">名</span>
           </div>
           <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">週平均 <strong id="val-avg-visitors" class="text-slate-800 font-bold">-</strong>名 <span class="dash-hero-target-tag">/週 <strong id="val-target-visitors-weekly" class="font-bold">-</strong></span></span>
+            <span class="dash-hero-sub-pill">週平均 <strong id="val-avg-visitors" class="font-bold">-</strong>名</span>
+            <span id="val-target-visitors-weekly" style="display: none;">-</span>
             <span id="val-hearing-rate" style="display: none;">0%</span>
             <span id="val-target-hearing-rate" style="display: none;">100%</span>
           </div>
         </div>
         <div class="dash-hero-right">
-          <!-- 提出率 ビジュアル プログレスリング -->
-          <div class="kpi-ring-widget" title="ヒアリング提出率">
+          <!-- 提出率 プログレスリング -->
+          <div class="kpi-ring-widget" id="wrap-hearing-ring" title="ヒアリング提出率">
             <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+              <defs>
+                <linearGradient id="grad-hearing" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#14b8a6" />
+                  <stop offset="100%" stop-color="#06b6d4" />
+                </linearGradient>
+              </defs>
               <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-hearing-rate" class="kpi-ring-fill teal" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+              <circle id="ring-hearing-rate" class="kpi-ring-fill hearing" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
             </svg>
             <div class="kpi-ring-center">
               <span id="val-hearing-ring-num" class="kpi-ring-value">0</span>
@@ -70,46 +126,32 @@
       </div>
     </div>
 
-    <!-- KPI 3: 次回定例会 -->
-    <div class="dash-hero-card" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
-      <div class="dash-hero-split">
-        <div class="dash-hero-left">
-          <div class="dash-hero-icon-title">
-            <div class="dash-hero-icon"><i class="fa-solid fa-calendar-check"></i></div>
-            <span class="dash-hero-title">次回定例会</span>
-          </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line">次回 <strong id="date-next-thu" class="text-blue-600 font-bold">--/--</strong></span>
-            <span class="dash-hero-sub-line">次々回 (<span id="date-after-next-thu">--/--</span>) <strong id="val-after-next-thu-count" class="text-slate-800 font-bold">-</strong>名</span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
-          <div class="dash-hero-val-container">
-            <span class="dash-hero-number" id="val-next-thu-count">-</span>
-            <span class="dash-hero-unit-text">名</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- KPI 4: 要対応アクション -->
-    <div class="dash-hero-card" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
+    <div class="dash-hero-card" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <div class="dash-hero-icon-title">
-            <div class="dash-hero-icon"><i class="fa-solid fa-bullseye"></i></div>
-            <span class="dash-hero-title">要対応アクション</span>
+            <div class="dash-hero-icon actions"><i class="fa-solid fa-bolt"></i></div>
+            <span class="dash-hero-title">アクション</span>
             <span id="badge-overdue-summary" class="kpi-status-dot green" title="順調"></span>
           </div>
-          <div class="dash-hero-meta-stack">
-            <span class="dash-hero-sub-line"><span class="kpi-sub-indicator hot"></span>最優先 <strong id="val-hot-count" class="text-slate-800 font-bold">-</strong>名</span>
-            <span class="dash-hero-sub-line"><span id="indicator-overdue-dot" class="kpi-sub-indicator normal"></span>超過 <strong id="val-overdue-action-plans" class="text-slate-800 font-bold">0</strong>件</span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
           <div class="dash-hero-val-container">
             <span class="dash-hero-number" id="val-pending-action-plans">-</span>
             <span class="dash-hero-unit-text">件</span>
+          </div>
+          <div class="dash-hero-meta-stack">
+            <div class="flex items-center gap-1.5">
+              <span class="dash-hero-sub-pill hot"><span class="kpi-sub-indicator hot"></span>最優先 <strong id="val-hot-count">0</strong></span>
+              <span class="dash-hero-sub-pill overdue"><span id="indicator-overdue-dot" class="kpi-sub-indicator normal"></span>超過 <strong id="val-overdue-action-plans">0</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="dash-hero-right">
+          <!-- アクションステータス アニメーションアイコン / バッジ -->
+          <div class="kpi-action-status-widget" id="wrap-action-status">
+            <div class="kpi-action-icon-disc" id="disc-action-status">
+              <i id="icon-action-status" class="fa-solid fa-check"></i>
+            </div>
           </div>
         </div>
       </div>

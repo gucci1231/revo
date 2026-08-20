@@ -11,7 +11,16 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
         getElementById: () => null,
         createElement: () => ({ innerHTML: '', appendChild: () => {} })
       },
-      console: console
+      console: console,
+      renderNextMeetingTable: () => {},
+      renderLastMeetingTable: () => {},
+      renderHotVisitorsTable: () => {},
+      renderActionPlansTable: () => {},
+      renderOneMonthTable: () => {},
+      renderWeeklyStatsTable: () => {},
+      renderMonthlyStatsTable: () => {},
+      initLineChart: () => {},
+      isVisitorActionCompleted: () => false
     };
 
     const viewDashboardScriptPath = path.join(__dirname, '../../src/scripts/ViewDashboard.html');
@@ -90,5 +99,48 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     assert(mockCircle.classList.contains('success'), 'Has success class at >= 100%');
     assert.strictEqual(parseFloat(mockCircle.style.strokeDashoffset), 0, 'Offset is 0 for 100%+');
   });
+
+  it('correctly calculates weekly goal achievement and updates UI elements', () => {
+    const sandbox = getSandbox();
+    const mockElements = {};
+    const getMock = (id) => {
+      if (!mockElements[id]) {
+        mockElements[id] = {
+          innerText: '',
+          style: {},
+          classList: {
+            classes: new Set(),
+            add(c) { this.classes.add(c); },
+            remove(c) { this.classes.delete(c); },
+            contains(c) { return this.classes.has(c); }
+          }
+        };
+      }
+      return mockElements[id];
+    };
+
+    sandbox.document.getElementById = (id) => getMock(id);
+
+    const testData = {
+      metrics: {
+        nextThuCount: 4,
+        targetVisitorsWeekly: 4,
+        joinedCount: 3,
+        targetJoinGoal: 12,
+        applyCount: 20
+      },
+      tables: {
+        nextMeeting: [{}, {}, {}, {}]
+      }
+    };
+
+    sandbox.renderDashboard(testData);
+
+    assert.strictEqual(getMock('val-next-thu-count').innerText, 4);
+    assert.strictEqual(getMock('val-target-weekly-goal').innerText, 4);
+    assert.strictEqual(getMock('badge-weekly-complete').style.display, 'inline-flex');
+    assert(getMock('card-kpi-weekly').classList.contains('goal-achieved'), 'Weekly card has goal-achieved class at 100%');
+  });
 });
+
 
