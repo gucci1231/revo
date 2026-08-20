@@ -328,6 +328,9 @@
       updateUrlHash('visitor/' + id, { visitorId: id });
     }
     if (scrollToTop && !navDirection) {
+      window.scrollTo(0, 0);
+      if (document.documentElement) document.documentElement.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
       document.getElementById('loading').style.display = 'flex';
     }
 
