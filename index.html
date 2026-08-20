@@ -6375,13 +6375,13 @@ tr:last-child td { border-bottom: none; }
     </div>
     <div class="settings-body p-4 sm:p-6">
 
-      <!-- 1. 基本標準目標 (デフォルト) -->
+      <!-- 1. 期の基本目標 (デフォルト) -->
       <div class="mb-6 pb-6 border-b border-slate-100">
         <div class="flex items-center justify-between mb-3">
           <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-gear text-slate-400"></i> 基本標準目標（デフォルト）
+            <i class="fa-solid fa-gear text-slate-400"></i> 期の標準目標（基本目標）
           </span>
-          <span class="text-[11px] text-slate-400">未設定の月に適用される基準値</span>
+          <span class="text-[11px] text-slate-400">入会率・ヒアリング率は期全体共通</span>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
@@ -6399,14 +6399,14 @@ tr:last-child td { border-bottom: none; }
             </div>
           </div>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率（期）</label>
             <div class="flex items-center gap-1">
               <input type="number" step="0.1" id="setting-def-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
               <span class="text-xs text-slate-500 font-bold">%</span>
             </div>
           </div>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率（期）</label>
             <div class="flex items-center gap-1">
               <input type="number" step="0.1" id="setting-def-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
               <span class="text-xs text-slate-500 font-bold">%</span>
@@ -6415,7 +6415,7 @@ tr:last-child td { border-bottom: none; }
         </div>
         <div class="flex justify-end">
           <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveDefaultGoalsSetting()">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> 基本目標を保存
+            <i class="fa-solid fa-floppy-disk mr-1"></i> 期の基本目標を保存
           </button>
         </div>
       </div>
@@ -6424,7 +6424,7 @@ tr:last-child td { border-bottom: none; }
       <div>
         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
           <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定 ＆ 引き継ぎ状況
+            <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定（入会数・週別ビジター数）
           </span>
           <div class="flex items-center gap-2">
             <label class="text-xs text-slate-500 font-medium">対象月:</label>
@@ -6445,33 +6445,19 @@ tr:last-child td { border-bottom: none; }
             </button>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会目標数</label>
               <div class="flex items-center gap-1">
                 <input type="number" id="setting-month-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
                 <span class="text-xs text-slate-500 font-bold">名</span>
               </div>
             </div>
             <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター目標数</label>
               <div class="flex items-center gap-1">
                 <input type="number" id="setting-month-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
                 <span class="text-xs text-slate-500 font-bold">名/週</span>
-              </div>
-            </div>
-            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
-              <div class="flex items-center gap-1">
-                <input type="number" step="0.1" id="setting-month-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
-                <span class="text-xs text-slate-500 font-bold">%</span>
-              </div>
-            </div>
-            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
-              <div class="flex items-center gap-1">
-                <input type="number" step="0.1" id="setting-month-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
-                <span class="text-xs text-slate-500 font-bold">%</span>
               </div>
             </div>
           </div>
@@ -6489,16 +6475,14 @@ tr:last-child td { border-bottom: none; }
             <thead>
               <tr>
                 <th>年月</th>
-                <th class="text-center">入会数 (月)</th>
-                <th class="text-center">ビジター (週)</th>
-                <th class="text-center">入会率</th>
-                <th class="text-center">ヒアリング率</th>
+                <th class="text-center">入会目標 (月)</th>
+                <th class="text-center">ビジター目標 (週)</th>
                 <th class="text-center">設定種別</th>
                 <th class="text-center">操作</th>
               </tr>
             </thead>
             <tbody id="table-monthly-goals-preview">
-              <tr><td colspan="7" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
+              <tr><td colspan="5" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
             </tbody>
           </table>
         </div>
@@ -14106,15 +14090,11 @@ window.CelebrationEffect = (function() {
 
     const mJoinedEl = document.getElementById('setting-month-goal-joined');
     const mVisitorsEl = document.getElementById('setting-month-goal-visitors');
-    const mJoinRateEl = document.getElementById('setting-month-goal-join-rate');
-    const mHearingRateEl = document.getElementById('setting-month-goal-hearing-rate');
 
     if (titleEl) titleEl.innerText = `${monthStr} 目標設定`;
 
     if (mJoinedEl) mJoinedEl.value = targetObj.target_joined !== undefined ? targetObj.target_joined : 2;
     if (mVisitorsEl) mVisitorsEl.value = targetObj.target_visitors_weekly !== undefined ? targetObj.target_visitors_weekly : 4;
-    if (mJoinRateEl) mJoinRateEl.value = targetObj.target_join_rate !== undefined ? targetObj.target_join_rate : 25.0;
-    if (mHearingRateEl) mHearingRateEl.value = targetObj.target_hearing_rate !== undefined ? targetObj.target_hearing_rate : 100.0;
 
     if (badgeEl) {
       if (targetObj.is_custom) {
@@ -14148,7 +14128,7 @@ window.CelebrationEffect = (function() {
     tbody.innerHTML = '';
 
     if (!previewList || previewList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-3">データがありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">データがありません</td></tr>';
       return;
     }
 
@@ -14167,8 +14147,6 @@ window.CelebrationEffect = (function() {
         <td class="font-bold">${mObj.month}</td>
         <td class="text-center font-bold text-slate-800">${mObj.target_joined || 0}名</td>
         <td class="text-center font-bold text-blue-600">${mObj.target_visitors_weekly || 0}名/週</td>
-        <td class="text-center font-bold text-emerald-600">${mObj.target_join_rate || 0}%</td>
-        <td class="text-center font-bold text-slate-700">${mObj.target_hearing_rate || 0}%</td>
         <td class="text-center">${typeBadge}</td>
         <td class="text-center">
           <button type="button" class="btn-action-secondary text-xs px-2 py-0.5" onclick="selectGoalMonthFromTable('${mObj.month}')">
@@ -14227,14 +14205,10 @@ window.CelebrationEffect = (function() {
 
     const mJoined = Number(document.getElementById('setting-month-goal-joined').value) || 2;
     const mVisitors = Number(document.getElementById('setting-month-goal-visitors').value) || 4;
-    const mJoinRate = Number(document.getElementById('setting-month-goal-join-rate').value) || 25.0;
-    const mHearingRate = Number(document.getElementById('setting-month-goal-hearing-rate').value) || 100.0;
 
     const payload = {
       target_joined: mJoined,
-      target_visitors_weekly: mVisitors,
-      target_join_rate: mJoinRate,
-      target_hearing_rate: mHearingRate
+      target_visitors_weekly: mVisitors
     };
 
     showToast(`${currentSelectedGoalMonth} の目標を保存中...`);

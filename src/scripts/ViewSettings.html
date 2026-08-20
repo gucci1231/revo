@@ -86,15 +86,11 @@
 
     const mJoinedEl = document.getElementById('setting-month-goal-joined');
     const mVisitorsEl = document.getElementById('setting-month-goal-visitors');
-    const mJoinRateEl = document.getElementById('setting-month-goal-join-rate');
-    const mHearingRateEl = document.getElementById('setting-month-goal-hearing-rate');
 
     if (titleEl) titleEl.innerText = `${monthStr} 目標設定`;
 
     if (mJoinedEl) mJoinedEl.value = targetObj.target_joined !== undefined ? targetObj.target_joined : 2;
     if (mVisitorsEl) mVisitorsEl.value = targetObj.target_visitors_weekly !== undefined ? targetObj.target_visitors_weekly : 4;
-    if (mJoinRateEl) mJoinRateEl.value = targetObj.target_join_rate !== undefined ? targetObj.target_join_rate : 25.0;
-    if (mHearingRateEl) mHearingRateEl.value = targetObj.target_hearing_rate !== undefined ? targetObj.target_hearing_rate : 100.0;
 
     if (badgeEl) {
       if (targetObj.is_custom) {
@@ -128,7 +124,7 @@
     tbody.innerHTML = '';
 
     if (!previewList || previewList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-3">データがありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">データがありません</td></tr>';
       return;
     }
 
@@ -147,8 +143,6 @@
         <td class="font-bold">${mObj.month}</td>
         <td class="text-center font-bold text-slate-800">${mObj.target_joined || 0}名</td>
         <td class="text-center font-bold text-blue-600">${mObj.target_visitors_weekly || 0}名/週</td>
-        <td class="text-center font-bold text-emerald-600">${mObj.target_join_rate || 0}%</td>
-        <td class="text-center font-bold text-slate-700">${mObj.target_hearing_rate || 0}%</td>
         <td class="text-center">${typeBadge}</td>
         <td class="text-center">
           <button type="button" class="btn-action-secondary text-xs px-2 py-0.5" onclick="selectGoalMonthFromTable('${mObj.month}')">
@@ -207,14 +201,10 @@
 
     const mJoined = Number(document.getElementById('setting-month-goal-joined').value) || 2;
     const mVisitors = Number(document.getElementById('setting-month-goal-visitors').value) || 4;
-    const mJoinRate = Number(document.getElementById('setting-month-goal-join-rate').value) || 25.0;
-    const mHearingRate = Number(document.getElementById('setting-month-goal-hearing-rate').value) || 100.0;
 
     const payload = {
       target_joined: mJoined,
-      target_visitors_weekly: mVisitors,
-      target_join_rate: mJoinRate,
-      target_hearing_rate: mHearingRate
+      target_visitors_weekly: mVisitors
     };
 
     showToast(`${currentSelectedGoalMonth} の目標を保存中...`);

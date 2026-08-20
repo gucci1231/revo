@@ -42,7 +42,7 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     assert.strictEqual(delMonthConfig.body.month, '2026/05');
   });
 
-  it('resolves month goals with automatic inheritance from previous month', () => {
+  it('resolves month goals with automatic inheritance from previous month while keeping join/hearing rates at term level', () => {
     const defaultGoals = {
       target_joined: 2,
       target_visitors_weekly: 4,
@@ -51,32 +51,53 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     };
 
     const monthlyMap = {
-      '2026/04': { target_joined: 3, target_visitors_weekly: 5, target_join_rate: 30.0, target_hearing_rate: 100.0 },
-      '2026/07': { target_joined: 4, target_visitors_weekly: 6, target_join_rate: 35.0, target_hearing_rate: 100.0 }
+      '2026/04': { target_joined: 3, target_visitors_weekly: 5 },
+      '2026/07': { target_joined: 4, target_visitors_weekly: 6 }
     };
 
     function resolveGoals(mStr) {
       const norm = mStr.replace(/-/g, '/').trim();
+      const resolved = {
+        target_join_rate: defaultGoals.target_join_rate,
+        target_hearing_rate: defaultGoals.target_hearing_rate,
+        target_joined: defaultGoals.target_joined,
+        target_visitors_weekly: defaultGoals.target_visitors_weekly,
+        month: norm,
+        source: 'default',
+        is_custom: false
+      };
+
       if (monthlyMap[norm]) {
-        return { ...monthlyMap[norm], month: norm, source: 'custom', is_custom: true };
+        resolved.target_joined = monthlyMap[norm].target_joined;
+        resolved.target_visitors_weekly = monthlyMap[norm].target_visitors_weekly;
+        resolved.source = 'custom';
+        resolved.is_custom = true;
+        return resolved;
       }
       const past = Object.keys(monthlyMap).filter(k => k < norm).sort().reverse();
       if (past.length > 0) {
-        return { ...monthlyMap[past[0]], month: norm, source: 'inherited', inherited_from: past[0], is_custom: false };
+        resolved.target_joined = monthlyMap[past[0]].target_joined;
+        resolved.target_visitors_weekly = monthlyMap[past[0]].target_visitors_weekly;
+        resolved.source = 'inherited';
+        resolved.inherited_from = past[0];
+        resolved.is_custom = false;
+        return resolved;
       }
-      return { ...defaultGoals, month: norm, source: 'default', is_custom: false };
+      return resolved;
     }
 
     // 2026/03: Before 2026/04 -> Falls back to default
     const gMar = resolveGoals('2026/03');
     assert.strictEqual(gMar.source, 'default');
     assert.strictEqual(gMar.target_joined, 2);
+    assert.strictEqual(gMar.target_join_rate, 25.0);
 
-    // 2026/04: Custom setting
+    // 2026/04: Custom setting (only joined & visitors)
     const gApr = resolveGoals('2026/04');
     assert.strictEqual(gApr.source, 'custom');
     assert.strictEqual(gApr.target_joined, 3);
     assert.strictEqual(gApr.target_visitors_weekly, 5);
+    assert.strictEqual(gApr.target_join_rate, 25.0);
 
     // 2026/05: Inherits from 2026/04
     const gMay = resolveGoals('2026/05');
@@ -84,6 +105,7 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     assert.strictEqual(gMay.inherited_from, '2026/04');
     assert.strictEqual(gMay.target_joined, 3);
     assert.strictEqual(gMay.target_visitors_weekly, 5);
+    assert.strictEqual(gMay.target_join_rate, 25.0);
 
     // 2026/06: Also inherits from 2026/04
     const gJun = resolveGoals('2026/06');
@@ -101,5 +123,6 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     assert.strictEqual(gAug.source, 'inherited');
     assert.strictEqual(gAug.inherited_from, '2026/07');
     assert.strictEqual(gAug.target_joined, 4);
+    assert.strictEqual(gAug.target_hearing_rate, 100.0);
   });
 });

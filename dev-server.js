@@ -544,14 +544,33 @@ function handleApiRequest(req, res, urlObj) {
         const norm = mStr.replace(/-/g, '/').trim();
         const def = getDefaultGoals();
         const map = getMonthlyGoalsMap();
+        const resolved = {
+          target_join_rate: def.target_join_rate || 25.0,
+          target_hearing_rate: def.target_hearing_rate || 100.0,
+          target_joined: def.target_joined || 2,
+          target_visitors_weekly: def.target_visitors_weekly || 4,
+          month: norm,
+          source: 'default',
+          is_custom: false
+        };
+
         if (map[norm]) {
-          return { ...map[norm], month: norm, source: 'custom', is_custom: true };
+          resolved.target_joined = Number(map[norm].target_joined || def.target_joined);
+          resolved.target_visitors_weekly = Number(map[norm].target_visitors_weekly || def.target_visitors_weekly);
+          resolved.source = 'custom';
+          resolved.is_custom = true;
+          return resolved;
         }
         const past = Object.keys(map).filter(k => k < norm).sort().reverse();
         if (past.length > 0) {
-          return { ...map[past[0]], month: norm, source: 'inherited', inherited_from: past[0], is_custom: false };
+          resolved.target_joined = Number(map[past[0]].target_joined || def.target_joined);
+          resolved.target_visitors_weekly = Number(map[past[0]].target_visitors_weekly || def.target_visitors_weekly);
+          resolved.source = 'inherited';
+          resolved.inherited_from = past[0];
+          resolved.is_custom = false;
+          return resolved;
         }
-        return { ...def, month: norm, source: 'default', is_custom: false };
+        return resolved;
       };
 
       if (action === 'get') {
@@ -610,9 +629,7 @@ function handleApiRequest(req, res, urlObj) {
         const goals = input.goals || {};
         const clean = {
           target_joined: Number(goals.target_joined || 2),
-          target_visitors_weekly: Number(goals.target_visitors_weekly || 4),
-          target_join_rate: Number(goals.target_join_rate || 25.0),
-          target_hearing_rate: Number(goals.target_hearing_rate || 100.0)
+          target_visitors_weekly: Number(goals.target_visitors_weekly || 4)
         };
         const map = getMonthlyGoalsMap();
         map[m] = clean;

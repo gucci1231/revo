@@ -81,9 +81,7 @@ class SettingRepository {
         } else {
             $map[$normMonth] = [
                 'target_joined' => (int)($goals['target_joined'] ?? 2),
-                'target_visitors_weekly' => (int)($goals['target_visitors_weekly'] ?? 4),
-                'target_join_rate' => (float)($goals['target_join_rate'] ?? 25.0),
-                'target_hearing_rate' => (float)($goals['target_hearing_rate'] ?? 100.0)
+                'target_visitors_weekly' => (int)($goals['target_visitors_weekly'] ?? 4)
             ];
         }
         ksort($map);
@@ -95,13 +93,23 @@ class SettingRepository {
         $defaultGoals = $this->getDefaultGoals();
         $monthlyMap = $this->getMonthlyGoalsMap();
 
+        $resolved = [
+            'target_join_rate' => $defaultGoals['target_join_rate'] ?? 25.0,
+            'target_hearing_rate' => $defaultGoals['target_hearing_rate'] ?? 100.0,
+            'target_joined' => $defaultGoals['target_joined'] ?? 2,
+            'target_visitors_weekly' => $defaultGoals['target_visitors_weekly'] ?? 4,
+            'month' => $normMonth,
+            'source' => 'default',
+            'is_custom' => false
+        ];
+
         // 1. Direct monthly setting exists
         if (isset($monthlyMap[$normMonth])) {
-            return array_merge($monthlyMap[$normMonth], [
-                'month' => $normMonth,
-                'source' => 'custom',
-                'is_custom' => true
-            ]);
+            $resolved['target_joined'] = (int)($monthlyMap[$normMonth]['target_joined'] ?? $defaultGoals['target_joined']);
+            $resolved['target_visitors_weekly'] = (int)($monthlyMap[$normMonth]['target_visitors_weekly'] ?? $defaultGoals['target_visitors_weekly']);
+            $resolved['source'] = 'custom';
+            $resolved['is_custom'] = true;
+            return $resolved;
         }
 
         // 2. Inherit from latest past configured month
@@ -114,20 +122,16 @@ class SettingRepository {
         if (!empty($pastMonths)) {
             rsort($pastMonths);
             $latestPastMonth = $pastMonths[0];
-            return array_merge($monthlyMap[$latestPastMonth], [
-                'month' => $normMonth,
-                'source' => 'inherited',
-                'inherited_from' => $latestPastMonth,
-                'is_custom' => false
-            ]);
+            $resolved['target_joined'] = (int)($monthlyMap[$latestPastMonth]['target_joined'] ?? $defaultGoals['target_joined']);
+            $resolved['target_visitors_weekly'] = (int)($monthlyMap[$latestPastMonth]['target_visitors_weekly'] ?? $defaultGoals['target_visitors_weekly']);
+            $resolved['source'] = 'inherited';
+            $resolved['inherited_from'] = $latestPastMonth;
+            $resolved['is_custom'] = false;
+            return $resolved;
         }
 
         // 3. Fallback to default goals
-        return array_merge($defaultGoals, [
-            'month' => $normMonth,
-            'source' => 'default',
-            'is_custom' => false
-        ]);
+        return $resolved;
     }
 }
 
