@@ -31,3 +31,8 @@
 - Prefer established, well-maintained libraries when they reduce overall complexity or improve reliability. Do not reimplement common functionality without a clear reason.
 - Lean on the dependencies already in the project before writing your own implementation or adding packages. Do not assume a library lacks a capability without checking its documentation and types.
 - Make architectural decisions for the long term. Do not accept a stopgap that only works for now and is meant to be replaced later.
+
+## 🚫 Credit & Tool Policy (Strict)
+- **ブラウザツール（`browser_subagent` 等）の自動起動は完全禁止**:
+  - ユーザーから明示的な指示がない限り、ブラウザの立ち上げやブラウザサブエージェント（`browser_subagent`）を一切使用・起動しないこと。
+  - クレジットの無駄な消費を防ぐため、ソースコード解析（`grep_search` / `view_file`）および単体テスト（`npm test`）による検証を徹底すること。
