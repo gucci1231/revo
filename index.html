@@ -2143,7 +2143,7 @@ select.form-input, select.form-select {
 }
 .vd-ap-modal-content {
   width: 100%;
-  max-width: 540px;
+  max-width: 440px;
   margin: auto;
   background: #ffffff;
   border-radius: 20px;
@@ -2153,23 +2153,16 @@ select.form-input, select.form-select {
   max-height: 90dvh;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 26px 24px;
+  padding: 24px 22px;
   animation: vdModalPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 .vd-form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 .vd-form-grid > * {
   min-width: 0;
-}
-@media (max-width: 639px) {
-  .vd-form-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
 }
 
 /* カレンダー期日UI & クイックチップ */
