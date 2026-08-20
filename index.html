@@ -2404,6 +2404,57 @@ tr:last-child td { border-bottom: none; }
 .dash-hero-grid.grid-3 {
   grid-template-columns: repeat(3, 1fr);
 }
+.dash-hero-grid.grid-3 .dash-hero-card {
+  min-height: 130px;
+  padding: 20px 24px;
+}
+.dash-hero-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+.dash-hero-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dash-hero-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.dash-hero-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: -0.01em;
+}
+.dash-hero-number {
+  font-size: 52px;
+  font-weight: 700;
+  color: #0071e3;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Barlow Semi Condensed', 'DIN Alternate', 'DIN Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.dash-hero-unit-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 2px;
+  letter-spacing: -0.02em;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+}
+
 @media (max-width: 1200px) {
   .dash-hero-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2427,17 +2478,33 @@ tr:last-child td { border-bottom: none; }
     margin-bottom: 18px;
   }
   .dash-hero-grid.grid-3 .dash-hero-card {
-    padding: 14px 10px;
-    min-height: 110px;
+    padding: 12px 10px;
+    min-height: 96px;
+    border-radius: 18px;
   }
-  .dash-hero-grid.grid-3 .dash-hero-number {
-    font-size: 34px;
+  .dash-hero-grid.grid-3 .dash-hero-split {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-icon-title {
+    gap: 5px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+    border-radius: 6px;
   }
   .dash-hero-grid.grid-3 .dash-hero-title {
     font-size: 11px;
   }
-  .dash-hero-grid.grid-3 .dash-hero-sub-line {
-    font-size: 9.5px;
+  .dash-hero-grid.grid-3 .dash-hero-number {
+    font-size: 34px;
+  }
+  .dash-hero-grid.grid-3 .dash-hero-unit-text {
+    font-size: 11.5px;
   }
 }
 
