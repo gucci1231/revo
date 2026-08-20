@@ -177,6 +177,32 @@ describe('Action Plan Feature Unit Tests', () => {
       { id: '2', action_text: '完了タスク', is_completed: 1 }
     ]), false);
   });
+
+  it('correctly filters out or purges completed action plans older than 1 week (7 days)', () => {
+    const now = new Date('2026-08-20T12:00:00Z').getTime();
+    const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+
+    function isExpiredCompleted(p) {
+      if (Number(p.is_completed) !== 1) return false;
+      const targetDateStr = p.completed_at || p.updated_at;
+      if (!targetDateStr) return false;
+      const targetTs = new Date(targetDateStr.replace(/\//g, '-')).getTime();
+      if (isNaN(targetTs)) return false;
+      return targetTs < oneWeekAgo;
+    }
+
+    const plans = [
+      { id: '1', action_text: '進行中タスク', is_completed: 0, updated_at: '2026-08-01 10:00:00' }, // 未完了（古くても削除されない）
+      { id: '2', action_text: '昨日完了したタスク', is_completed: 1, completed_at: '2026-08-19 15:00:00' }, // 1日前の完了（保持）
+      { id: '3', action_text: '5日前に完了したタスク', is_completed: 1, completed_at: '2026-08-15 10:00:00' }, // 5日前の完了（保持）
+      { id: '4', action_text: '8日前に完了したタスク', is_completed: 1, completed_at: '2026-08-12 09:00:00' }, // 8日前の完了（削除対象）
+      { id: '5', action_text: '30日前に完了したタスク', is_completed: 1, completed_at: '2026-07-20 10:00:00' } // 30日前の完了（削除対象）
+    ];
+
+    const activePlans = plans.filter(p => !isExpiredCompleted(p));
+    assert.strictEqual(activePlans.length, 3);
+    assert.deepStrictEqual(activePlans.map(p => p.id), ['1', '2', '3']);
+  });
 });
 
 

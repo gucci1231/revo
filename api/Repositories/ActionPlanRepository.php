@@ -8,6 +8,23 @@ class ActionPlanRepository {
 
     public function __construct(?Database $db = null) {
         $this->db = $db ?? Database::getInstance();
+        $this->purgeExpiredCompleted(7);
+    }
+
+    /**
+     * 完了してから指定日数（デフォルト7日＝1週間）経過した完了実績アクションプランを物理削除
+     */
+    public function purgeExpiredCompleted(int $days = 7): int {
+        $threshold = date('Y-m-d H:i:s', strtotime("-{$days} days"));
+        $sql = "
+            DELETE FROM action_plans
+            WHERE is_completed = 1
+              AND (
+                (completed_at IS NOT NULL AND completed_at != '' AND completed_at < ?)
+                OR ((completed_at IS NULL OR completed_at = '') AND updated_at < ?)
+              )
+        ";
+        return $this->db->execute($sql, [$threshold, $threshold]);
     }
 
     public function getByVisitorId(string $visitorId): array {
@@ -15,6 +32,7 @@ class ActionPlanRepository {
     }
 
     public function getByVisitorIds(array $visitorIds): array {
+        $this->purgeExpiredCompleted(7);
         if (empty($visitorIds)) return [];
         $placeholders = implode(',', array_fill(0, count($visitorIds), '?'));
         $sql = "
@@ -34,6 +52,7 @@ class ActionPlanRepository {
     }
 
     public function getAllWithVisitor(?int $isCompleted = null, int $limit = 50): array {
+        $this->purgeExpiredCompleted(7);
         $sql = "SELECT ap.*, 
                        COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
                        COALESCE(v.company, '') as visitor_company, 

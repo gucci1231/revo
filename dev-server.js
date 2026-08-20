@@ -356,6 +356,17 @@ function handleApiRequest(req, res, urlObj) {
       const action = urlObj.searchParams.get('action') || input.action || 'list';
       const esc = s => (s || '').toString().replace(/'/g, "''");
 
+      // 完了してから1週間（7日）経過した完了実績アクションプランを削除
+      const purgeThreshold = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19);
+      runSqlExec(`
+        DELETE FROM action_plans
+        WHERE is_completed = 1
+          AND (
+            (completed_at IS NOT NULL AND completed_at != '' AND completed_at < '${purgeThreshold}')
+            OR ((completed_at IS NULL OR completed_at = '') AND updated_at < '${purgeThreshold}')
+          );
+      `);
+
       if (action === 'list') {
         const vId = esc(urlObj.searchParams.get('visitorId') || input.visitorId || '');
         let sql = '';
