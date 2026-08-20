@@ -219,20 +219,22 @@ describe('Action Plan Feature Unit Tests', () => {
     function renderActionTypeBadgeHtml(type) {
       if (!type) return '';
       const t = String(type).trim();
-      if (t === '1to1') return `<span class="badge-action-type type-1to1"><i class="fa-solid fa-handshake"></i> 1to1</span>`;
-      if (t === 'リファーラル') return `<span class="badge-action-type type-referral"><i class="fa-solid fa-gift"></i> リファーラル</span>`;
-      if (t === '定例会案内' || t === '次回案内') return `<span class="badge-action-type type-meeting"><i class="fa-solid fa-calendar-day"></i> 定例会案内</span>`;
-      if (t === '入会案内') return `<span class="badge-action-type type-join"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</span>`;
-      if (t === '電話フォロー' || t === 'フォロー') return `<span class="badge-action-type type-call"><i class="fa-solid fa-phone"></i> 電話フォロー</span>`;
-      return `<span class="badge-action-type type-other"><i class="fa-solid fa-tag"></i> ${t}</span>`;
+      let icon = 'fa-tag';
+      if (t === '1to1') icon = 'fa-handshake';
+      else if (t === 'リファーラル') icon = 'fa-gift';
+      else if (t === '定例会案内' || t === '次回案内') icon = 'fa-calendar-day';
+      else if (t === '入会案内') icon = 'fa-envelope-open-text';
+      else if (t === '電話フォロー' || t === 'フォロー') icon = 'fa-phone';
+      else if (t === 'その他') icon = 'fa-comment-dots';
+      return `<span class="badge-action-type"><i class="fa-solid ${icon}"></i> ${t}</span>`;
     }
 
-    assert(renderActionTypeBadgeHtml('1to1').includes('type-1to1'));
-    assert(renderActionTypeBadgeHtml('リファーラル').includes('type-referral'));
-    assert(renderActionTypeBadgeHtml('定例会案内').includes('type-meeting'));
-    assert(renderActionTypeBadgeHtml('入会案内').includes('type-join'));
-    assert(renderActionTypeBadgeHtml('電話フォロー').includes('type-call'));
-    assert(renderActionTypeBadgeHtml('その他').includes('type-other'));
+    assert(renderActionTypeBadgeHtml('1to1').includes('fa-handshake'));
+    assert(renderActionTypeBadgeHtml('リファーラル').includes('fa-gift'));
+    assert(renderActionTypeBadgeHtml('定例会案内').includes('fa-calendar-day'));
+    assert(renderActionTypeBadgeHtml('入会案内').includes('fa-envelope-open-text'));
+    assert(renderActionTypeBadgeHtml('電話フォロー').includes('fa-phone'));
+    assert(renderActionTypeBadgeHtml('その他').includes('fa-comment-dots'));
     assert.strictEqual(renderActionTypeBadgeHtml(''), '');
   });
 });
