@@ -108,7 +108,7 @@ const ApiService = {
         return {
           url: '/api/settings.php?action=update',
           method: 'POST',
-          body: { key: 'startDate', value: args[0] }
+          body: { key: 'start_date', value: args[0] }
         };
       case 'getGoalsApi':
         return {

@@ -2,6 +2,40 @@
   /* --- VIEW 5: Settings & KPI Goals Controller --- */
   let cachedGoalsData = null;
   let currentSelectedGoalMonth = '';
+  let currentSettingsSubTab = 'period';
+
+  function switchSettingsSubTab(tabKey, updateHistory = true) {
+    const validTabs = ['period', 'goals', 'members', 'maintenance'];
+    if (!validTabs.includes(tabKey)) tabKey = 'period';
+    currentSettingsSubTab = tabKey;
+
+    validTabs.forEach(t => {
+      const btn = document.getElementById(`settings-subtab-btn-${t}`);
+      const pane = document.getElementById(`settings-pane-${t}`);
+      if (btn) {
+        if (t === tabKey) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+      if (pane) {
+        if (t === tabKey) {
+          pane.classList.add('active');
+        } else {
+          pane.classList.remove('active');
+        }
+      }
+    });
+
+    if (tabKey === 'goals') {
+      if (!cachedGoalsData) fetchGoalsSettings(true);
+    } else if (tabKey === 'members') {
+      if (typeof fetchMembersMasterData === 'function') fetchMembersMasterData();
+    } else if (tabKey === 'period') {
+      if (!cachedGoalsData) fetchGoalsSettings(true);
+    }
+  }
 
   function fetchGoalsSettings(forceRefresh = false) {
     if (typeof ApiService === 'undefined') return;
@@ -11,6 +45,11 @@
         if (!res || !res.success) return;
         cachedGoalsData = res;
         renderGoalsSettings(res);
+
+        // 期（スタート期間）セレクトの同期
+        if (res.bniTermsList && typeof renderBniTermsSelectOptions === 'function') {
+          renderBniTermsSelectOptions(res.bniTermsList, res.startDateStr);
+        }
       })
       .catch(err => {
         console.error('Failed to fetch goals settings:', err);
@@ -98,10 +137,10 @@
         badgeEl.innerText = '個別設定中';
       } else if (targetObj.source === 'inherited') {
         badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800';
-        badgeEl.innerText = `${targetObj.inherited_from} より引き継ぎ中`;
+        badgeEl.innerText = `前月(${targetObj.inherited_from})から自動引継中`;
       } else {
         badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600';
-        badgeEl.innerText = '基本目標を適用中';
+        badgeEl.innerText = '期の基本目標を適用中';
       }
     }
 
@@ -114,56 +153,64 @@
     }
 
     if (saveBtnLabel) {
-      saveBtnLabel.innerText = `${monthStr} の目標を保存`;
+      saveBtnLabel.innerText = targetObj.is_custom ? `${monthStr} の設定を更新` : `${monthStr} の個別目標を登録`;
     }
   }
 
   function renderMonthlyGoalsPreviewTable(previewList) {
     const tbody = document.getElementById('table-monthly-goals-preview');
     if (!tbody) return;
-    tbody.innerHTML = '';
 
     if (!previewList || previewList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">データがありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">設定データがありません</td></tr>';
       return;
     }
 
-    previewList.forEach(mObj => {
-      const tr = document.createElement('tr');
-      let typeBadge = '';
-      if (mObj.is_custom) {
-        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">個別設定</span>';
-      } else if (mObj.source === 'inherited') {
-        typeBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800" title="${mObj.inherited_from}の設定を自動引き継ぎ">引継 (${mObj.inherited_from})</span>`;
+    let html = '';
+    previewList.forEach(item => {
+      let badgeHtml = '';
+      if (item.is_custom) {
+        badgeHtml = '<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-blue-100 text-blue-700">個別設定</span>';
+      } else if (item.source === 'inherited') {
+        badgeHtml = `<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-amber-100 text-amber-700">引継 (${item.inherited_from})</span>`;
       } else {
-        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">基本目標</span>';
+        badgeHtml = '<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-slate-100 text-slate-600">基本目標</span>';
       }
 
-      tr.innerHTML = `
-        <td class="font-bold">${mObj.month}</td>
-        <td class="text-center font-bold text-slate-800">${mObj.target_joined || 0}名</td>
-        <td class="text-center font-bold text-blue-600">${mObj.target_visitors_weekly || 0}名/週</td>
-        <td class="text-center">${typeBadge}</td>
-        <td class="text-center">
-          <button type="button" class="btn-action-secondary text-xs px-2 py-0.5" onclick="selectGoalMonthFromTable('${mObj.month}')">
-            編集
-          </button>
-        </td>
+      let opHtml = '';
+      if (item.is_custom) {
+        opHtml = `<button type="button" class="btn-action-primary text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200" onclick="selectAndResetMonthGoal('${item.month}')" title="個別設定を削除して引き継ぎに戻す"><i class="fa-solid fa-rotate-left mr-1"></i>解除</button>`;
+      } else {
+        opHtml = `<button type="button" class="btn-action-primary text-[11px] px-2 py-0.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200" onclick="selectMonthForEdit('${item.month}')"><i class="fa-solid fa-pen mr-1"></i>設定</button>`;
+      }
+
+      const isCurrentSelected = item.month === currentSelectedGoalMonth;
+      const rowClass = isCurrentSelected ? 'bg-blue-50/70 font-semibold' : '';
+
+      html += `
+        <tr class="${rowClass}">
+          <td class="font-bold text-slate-800">${item.month}</td>
+          <td class="text-center font-bold text-slate-900">${item.target_joined} 名</td>
+          <td class="text-center font-bold text-slate-900">${item.target_visitors_weekly} 名/週</td>
+          <td class="text-center">${badgeHtml}</td>
+          <td class="text-center">${opHtml}</td>
+        </tr>
       `;
-      tbody.appendChild(tr);
     });
+
+    tbody.innerHTML = html;
   }
 
-  function selectGoalMonthFromTable(monthStr) {
+  function selectMonthForEdit(monthStr) {
     const selectEl = document.getElementById('setting-month-goal-select');
-    if (selectEl) {
-      selectEl.value = monthStr;
-    }
+    if (selectEl) selectEl.value = monthStr;
     onGoalMonthSelected(monthStr);
-    const targetCard = document.getElementById('setting-selected-month-title');
-    if (targetCard) {
-      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectAndResetMonthGoal(monthStr) {
+    selectMonthForEdit(monthStr);
+    resetMonthlyGoalSetting();
   }
 
   function saveDefaultGoalsSetting() {
@@ -173,10 +220,12 @@
     const defHearingRate = Number(document.getElementById('setting-def-goal-hearing-rate').value) || 100.0;
 
     const payload = {
-      target_joined: defJoined,
-      target_visitors_weekly: defVisitors,
-      target_join_rate: defJoinRate,
-      target_hearing_rate: defHearingRate
+      goals: {
+        target_joined: defJoined,
+        target_visitors_weekly: defVisitors,
+        target_join_rate: defJoinRate,
+        target_hearing_rate: defHearingRate
+      }
     };
 
     showToast('基本目標を保存中...');

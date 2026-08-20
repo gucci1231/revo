@@ -1167,6 +1167,73 @@ tr:last-child td { border-bottom: none; }
 .settings-actions-list { display: flex; flex-direction: column; gap: 16px; }
 .settings-action-item { display: flex; flex-direction: column; gap: 4px; }
 .settings-divider { border: none; border-top: 1px dashed var(--border-color); }
+
+/* --- Settings Sub-Tabs Styling --- */
+.settings-nav-header {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.settings-subtabs-nav {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.settings-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.settings-subtab-btn:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.7);
+}
+.settings-subtab-btn.active {
+  color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.settings-subtab-pane {
+  display: none;
+  animation: fadeInSettingsTab 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-subtab-pane.active {
+  display: block;
+}
+@keyframes fadeInSettingsTab {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .form-input-highlight { font-weight: 800; color: var(--primary-accent); }
 
 /* --- 👤 🍏 Apple-Style Visitor Detail View --- */
@@ -6349,200 +6416,245 @@ tr:last-child td { border-bottom: none; }
 
     <!-- VIEW 5: セッティング・メンバーマスター管理ビュー -->
 <div id="view-settings" class="view-content">
-  <div class="section-card">
-    <div class="section-header">
-      <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 定例会スタート期間 (BNI期) セッティング</h2>
+  <!-- Settings Header & Sub-Tabs Navigation -->
+  <div class="settings-nav-header">
+    <div>
+      <h1 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2 m-0">
+        <i class="fa-solid fa-gear text-blue-600"></i> 各種設定・チャプター管理
+      </h1>
+      <p class="text-xs text-slate-500 mt-1 mb-0">集計期間、月別KPI目標、メンバーマスター、外部同期を管理します</p>
     </div>
-    <div class="settings-body">
-      <p class="settings-desc">集計の基準となるBNIの期（スタート期間）を選択できます。選択するとダッシュボード全体の数値が即座に切り替わります。</p>
-      <div class="settings-row-select">
-        <select id="setting-page-period-select" class="form-input form-input-highlight" onchange="changeStartDate(this.value)">
-          <option value="">自動計算中...</option>
-        </select>
+
+    <!-- Navigation Tabs -->
+    <div class="settings-subtabs-nav" role="tablist">
+      <button type="button" class="settings-subtab-btn active" id="settings-subtab-btn-period" onclick="switchSettingsSubTab('period')">
+        <i class="fa-solid fa-sliders"></i> <span>集計期間 (期)</span>
+      </button>
+      <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-goals" onclick="switchSettingsSubTab('goals')">
+        <i class="fa-solid fa-bullseye"></i> <span>目標値 (KPI)</span>
+      </button>
+      <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-members" onclick="switchSettingsSubTab('members')">
+        <i class="fa-solid fa-user-gear"></i> <span>メンバー管理</span>
+      </button>
+      <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-maintenance" onclick="switchSettingsSubTab('maintenance')">
+        <i class="fa-solid fa-rotate"></i> <span>保守・同期</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SubTab 1: 定例会スタート期間 (BNI期) セッティング -->
+  <div id="settings-pane-period" class="settings-subtab-pane active">
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 定例会スタート期間 (BNI期) セッティング</h2>
+          <div class="section-sub">集計の基準となるBNIの期（スタート期間）を選択できます。選択するとダッシュボード全体の集計期間が即座に切り替わります。</div>
+        </div>
+      </div>
+      <div class="settings-body">
+        <div class="max-w-md bg-slate-50 p-4 rounded-xl border border-slate-200/80 mb-4">
+          <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-check text-blue-600"></i> 集計基準期（スタート日）
+          </label>
+          <div class="settings-row-select">
+            <select id="setting-page-period-select" class="form-input form-input-highlight w-full" onchange="changeStartDate(this.value)">
+              <option value="">自動計算中...</option>
+            </select>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2 mb-0">※ スタート期間を変更すると、ダッシュボードの歩留まり・推移グラフ・KPI実績が選択した期に合わせて再集計されます。</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 目標値 (KPI) セッティング -->
-  <div class="section-card">
-    <div class="section-header flex justify-between items-center flex-wrap gap-2">
-      <div>
-        <h2 class="section-title text-slate-900 font-bold text-base m-0">
-          <i class="fa-solid fa-bullseye text-blue-500 mr-1.5"></i> 目標値（KPI）セッティング
-        </h2>
-        <div class="text-xs text-slate-500 mt-0.5">月毎の目標数値を設定できます。変更がない月は前月の設定値を自動的に引き継ぎます。</div>
-      </div>
-    </div>
-    <div class="settings-body p-4 sm:p-6">
-
-      <!-- 1. 期の基本目標 (デフォルト) -->
-      <div class="mb-6 pb-6 border-b border-slate-100">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-gear text-slate-400"></i> 期の標準目標（基本目標）
-          </span>
-          <span class="text-[11px] text-slate-400">入会率・ヒアリング率は期全体共通</span>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
-            <div class="flex items-center gap-1">
-              <input type="number" id="setting-def-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
-              <span class="text-xs text-slate-500 font-bold">名</span>
-            </div>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
-            <div class="flex items-center gap-1">
-              <input type="number" id="setting-def-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
-              <span class="text-xs text-slate-500 font-bold">名/週</span>
-            </div>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率（期）</label>
-            <div class="flex items-center gap-1">
-              <input type="number" step="0.1" id="setting-def-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
-              <span class="text-xs text-slate-500 font-bold">%</span>
-            </div>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率（期）</label>
-            <div class="flex items-center gap-1">
-              <input type="number" step="0.1" id="setting-def-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
-              <span class="text-xs text-slate-500 font-bold">%</span>
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-end">
-          <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveDefaultGoalsSetting()">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> 期の基本目標を保存
-          </button>
+  <!-- SubTab 2: 目標値 (KPI) セッティング -->
+  <div id="settings-pane-goals" class="settings-subtab-pane">
+    <div class="section-card">
+      <div class="section-header flex justify-between items-center flex-wrap gap-2">
+        <div>
+          <h2 class="section-title text-slate-900 font-bold text-base m-0">
+            <i class="fa-solid fa-bullseye text-blue-500 mr-1.5"></i> 目標値（KPI）セッティング
+          </h2>
+          <div class="text-xs text-slate-500 mt-0.5">月毎の目標数値を設定できます。変更がない月は前月の設定値を自動的に引き継ぎます。</div>
         </div>
       </div>
+      <div class="settings-body p-4 sm:p-6">
 
-      <!-- 2. 月別目標のカスタマイズ -->
-      <div>
-        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
-            <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定（入会数・週別ビジター数）
-          </span>
-          <div class="flex items-center gap-2">
-            <label class="text-xs text-slate-500 font-medium">対象月:</label>
-            <select id="setting-month-goal-select" class="form-input text-xs font-bold py-1 px-2.5" onchange="onGoalMonthSelected(this.value)">
-              <option value="">読み込み中...</option>
-            </select>
+        <!-- 1. 期の基本目標 (デフォルト) -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-gear text-slate-400"></i> 期の標準目標（基本目標）
+            </span>
+            <span class="text-[11px] text-slate-400">入会率・ヒアリング率は期全体共通</span>
           </div>
-        </div>
-
-        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
-          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-xs text-slate-800" id="setting-selected-month-title">2026/04 目標設定</span>
-              <span id="setting-month-source-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">自動引継中</span>
-            </div>
-            <button type="button" id="btn-reset-monthly-goal" class="text-xs text-slate-400 hover:text-red-500 transition-colors hidden" onclick="resetMonthlyGoalSetting()">
-              <i class="fa-solid fa-rotate-left mr-1"></i> 前月の設定に戻す（個別設定削除）
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会目標数</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
               <div class="flex items-center gap-1">
-                <input type="number" id="setting-month-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+                <input type="number" id="setting-def-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
                 <span class="text-xs text-slate-500 font-bold">名</span>
               </div>
             </div>
-            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター目標数</label>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
               <div class="flex items-center gap-1">
-                <input type="number" id="setting-month-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+                <input type="number" id="setting-def-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
                 <span class="text-xs text-slate-500 font-bold">名/週</span>
               </div>
             </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率（期）</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-def-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率（期）</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-def-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
           </div>
-
           <div class="flex justify-end">
-            <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveMonthlyGoalSetting()">
-              <i class="fa-solid fa-check mr-1"></i> <span id="btn-save-monthly-goal-label">この月の目標を保存</span>
+            <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveDefaultGoalsSetting()">
+              <i class="fa-solid fa-floppy-disk mr-1"></i> 期の基本目標を保存
             </button>
           </div>
         </div>
 
-        <!-- 月別一覧プレビューテーブル -->
-        <div class="table-container max-h-60 overflow-y-auto">
-          <table>
-            <thead>
-              <tr>
-                <th>年月</th>
-                <th class="text-center">入会目標 (月)</th>
-                <th class="text-center">ビジター目標 (週)</th>
-                <th class="text-center">設定種別</th>
-                <th class="text-center">操作</th>
-              </tr>
-            </thead>
-            <tbody id="table-monthly-goals-preview">
-              <tr><td colspan="5" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+        <!-- 2. 月別目標のカスタマイズ -->
+        <div>
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+              <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定（入会数・週別ビジター数）
+            </span>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-500 font-medium">対象月:</label>
+              <select id="setting-month-goal-select" class="form-input text-xs font-bold py-1 px-2.5" onchange="onGoalMonthSelected(this.value)">
+                <option value="">読み込み中...</option>
+              </select>
+            </div>
+          </div>
 
+          <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
+            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-xs text-slate-800" id="setting-selected-month-title">2026/04 目標設定</span>
+                <span id="setting-month-source-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">自動引継中</span>
+              </div>
+              <button type="button" id="btn-reset-monthly-goal" class="text-xs text-slate-400 hover:text-red-500 transition-colors hidden" onclick="resetMonthlyGoalSetting()">
+                <i class="fa-solid fa-rotate-left mr-1"></i> 前月の設定に戻す（個別設定削除）
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会目標数</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="setting-month-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+                  <span class="text-xs text-slate-500 font-bold">名</span>
+                </div>
+              </div>
+              <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター目標数</label>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="setting-month-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+                  <span class="text-xs text-slate-500 font-bold">名/週</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveMonthlyGoalSetting()">
+                <i class="fa-solid fa-check mr-1"></i> <span id="btn-save-monthly-goal-label">この月の目標を保存</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 月別一覧プレビューテーブル -->
+          <div class="table-container max-h-60 overflow-y-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>年月</th>
+                  <th class="text-center">入会目標 (月)</th>
+                  <th class="text-center">ビジター目標 (週)</th>
+                  <th class="text-center">設定種別</th>
+                  <th class="text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody id="table-monthly-goals-preview">
+                <tr><td colspan="5" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
-  <div class="section-card">
-    <div class="section-header">
-      <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>
-    </div>
-    <div class="settings-body settings-actions-list">
-      <div class="settings-action-item">
-        <p class="settings-desc">
-          Googleフォームで送信された最新のビジター回答データを手動同期します。
-        </p>
+  <!-- SubTab 3: メンバーマスター管理 -->
+  <div id="settings-pane-members" class="settings-subtab-pane">
+    <div class="section-card">
+      <div class="section-header">
         <div>
-          <button class="btn-action-primary" onclick="syncFormResponsesManual()">
-            <i class="fa-solid fa-arrows-rotate"></i> Googleフォーム新着回答を同期
-          </button>
+          <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
+          <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
         </div>
+        <button class="btn-action-primary" onclick="openAddMemberModal()">
+          <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
+        </button>
       </div>
-      <hr class="settings-divider">
-      <div class="settings-action-item">
-        <p class="settings-desc">
-          スプレッドシートの入力フォーマット（ヘッダー・日付等）を自動検査・修復し、ブラウザおよびサーバーのキャッシュをクリアして最新データへ即座に更新します。
-        </p>
-        <div>
-          <button class="btn-action-primary btn-action-indigo" onclick="forceRefreshAllCacheAndData()">
-            <i class="fa-solid fa-rotate"></i> キャッシュ全削除 ＆ 最新データ再読み込み
-          </button>
-        </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-w-sm">No.</th>
+              <th>カテゴリ / 専門領域</th>
+              <th>メンバー氏名</th>
+              <th>専門分野</th>
+              <th class="col-w-md">操作</th>
+            </tr>
+          </thead>
+          <tbody id="table-members-master"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div class="section-card">
-    <div class="section-header">
-      <div>
-        <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
-        <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
+  <!-- SubTab 4: データ保守 ＆ 外部連携同期 -->
+  <div id="settings-pane-maintenance" class="settings-subtab-pane">
+    <div class="section-card">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>
       </div>
-      <button class="btn-action-primary" onclick="openAddMemberModal()">
-        <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
-      </button>
-    </div>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th class="col-w-sm">No.</th>
-            <th>カテゴリ / 専門領域</th>
-            <th>メンバー氏名</th>
-            <th>専門分野</th>
-            <th class="col-w-md">操作</th>
-          </tr>
-        </thead>
-        <tbody id="table-members-master"></tbody>
-      </table>
+      <div class="settings-body settings-actions-list">
+        <div class="settings-action-item">
+          <p class="settings-desc">
+            Googleフォームで送信された最新のビジター回答データを手動同期します。
+          </p>
+          <div>
+            <button class="btn-action-primary" onclick="syncFormResponsesManual()">
+              <i class="fa-solid fa-arrows-rotate"></i> Googleフォーム新着回答を同期
+            </button>
+          </div>
+        </div>
+        <hr class="settings-divider">
+        <div class="settings-action-item">
+          <p class="settings-desc">
+            スプレッドシートの入力フォーマット（ヘッダー・日付等）を自動検査・修復し、ブラウザおよびサーバーのキャッシュをクリアして最新データへ即座に更新します。
+          </p>
+          <div>
+            <button class="btn-action-primary btn-action-indigo" onclick="forceRefreshAllCacheAndData()">
+              <i class="fa-solid fa-rotate"></i> キャッシュ全削除 ＆ 最新データ再読み込み
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -7187,7 +7299,7 @@ const ApiService = {
         return {
           url: '/api/settings.php?action=update',
           method: 'POST',
-          body: { key: 'startDate', value: args[0] }
+          body: { key: 'start_date', value: args[0] }
         };
       case 'getGoalsApi':
         return {
@@ -8537,7 +8649,18 @@ window.CelebrationEffect = (function() {
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
+    } else if (hash.startsWith('settings')) {
+      switchTab('settings', false);
+      if (hash.includes('goals') || hash.includes('kpi')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('goals'); }, 50);
+      } else if (hash.includes('members') || hash.includes('member')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('members'); }, 50);
+      } else if (hash.includes('maintenance') || hash.includes('sync')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('maintenance'); }, 50);
+      } else if (hash.includes('period') || hash.includes('term')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('period'); }, 50);
+      }
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }
@@ -9094,8 +9217,8 @@ window.CelebrationEffect = (function() {
     renderHotVisitorsTable(hotList);
     renderOneMonthTable(oneMonthList);
 
-    if (data.bniTermsList && data.selectedStartDate) {
-      renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
+    if (data.bniTermsList) {
+      renderBniTermsSelectOptions(data.bniTermsList, data.startDateStr || data.selectedStartDate);
     }
   }
 
@@ -13724,16 +13847,20 @@ window.CelebrationEffect = (function() {
   }
 
   function renderBniTermsSelectOptions(termsList, selectedDate) {
+    if (!termsList || !Array.isArray(termsList)) return;
     ['select-start-date', 'setting-page-period-select'].forEach(elemId => {
       const select = document.getElementById(elemId);
-      if (!select || !termsList) return;
+      if (!select) return;
       select.innerHTML = '';
 
       termsList.forEach(t => {
+        const val = t.value || t.dateStr || '';
         const opt = document.createElement('option');
-        opt.value = t.dateStr;
-        opt.textContent = t.label;
-        if (t.dateStr === selectedDate) opt.selected = true;
+        opt.value = val;
+        opt.textContent = t.label || val;
+        if (selectedDate && (val === selectedDate || t.dateStr === selectedDate || t.value === selectedDate)) {
+          opt.selected = true;
+        }
         select.appendChild(opt);
       });
     });
@@ -14006,6 +14133,40 @@ window.CelebrationEffect = (function() {
   /* --- VIEW 5: Settings & KPI Goals Controller --- */
   let cachedGoalsData = null;
   let currentSelectedGoalMonth = '';
+  let currentSettingsSubTab = 'period';
+
+  function switchSettingsSubTab(tabKey, updateHistory = true) {
+    const validTabs = ['period', 'goals', 'members', 'maintenance'];
+    if (!validTabs.includes(tabKey)) tabKey = 'period';
+    currentSettingsSubTab = tabKey;
+
+    validTabs.forEach(t => {
+      const btn = document.getElementById(`settings-subtab-btn-${t}`);
+      const pane = document.getElementById(`settings-pane-${t}`);
+      if (btn) {
+        if (t === tabKey) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+      if (pane) {
+        if (t === tabKey) {
+          pane.classList.add('active');
+        } else {
+          pane.classList.remove('active');
+        }
+      }
+    });
+
+    if (tabKey === 'goals') {
+      if (!cachedGoalsData) fetchGoalsSettings(true);
+    } else if (tabKey === 'members') {
+      if (typeof fetchMembersMasterData === 'function') fetchMembersMasterData();
+    } else if (tabKey === 'period') {
+      if (!cachedGoalsData) fetchGoalsSettings(true);
+    }
+  }
 
   function fetchGoalsSettings(forceRefresh = false) {
     if (typeof ApiService === 'undefined') return;
@@ -14015,6 +14176,11 @@ window.CelebrationEffect = (function() {
         if (!res || !res.success) return;
         cachedGoalsData = res;
         renderGoalsSettings(res);
+
+        // 期（スタート期間）セレクトの同期
+        if (res.bniTermsList && typeof renderBniTermsSelectOptions === 'function') {
+          renderBniTermsSelectOptions(res.bniTermsList, res.startDateStr);
+        }
       })
       .catch(err => {
         console.error('Failed to fetch goals settings:', err);
@@ -14102,10 +14268,10 @@ window.CelebrationEffect = (function() {
         badgeEl.innerText = '個別設定中';
       } else if (targetObj.source === 'inherited') {
         badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800';
-        badgeEl.innerText = `${targetObj.inherited_from} より引き継ぎ中`;
+        badgeEl.innerText = `前月(${targetObj.inherited_from})から自動引継中`;
       } else {
         badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600';
-        badgeEl.innerText = '基本目標を適用中';
+        badgeEl.innerText = '期の基本目標を適用中';
       }
     }
 
@@ -14118,56 +14284,64 @@ window.CelebrationEffect = (function() {
     }
 
     if (saveBtnLabel) {
-      saveBtnLabel.innerText = `${monthStr} の目標を保存`;
+      saveBtnLabel.innerText = targetObj.is_custom ? `${monthStr} の設定を更新` : `${monthStr} の個別目標を登録`;
     }
   }
 
   function renderMonthlyGoalsPreviewTable(previewList) {
     const tbody = document.getElementById('table-monthly-goals-preview');
     if (!tbody) return;
-    tbody.innerHTML = '';
 
     if (!previewList || previewList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">データがありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-3">設定データがありません</td></tr>';
       return;
     }
 
-    previewList.forEach(mObj => {
-      const tr = document.createElement('tr');
-      let typeBadge = '';
-      if (mObj.is_custom) {
-        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">個別設定</span>';
-      } else if (mObj.source === 'inherited') {
-        typeBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800" title="${mObj.inherited_from}の設定を自動引き継ぎ">引継 (${mObj.inherited_from})</span>`;
+    let html = '';
+    previewList.forEach(item => {
+      let badgeHtml = '';
+      if (item.is_custom) {
+        badgeHtml = '<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-blue-100 text-blue-700">個別設定</span>';
+      } else if (item.source === 'inherited') {
+        badgeHtml = `<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-amber-100 text-amber-700">引継 (${item.inherited_from})</span>`;
       } else {
-        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">基本目標</span>';
+        badgeHtml = '<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-slate-100 text-slate-600">基本目標</span>';
       }
 
-      tr.innerHTML = `
-        <td class="font-bold">${mObj.month}</td>
-        <td class="text-center font-bold text-slate-800">${mObj.target_joined || 0}名</td>
-        <td class="text-center font-bold text-blue-600">${mObj.target_visitors_weekly || 0}名/週</td>
-        <td class="text-center">${typeBadge}</td>
-        <td class="text-center">
-          <button type="button" class="btn-action-secondary text-xs px-2 py-0.5" onclick="selectGoalMonthFromTable('${mObj.month}')">
-            編集
-          </button>
-        </td>
+      let opHtml = '';
+      if (item.is_custom) {
+        opHtml = `<button type="button" class="btn-action-primary text-[11px] px-2 py-0.5 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200" onclick="selectAndResetMonthGoal('${item.month}')" title="個別設定を削除して引き継ぎに戻す"><i class="fa-solid fa-rotate-left mr-1"></i>解除</button>`;
+      } else {
+        opHtml = `<button type="button" class="btn-action-primary text-[11px] px-2 py-0.5 bg-white hover:bg-blue-50 text-blue-600 border border-blue-200" onclick="selectMonthForEdit('${item.month}')"><i class="fa-solid fa-pen mr-1"></i>設定</button>`;
+      }
+
+      const isCurrentSelected = item.month === currentSelectedGoalMonth;
+      const rowClass = isCurrentSelected ? 'bg-blue-50/70 font-semibold' : '';
+
+      html += `
+        <tr class="${rowClass}">
+          <td class="font-bold text-slate-800">${item.month}</td>
+          <td class="text-center font-bold text-slate-900">${item.target_joined} 名</td>
+          <td class="text-center font-bold text-slate-900">${item.target_visitors_weekly} 名/週</td>
+          <td class="text-center">${badgeHtml}</td>
+          <td class="text-center">${opHtml}</td>
+        </tr>
       `;
-      tbody.appendChild(tr);
     });
+
+    tbody.innerHTML = html;
   }
 
-  function selectGoalMonthFromTable(monthStr) {
+  function selectMonthForEdit(monthStr) {
     const selectEl = document.getElementById('setting-month-goal-select');
-    if (selectEl) {
-      selectEl.value = monthStr;
-    }
+    if (selectEl) selectEl.value = monthStr;
     onGoalMonthSelected(monthStr);
-    const targetCard = document.getElementById('setting-selected-month-title');
-    if (targetCard) {
-      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function selectAndResetMonthGoal(monthStr) {
+    selectMonthForEdit(monthStr);
+    resetMonthlyGoalSetting();
   }
 
   function saveDefaultGoalsSetting() {
@@ -14177,10 +14351,12 @@ window.CelebrationEffect = (function() {
     const defHearingRate = Number(document.getElementById('setting-def-goal-hearing-rate').value) || 100.0;
 
     const payload = {
-      target_joined: defJoined,
-      target_visitors_weekly: defVisitors,
-      target_join_rate: defJoinRate,
-      target_hearing_rate: defHearingRate
+      goals: {
+        target_joined: defJoined,
+        target_visitors_weekly: defVisitors,
+        target_join_rate: defJoinRate,
+        target_hearing_rate: defHearingRate
+      }
     };
 
     showToast('基本目標を保存中...');

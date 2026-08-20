@@ -109,16 +109,20 @@
   }
 
   function renderBniTermsSelectOptions(termsList, selectedDate) {
+    if (!termsList || !Array.isArray(termsList)) return;
     ['select-start-date', 'setting-page-period-select'].forEach(elemId => {
       const select = document.getElementById(elemId);
-      if (!select || !termsList) return;
+      if (!select) return;
       select.innerHTML = '';
 
       termsList.forEach(t => {
+        const val = t.value || t.dateStr || '';
         const opt = document.createElement('option');
-        opt.value = t.dateStr;
-        opt.textContent = t.label;
-        if (t.dateStr === selectedDate) opt.selected = true;
+        opt.value = val;
+        opt.textContent = t.label || val;
+        if (selectedDate && (val === selectedDate || t.dateStr === selectedDate || t.value === selectedDate)) {
+          opt.selected = true;
+        }
         select.appendChild(opt);
       });
     });

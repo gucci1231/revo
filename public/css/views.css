@@ -86,6 +86,73 @@
 .settings-actions-list { display: flex; flex-direction: column; gap: 16px; }
 .settings-action-item { display: flex; flex-direction: column; gap: 4px; }
 .settings-divider { border: none; border-top: 1px dashed var(--border-color); }
+
+/* --- Settings Sub-Tabs Styling --- */
+.settings-nav-header {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.settings-subtabs-nav {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.settings-subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+.settings-subtab-btn:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.7);
+}
+.settings-subtab-btn.active {
+  color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.1), 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.settings-subtab-pane {
+  display: none;
+  animation: fadeInSettingsTab 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.settings-subtab-pane.active {
+  display: block;
+}
+@keyframes fadeInSettingsTab {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .form-input-highlight { font-weight: 800; color: var(--primary-accent); }
 
 /* --- 👤 🍏 Apple-Style Visitor Detail View --- */

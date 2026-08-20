@@ -50,7 +50,18 @@
       } else if (hash.includes('hot')) {
         setTimeout(() => { if (typeof setVisitorsStatusFilter === 'function') setVisitorsStatusFilter('hot'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
+    } else if (hash.startsWith('settings')) {
+      switchTab('settings', false);
+      if (hash.includes('goals') || hash.includes('kpi')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('goals'); }, 50);
+      } else if (hash.includes('members') || hash.includes('member')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('members'); }, 50);
+      } else if (hash.includes('maintenance') || hash.includes('sync')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('maintenance'); }, 50);
+      } else if (hash.includes('period') || hash.includes('term')) {
+        setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('period'); }, 50);
+      }
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : hash, false);
     }
   }

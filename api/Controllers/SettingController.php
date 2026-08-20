@@ -53,6 +53,10 @@ class SettingController extends Controller {
             Response::error('Key is required');
         }
 
+        if ($key === 'startDate') {
+            $key = 'start_date';
+        }
+
         $now = date('Y/m/d H:i');
         $this->settingRepo->setKey($key, $val, $now);
 
@@ -77,11 +81,21 @@ class SettingController extends Controller {
             $ts = strtotime('+1 month', $ts);
         }
 
+        $settings = $this->settingRepo->getAll();
+        $startDateStr = $settings['start_date'] ?? '2026/04/01';
+        $bniTermsList = [
+            ['label' => '第2期 (2026/04/01〜)', 'value' => '2026/04/01', 'dateStr' => '2026/04/01'],
+            ['label' => '第1期 (2025/10/01〜)', 'value' => '2025/10/01', 'dateStr' => '2025/10/01'],
+            ['label' => '全期間 (2024/10/01〜)', 'value' => '2024/10/01', 'dateStr' => '2024/10/01']
+        ];
+
         Response::success([
             'defaultGoals' => $defaultGoals,
             'monthlyMap' => $monthlyMap,
             'monthsPreview' => $monthsPreview,
-            'currentMonth' => $currentYm
+            'currentMonth' => $currentYm,
+            'startDateStr' => $startDateStr,
+            'bniTermsList' => $bniTermsList
         ]);
     }
 

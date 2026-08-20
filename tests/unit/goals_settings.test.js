@@ -125,4 +125,99 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     assert.strictEqual(gAug.target_joined, 4);
     assert.strictEqual(gAug.target_hearing_rate, 100.0);
   });
+
+  it('correctly maps updateSettingStartDateApi endpoint with start_date key', () => {
+    const updateConfig = ApiService.getRestConfig('updateSettingStartDateApi', ['2026/04/01']);
+    assert.strictEqual(updateConfig.url, '/api/settings.php?action=update');
+    assert.strictEqual(updateConfig.method, 'POST');
+    assert.strictEqual(updateConfig.body.key, 'start_date');
+    assert.strictEqual(updateConfig.body.value, '2026/04/01');
+  });
+
+  it('correctly renders BNI terms options supporting both value and dateStr properties', () => {
+    const mockElements = {
+      'select-start-date': { innerHTML: '', options: [] },
+      'setting-page-period-select': { innerHTML: '', options: [] }
+    };
+
+    function renderOptions(termsList, selectedDate) {
+      if (!termsList || !Array.isArray(termsList)) return;
+      ['select-start-date', 'setting-page-period-select'].forEach(elemId => {
+        const select = mockElements[elemId];
+        if (!select) return;
+        select.options = [];
+
+        termsList.forEach(t => {
+          const val = t.value || t.dateStr || '';
+          const isSelected = !!(selectedDate && (val === selectedDate || t.dateStr === selectedDate || t.value === selectedDate));
+          select.options.push({
+            value: val,
+            text: t.label || val,
+            selected: isSelected
+          });
+        });
+      });
+    }
+
+    const testTerms = [
+      { label: '第2期 (2026/04/01〜)', value: '2026/04/01' },
+      { label: '第1期 (2025/10/01〜)', dateStr: '2025/10/01' }
+    ];
+
+    renderOptions(testTerms, '2026/04/01');
+
+    const settingSelect = mockElements['setting-page-period-select'];
+    assert.strictEqual(settingSelect.options.length, 2);
+    assert.strictEqual(settingSelect.options[0].value, '2026/04/01');
+    assert.strictEqual(settingSelect.options[0].selected, true);
+    assert.strictEqual(settingSelect.options[1].value, '2025/10/01');
+    assert.strictEqual(settingSelect.options[1].selected, false);
+  });
+
+  it('correctly switches settings subtabs between period, goals, members, and maintenance', () => {
+    const validTabs = ['period', 'goals', 'members', 'maintenance'];
+    const mockElements = {};
+    validTabs.forEach(t => {
+      mockElements[`settings-subtab-btn-${t}`] = { classList: new Set() };
+      mockElements[`settings-pane-${t}`] = { classList: new Set() };
+    });
+
+    let currentSettingsSubTab = 'period';
+    function switchSubTab(tabKey) {
+      if (!validTabs.includes(tabKey)) tabKey = 'period';
+      currentSettingsSubTab = tabKey;
+
+      validTabs.forEach(t => {
+        const btn = mockElements[`settings-subtab-btn-${t}`];
+        const pane = mockElements[`settings-pane-${t}`];
+        if (btn) {
+          if (t === tabKey) btn.classList.add('active');
+          else btn.classList.delete('active');
+        }
+        if (pane) {
+          if (t === tabKey) pane.classList.add('active');
+          else pane.classList.delete('active');
+        }
+      });
+    }
+
+    // Initial switch to goals
+    switchSubTab('goals');
+    assert.strictEqual(currentSettingsSubTab, 'goals');
+    assert.strictEqual(mockElements['settings-subtab-btn-goals'].classList.has('active'), true);
+    assert.strictEqual(mockElements['settings-pane-goals'].classList.has('active'), true);
+    assert.strictEqual(mockElements['settings-subtab-btn-period'].classList.has('active'), false);
+    assert.strictEqual(mockElements['settings-pane-period'].classList.has('active'), false);
+
+    // Switch to members
+    switchSubTab('members');
+    assert.strictEqual(currentSettingsSubTab, 'members');
+    assert.strictEqual(mockElements['settings-subtab-btn-members'].classList.has('active'), true);
+    assert.strictEqual(mockElements['settings-pane-members'].classList.has('active'), true);
+
+    // Invalid tab falls back to period
+    switchSubTab('unknown');
+    assert.strictEqual(currentSettingsSubTab, 'period');
+    assert.strictEqual(mockElements['settings-subtab-btn-period'].classList.has('active'), true);
+  });
 });

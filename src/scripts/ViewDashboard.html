@@ -160,8 +160,8 @@
     renderHotVisitorsTable(hotList);
     renderOneMonthTable(oneMonthList);
 
-    if (data.bniTermsList && data.selectedStartDate) {
-      renderBniTermsSelectOptions(data.bniTermsList, data.selectedStartDate);
+    if (data.bniTermsList) {
+      renderBniTermsSelectOptions(data.bniTermsList, data.startDateStr || data.selectedStartDate);
     }
   }
 
