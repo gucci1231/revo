@@ -784,7 +784,19 @@ function handleApiRequest(req, res, urlObj) {
           B: total > 0 ? ((m.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
           C: total > 0 ? ((m.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
         };
-        return { ...m, joinRate: rate + "%", feelRates };
+        const g = resolveGoalsForMonth(k);
+        return {
+          ...m,
+          joinRate: rate + "%",
+          feelRates,
+          goal: g,
+          targetJoined: g.target_joined || 2,
+          targetVisitorsWeekly: g.target_visitors_weekly || 4,
+          targetJoinRate: (g.target_join_rate || 25.0) + "%",
+          targetHearingRate: (g.target_hearing_rate || 100.0) + "%",
+          isCustomGoal: !!g.is_custom,
+          goalSource: g.source || "default"
+        };
       });
 
       const chartDates = weeklyKeys.slice(0, 10).reverse();
@@ -805,6 +817,8 @@ function handleApiRequest(req, res, urlObj) {
       }
       if (targetJoinGoal <= 0) targetJoinGoal = 12;
 
+      const currentYm = new Date().toISOString().substring(0, 7).replace('-', '/');
+      const currentMonthGoal = resolveGoalsForMonth(currentYm);
       const achievementRate = targetJoinGoal > 0 ? ((totalJoinedCount / targetJoinGoal) * 100).toFixed(1) : "0.0";
 
       return res.end(JSON.stringify({
@@ -825,7 +839,9 @@ function handleApiRequest(req, res, urlObj) {
           hearingRate: totalApplyCount > 0 ? ((totalHearingCount / totalApplyCount) * 100).toFixed(1) : "0.0",
           hotVisitorCount: hotVisitors.length,
           pendingActionPlansCount: pendingApCount,
-          overdueActionPlansCount: overdueApCount
+          overdueActionPlansCount: overdueApCount,
+          currentMonth: currentYm,
+          currentMonthGoal: currentMonthGoal
         },
         chart: { labels: chartLabels, data: chartData },
         tables: {

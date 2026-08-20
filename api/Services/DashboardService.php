@@ -177,6 +177,14 @@ class DashboardService {
                 'B' => $total > 0 ? number_format(($mData['feelCounts']['B'] / $total) * 100, 1) . '%' : '0.0%',
                 'C' => $total > 0 ? number_format(($mData['feelCounts']['C'] / $total) * 100, 1) . '%' : '0.0%',
             ];
+            $mResolvedGoal = $this->settingRepo->resolveGoalsForMonth($mKey);
+            $mData['goal'] = $mResolvedGoal;
+            $mData['targetJoined'] = $mResolvedGoal['target_joined'] ?? 2;
+            $mData['targetVisitorsWeekly'] = $mResolvedGoal['target_visitors_weekly'] ?? 4;
+            $mData['targetJoinRate'] = ($mResolvedGoal['target_join_rate'] ?? 25.0) . '%';
+            $mData['targetHearingRate'] = ($mResolvedGoal['target_hearing_rate'] ?? 100.0) . '%';
+            $mData['isCustomGoal'] = !empty($mResolvedGoal['is_custom']);
+            $mData['goalSource'] = $mResolvedGoal['source'] ?? 'default';
             $monthlyStats[] = $mData;
         }
 
@@ -203,6 +211,9 @@ class DashboardService {
             $termMonthTs = strtotime('+1 month', $termMonthTs);
         }
         if ($targetJoinGoal <= 0) $targetJoinGoal = 12;
+
+        $currentYm = date('Y/m');
+        $currentMonthGoal = $this->settingRepo->resolveGoalsForMonth($currentYm);
 
         $achievementRate = number_format(($totalJoinedCount / $targetJoinGoal) * 100, 1);
         $joinRate = $totalApplyCount > 0 ? number_format(($totalJoinedCount / $totalApplyCount) * 100, 1) : '0.0';
@@ -234,7 +245,9 @@ class DashboardService {
                 'hearingRate' => (string)$hearingRate,
                 'hotVisitorCount' => count($hotVisitors),
                 'pendingActionPlansCount' => $pendingActionPlansCount,
-                'overdueActionPlansCount' => $overdueActionPlansCount
+                'overdueActionPlansCount' => $overdueActionPlansCount,
+                'currentMonth' => $currentYm,
+                'currentMonthGoal' => $currentMonthGoal
             ],
             'chart' => [
                 'labels' => $chartLabels,
