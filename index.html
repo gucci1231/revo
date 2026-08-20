@@ -10368,11 +10368,11 @@ window.CelebrationEffect = (function() {
       if (isCompleted) {
         scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-rose-700"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-amber-700"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${p.due_date})</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${p.due_date})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-700"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
       }
 
       const reportBoxHtml = p.report_text
