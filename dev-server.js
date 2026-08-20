@@ -864,9 +864,9 @@ function handleApiRequest(req, res, urlObj) {
         };
       });
 
-      const chartDates = weeklyKeys.slice(0, 10).reverse();
-      const chartLabels = chartDates.map(d => d.substring(5));
-      const chartData = chartDates.map(d => weeklyMap[d].applyCount);
+      const chartDatesAsc = Object.keys(weeklyMap).filter(d => d >= startDateStr).sort();
+      const chartLabels = chartDatesAsc.map(d => d.substring(5));
+      const chartData = chartDatesAsc.map(d => weeklyMap[d].applyCount);
 
       let totalMeetingThursdays = 0;
       let cTh = new Date(startDateStr.replace(/\//g, '-'));

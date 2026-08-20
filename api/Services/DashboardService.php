@@ -245,12 +245,16 @@ class DashboardService {
             $monthlyStats[] = $mData;
         }
 
-        $chartDates = array_reverse(array_slice(array_keys($weeklyMap), 0, 10));
+        // グラフ用データ: 期のスタートから現在までの全定例会（時系列昇順）
+        $chartDatesAsc = array_keys($weeklyMap);
+        sort($chartDatesAsc);
         $chartLabels = [];
         $chartData = [];
-        foreach ($chartDates as $dStr) {
-            $chartLabels[] = date('m/d', strtotime(str_replace('/', '-', $dStr)));
-            $chartData[] = $weeklyMap[$dStr]['applyCount'];
+        foreach ($chartDatesAsc as $dStr) {
+            if ($dStr >= $startDateStr) {
+                $chartLabels[] = date('m/d', strtotime(str_replace('/', '-', $dStr)));
+                $chartData[] = $weeklyMap[$dStr]['applyCount'];
+            }
         }
 
         // 期間全体の経過木曜日数
