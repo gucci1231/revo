@@ -5531,11 +5531,12 @@ tr:last-child td { border-bottom: none; }
           <table>
             <thead>
               <tr>
-                <th style="width: 80px;">年月</th>
-                <th class="text-center" style="width: 110px;">申込 / 週目標</th>
-                <th class="text-center" style="width: 55px;">参加</th>
+                <th style="width: 75px;">年月</th>
+                <th class="text-center" style="width: 55px;">申込</th>
+                <th class="text-center" style="width: 105px;">週平均 / 目標</th>
+                <th class="text-center" style="width: 50px;">参加</th>
                 <th class="text-center">温度感</th>
-                <th class="text-center" style="width: 90px;">入会 / 目標</th>
+                <th class="text-center" style="width: 85px;">入会 / 目標</th>
               </tr>
             </thead>
             <tbody id="table-monthly-stats"></tbody>
@@ -9533,7 +9534,7 @@ window.CelebrationEffect = (function() {
     tbody.innerHTML = '';
 
     const isMonthly = (tbodyId === 'table-monthly-stats');
-    const colCount = 5;
+    const colCount = isMonthly ? 6 : 5;
 
     if (!records || records.length === 0) {
       tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: #868e96; padding: 15px;">データなし</td></tr>`;
@@ -9554,6 +9555,8 @@ window.CelebrationEffect = (function() {
         const avgWeekly = row.avgVisitorsWeekly || (row.meetingCount ? (applyVal / Math.max(1, row.meetingCount)).toFixed(1) : applyVal);
         const isGoalAchieved = joinedVal >= targetJoined;
         const joinedColor = isGoalAchieved && joinedVal > 0 ? '#15803d' : '#0f172a';
+        const isWeeklyGoalAchieved = Number(avgWeekly) >= Number(targetVisitorsWeekly);
+        const weeklyAvgColor = isWeeklyGoalAchieved && Number(avgWeekly) > 0 ? '#15803d' : '#0f172a';
 
         let typeBadge = '';
         if (row.isCustomGoal) {
@@ -9562,9 +9565,11 @@ window.CelebrationEffect = (function() {
 
         tr.innerHTML = `
           <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${typeBadge}${labelVal}</td>
-          <td style="text-align: center; padding: 6px 4px; white-space: nowrap;">
-            <div style="font-weight: 700; color: #0f172a; font-size: 13px; line-height: 1.2;">${applyVal}名</div>
-            <div style="font-size: 10px; color: #64748b; font-weight: 500; margin-top: 1px;" title="定例会週平均: ${avgWeekly}名 / 目標: ${targetVisitorsWeekly}名/週">週 ${avgWeekly}/${targetVisitorsWeekly}名</div>
+          <td style="text-align: center; padding: 8px 4px; white-space: nowrap; font-weight: 700; color: #0f172a; font-size: 13px;">${applyVal}名</td>
+          <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
+            <span style="font-weight: 700; font-size: 13px; color: ${weeklyAvgColor};">${avgWeekly}</span>
+            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetVisitorsWeekly}名</span>
+            ${isWeeklyGoalAchieved && Number(avgWeekly) > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #f1f5f9; color: #15803d; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
           </td>
           <td style="text-align: center; color: #334155; font-weight: 600; font-size: 12px; padding: 8px 4px; white-space: nowrap;">${attVal}名</td>
           <td style="padding: 8px 6px; vertical-align: middle;">${feelRatesHtml}</td>
