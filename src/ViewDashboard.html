@@ -1,62 +1,51 @@
 <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
-  <!-- 1. 4大主要KPIサマリー (Ultra Radical Minimalist & Main Visual Hero) -->
+  <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual) -->
   <div class="dash-hero-grid">
-    <!-- KPI 1: 次回定例会 (毎週目標) -->
+    <!-- KPI 1: 次回定例会 (日付ラベル & 中央特大数字リング) -->
     <div class="dash-hero-card hero-weekly" id="card-kpi-weekly" onclick="switchDashboardPanel('meeting', true)" title="次回定例会ビジター名簿を表示">
-      <div class="dash-hero-split">
-        <div class="dash-hero-left">
-          <div class="dash-hero-label-row">
-            <span class="dash-hero-minimal-title">次回定例会</span>
-            <span class="dash-hero-minimal-tag" id="date-next-thu">--/--</span>
-            <span id="date-after-next-thu" style="display: none;"></span>
-            <span id="val-after-next-thu-count" style="display: none;"></span>
-            <span id="badge-weekly-complete" style="display: none;"></span>
-          </div>
-          <div class="dash-hero-val-container">
-            <span class="dash-hero-number" id="val-next-thu-count">-</span>
-            <span class="dash-hero-goal-text">/ <span id="val-target-weekly-goal">4</span></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
-          <div class="kpi-ring-widget" id="wrap-weekly-ring" title="毎週の目標達成率">
-            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-weekly-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
-            </svg>
-            <div class="kpi-ring-center">
-              <span id="val-weekly-ring-num" class="kpi-ring-value">0</span>
-              <span class="kpi-ring-unit">%</span>
+      <div class="dash-hero-top-row">
+        <span class="dash-hero-date-label" id="date-next-thu">--/--</span>
+        <span id="date-after-next-thu" style="display: none;"></span>
+        <span id="val-after-next-thu-count" style="display: none;"></span>
+        <span id="badge-weekly-complete" style="display: none;"></span>
+        <span id="val-weekly-ring-num" style="display: none;">0</span>
+      </div>
+      <div class="dash-hero-center-widget">
+        <div class="kpi-hero-ring-wrap" id="wrap-weekly-ring">
+          <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+            <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+            <circle id="ring-weekly-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+          </svg>
+          <div class="kpi-ring-content">
+            <div class="dash-hero-val-container">
+              <span class="dash-hero-main-number" id="val-next-thu-count">-</span>
+              <span class="dash-hero-main-goal">/<span id="val-target-weekly-goal">4</span></span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- KPI 2: 入会目標 (期目標) -->
+    <!-- KPI 2: 入会目標 -->
     <div class="dash-hero-card hero-join" id="card-kpi-joined" onclick="switchDashboardPanel('stats', true)" title="定例会推移・集計グラフを表示">
-      <div class="dash-hero-split">
-        <div class="dash-hero-left">
-          <div class="dash-hero-label-row">
-            <span class="dash-hero-minimal-title">入会目標</span>
-            <span id="val-join-rate" style="display: none;">0%</span>
-            <span id="val-achievement-rate" style="display: none;">0%</span>
-          </div>
-          <div class="dash-hero-val-container">
-            <span class="dash-hero-number" id="val-joined-count">-</span>
-            <span class="dash-hero-goal-text">/ <span id="val-target-goal">12</span></span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
-          <div class="kpi-ring-widget" id="wrap-joined-ring" title="入会目標達成率">
-            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-joined-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
-            </svg>
-            <div class="kpi-ring-center">
-              <span id="val-achievement-ring-num" class="kpi-ring-value">0</span>
-              <span class="kpi-ring-unit">%</span>
+      <div class="dash-hero-top-row">
+        <span class="dash-hero-text-label">入会目標</span>
+        <span id="val-join-rate" style="display: none;">0%</span>
+        <span id="val-achievement-rate" style="display: none;">0%</span>
+        <span id="val-achievement-ring-num" style="display: none;">0</span>
+      </div>
+      <div class="dash-hero-center-widget">
+        <div class="kpi-hero-ring-wrap" id="wrap-joined-ring">
+          <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+            <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+            <circle id="ring-joined-achievement" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+          </svg>
+          <div class="kpi-ring-content">
+            <div class="dash-hero-val-container">
+              <span class="dash-hero-main-number" id="val-joined-count">-</span>
+              <span class="dash-hero-main-goal">/<span id="val-target-goal">12</span></span>
             </div>
           </div>
         </div>
@@ -65,29 +54,23 @@
 
     <!-- KPI 3: 申込ビジター総数 -->
     <div class="dash-hero-card hero-visitors" id="card-kpi-visitors" onclick="switchTab('visitors', true)" title="全ビジター統合管理名簿を表示">
-      <div class="dash-hero-split">
-        <div class="dash-hero-left">
-          <div class="dash-hero-label-row">
-            <span class="dash-hero-minimal-title">申込ビジター</span>
-            <span id="val-avg-visitors" style="display: none;">-</span>
-            <span id="val-target-visitors-weekly" style="display: none;">-</span>
-            <span id="val-hearing-rate" style="display: none;">0%</span>
-            <span id="val-target-hearing-rate" style="display: none;">100%</span>
-          </div>
-          <div class="dash-hero-val-container">
-            <span class="dash-hero-number" id="val-apply-count">-</span>
-            <span class="dash-hero-unit-text">名</span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
-          <div class="kpi-ring-widget" id="wrap-hearing-ring" title="ヒアリング提出率">
-            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-hearing-rate" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
-            </svg>
-            <div class="kpi-ring-center">
-              <span id="val-hearing-ring-num" class="kpi-ring-value">0</span>
-              <span class="kpi-ring-unit">%</span>
+      <div class="dash-hero-top-row">
+        <span class="dash-hero-text-label">申込ビジター</span>
+        <span id="val-avg-visitors" style="display: none;">-</span>
+        <span id="val-target-visitors-weekly" style="display: none;">-</span>
+        <span id="val-hearing-rate" style="display: none;">0%</span>
+        <span id="val-target-hearing-rate" style="display: none;">100%</span>
+        <span id="val-hearing-ring-num" style="display: none;">0</span>
+      </div>
+      <div class="dash-hero-center-widget">
+        <div class="kpi-hero-ring-wrap" id="wrap-hearing-ring">
+          <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+            <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+            <circle id="ring-hearing-rate" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+          </svg>
+          <div class="kpi-ring-content">
+            <div class="dash-hero-val-container">
+              <span class="dash-hero-main-number" id="val-apply-count">-</span>
             </div>
           </div>
         </div>
@@ -96,28 +79,23 @@
 
     <!-- KPI 4: 要対応アクション -->
     <div class="dash-hero-card hero-actions" id="card-kpi-actions" onclick="switchTab('actions', true)" title="アクション管理ページを表示">
-      <div class="dash-hero-split">
-        <div class="dash-hero-left">
-          <div class="dash-hero-label-row">
-            <span class="dash-hero-minimal-title">要対応</span>
-            <span id="val-hot-count" style="display: none;">0</span>
-            <span id="val-overdue-action-plans" style="display: none;">0</span>
-            <span id="indicator-overdue-dot" style="display: none;"></span>
-            <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
-          </div>
-          <div class="dash-hero-val-container">
-            <span class="dash-hero-number" id="val-pending-action-plans">-</span>
-            <span class="dash-hero-unit-text">件</span>
-          </div>
-        </div>
-        <div class="dash-hero-right">
-          <div class="kpi-ring-widget" id="wrap-action-status" title="アクション状態">
-            <svg class="kpi-ring-svg" viewBox="0 0 48 48">
-              <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
-              <circle id="ring-action-status" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
-            </svg>
-            <div class="kpi-ring-center">
-              <span id="val-action-status-text" class="kpi-ring-value">0</span>
+      <div class="dash-hero-top-row">
+        <span class="dash-hero-text-label">要対応</span>
+        <span id="val-hot-count" style="display: none;">0</span>
+        <span id="val-overdue-action-plans" style="display: none;">0</span>
+        <span id="indicator-overdue-dot" style="display: none;"></span>
+        <span id="badge-overdue-summary" class="kpi-status-dot blue" title="正常"></span>
+        <span id="val-action-status-text" style="display: none;">0</span>
+      </div>
+      <div class="dash-hero-center-widget">
+        <div class="kpi-hero-ring-wrap" id="wrap-action-status">
+          <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+            <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+            <circle id="ring-action-status" class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="125.66" />
+          </svg>
+          <div class="kpi-ring-content">
+            <div class="dash-hero-val-container">
+              <span class="dash-hero-main-number" id="val-pending-action-plans">-</span>
             </div>
           </div>
         </div>
