@@ -321,6 +321,9 @@
 
         const actionCellHtml = `
           <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
+            <div class="flex items-center gap-1.5 flex-wrap mb-1">
+              ${renderActionTypeBadgeHtml(p.action_type)}
+            </div>
             <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
               ${escapeAndLinkify(p.action_text, true)}
             </div>
@@ -392,7 +395,8 @@
 
           <!-- 下段: 左側に期日(状態付)・担当者バッジ、右側に共有・詳細ナビ -->
           <div class="dash-ap-card-bottom-row">
-            <div class="dash-ap-card-badges-left">
+            <div class="dash-ap-card-badges-left flex-wrap">
+              ${renderActionTypeBadgeHtml(p.action_type)}
               ${scheduleBadgeHtml}
               <span class="vd-ap-badge-user" style="font-size:10px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
             </div>

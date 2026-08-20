@@ -196,6 +196,90 @@ tr:last-child td { border-bottom: none; }
   border-color: #e2e8f0;
 }
 
+/* Action Plan Type Badges */
+.badge-action-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  padding: 1.5px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.badge-action-type i {
+  font-size: 10px;
+}
+.badge-action-type.type-1to1 {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+.badge-action-type.type-referral {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+.badge-action-type.type-meeting {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+.badge-action-type.type-join {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+.badge-action-type.type-call {
+  background: #f0f9ff;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+.badge-action-type.type-other {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+/* Action Type Pill Group (Form Input) */
+.ap-type-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ap-type-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #ffffff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.16s ease;
+}
+.ap-type-pill-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.ap-type-pill-btn.active {
+  background: #0071e3;
+  color: #ffffff;
+  border-color: #0071e3;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.22);
+}
+.ap-type-pill-btn.active i {
+  color: #ffffff;
+}
+
 .badge-toggle { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; background: #f1f5f9; color: #64748b; user-select: none; white-space: nowrap; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
 .badge-toggle.none { background: #f1f5f9; color: #64748b; }

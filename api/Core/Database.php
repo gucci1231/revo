@@ -103,6 +103,7 @@ class Database {
                 due_date TEXT,
                 assignee_name TEXT DEFAULT '',
                 assignee_id TEXT DEFAULT '',
+                action_type TEXT DEFAULT '',
                 action_text TEXT NOT NULL,
                 report_text TEXT DEFAULT '',
                 reporter_name TEXT DEFAULT '',
@@ -128,6 +129,9 @@ class Database {
 
         $this->seedDefaultEmailTemplates();
 
+        try {
+            $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN action_type TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN report_text TEXT DEFAULT ''");
         } catch (\PDOException $e) {}

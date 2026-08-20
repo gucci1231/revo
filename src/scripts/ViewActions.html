@@ -245,6 +245,7 @@
 
         <div class="kanban-card-footer" onclick="event.stopPropagation()">
           <div class="kanban-card-meta">
+            ${renderActionTypeBadgeHtml(p.action_type)}
             ${scheduleBadgeHtml}
             <span class="vd-ap-badge-user text-[10.5px] py-0.5 px-2"><i class="fa-regular fa-user text-[9px]"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
           </div>
@@ -349,7 +350,8 @@
         </div>
 
         <div class="dash-ap-card-bottom-row">
-          <div class="dash-ap-card-badges-left">
+          <div class="dash-ap-card-badges-left flex-wrap">
+            ${renderActionTypeBadgeHtml(p.action_type)}
             ${scheduleBadgeHtml}
             <span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
           </div>

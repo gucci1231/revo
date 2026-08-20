@@ -714,6 +714,90 @@ tr:last-child td { border-bottom: none; }
   border-color: #e2e8f0;
 }
 
+/* Action Plan Type Badges */
+.badge-action-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  padding: 1.5px 7px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.badge-action-type i {
+  font-size: 10px;
+}
+.badge-action-type.type-1to1 {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+.badge-action-type.type-referral {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+.badge-action-type.type-meeting {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+}
+.badge-action-type.type-join {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+.badge-action-type.type-call {
+  background: #f0f9ff;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+.badge-action-type.type-other {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+/* Action Type Pill Group (Form Input) */
+.ap-type-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ap-type-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #ffffff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.16s ease;
+}
+.ap-type-pill-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.ap-type-pill-btn.active {
+  background: #0071e3;
+  color: #ffffff;
+  border-color: #0071e3;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.22);
+}
+.ap-type-pill-btn.active i {
+  color: #ffffff;
+}
+
 .badge-toggle { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; cursor: pointer; background: #f1f5f9; color: #64748b; user-select: none; white-space: nowrap; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
 .badge-toggle.none { background: #f1f5f9; color: #64748b; }
@@ -6236,20 +6320,28 @@ tr:last-child td { border-bottom: none; }
                         </div>
                       </div>
 
-                      <!-- アクション内容 -->
+                      <!-- アクション種別（タイプ） -->
                       <div class="form-group mt-3.5 mb-0">
                         <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                          <i class="fa-solid fa-list-check text-emerald-600"></i> アクション内容
+                          <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
                         </label>
-                        <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
-                        <div class="vd-quick-chips mt-2 flex flex-wrap gap-1.5">
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('1to1日程調整')">☕ 1to1日程調整</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('リファーラル提供')">🎁 リファーラル提供</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('次回定例会案内')">📅 次回定例会案内</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('入会案内送付')">📩 入会案内送付</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('電話フォロー')">📞 電話フォロー</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('メンバー紹介')">👥 メンバー紹介</button>
+                        <div class="ap-type-pill-group" id="vd-ap-type-group">
+                          <button type="button" class="ap-type-pill-btn active" data-type="1to1" onclick="setApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="リファーラル" onclick="setApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="定例会案内" onclick="setApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="入会案内" onclick="setApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="電話フォロー" onclick="setApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="その他" onclick="setApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
                         </div>
+                        <input type="hidden" id="vd-ap-type-val" value="1to1">
+                      </div>
+
+                      <!-- アクション内容（詳細） -->
+                      <div class="form-group mt-3.5 mb-0">
+                        <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                          <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
+                        </label>
+                        <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
                       </div>
 
                       <div class="vd-form-actions mt-4">
@@ -7565,6 +7657,27 @@ const ApiService = {
       return `<div class="badge-rank-emblem rank-C ${sizeClass}" title="感触ランク C">C</div>`;
     }
     return `<div class="badge-rank-emblem rank-none ${sizeClass}" title="感触ランク 未設定">-</div>`;
+  }
+
+  function renderActionTypeBadgeHtml(type) {
+    if (!type) return '';
+    const t = String(type).trim();
+    if (t === '1to1') {
+      return `<span class="badge-action-type type-1to1"><i class="fa-solid fa-handshake"></i> 1to1</span>`;
+    }
+    if (t === 'リファーラル') {
+      return `<span class="badge-action-type type-referral"><i class="fa-solid fa-gift"></i> リファーラル</span>`;
+    }
+    if (t === '定例会案内' || t === '次回案内') {
+      return `<span class="badge-action-type type-meeting"><i class="fa-solid fa-calendar-day"></i> 定例会案内</span>`;
+    }
+    if (t === '入会案内') {
+      return `<span class="badge-action-type type-join"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</span>`;
+    }
+    if (t === '電話フォロー' || t === 'フォロー') {
+      return `<span class="badge-action-type type-call"><i class="fa-solid fa-phone"></i> 電話フォロー</span>`;
+    }
+    return `<span class="badge-action-type type-other"><i class="fa-solid fa-tag"></i> ${escapeHtml(t)}</span>`;
   }
 
   function changeVisitorStatus(id, field, value) {
@@ -9530,6 +9643,9 @@ window.CelebrationEffect = (function() {
 
         const actionCellHtml = `
           <div style="min-width: 130px; white-space: normal; word-break: break-word; line-height: 1.35;">
+            <div class="flex items-center gap-1.5 flex-wrap mb-1">
+              ${renderActionTypeBadgeHtml(p.action_type)}
+            </div>
             <div class="${isCompleted ? 'vd-ap-text completed' : 'vd-ap-text'}" style="font-size: 12px; font-weight: 700;">
               ${escapeAndLinkify(p.action_text, true)}
             </div>
@@ -9601,7 +9717,8 @@ window.CelebrationEffect = (function() {
 
           <!-- 下段: 左側に期日(状態付)・担当者バッジ、右側に共有・詳細ナビ -->
           <div class="dash-ap-card-bottom-row">
-            <div class="dash-ap-card-badges-left">
+            <div class="dash-ap-card-badges-left flex-wrap">
+              ${renderActionTypeBadgeHtml(p.action_type)}
               ${scheduleBadgeHtml}
               <span class="vd-ap-badge-user" style="font-size:10px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
             </div>
@@ -10302,6 +10419,7 @@ window.CelebrationEffect = (function() {
 
         <div class="kanban-card-footer" onclick="event.stopPropagation()">
           <div class="kanban-card-meta">
+            ${renderActionTypeBadgeHtml(p.action_type)}
             ${scheduleBadgeHtml}
             <span class="vd-ap-badge-user text-[10.5px] py-0.5 px-2"><i class="fa-regular fa-user text-[9px]"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
           </div>
@@ -10406,7 +10524,8 @@ window.CelebrationEffect = (function() {
         </div>
 
         <div class="dash-ap-card-bottom-row">
-          <div class="dash-ap-card-badges-left">
+          <div class="dash-ap-card-badges-left flex-wrap">
+            ${renderActionTypeBadgeHtml(p.action_type)}
             ${scheduleBadgeHtml}
             <span class="vd-ap-badge-user" style="font-size:11px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
           </div>
@@ -10703,7 +10822,8 @@ window.CelebrationEffect = (function() {
                 return `
                   <div class="p-3.5 rounded-xl border ${isOverdue ? 'bg-amber-50/40 border-amber-300' : 'bg-white border-slate-200'} shadow-sm space-y-2">
                     <div class="flex items-center justify-between gap-2 flex-wrap">
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        ${renderActionTypeBadgeHtml(p.action_type)}
                         <span class="px-2 py-0.5 rounded text-[10px] font-black ${isOverdue ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-700'}">
                           <i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(p.due_date || '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
@@ -10737,8 +10857,9 @@ window.CelebrationEffect = (function() {
                   <div class="space-y-1.5">
                     ${completedAps.map(p => `
                       <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2 text-xs">
-                        <div class="flex items-center gap-2 min-w-0">
+                        <div class="flex items-center gap-1.5 min-w-0">
                           <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] shrink-0 font-bold"><i class="fa-solid fa-check"></i></span>
+                          ${renderActionTypeBadgeHtml(p.action_type)}
                           <span class="font-medium text-slate-500 line-through truncate">${escapeAndLinkify(p.action_text, false)}</span>
                         </div>
                         <button type="button" class="text-[10px] text-slate-400 hover:text-slate-600 shrink-0" onclick="togglePfActionPlan('${p.id}', '${vid}', 0)">
@@ -10845,14 +10966,27 @@ window.CelebrationEffect = (function() {
                 <div class="text-[11px] font-black text-blue-900 flex items-center gap-1">
                   <i class="fa-solid fa-plus text-blue-600"></i> 新規アクションプランを登録
                 </div>
-                <input type="text" id="pf-ap-text-input" class="w-full px-3 py-1.5 text-xs bg-white rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 font-medium" placeholder="例: ○○様と1to1を実施、リファーラル提供...">
-                <div class="flex flex-wrap gap-1 mt-1 mb-1">
-                  <button type="button" class="px-2 py-0.5 text-[10.5px] font-semibold bg-white text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors" onclick="setPfApTextQuick('1to1日程調整')">☕ 1to1日程調整</button>
-                  <button type="button" class="px-2 py-0.5 text-[10.5px] font-semibold bg-white text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors" onclick="setPfApTextQuick('リファーラル提供')">🎁 リファーラル提供</button>
-                  <button type="button" class="px-2 py-0.5 text-[10.5px] font-semibold bg-white text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors" onclick="setPfApTextQuick('次回定例会案内')">📅 次回定例会案内</button>
-                  <button type="button" class="px-2 py-0.5 text-[10.5px] font-semibold bg-white text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors" onclick="setPfApTextQuick('入会案内送付')">📩 入会案内送付</button>
-                  <button type="button" class="px-2 py-0.5 text-[10.5px] font-semibold bg-white text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors" onclick="setPfApTextQuick('メンバー紹介')">👥 メンバー紹介</button>
+
+                <!-- アクション種別ピル選択 -->
+                <div>
+                  <label class="text-[10px] font-bold text-slate-500 block mb-1">アクション種別（タイプ）</label>
+                  <div class="ap-type-pill-group" id="pf-ap-type-group">
+                    <button type="button" class="ap-type-pill-btn active text-[11px] py-1 px-2.5" data-type="1to1" onclick="setPfApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
+                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="リファーラル" onclick="setPfApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
+                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="定例会案内" onclick="setPfApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
+                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="入会案内" onclick="setPfApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
+                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="電話フォロー" onclick="setPfApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
+                    <button type="button" class="ap-type-pill-btn text-[11px] py-1 px-2.5" data-type="その他" onclick="setPfApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
+                  </div>
+                  <input type="hidden" id="pf-ap-type-val" value="1to1">
                 </div>
+
+                <!-- アクション内容 -->
+                <div>
+                  <label class="text-[10px] font-bold text-slate-500 block mb-1">アクション内容（詳細）</label>
+                  <input type="text" id="pf-ap-text-input" class="w-full px-3 py-1.5 text-xs bg-white rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 font-medium" placeholder="例: zoom日程調整、案件打診...">
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                   <div>
                     <label class="text-[10px] font-bold text-slate-500 block mb-0.5">担当者</label>
@@ -13228,6 +13362,23 @@ window.CelebrationEffect = (function() {
     }
   }
 
+  function setApTypeSelected(type) {
+    const hidden = document.getElementById('vd-ap-type-val');
+    if (hidden) hidden.value = type;
+
+    const group = document.getElementById('vd-ap-type-group');
+    if (group) {
+      const btns = group.querySelectorAll('.ap-type-pill-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('data-type') === type) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+  }
+
   function setApActionQuick(text) {
     const input = document.getElementById('vd-ap-action-text');
     if (input) {
@@ -13364,6 +13515,7 @@ window.CelebrationEffect = (function() {
         card.innerHTML = `
           <div class="vd-ap-card-top">
             <div class="vd-ap-meta-row">
+              ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
                 <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日未定'} ${isOverdue ? '(期限超過)' : ''}
               </span>
@@ -13431,6 +13583,7 @@ window.CelebrationEffect = (function() {
               <span class="badge" style="background:#e6fcf5; color:#0ca678; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
                 <i class="fa-solid fa-circle-check" style="margin-right: 2px;"></i> 完了済
               </span>
+              ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date">
                 <i class="fa-regular fa-calendar"></i> 期日: ${item.due_date || '-'}
               </span>
@@ -13559,6 +13712,7 @@ window.CelebrationEffect = (function() {
       visitorId: currentVdVisitorId,
       dueDate: dueDate,
       assigneeName: assigneeName,
+      actionType: document.getElementById('vd-ap-type-val') ? document.getElementById('vd-ap-type-val').value : '1to1',
       actionText: actionText
     };
 
@@ -13579,6 +13733,7 @@ window.CelebrationEffect = (function() {
           showToast('✅ アクションプランを登録しました！');
           if (res.list) renderActionPlansList(res.list);
           document.getElementById('vd-ap-action-text').value = '';
+          setApTypeSelected('1to1');
           setApDateQuick(3);
           closeActionPlanModal();
         })
@@ -13627,6 +13782,7 @@ window.CelebrationEffect = (function() {
     document.getElementById('vd-ap-due-date').value = item.due_date || '';
     updateApDateBadge();
     setApAssigneeQuick(item.assignee_name || '');
+    setApTypeSelected(item.action_type || '1to1');
     document.getElementById('vd-ap-action-text').value = item.action_text || '';
 
     const titleEl = document.getElementById('vd-ap-form-title');

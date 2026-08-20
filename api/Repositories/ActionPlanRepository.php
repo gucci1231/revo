@@ -100,6 +100,7 @@ class ActionPlanRepository {
             'due_date' => $data['due_date'] ?? '',
             'assignee_name' => $data['assignee_name'] ?? '',
             'assignee_id' => $data['assignee_id'] ?? '',
+            'action_type' => $data['action_type'] ?? '',
             'action_text' => $data['action_text'],
             'report_text' => $data['report_text'] ?? '',
             'reporter_name' => $data['reporter_name'] ?? '',
@@ -125,6 +126,9 @@ class ActionPlanRepository {
         }
         if (isset($data['assignee_id'])) {
             $updateData['assignee_id'] = $data['assignee_id'];
+        }
+        if (isset($data['action_type'])) {
+            $updateData['action_type'] = $data['action_type'];
         }
         if (isset($data['action_text'])) {
             $updateData['action_text'] = $data['action_text'];

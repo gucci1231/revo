@@ -201,20 +201,28 @@
                         </div>
                       </div>
 
-                      <!-- アクション内容 -->
+                      <!-- アクション種別（タイプ） -->
                       <div class="form-group mt-3.5 mb-0">
                         <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
-                          <i class="fa-solid fa-list-check text-emerald-600"></i> アクション内容
+                          <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
                         </label>
-                        <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：1to1日程調整、入会案内送付 など" required>
-                        <div class="vd-quick-chips mt-2 flex flex-wrap gap-1.5">
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('1to1日程調整')">☕ 1to1日程調整</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('リファーラル提供')">🎁 リファーラル提供</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('次回定例会案内')">📅 次回定例会案内</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('入会案内送付')">📩 入会案内送付</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('電話フォロー')">📞 電話フォロー</button>
-                          <button type="button" class="vd-quick-action-chip" onclick="setApActionQuick('メンバー紹介')">👥 メンバー紹介</button>
+                        <div class="ap-type-pill-group" id="vd-ap-type-group">
+                          <button type="button" class="ap-type-pill-btn active" data-type="1to1" onclick="setApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="リファーラル" onclick="setApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="定例会案内" onclick="setApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="入会案内" onclick="setApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="電話フォロー" onclick="setApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
+                          <button type="button" class="ap-type-pill-btn" data-type="その他" onclick="setApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
                         </div>
+                        <input type="hidden" id="vd-ap-type-val" value="1to1">
+                      </div>
+
+                      <!-- アクション内容（詳細） -->
+                      <div class="form-group mt-3.5 mb-0">
+                        <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                          <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
+                        </label>
+                        <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
                       </div>
 
                       <div class="vd-form-actions mt-4">

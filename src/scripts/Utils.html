@@ -47,6 +47,27 @@
     return `<div class="badge-rank-emblem rank-none ${sizeClass}" title="感触ランク 未設定">-</div>`;
   }
 
+  function renderActionTypeBadgeHtml(type) {
+    if (!type) return '';
+    const t = String(type).trim();
+    if (t === '1to1') {
+      return `<span class="badge-action-type type-1to1"><i class="fa-solid fa-handshake"></i> 1to1</span>`;
+    }
+    if (t === 'リファーラル') {
+      return `<span class="badge-action-type type-referral"><i class="fa-solid fa-gift"></i> リファーラル</span>`;
+    }
+    if (t === '定例会案内' || t === '次回案内') {
+      return `<span class="badge-action-type type-meeting"><i class="fa-solid fa-calendar-day"></i> 定例会案内</span>`;
+    }
+    if (t === '入会案内') {
+      return `<span class="badge-action-type type-join"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</span>`;
+    }
+    if (t === '電話フォロー' || t === 'フォロー') {
+      return `<span class="badge-action-type type-call"><i class="fa-solid fa-phone"></i> 電話フォロー</span>`;
+    }
+    return `<span class="badge-action-type type-other"><i class="fa-solid fa-tag"></i> ${escapeHtml(t)}</span>`;
+  }
+
   function changeVisitorStatus(id, field, value) {
     const fieldLabels = {
       'isAttended': '出欠',

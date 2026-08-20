@@ -774,6 +774,23 @@
     }
   }
 
+  function setApTypeSelected(type) {
+    const hidden = document.getElementById('vd-ap-type-val');
+    if (hidden) hidden.value = type;
+
+    const group = document.getElementById('vd-ap-type-group');
+    if (group) {
+      const btns = group.querySelectorAll('.ap-type-pill-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('data-type') === type) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+  }
+
   function setApActionQuick(text) {
     const input = document.getElementById('vd-ap-action-text');
     if (input) {
@@ -910,6 +927,7 @@
         card.innerHTML = `
           <div class="vd-ap-card-top">
             <div class="vd-ap-meta-row">
+              ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
                 <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日未定'} ${isOverdue ? '(期限超過)' : ''}
               </span>
@@ -977,6 +995,7 @@
               <span class="badge" style="background:#e6fcf5; color:#0ca678; font-weight:800; font-size:11px; padding:2px 8px; border-radius:6px;">
                 <i class="fa-solid fa-circle-check" style="margin-right: 2px;"></i> 完了済
               </span>
+              ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date">
                 <i class="fa-regular fa-calendar"></i> 期日: ${item.due_date || '-'}
               </span>
@@ -1105,6 +1124,7 @@
       visitorId: currentVdVisitorId,
       dueDate: dueDate,
       assigneeName: assigneeName,
+      actionType: document.getElementById('vd-ap-type-val') ? document.getElementById('vd-ap-type-val').value : '1to1',
       actionText: actionText
     };
 
@@ -1125,6 +1145,7 @@
           showToast('✅ アクションプランを登録しました！');
           if (res.list) renderActionPlansList(res.list);
           document.getElementById('vd-ap-action-text').value = '';
+          setApTypeSelected('1to1');
           setApDateQuick(3);
           closeActionPlanModal();
         })
@@ -1173,6 +1194,7 @@
     document.getElementById('vd-ap-due-date').value = item.due_date || '';
     updateApDateBadge();
     setApAssigneeQuick(item.assignee_name || '');
+    setApTypeSelected(item.action_type || '1to1');
     document.getElementById('vd-ap-action-text').value = item.action_text || '';
 
     const titleEl = document.getElementById('vd-ap-form-title');

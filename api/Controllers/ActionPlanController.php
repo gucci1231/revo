@@ -95,6 +95,7 @@ class ActionPlanController extends Controller {
             'due_date' => $this->getParam('dueDate', '') ?: $this->getParam('due_date', ''),
             'assignee_name' => $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', ''),
             'assignee_id' => $this->getParam('assigneeId', '') ?: $this->getParam('assignee_id', ''),
+            'action_type' => $this->getParam('actionType', '') ?: $this->getParam('action_type', ''),
             'action_text' => $actionText,
             'is_completed' => 0
         ]);
@@ -120,6 +121,9 @@ class ActionPlanController extends Controller {
         }
         if ($this->getParam('assigneeName') !== null || $this->getParam('assignee_name') !== null) {
             $data['assignee_name'] = $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', '');
+        }
+        if ($this->getParam('actionType') !== null || $this->getParam('action_type') !== null) {
+            $data['action_type'] = $this->getParam('actionType', '') ?: $this->getParam('action_type', '');
         }
         if ($this->getParam('actionText') !== null || $this->getParam('action_text') !== null) {
             $data['action_text'] = $this->getParam('actionText', '') ?: $this->getParam('action_text', '');

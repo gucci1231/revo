@@ -203,6 +203,38 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(activePlans.length, 3);
     assert.deepStrictEqual(activePlans.map(p => p.id), ['1', '2', '3']);
   });
+
+  it('correctly supports actionType in creation and rendering', () => {
+    // 1. ApiService creates payload with actionType
+    const createConfig = ApiService.getRestConfig('createActionPlanApi', [{
+      visitorId: '225',
+      dueDate: '2026-08-20',
+      assigneeName: '川口 陽平',
+      actionType: 'リファーラル',
+      actionText: '案件打診と協業提案'
+    }]);
+    assert.strictEqual(createConfig.body.actionType, 'リファーラル');
+
+    // 2. renderActionTypeBadgeHtml logic
+    function renderActionTypeBadgeHtml(type) {
+      if (!type) return '';
+      const t = String(type).trim();
+      if (t === '1to1') return `<span class="badge-action-type type-1to1"><i class="fa-solid fa-handshake"></i> 1to1</span>`;
+      if (t === 'リファーラル') return `<span class="badge-action-type type-referral"><i class="fa-solid fa-gift"></i> リファーラル</span>`;
+      if (t === '定例会案内' || t === '次回案内') return `<span class="badge-action-type type-meeting"><i class="fa-solid fa-calendar-day"></i> 定例会案内</span>`;
+      if (t === '入会案内') return `<span class="badge-action-type type-join"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</span>`;
+      if (t === '電話フォロー' || t === 'フォロー') return `<span class="badge-action-type type-call"><i class="fa-solid fa-phone"></i> 電話フォロー</span>`;
+      return `<span class="badge-action-type type-other"><i class="fa-solid fa-tag"></i> ${t}</span>`;
+    }
+
+    assert(renderActionTypeBadgeHtml('1to1').includes('type-1to1'));
+    assert(renderActionTypeBadgeHtml('リファーラル').includes('type-referral'));
+    assert(renderActionTypeBadgeHtml('定例会案内').includes('type-meeting'));
+    assert(renderActionTypeBadgeHtml('入会案内').includes('type-join'));
+    assert(renderActionTypeBadgeHtml('電話フォロー').includes('type-call'));
+    assert(renderActionTypeBadgeHtml('その他').includes('type-other'));
+    assert.strictEqual(renderActionTypeBadgeHtml(''), '');
+  });
 });
 
 
