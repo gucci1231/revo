@@ -27,6 +27,14 @@ class SettingRepository {
         return $value !== false ? $value : $default;
     }
 
+    public function setKey(string $key, string $value, string $now): bool {
+        return $this->db->upsert('settings', [
+            'key' => $key,
+            'value' => $value,
+            'updated_at' => $now
+        ], ['key']);
+    }
+
     public function getDefaultGoals(): array {
         $json = $this->getByKey('goals_default');
         $default = [
