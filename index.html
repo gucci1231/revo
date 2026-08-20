@@ -2087,96 +2087,88 @@ select.form-input, select.form-select {
   }
 }
 
-@media (max-width: 1023px) {
-  .vd-mobile-ap-trigger-wrap {
-    display: block;
-  }
-  .vd-ap-form-modal-wrap {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 9999;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 16px;
-    align-items: center;
-    justify-content: center;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-  }
-  .vd-ap-form-modal-wrap.is-open {
-    display: flex !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-  .vd-ap-modal-content {
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    max-height: 90vh;
-    max-height: 90dvh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 22px 20px;
-    animation: vdModalPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
+/* アクションプラン ポップアップモーダル (PC & スマホ共通) */
+.vd-ap-trigger-wrap {
+  display: block;
+  margin-bottom: 16px;
+}
+.vd-ap-modal-close-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.vd-ap-modal-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.vd-ap-form-modal-wrap {
+  display: none;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 9999 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  padding: 16px;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.vd-ap-form-modal-wrap.is-open {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+.vd-ap-modal-content {
+  width: 100%;
+  max-width: 540px;
+  margin: auto;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 26px 24px;
+  animation: vdModalPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.vd-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.vd-form-grid > * {
+  min-width: 0;
+}
+@media (max-width: 639px) {
   .vd-form-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .vd-mobile-ap-trigger-wrap {
-    display: none !important;
-  }
-  .vd-ap-form-modal-wrap {
-    display: block !important;
-    position: static;
-    background: transparent;
-    padding: 0;
-    backdrop-filter: none;
-    z-index: auto;
-    overflow: visible;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-  .vd-ap-modal-content {
-    max-width: 100%;
-    margin: 0 0 16px 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    overflow: visible;
-    background: #ffffff;
-    padding: 20px;
-  }
-  .vd-ap-modal-close-btn {
-    display: none !important;
-  }
-  .vd-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 14px;
-  }
-  .vd-form-grid > * {
-    min-width: 0;
   }
 }
 
@@ -6276,94 +6268,92 @@ select.form-input, select.form-select {
           <div class="vd-col-left">
             <!-- Tab Content 0: アクションプラン -->
             <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
-              <!-- スマホ用: アクション登録ボタン (PCでは非表示) -->
-              <div class="vd-mobile-ap-trigger-wrap">
+              <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
+              <div class="vd-ap-trigger-wrap mb-4">
                 <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
                   <i class="fa-solid fa-plus-circle text-base"></i> アクション登録
                 </button>
               </div>
 
-              <!-- 登録カードスロット (PC: インライン / スマホ: モーダル) -->
-              <div id="vd-ap-form-slot">
-                <div id="vd-ap-form-modal" class="vd-ap-form-modal-wrap" onclick="handleApModalOverlayClick(event)">
-                  <div class="vd-box vd-ap-modal-content">
-                    <div class="vd-box-header">
-                      <h3 class="vd-box-title text-blue-600">
-                        <i class="fa-solid fa-calendar-plus"></i> <span id="vd-ap-form-title">アクション登録</span>
-                      </h3>
-                      <button type="button" class="vd-ap-modal-close-btn" onclick="closeActionPlanModal()" title="閉じる">&times;</button>
+              <!-- アクション登録ポップアップモーダル (PC / スマホ共通) -->
+              <div id="vd-ap-form-modal" class="vd-ap-form-modal-wrap" onclick="handleApModalOverlayClick(event)">
+                <div class="vd-box vd-ap-modal-content">
+                  <div class="vd-box-header">
+                    <h3 class="vd-box-title text-blue-600">
+                      <i class="fa-solid fa-calendar-plus"></i> <span id="vd-ap-form-title">アクション登録</span>
+                    </h3>
+                    <button type="button" class="vd-ap-modal-close-btn" onclick="closeActionPlanModal()" title="閉じる">&times;</button>
+                  </div>
+
+                  <form id="vd-form-action-plan" class="vd-ap-form" onsubmit="event.preventDefault(); submitNewActionPlan();">
+                    <input type="hidden" id="vd-ap-edit-id" value="">
+
+                    <!-- セクション1: 期日 ＆ 担当 -->
+                    <div class="vd-form-section">
+                      <div class="vd-form-grid">
+                        <!-- 期日 -->
+                        <div class="form-group mb-0">
+                          <div class="flex items-center justify-between flex-wrap gap-1 mb-2">
+                            <label class="form-label text-xs font-bold text-slate-600 mb-0 flex items-center gap-1.5">
+                              <i class="fa-regular fa-calendar text-blue-600"></i> 期日
+                            </label>
+                            <span id="vd-ap-date-day-badge" class="vd-date-day-badge"></span>
+                          </div>
+                          <div class="vd-date-input-wrap">
+                            <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight vd-ap-date-input" onchange="updateApDateBadge()" required>
+                          </div>
+                          <div class="vd-quick-chips mt-2.5" id="vd-ap-date-quick-chips">
+                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(0, this)">今日</button>
+                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(1, this)">明日</button>
+                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(3, this)">3日後</button>
+                            <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(7, this)">1週間後</button>
+                          </div>
+                        </div>
+
+                        <!-- 担当メンバー -->
+                        <div class="form-group mb-0">
+                          <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+                            <i class="fa-regular fa-user text-indigo-600"></i> 担当メンバー
+                          </label>
+                          <select id="vd-ap-assignee-select" class="form-input form-select form-input-highlight" required>
+                            <option value="">-- 担当メンバーを選択 --</option>
+                          </select>
+                          <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2.5 flex flex-wrap gap-1.5"></div>
+                        </div>
+                      </div>
                     </div>
 
-                    <form id="vd-form-action-plan" class="vd-ap-form" onsubmit="event.preventDefault(); submitNewActionPlan();">
-                      <input type="hidden" id="vd-ap-edit-id" value="">
-
-                      <!-- セクション1: 期日 ＆ 担当 -->
-                      <div class="vd-form-section">
-                        <div class="vd-form-grid gap-4">
-                          <!-- 期日 -->
-                          <div class="form-group mb-0">
-                            <div class="flex items-center justify-between flex-wrap gap-1 mb-2">
-                              <label class="form-label text-xs font-bold text-slate-600 mb-0 flex items-center gap-1.5">
-                                <i class="fa-regular fa-calendar text-blue-600"></i> 期日
-                              </label>
-                              <span id="vd-ap-date-day-badge" class="vd-date-day-badge"></span>
-                            </div>
-                            <div class="vd-date-input-wrap">
-                              <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight vd-ap-date-input" onchange="updateApDateBadge()" required>
-                            </div>
-                            <div class="vd-quick-chips mt-2.5" id="vd-ap-date-quick-chips">
-                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(0, this)">今日</button>
-                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(1, this)">明日</button>
-                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(3, this)">3日後</button>
-                              <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(7, this)">1週間後</button>
-                            </div>
-                          </div>
-
-                          <!-- 担当メンバー -->
-                          <div class="form-group mb-0">
-                            <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
-                              <i class="fa-regular fa-user text-indigo-600"></i> 担当メンバー
-                            </label>
-                            <select id="vd-ap-assignee-select" class="form-input form-select form-input-highlight" required>
-                              <option value="">-- 担当メンバーを選択 --</option>
-                            </select>
-                            <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2.5 flex flex-wrap gap-1.5"></div>
-                          </div>
-                        </div>
+                    <!-- セクション2: アクション種別（タイプ） -->
+                    <div class="vd-form-section">
+                      <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
+                      </label>
+                      <div class="ap-type-pill-group" id="vd-ap-type-group">
+                        <button type="button" class="ap-type-pill-btn active" data-type="1to1" onclick="setApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="リファーラル" onclick="setApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="定例会案内" onclick="setApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="入会案内" onclick="setApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="電話フォロー" onclick="setApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="その他" onclick="setApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
                       </div>
+                      <input type="hidden" id="vd-ap-type-val" value="1to1">
+                    </div>
 
-                      <!-- セクション2: アクション種別（タイプ） -->
-                      <div class="vd-form-section">
-                        <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
-                          <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
-                        </label>
-                        <div class="ap-type-pill-group" id="vd-ap-type-group">
-                          <button type="button" class="ap-type-pill-btn active" data-type="1to1" onclick="setApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
-                          <button type="button" class="ap-type-pill-btn" data-type="リファーラル" onclick="setApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
-                          <button type="button" class="ap-type-pill-btn" data-type="定例会案内" onclick="setApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
-                          <button type="button" class="ap-type-pill-btn" data-type="入会案内" onclick="setApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>
-                          <button type="button" class="ap-type-pill-btn" data-type="電話フォロー" onclick="setApTypeSelected('電話フォロー')"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
-                          <button type="button" class="ap-type-pill-btn" data-type="その他" onclick="setApTypeSelected('その他')"><i class="fa-solid fa-comment-dots"></i> その他</button>
-                        </div>
-                        <input type="hidden" id="vd-ap-type-val" value="1to1">
-                      </div>
+                    <!-- セクション3: アクション内容（詳細） -->
+                    <div class="vd-form-section">
+                      <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
+                      </label>
+                      <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
+                    </div>
 
-                      <!-- セクション3: アクション内容（詳細） -->
-                      <div class="vd-form-section">
-                        <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
-                          <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
-                        </label>
-                        <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
-                      </div>
-
-                      <div class="vd-form-actions">
-                        <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" onclick="closeActionPlanModal()">閉じる</button>
-                        <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
-                          <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+                    <div class="vd-form-actions">
+                      <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" onclick="closeActionPlanModal()">閉じる</button>
+                      <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
+                        <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
 
@@ -12935,10 +12925,6 @@ window.CelebrationEffect = (function() {
           return;
         }
 
-        if (window.innerWidth >= 1024) {
-          restoreApModalToSlot();
-        }
-
         currentVdWebAppUrl = res.webAppUrl || "";
         const v = res.visitor || {};
         currentVisitorDetail = v;
@@ -13655,25 +13641,12 @@ window.CelebrationEffect = (function() {
     }
   }
 
-  function restoreApModalToSlot() {
-    const modal = document.getElementById('vd-ap-form-modal');
-    const slot = document.getElementById('vd-ap-form-slot');
-    if (modal && slot && modal.parentElement !== slot) {
-      slot.appendChild(modal);
-    }
-  }
-
   function openActionPlanModal() {
     const modal = document.getElementById('vd-ap-form-modal');
     if (!modal) return;
 
-    // スマホ時は包含ブロックの干渉を完全回避するため body 直下に配置
-    if (window.innerWidth < 1024) {
-      if (modal.parentElement !== document.body) {
-        document.body.appendChild(modal);
-      }
-    } else {
-      restoreApModalToSlot();
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
     }
 
     const select = document.getElementById('vd-ap-assignee-select');
@@ -13694,17 +13667,7 @@ window.CelebrationEffect = (function() {
       modal.classList.remove('is-open');
     }
     cancelApEdit();
-    if (window.innerWidth >= 1024) {
-      restoreApModalToSlot();
-    }
   }
-
-  // 画面リサイズ時にPC幅であればスロットへ戻す
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1024) {
-      restoreApModalToSlot();
-    }
-  });
 
   function handleApModalOverlayClick(event) {
     if (event.target === document.getElementById('vd-ap-form-modal')) {
