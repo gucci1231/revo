@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎨 Complete Atomic Component Catalog | Visitor Host Revolution 2.0</title>
+  <title>UI Component Catalog | Visitor Host Revolution 2.0</title>
   
-  <!-- Fonts & Icons -->
+  <!-- Google Fonts & FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800;900&family=Noto+Sans+JP:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js for real graphs -->
+  <!-- Chart.js for Stats Verification -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Product CSS Files for Pixel-Perfect Live Fidelity -->
+  <!-- Existing Product CSS Files (Loaded directly without modification) -->
   <link rel="stylesheet" href="./public/css/variables.css">
   <link rel="stylesheet" href="./public/css/base.css">
   <link rel="stylesheet" href="./public/css/components.css">
@@ -28,122 +28,178 @@
       background-color: #f6f8fb;
       color: #0f172a;
     }
-    .catalog-section-badge {
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 9999px;
+    .font-num {
+      font-family: 'Barlow Semi Condensed', 'DIN Alternate', sans-serif;
+      font-feature-settings: "tnum";
+      font-variant-numeric: tabular-nums;
     }
-    .spec-card {
+    .catalog-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
-      padding: 20px;
+      padding: 24px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
-    .spec-title {
-      font-size: 12.5px;
+    .catalog-section-title {
+      font-size: 15px;
       font-weight: 800;
-      color: #334155;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .catalog-item-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 8px;
+      padding-bottom: 6px;
     }
-    /* Simulated Mobile Device Frame */
-    .mobile-preview-frame {
-      max-width: 390px;
-      margin: 0 auto;
-      border: 6px solid #1e293b;
-      border-radius: 28px;
-      background: #f6f8fb;
-      overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    }
-    .mobile-notch {
-      width: 120px;
-      height: 18px;
-      background: #1e293b;
-      margin: 0 auto;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-    }
-    .grid-spec-label {
-      font-size: 10.5px;
-      font-weight: 700;
+    .code-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
       color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .side-by-side-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .side-by-side-wrap {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body class="min-h-screen pb-32">
 
   <!-- Sticky Global Header -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-xs">
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
-        <i class="fa-solid fa-atom text-base"></i>
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs">
+        <i class="fa-solid fa-swatchbook text-sm"></i>
       </div>
       <div>
         <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-          Atomic UI Component Catalog
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Revo 2.0 全パーツ網羅</span>
+          UI Component Catalog
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Revo 2.0 Refactor</span>
         </h1>
-        <p class="text-xs text-slate-500">Atoms (原子) → Molecules (分子) → Organisms (有機体・複合体) 完全網羅標本</p>
+        <p class="text-xs text-slate-500">Atomic Design: Atoms / Molecules / Organisms プレビュー＆検証環境</p>
       </div>
     </div>
     <div class="flex items-center gap-3">
-      <a href="./index.html" class="px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition shadow-xs">
-        <i class="fa-solid fa-arrow-left"></i> 本番アプリへ
+      <a href="./index.html" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition shadow-xs">
+        <i class="fa-solid fa-arrow-left"></i> アプリ本体
       </a>
     </div>
   </header>
 
-  <!-- Sticky Sub Navigation -->
-  <nav class="bg-white/90 backdrop-blur-xs border-b border-slate-200 px-6 py-2 sticky top-[57px] z-40 flex items-center gap-4 text-xs font-bold text-slate-600 overflow-x-auto whitespace-nowrap">
-    <span class="text-slate-400 font-medium">JUMP:</span>
-    <a href="#sec-atoms-buttons" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-square-check text-blue-500"></i> 1. Buttons & Icons</a>
-    <a href="#sec-atoms-badges" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-tags text-emerald-500"></i> 2. Badges, Emblems & Chips</a>
-    <a href="#sec-atoms-forms" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-sliders text-amber-500"></i> 3. Form Controls & Inputs</a>
-    <a href="#sec-atoms-indicators" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-circle-dot text-rose-500"></i> 4. Indicators & Loaders</a>
-    <a href="#sec-molecules" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-cubes text-purple-500"></i> 5. Molecules (Pill Toggles & Segments)</a>
-    <a href="#sec-organisms-kpi" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-chart-pie text-cyan-500"></i> 6. KPI Ring Cards</a>
-    <a href="#sec-organisms-views" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-table-cells-large text-indigo-500"></i> 7. Tables, Cards & Modals</a>
+  <!-- Sticky Section Anchor Navigation -->
+  <nav class="bg-white/90 backdrop-blur-xs border-b border-slate-200 px-6 py-2 sticky top-[58px] z-40 flex items-center gap-4 text-xs font-bold text-slate-600 overflow-x-auto whitespace-nowrap">
+    <span class="text-slate-400 font-medium">SECTIONS:</span>
+    <a href="#sec-tokens" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-font text-blue-500"></i> 1. タイポグラフィ・トークン</a>
+    <a href="#sec-buttons" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-square-check text-emerald-500"></i> 2. ボタン・操作ユニット</a>
+    <a href="#sec-forms" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-sliders text-amber-500"></i> 3. フォーム・入力コントロール</a>
+    <a href="#sec-badges" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-tags text-rose-500"></i> 4. バッジ・チップ・ステータス</a>
+    <a href="#sec-organisms" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-layer-group text-purple-500"></i> 5. 複合コンポーネント (Cards & Tables)</a>
   </nav>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-16">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-12">
 
-    <!-- ========================================== -->
-    <!-- 1. ATOMS: Buttons & Icons (ボタン全種) -->
-    <!-- ========================================== -->
-    <section id="sec-atoms-buttons" class="space-y-4">
+    <!-- ================================================================= -->
+    <!-- 1. タイポグラフィ・トークン検証セクション -->
+    <!-- ================================================================= -->
+    <section id="sec-tokens" class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-blue-100 text-blue-800">Atoms</span>
-          <h2 class="text-base font-black text-slate-900">1. Buttons & Action Icons (ボタン・アイコン全集)</h2>
+        <h2 class="catalog-section-title">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          ## 1. タイポグラフィ・トークン検証セクション
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">Typography & Color Semantics</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 巨大KPI数値 (等幅 tabular-nums) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>巨大KPI数値 (等幅 tabular-nums)</span>
+            <span class="code-tag">Barlow Semi Condensed</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="font-num text-4xl font-extrabold text-slate-900 tracking-tight">128</span>
+            <span class="text-xs font-bold text-slate-400">名</span>
+            <span class="font-num text-2xl font-bold text-slate-400 ml-2">/ 150</span>
+          </div>
+          <p class="text-xs text-slate-500 font-mono">font-family: 'Barlow Semi Condensed', 'DIN Alternate'; font-variant-numeric: tabular-nums;</p>
         </div>
-        <span class="text-xs text-slate-400 font-medium">.btn-* / Apple Minimal Icons</span>
+
+        <!-- カラーセマンティクス & 感触ランク -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>カラーセマンティクス & 感触ランク</span>
+            <span class="code-tag">Semantics</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="p-2.5 rounded-lg bg-blue-50 border border-blue-200 text-center">
+              <span class="block text-xs font-black text-blue-700">正常 🔵</span>
+              <span class="text-[10px] text-blue-500 font-mono">#2563eb / #0071e3</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-center">
+              <span class="block text-xs font-black text-red-700">警告・超過 🔴</span>
+              <span class="text-[10px] text-red-500 font-mono">#ef4444</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
+              <span class="block text-xs font-black text-emerald-700">RANK A 🟢</span>
+              <span class="text-[10px] text-emerald-600 font-mono">#059669</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-center">
+              <span class="block text-xs font-black text-amber-700">RANK B 🟡</span>
+              <span class="text-[10px] text-amber-600 font-mono">#a16207</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================================================================= -->
+    <!-- 2. ボタン・操作ユニット検証セクション -->
+    <!-- ================================================================= -->
+    <section id="sec-buttons" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <h2 class="catalog-section-title">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+          ## 2. ボタン・操作ユニット検証セクション
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">Buttons & Minimal Action Icons</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <!-- Action Buttons -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Primary & Secondary Action</span>
-            <span class="text-[10px] text-slate-400 font-mono">.btn-action-*</span>
+        <!-- 2.1 主アクションボタン -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>主アクションボタン (保存・登録)</span>
+            <span class="code-tag">.btn-action-primary / .btn-save</span>
           </div>
-          <div class="flex flex-wrap gap-2.5 items-center">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Existing CSS -->
             <button type="button" class="btn-action-primary">
               <i class="fa-solid fa-plus"></i> 新規ビジター登録
             </button>
-            <button type="button" class="btn-action-secondary">
-              <i class="fa-solid fa-calendar-check"></i> 定例会を選択
+            <button type="button" class="btn-save">
+              <i class="fa-solid fa-check"></i> 保存する
             </button>
             <button type="button" class="btn-create-visitor">
               <i class="fa-solid fa-user-plus"></i> ビジター追加
@@ -151,35 +207,71 @@
           </div>
         </div>
 
-        <!-- Semantic Color Buttons -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Semantic Color Variations</span>
-            <span class="text-[10px] text-slate-400 font-mono">.btn-action-indigo / emerald</span>
+        <!-- 2.2 補助アクションボタン -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>補助アクションボタン (選択・キャンセル)</span>
+            <span class="code-tag">.btn-action-secondary / .btn-cancel</span>
           </div>
-          <div class="flex flex-wrap gap-2.5 items-center">
-            <button type="button" class="btn-action-primary btn-action-indigo">
-              <i class="fa-solid fa-cloud-arrow-up"></i> GAS同期実行
-            </button>
-            <button type="button" class="btn-action-primary btn-action-emerald">
-              <i class="fa-solid fa-file-excel"></i> CSV出力
-            </button>
-            <button type="button" class="btn-save">
-              <i class="fa-solid fa-check"></i> 保存する
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" class="btn-action-secondary">
+              <i class="fa-solid fa-calendar-check"></i> 定例会を選択
             </button>
             <button type="button" class="btn-cancel">
               キャンセル
             </button>
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 4px 8px;">
+              ⚡ 次回定例会
+            </button>
           </div>
         </div>
 
-        <!-- Table Row Action Buttons -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Table Row Actions</span>
-            <span class="text-[10px] text-slate-400 font-mono">.btn-table-action</span>
+        <!-- 2.3 アイコン単体ボタン (Apple Minimal - Radical Minimalism) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>アイコン単体ボタン (Radical Minimalism)</span>
+            <span class="code-tag">.btn-icon-action / .vd-back-btn</span>
           </div>
-          <div class="flex flex-wrap gap-2 items-center">
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- 戻るボタン (Appleスタイル・テキスト無し) -->
+            <button type="button" class="vd-back-btn" title="戻る">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <!-- ページ送りボタン -->
+            <button type="button" class="vd-nav-btn" title="前へ">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="vd-nav-btn" title="次へ">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <!-- 編集・削除アイコン -->
+            <button type="button" class="btn-icon-action" title="編集">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="btn-icon-action btn-icon-danger" title="削除">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+            <!-- 共有・別タブアイコン -->
+            <button type="button" class="vd-icon-btn" title="共有URLコピー">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            </button>
+            <button type="button" class="vd-icon-btn" title="別タブで開く">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+            <!-- サイドバー開閉 / モーダル閉じる -->
+            <button type="button" class="btn-icon-action" id="btn-sidebar-collapse" title="サイドバー折りたたみ">
+              <i class="fa-solid fa-bars"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2.4 テーブル操作ボタン -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>テーブル内操作ボタン</span>
+            <span class="code-tag">.btn-table-action</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
             <button type="button" class="btn-table-action primary">
               <i class="fa-solid fa-clipboard-question"></i> ヒアリング
             </button>
@@ -192,54 +284,13 @@
           </div>
         </div>
 
-        <!-- Apple Minimal Icons (Text-less) -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Apple Minimal Quick Icons</span>
-            <span class="text-[10px] text-slate-400 font-mono">.btn-icon-* / .vd-*</span>
+        <!-- 2.5 状態トグルボタン -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>ヒアリング・出欠状態トグルボタン</span>
+            <span class="code-tag">.btn-hearing / .btn-attend</span>
           </div>
-          <div class="flex flex-wrap gap-3 items-center">
-            <!-- Back Chevron -->
-            <button type="button" class="vd-back-btn" title="詳細から戻る">
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <!-- Navigation Chevrons -->
-            <button type="button" class="vd-nav-btn" title="前へ">
-              <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <button type="button" class="vd-nav-btn" title="次へ">
-              <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            <!-- Quick Edit / Delete -->
-            <button type="button" class="btn-icon-action" title="編集">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="btn-icon-action btn-icon-danger" title="削除">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-            <!-- Share URL -->
-            <button type="button" class="vd-icon-btn" title="共有URLコピー">
-              <i class="fa-solid fa-arrow-up-from-bracket"></i>
-            </button>
-            <button type="button" class="vd-icon-btn" title="別タブで開く">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </button>
-            <!-- Modal Close -->
-            <div class="relative w-8 h-8">
-              <button type="button" class="modal-close-btn" style="position: static;" title="閉じる">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hearing Form Trigger Buttons -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Hearing & Attend Buttons</span>
-            <span class="text-[10px] text-slate-400 font-mono">.btn-hearing / .btn-attend</span>
-          </div>
-          <div class="flex flex-wrap gap-2 items-center">
+          <div class="flex flex-wrap items-center gap-2">
             <button type="button" class="btn-hearing has-data">
               <i class="fa-solid fa-file-circle-check"></i> ヒアリング済
             </button>
@@ -255,18 +306,18 @@
           </div>
         </div>
 
-        <!-- Quick Shortcut Date Buttons -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Quick Shortcut Buttons</span>
-            <span class="text-[10px] text-slate-400 font-mono">⚡ Quick Chips</span>
+        <!-- 2.6 セマンティック機能ボタン -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>機能連携ボタン (GAS同期 / CSV)</span>
+            <span class="code-tag">.btn-action-indigo / emerald</span>
           </div>
-          <div class="flex flex-wrap gap-2 items-center">
-            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 9px;">
-              ⚡ 次回定例会 (08/27)
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" class="btn-action-primary btn-action-indigo">
+              <i class="fa-solid fa-cloud-arrow-up"></i> GAS同期
             </button>
-            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 9px;">
-              ⚡ 次々回 (09/03)
+            <button type="button" class="btn-action-primary btn-action-emerald">
+              <i class="fa-solid fa-file-excel"></i> CSV出力
             </button>
           </div>
         </div>
@@ -274,176 +325,84 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- 2. ATOMS: Badges, Emblems & Chips -->
-    <!-- ========================================== -->
-    <section id="sec-atoms-badges" class="space-y-4">
+
+    <!-- ================================================================= -->
+    <!-- 3. フォーム・入力コントロール検証セクション -->
+    <!-- ================================================================= -->
+    <section id="sec-forms" class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-emerald-100 text-emerald-800">Atoms</span>
-          <h2 class="text-base font-black text-slate-900">2. Badges, Emblems & Meta Chips (バッジ・エンブレム・チップ)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">.badge-* / .vd-meta-chip</span>
+        <h2 class="catalog-section-title">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          ## 3. フォーム・入力コントロール検証セクション
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">Forms & Modern Inputs</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <!-- Rank Emblems Sizes -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Apple Minimal Rank Emblems</span>
-            <span class="text-[10px] text-slate-400 font-mono">.badge-rank-emblem</span>
+        <!-- 3.1 フォームラベル ＋ テキストインプット -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>テキストインプット (必須マーク付き)</span>
+            <span class="code-tag">.form-label / .form-input</span>
           </div>
-          <div class="flex items-center gap-4">
-            <div class="flex flex-col items-center gap-1">
-              <div class="badge-rank-emblem emblem-lg rank-A">A</div>
-              <span class="grid-spec-label">Large (44px)</span>
+          <div class="form-group mb-0">
+            <label class="form-label">氏名 <span class="text-red-500">*</span></label>
+            <input type="text" class="form-input" placeholder="例：山田 太郎" value="山田 太郎">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">ふりがな</label>
+            <input type="text" class="form-input" placeholder="例：やまだ たろう" value="やまだ たろう">
+          </div>
+        </div>
+
+        <!-- 3.2 日付 & メールインプット -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>日付 & メールインプット</span>
+            <span class="code-tag">input[type="date" / "email"]</span>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">参加日 (定例会) <span class="text-red-500">*</span></label>
+            <input type="date" class="form-input font-bold font-num" value="2026-08-27">
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">メールアドレス</label>
+            <input type="email" class="form-input" placeholder="example@email.com" value="user@example.com">
+          </div>
+        </div>
+
+        <!-- 3.3 装飾付きモダンセレクトボックス -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>モダンセレクトボックス & 検索</span>
+            <span class="code-tag">.hearing-modern-select / .search-box</span>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">オリエン担当者</label>
+            <div class="hearing-select-wrapper relative">
+              <select class="hearing-modern-select form-input">
+                <option value="">川口 陽平 (Web制作)</option>
+                <option value="">高山 俊介 (税理士)</option>
+              </select>
             </div>
-            <div class="flex flex-col items-center gap-1">
-              <div class="badge-rank-emblem rank-A">A</div>
-              <span class="grid-spec-label">Normal A (32px)</span>
-            </div>
-            <div class="flex flex-col items-center gap-1">
-              <div class="badge-rank-emblem rank-B">B</div>
-              <span class="grid-spec-label">Rank B</span>
-            </div>
-            <div class="flex flex-col items-center gap-1">
-              <div class="badge-rank-emblem rank-C">C</div>
-              <span class="grid-spec-label">Rank C</span>
-            </div>
-            <div class="flex flex-col items-center gap-1">
-              <div class="badge-rank-emblem rank-none">-</div>
-              <span class="grid-spec-label">Unset</span>
+          </div>
+          <div class="form-group mb-0">
+            <label class="form-label">検索ボックス</label>
+            <div class="relative">
+              <input type="text" class="form-input pl-9" placeholder="名前・会社名で検索...">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
             </div>
           </div>
         </div>
 
-        <!-- Detail Meta Chips -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Compact Meta Chips</span>
-            <span class="text-[10px] text-slate-400 font-mono">.vd-meta-chip / .hearing-meta-chip</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <div class="vd-meta-chip">
-              <i class="fa-solid fa-user-plus text-slate-400"></i>
-              <span>招待:</span> <strong>川口 陽平</strong>
-            </div>
-            <div class="vd-meta-chip">
-              <i class="fa-regular fa-calendar-check text-blue-500"></i>
-              <span>参加日:</span> <strong>2026-08-27</strong>
-            </div>
-            <div class="vd-meta-chip">
-              <i class="fa-regular fa-envelope text-slate-400"></i>
-              <strong>user@example.com</strong>
-            </div>
-            <div class="vd-meta-chip">
-              <i class="fa-solid fa-rotate-right text-purple-500"></i>
-              <strong>初めて</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Action Plan Task Badges -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Action Type Badges</span>
-            <span class="text-[10px] text-slate-400 font-mono">.badge-action-type</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge-action-type"><i class="fa-solid fa-comments text-blue-500"></i> 1to1調整</span>
-            <span class="badge-action-type"><i class="fa-solid fa-envelope text-emerald-500"></i> メール送付</span>
-            <span class="badge-action-type"><i class="fa-solid fa-phone text-amber-500"></i> 電話フォロー</span>
-            <span class="badge-action-type"><i class="fa-solid fa-handshake text-purple-500"></i> 入会案内</span>
-          </div>
-        </div>
-
-        <!-- Feel Pills -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Feel Rank Mini Pills</span>
-            <span class="text-[10px] text-slate-400 font-mono">.badge-feel-pill</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <span class="badge-feel-pill rank-A"><i class="fa-solid fa-circle text-[7px]"></i> 感触A (確度高)</span>
-            <span class="badge-feel-pill rank-B"><i class="fa-solid fa-circle text-[7px]"></i> 感触B (検討中)</span>
-            <span class="badge-feel-pill rank-C"><i class="fa-solid fa-circle text-[7px]"></i> 感触C (見送り)</span>
-          </div>
-        </div>
-
-        <!-- Navigation Counter Badges -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Segment Badges & Counters</span>
-            <span class="text-[10px] text-slate-400 font-mono">.dash-nav-badge / .vd-sidebar-count-badge</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="dash-nav-badge">12</span>
-            <span class="dash-nav-badge bg-rose-100 text-rose-700">3件超過</span>
-            <span class="vd-sidebar-count-badge">全 18 件</span>
-            <span class="text-xs font-bold font-num bg-slate-100 px-2.5 py-1 rounded-md text-slate-600">3 / 18</span>
-          </div>
-        </div>
-
-        <!-- Overdue & Status Chips -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Status / Overdue Chips</span>
-            <span class="text-[10px] text-slate-400 font-mono">Semantic Tags</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200">
-              <i class="fa-solid fa-circle-exclamation text-[9px]"></i> 期日超過 (08/18)
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-              <i class="fa-solid fa-circle-check text-[9px]"></i> 完了報告済
-            </span>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 3. ATOMS: Form Controls & Inputs -->
-    <!-- ========================================== -->
-    <section id="sec-atoms-forms" class="space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-amber-100 text-amber-800">Atoms</span>
-          <h2 class="text-base font-black text-slate-900">3. Form Controls & Inputs (入力フィールド・ドロップダウン)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">.form-input / .form-textarea / .status-select</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <!-- Text & Date Inputs -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Text & Date Inputs</span>
-            <span class="text-[10px] text-slate-400 font-mono">.form-input</span>
-          </div>
-          <div class="space-y-2.5">
-            <div>
-              <label class="form-label">氏名 <span class="text-red-500">*</span></label>
-              <input type="text" class="form-input" placeholder="例：山田 太郎" value="山田 太郎">
-            </div>
-            <div>
-              <label class="form-label">参加日 (定例会)</label>
-              <input type="date" class="form-input font-bold font-num" value="2026-08-27">
-            </div>
-          </div>
-        </div>
-
-        <!-- Status Select Pickers (Normal & Attended/Absent/Considering States) -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>iOS Style Status Dropdowns</span>
-            <span class="text-[10px] text-slate-400 font-mono">.status-select / .vd-status-select</span>
+        <!-- 3.4 iOSスタイル ステータスセレクトボックス (出欠 / 1to1 / 入会) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>iOSスタイル ステータスセレクター</span>
+            <span class="code-tag">.vd-status-select (3色状態)</span>
           </div>
           <div class="space-y-2">
-            <!-- Attended State -->
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-600">出欠 (参加):</span>
               <select class="vd-status-select state-attended">
@@ -452,7 +411,6 @@
                 <option>出欠: 不参加</option>
               </select>
             </div>
-            <!-- Absent State -->
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-600">出欠 (不参加):</span>
               <select class="vd-status-select state-absent">
@@ -461,7 +419,6 @@
                 <option selected>出欠: 不参加</option>
               </select>
             </div>
-            <!-- In Progress / Considering State -->
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-600">入会 (検討中):</span>
               <select class="vd-status-select state-considering">
@@ -474,167 +431,158 @@
           </div>
         </div>
 
-        <!-- Textarea & Modern Select -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Auto-grow Textarea & Search Box</span>
-            <span class="text-[10px] text-slate-400 font-mono">.form-textarea / .search-box</span>
+        <!-- 3.5 複数行テキストエリア (自動伸縮対応) -->
+        <div class="catalog-card space-y-3 lg:col-span-2">
+          <div class="catalog-item-title">
+            <span>複数行テキストエリア (自由記述)</span>
+            <span class="code-tag">.form-textarea</span>
           </div>
-          <div class="space-y-2.5">
-            <div>
-              <label class="form-label">検索ボックス</label>
-              <div class="relative">
-                <input type="text" class="form-input pl-9" placeholder="ビジター名・会社名で検索...">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-              </div>
-            </div>
-            <div>
-              <label class="form-label">自由記述テキストエリア</label>
-              <textarea class="form-textarea" rows="2" placeholder="詳細メモ・所感を入力...">ヒアリング時に前向きなコメントをいただきました。</textarea>
-            </div>
+          <div class="form-group mb-0">
+            <label class="form-label">ヒアリング所感・次の一手メモ</label>
+            <textarea class="form-textarea" rows="3" placeholder="ヒアリングメモや今後のフォロー予定を入力...">定例会への参加意欲が非常に高く、同業他社との差別化や紹介の仕組みについて前向きな質問がありました。次回定例会後の1to1を希望されています。</textarea>
           </div>
         </div>
 
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- 4. ATOMS: Indicators & Loaders -->
-    <!-- ========================================== -->
-    <section id="sec-atoms-indicators" class="space-y-4">
+
+    <!-- ================================================================= -->
+    <!-- 4. バッジ・チップ・ステータス検証セクション -->
+    <!-- ================================================================= -->
+    <section id="sec-badges" class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-rose-100 text-rose-800">Atoms</span>
-          <h2 class="text-base font-black text-slate-900">4. Status Dots & Loading Indicators (インジケータ・ローダー)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">.kpi-status-dot / .spinner / .skeleton</span>
+        <h2 class="catalog-section-title">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
+          ## 4. バッジ・チップ・ステータス検証セクション
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">Emblems, Meta Chips & Status Dots</span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <!-- Status Dots -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>KPI Status Dots</span>
-            <span class="text-[10px] text-slate-400 font-mono">.kpi-status-dot.blue / .red</span>
+        <!-- 4.1 感触評価バッジ (RANK A / B / C / 未設定) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>感触評価ランクエンブレム (A 🟢 / B 🟡 / C ⚪)</span>
+            <span class="code-tag">.badge-rank-emblem</span>
           </div>
-          <div class="flex items-center gap-6 py-2">
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-around py-1">
+            <div class="flex flex-col items-center gap-1.5">
+              <div class="badge-rank-emblem emblem-lg rank-A">A</div>
+              <span class="text-[10px] font-bold text-emerald-700">RANK A (44px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+              <div class="badge-rank-emblem rank-A">A</div>
+              <span class="text-[10px] font-bold text-emerald-700">A (32px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+              <div class="badge-rank-emblem rank-B">B</div>
+              <span class="text-[10px] font-bold text-amber-700">B (32px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+              <div class="badge-rank-emblem rank-C">C</div>
+              <span class="text-[10px] font-bold text-slate-500">C (32px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+              <div class="badge-rank-emblem rank-none">-</div>
+              <span class="text-[10px] font-bold text-slate-400">未設定</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.2 メタ情報チップ (紹介者名、会社名、イベント日付、回数) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>極細メタ情報チップ (ビジターカルテ用)</span>
+            <span class="code-tag">.vd-meta-chip</span>
+          </div>
+          <div class="flex flex-wrap gap-2 py-1">
+            <div class="vd-meta-chip">
+              <i class="fa-solid fa-user-plus text-slate-400"></i>
+              <span>招待:</span> <strong class="text-slate-800">川口 陽平</strong>
+            </div>
+            <div class="vd-meta-chip">
+              <i class="fa-regular fa-calendar-check text-blue-500"></i>
+              <span>参加日:</span> <strong class="text-slate-800">2026-08-27</strong>
+            </div>
+            <div class="vd-meta-chip">
+              <i class="fa-regular fa-envelope text-slate-400"></i>
+              <strong class="text-slate-800 font-mono text-xs">user@example.com</strong>
+            </div>
+            <div class="vd-meta-chip">
+              <i class="fa-solid fa-rotate-right text-purple-500"></i>
+              <span>回数:</span> <strong class="text-slate-800">初めて</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4.3 KPIステータスドット (正常 🔵 / 警告・超過 🔴) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>スマートKPIステータスドット</span>
+            <span class="code-tag">.kpi-status-dot.blue / .red</span>
+          </div>
+          <div class="flex items-center justify-around py-3">
+            <div class="flex items-center gap-2.5">
               <span class="kpi-status-dot blue" title="正常"></span>
-              <span class="text-xs font-bold text-slate-700">正常 (エレクトリックブルー)</span>
+              <span class="text-xs font-bold text-slate-700">正常 🔵 (エレクトリックブルー)</span>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="kpi-status-dot red" title="超過・警告"></span>
-              <span class="text-xs font-bold text-slate-700">警告・超過 (レッド)</span>
+            <div class="flex items-center gap-2.5">
+              <span class="kpi-status-dot red" title="警告・超過"></span>
+              <span class="text-xs font-bold text-slate-700">警告・超過 🔴 (レッド)</span>
             </div>
           </div>
         </div>
 
-        <!-- Spinner Loader -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Loading Spinner</span>
-            <span class="text-[10px] text-slate-400 font-mono">.spinner</span>
+        <!-- 4.4 アクション種別バッジ -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>アクション種別バッジ</span>
+            <span class="code-tag">.badge-action-type</span>
           </div>
-          <div class="flex items-center justify-center py-2 gap-4">
-            <div class="spinner"></div>
-            <span class="text-xs font-bold text-slate-500">データ同期中...</span>
-          </div>
-        </div>
-
-        <!-- Toast Notification -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>Toast Notification</span>
-            <span class="text-[10px] text-slate-400 font-mono">.toast</span>
-          </div>
-          <div class="toast" style="position: static; margin: 0;">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i>
-            <span>アクションプランを完了登録しました</span>
+          <div class="flex flex-wrap gap-2 py-1">
+            <span class="badge-action-type"><i class="fa-solid fa-comments text-blue-500"></i> 1to1調整</span>
+            <span class="badge-action-type"><i class="fa-solid fa-envelope text-emerald-500"></i> メール送付</span>
+            <span class="badge-action-type"><i class="fa-solid fa-phone text-amber-500"></i> 電話フォロー</span>
+            <span class="badge-action-type"><i class="fa-solid fa-handshake text-purple-500"></i> 入会案内</span>
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 5. MOLECULES: Pill Toggles & Segment Controls -->
-    <!-- ========================================== -->
-    <section id="sec-molecules" class="space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-purple-100 text-purple-800">Molecules</span>
-          <h2 class="text-base font-black text-slate-900">5. Molecules: Pill Toggles & Segment Controls (トグル・セグメント)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">.seg-pill-group / .hearing-abc-selector / .ap-type-pill-group</span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <!-- Hearing ABC Rating Selector -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>ヒアリング ABC 感触セレクター</span>
-            <span class="text-[10px] text-slate-400 font-mono">.hearing-abc-selector</span>
+        <!-- 4.5 期日超過 & 完了バッジ -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>期日超過 & 完了状態チップ</span>
+            <span class="code-tag">Status Tags</span>
           </div>
-          <div class="hearing-abc-selector flex gap-2">
-            <button type="button" class="hearing-abc-btn abc-btn-a selected flex-1 py-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5">
-              <span class="text-base">A</span> (入会確度高 🟢)
-            </button>
-            <button type="button" class="hearing-abc-btn abc-btn-b flex-1 py-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5">
-              <span class="text-base">B</span> (検討中 🟡)
-            </button>
-            <button type="button" class="hearing-abc-btn abc-btn-c flex-1 py-2.5 rounded-lg font-black text-xs flex items-center justify-center gap-1.5">
-              <span class="text-base">C</span> (見送り ⚪)
-            </button>
+          <div class="flex flex-wrap gap-2 py-1">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-200 font-num">
+              <i class="fa-solid fa-circle-exclamation text-[9px]"></i> 08/18 期日超過
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 font-num">
+              <i class="fa-solid fa-circle-check text-[9px]"></i> 08/20 完了報告済
+            </span>
           </div>
         </div>
 
-        <!-- Action Type Pill Button Group -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>アクション種別 選択ピル</span>
-            <span class="text-[10px] text-slate-400 font-mono">.ap-type-pill-group</span>
+        <!-- 4.6 温度感メーター (Stacked Progress Bar) -->
+        <div class="catalog-card space-y-3">
+          <div class="catalog-item-title">
+            <span>温度感メーター (Stacked Bar)</span>
+            <span class="code-tag">.feel-meter-bar</span>
           </div>
-          <div class="ap-type-pill-group">
-            <button type="button" class="ap-type-pill-btn active"><i class="fa-solid fa-comments"></i> 1to1調整</button>
-            <button type="button" class="ap-type-pill-btn"><i class="fa-solid fa-envelope"></i> メール送付</button>
-            <button type="button" class="ap-type-pill-btn"><i class="fa-solid fa-phone"></i> 電話フォロー</button>
-            <button type="button" class="ap-type-pill-btn"><i class="fa-solid fa-handshake"></i> 入会案内</button>
-          </div>
-        </div>
-
-        <!-- Dashboard Segment Pill Navigation -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>セグメントコントロール (未完了 / すべて / 完了済)</span>
-            <span class="text-[10px] text-slate-400 font-mono">.seg-pill-group</span>
-          </div>
-          <div class="seg-pill-group inline-flex">
-            <button type="button" class="seg-pill-btn active">未完了 (5)</button>
-            <button type="button" class="seg-pill-btn">すべて (18)</button>
-            <button type="button" class="seg-pill-btn">完了済 (13)</button>
-          </div>
-        </div>
-
-        <!-- Temperature Meter Stacked Bar -->
-        <div class="spec-card space-y-3">
-          <div class="spec-title">
-            <span>温度感メーター (Stacked Progress Bar)</span>
-            <span class="text-[10px] text-slate-400 font-mono">.feel-meter-wrap</span>
-          </div>
-          <div class="space-y-1.5">
+          <div class="space-y-1.5 py-1">
             <div class="feel-meter-wrap">
               <div class="feel-meter-bar">
-                <div class="feel-meter-seg seg-a" style="width: 50%;" title="A: 50%"></div>
-                <div class="feel-meter-seg seg-b" style="width: 30%;" title="B: 30%"></div>
-                <div class="feel-meter-seg seg-c" style="width: 20%;" title="C: 20%"></div>
+                <div class="feel-meter-seg seg-a" style="width: 50%;"></div>
+                <div class="feel-meter-seg seg-b" style="width: 30%;"></div>
+                <div class="feel-meter-seg seg-c" style="width: 20%;"></div>
               </div>
             </div>
-            <div class="flex justify-between text-[11px] font-bold font-num">
-              <span class="text-emerald-600">A (確度高): 50%</span>
-              <span class="text-amber-600">B (検討中): 30%</span>
-              <span class="text-slate-500">C (見送り): 20%</span>
+            <div class="flex justify-between text-[10.5px] font-bold font-num">
+              <span class="text-emerald-600">A: 50%</span>
+              <span class="text-amber-600">B: 30%</span>
+              <span class="text-slate-500">C: 20%</span>
             </div>
           </div>
         </div>
@@ -642,20 +590,21 @@
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- 6. ORGANISMS: KPI Ring Cards & Dashboard -->
-    <!-- ========================================== -->
-    <section id="sec-organisms-kpi" class="space-y-4">
+
+    <!-- ================================================================= -->
+    <!-- 5. 複合コンポーネント (Cards, Tables & Modals) -->
+    <!-- ================================================================= -->
+    <section id="sec-organisms" class="space-y-4">
       <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-cyan-100 text-cyan-800">Organisms</span>
-          <h2 class="text-base font-black text-slate-900">6. KPI Ring Cards (4大主要KPIカード)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">.dash-hero-grid</span>
+        <h2 class="catalog-section-title">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
+          ## 5. 複合コンポーネント検証 (4大KPI / カルテ / テーブル / モーダル)
+        </h2>
+        <span class="text-xs text-slate-400 font-mono">Organisms & Full Views</span>
       </div>
 
+      <!-- 5.1 4大主要KPIカード (実稼働円形SVGプログレスリング) -->
       <div class="dash-hero-grid">
-        <!-- KPI 1 -->
         <div class="dash-hero-card hero-weekly">
           <div class="dash-hero-top-row">
             <span class="dash-hero-date-label">08/27</span>
@@ -677,7 +626,6 @@
           </div>
         </div>
 
-        <!-- KPI 2 (Warning) -->
         <div class="dash-hero-card hero-actions">
           <div class="dash-hero-top-row">
             <span class="dash-hero-text-label">要対応</span>
@@ -698,7 +646,6 @@
           </div>
         </div>
 
-        <!-- KPI 3 -->
         <div class="dash-hero-card hero-visitors">
           <div class="dash-hero-top-row">
             <span class="dash-hero-text-label">申込ビジター</span>
@@ -718,7 +665,6 @@
           </div>
         </div>
 
-        <!-- KPI 4 (Goal Achieved) -->
         <div class="dash-hero-card hero-join">
           <div class="dash-hero-top-row">
             <span class="dash-hero-text-label">入会目標</span>
@@ -739,77 +685,11 @@
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- ========================================== -->
-    <!-- 7. ORGANISMS: Tables, Cards & Modals -->
-    <!-- ========================================== -->
-    <section id="sec-organisms-views" class="space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="catalog-section-badge bg-indigo-100 text-indigo-800">Organisms</span>
-          <h2 class="text-base font-black text-slate-900">7. Data Tables, Responsive Cards & Modals (複合ビュー)</h2>
-        </div>
-        <span class="text-xs text-slate-400 font-medium">Table / Mobile Cards / Modal</span>
-      </div>
-
-      <!-- Visitor Detail Header & Meta Bar Component -->
-      <div class="vd-profile-card shadow-xs">
-        <div class="vd-profile-header">
-          <div class="flex items-center gap-3.5">
-            <div class="vd-hero-rank-badge rank-A" title="感触評価 A">
-              <span class="vd-hero-rank-label">RANK</span>
-              <span class="vd-hero-rank-char">A</span>
-            </div>
-            <div class="vd-profile-title-area">
-              <div class="flex items-baseline gap-2 flex-wrap">
-                <h1 class="vd-profile-name">佐藤 健太</h1>
-                <span class="vd-profile-furigana">サトウ ケンタ</span>
-              </div>
-              <div class="vd-profile-submeta">
-                <span class="font-bold text-slate-800">株式会社ネクストデザイン</span>
-                <span class="text-slate-300">/</span>
-                <span class="text-slate-600">Webマーケティング・SNS運用</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="vd-badges-wrap">
-            <div class="vd-status-select-wrap">
-              <select class="vd-status-select state-attended">
-                <option selected>出欠: 参加</option>
-                <option>出欠: 未</option>
-              </select>
-            </div>
-            <div class="vd-status-select-wrap">
-              <select class="vd-status-select state-done">
-                <option selected>1to1: 済</option>
-                <option>1to1: 未</option>
-              </select>
-            </div>
-            <div class="vd-status-select-wrap">
-              <select class="vd-status-select state-considering">
-                <option selected>入会: 検討中</option>
-                <option>入会: 未</option>
-                <option>入会: 済</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="vd-compact-meta-bar">
-          <div class="vd-meta-chip"><i class="fa-solid fa-user-plus text-slate-400"></i><span>招待:</span> <strong>川口 陽平</strong></div>
-          <div class="vd-meta-chip"><i class="fa-regular fa-calendar-check text-blue-500"></i><span>参加日:</span> <strong>2026-08-27</strong></div>
-          <div class="vd-meta-chip"><i class="fa-regular fa-envelope text-slate-400"></i><strong>kenta@example.com</strong></div>
-          <div class="vd-meta-chip"><i class="fa-solid fa-rotate-right text-purple-500"></i><strong>初めて</strong></div>
-        </div>
-      </div>
-
-      <!-- Responsive Comparison (PC Table vs Mobile 390px Frame) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
-        <!-- Table -->
-        <div class="lg:col-span-7 table-container shadow-xs">
+      <!-- 5.2 データテーブル & レスポンシブスマホカード -->
+      <div class="side-by-side-wrap">
+        <!-- PC Table View -->
+        <div class="table-container shadow-xs">
           <table>
             <thead>
               <tr>
@@ -824,10 +704,10 @@
               <tr>
                 <td><div class="badge-rank-emblem rank-A">A</div></td>
                 <td>
-                  <div class="font-bold text-slate-900">鈴木 健一</div>
-                  <div class="text-[11px] text-slate-400">鈴木税理士事務所 / 税務</div>
+                  <div class="font-bold text-slate-900">佐藤 健太</div>
+                  <div class="text-[11px] text-slate-400">株式会社ネクストデザイン / Webマーケ</div>
                 </td>
-                <td class="text-xs font-semibold">高山 俊介</td>
+                <td class="text-xs font-semibold">川口 陽平</td>
                 <td class="font-num text-xs font-bold">2026-08-27</td>
                 <td class="text-center"><button class="btn-table-action primary"><i class="fa-solid fa-clipboard-question"></i> ヒアリング</button></td>
               </tr>
@@ -835,30 +715,26 @@
           </table>
         </div>
 
-        <!-- Mobile Card Frame -->
-        <div class="lg:col-span-5 mobile-preview-frame p-3 space-y-3">
-          <div class="mobile-notch mb-2"></div>
-          <div class="dash-ap-card is-overdue shadow-xs">
-            <div class="dash-ap-card-header">
-              <div class="flex items-center gap-2">
-                <div class="badge-rank-emblem rank-A">A</div>
-                <div>
-                  <div class="dash-ap-card-name">佐藤 健太</div>
-                  <div class="dash-ap-card-sub">株式会社ネクストデザイン</div>
-                </div>
+        <!-- Mobile Card View -->
+        <div class="dash-ap-card is-overdue shadow-xs">
+          <div class="dash-ap-card-header">
+            <div class="flex items-center gap-2">
+              <div class="badge-rank-emblem rank-A">A</div>
+              <div>
+                <div class="dash-ap-card-name">佐藤 健太</div>
+                <div class="dash-ap-card-sub">株式会社ネクストデザイン</div>
               </div>
-              <span class="text-[11px] font-bold text-rose-600 font-num">08/18 超過</span>
             </div>
-            <div class="dash-ap-card-body">
-              <div class="dash-ap-card-task"><i class="fa-solid fa-bullseye text-rose-500 mr-1"></i> 定例会後のZoom 1to1日程を調整する</div>
-            </div>
-            <div class="dash-ap-card-footer">
-              <span class="text-[11px] text-slate-500">担当: 川口 陽平</span>
-              <button class="btn-table-action primary" style="height: 28px; padding: 0 10px; font-size: 11px;">完了報告</button>
-            </div>
+            <span class="text-[11px] font-bold text-rose-600 font-num">08/18 超過</span>
+          </div>
+          <div class="dash-ap-card-body">
+            <div class="dash-ap-card-task"><i class="fa-solid fa-bullseye text-rose-500 mr-1"></i> 定例会後のZoom 1to1日程を調整する</div>
+          </div>
+          <div class="dash-ap-card-footer">
+            <span class="text-[11px] text-slate-500">担当: 川口 陽平</span>
+            <button class="btn-table-action primary" style="height: 28px; padding: 0 10px; font-size: 11px;">完了報告</button>
           </div>
         </div>
-
       </div>
 
     </section>
