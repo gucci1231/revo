@@ -2438,7 +2438,7 @@ tr:last-child td { border-bottom: none; }
   }
 }
 
-/* 🌟 DASHBOARD INTEGRATED RING-NUMBER MAIN VISUAL (Blue = Normal, Red = Bad) */
+/* 🌟 DASHBOARD INTEGRATED RING-NUMBER MAIN VISUAL (Pure White & Giant Dynamic Gauges) */
 .dash-hero-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2448,49 +2448,29 @@ tr:last-child td { border-bottom: none; }
 
 .dash-hero-card {
   background: #ffffff;
-  border: 1px solid rgba(0, 113, 227, 0.12);
+  border: 1px solid #e2e8f0;
   border-radius: 26px;
-  padding: 20px 22px 22px;
-  box-shadow: 0 4px 24px -2px rgba(0, 113, 227, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  padding: 22px 24px 24px;
+  box-shadow: 0 2px 16px -2px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   user-select: none;
-  transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  min-height: 185px;
+  min-height: 205px;
 }
 
-/* Ambient Blue Aura for Normal State */
-.dash-hero-card::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 160px;
-  height: 160px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, #0071e3 0%, #38bdf8 100%);
-  filter: blur(48px);
-  opacity: 0.14;
-  pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
+/* Subtle, natural hover lift without color darkening */
 .dash-hero-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 22px 50px -8px rgba(0, 113, 227, 0.22), 0 4px 16px -2px rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 113, 227, 0.45);
-}
-.dash-hero-card:hover::before {
-  opacity: 0.28;
-  transform: scale(1.18);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 .dash-hero-card:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
 /* Top Label Row */
@@ -2501,17 +2481,17 @@ tr:last-child td { border-bottom: none; }
   width: 100%;
 }
 .dash-hero-date-label {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: #0071e3;
   letter-spacing: -0.02em;
   font-family: 'Barlow Semi Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 .dash-hero-text-label {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #64748b;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
 }
 
 /* Status Dot (Top-Right Indicator: Red for Warning, Blue for Normal) */
@@ -2536,29 +2516,25 @@ tr:last-child td { border-bottom: none; }
   50% { transform: scale(1.25); opacity: 0.8; }
 }
 
-/* Center Widget: Ring with Number Inside */
+/* Center Widget: Large Ring with Giant Number Inside */
 .dash-hero-center-widget {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .kpi-hero-ring-wrap {
   position: relative;
-  width: 108px;
-  height: 108px;
+  width: 126px;
+  height: 126px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  filter: drop-shadow(0 4px 14px rgba(0, 113, 227, 0.1));
-}
-.status-bad .kpi-hero-ring-wrap {
-  filter: drop-shadow(0 4px 14px rgba(239, 68, 68, 0.18));
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .dash-hero-card:hover .kpi-hero-ring-wrap {
-  transform: scale(1.08);
+  transform: scale(1.04);
 }
 
 .kpi-ring-svg {
@@ -2568,12 +2544,12 @@ tr:last-child td { border-bottom: none; }
 }
 .kpi-ring-track {
   fill: none;
-  stroke: rgba(241, 245, 249, 0.95);
-  stroke-width: 4.8;
+  stroke: #f1f5f9;
+  stroke-width: 5.2;
 }
 .kpi-ring-fill {
   fill: none;
-  stroke-width: 4.8;
+  stroke-width: 5.2;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
 }
@@ -2600,20 +2576,17 @@ tr:last-child td { border-bottom: none; }
   gap: 1px;
 }
 .dash-hero-main-number {
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 700;
   color: #0071e3;
-  line-height: 0.9;
+  line-height: 0.88;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   font-family: 'Barlow Semi Condensed', 'DIN Alternate', 'DIN Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
 }
-.status-bad .dash-hero-main-number {
-  color: #dc2626;
-}
 
 .dash-hero-main-goal {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 700;
   color: #94a3b8;
   letter-spacing: -0.02em;
@@ -2629,27 +2602,27 @@ tr:last-child td { border-bottom: none; }
   .dash-hero-card {
     padding: 14px 14px 16px;
     border-radius: 20px;
-    min-height: 145px;
+    min-height: 160px;
   }
   .dash-hero-date-label {
-    font-size: 13px;
+    font-size: 14px;
   }
   .dash-hero-text-label {
-    font-size: 11.5px;
+    font-size: 12px;
   }
 
   .kpi-hero-ring-wrap {
-    width: 82px;
-    height: 82px;
+    width: 96px;
+    height: 96px;
   }
   .kpi-ring-track, .kpi-ring-fill {
-    stroke-width: 4.2;
+    stroke-width: 4.8;
   }
   .dash-hero-main-number {
-    font-size: 36px;
+    font-size: 42px;
   }
   .dash-hero-main-goal {
-    font-size: 12px;
+    font-size: 13.5px;
   }
 }
 
