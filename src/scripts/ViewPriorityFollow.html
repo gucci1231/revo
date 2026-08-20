@@ -304,19 +304,19 @@
 
               ${completedAps.length > 0 ? `
                 <div class="pt-2">
-                  <div class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <i class="fa-solid fa-check-double text-emerald-600"></i> 完了済みタスク (${completedAps.length}件)
+                  <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-check text-slate-400"></i> 完了済みタスク (${completedAps.length}件)
                   </div>
                   <div class="space-y-1.5">
                     ${completedAps.map(p => `
                       <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-between gap-2 text-xs">
                         <div class="flex items-center gap-1.5 min-w-0">
-                          <span class="w-4 h-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] shrink-0 font-bold"><i class="fa-solid fa-check"></i></span>
+                          <span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 font-bold text-[10px]">完了済</span>
                           ${renderActionTypeBadgeHtml(p.action_type)}
-                          <span class="font-medium text-slate-500 line-through truncate">${escapeAndLinkify(p.action_text, false)}</span>
+                          <span class="font-medium text-slate-400 line-through truncate">${escapeAndLinkify(p.action_text, false)}</span>
                         </div>
-                        <button type="button" class="text-[10px] text-slate-400 hover:text-slate-600 shrink-0" onclick="togglePfActionPlan('${p.id}', '${vid}', 0)">
-                          未完了に戻す
+                        <button type="button" class="btn-action-secondary text-xs px-2.5 py-0.5 text-[11px] font-bold rounded" onclick="openActionReportModal('${p.id}', '${vid}')" title="報告確認・編集">
+                          確認
                         </button>
                       </div>
                     `).join('')}
