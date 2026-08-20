@@ -12518,7 +12518,7 @@ window.CelebrationEffect = (function() {
       const subInfo = [v.company, v.profession].filter(Boolean).join(' · ') || (v.inviter ? `紹介: ${v.inviter}` : '-');
 
       html += `
-        <div class="vd-sidebar-item ${isSelected ? 'is-selected' : ''}" onclick="openVisitorDetailView('${v.id}', true, false)">
+        <div class="vd-sidebar-item ${isSelected ? 'is-selected' : ''}" onclick="openVisitorDetailView('${v.id}', true, true)">
           <div class="vd-sidebar-item-rank ${rankClass}">
             ${rankChar}
           </div>
@@ -12537,11 +12537,20 @@ window.CelebrationEffect = (function() {
 
     listContainer.innerHTML = html;
 
-    // 選択中のアイテムを可視領域へスクロール
+    // 選択中のアイテムをサイドバーのリスト内でのみ可視領域へスクロール (ページ全体のスクロールに影響を与えない)
     setTimeout(() => {
       const activeEl = listContainer.querySelector('.vd-sidebar-item.is-selected');
       if (activeEl) {
-        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        const itemTop = activeEl.offsetTop;
+        const itemHeight = activeEl.offsetHeight;
+        const containerScrollTop = listContainer.scrollTop;
+        const containerHeight = listContainer.clientHeight;
+
+        if (itemTop < containerScrollTop) {
+          listContainer.scrollTo({ top: Math.max(0, itemTop - 12), behavior: 'smooth' });
+        } else if (itemTop + itemHeight > containerScrollTop + containerHeight) {
+          listContainer.scrollTo({ top: itemTop + itemHeight - containerHeight + 12, behavior: 'smooth' });
+        }
       }
     }, 50);
   }
