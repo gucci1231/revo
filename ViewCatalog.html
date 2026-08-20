@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎨 Component Catalog | Visitor Host Revolution 2.0</title>
+  <title>🎨 Component Catalog (Full Spec) | Visitor Host Revolution 2.0</title>
   
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,8 +13,10 @@
   
   <!-- Tailwind CSS Play CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for real graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Existing CSS Files for Direct Side-by-Side Comparison -->
+  <!-- Product CSS Files for Pixel-Perfect Fidelity -->
   <link rel="stylesheet" href="./public/css/variables.css">
   <link rel="stylesheet" href="./public/css/base.css">
   <link rel="stylesheet" href="./public/css/components.css">
@@ -23,476 +25,694 @@
   <style>
     body {
       font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f8fafc;
+      background-color: #f6f8fb;
       color: #0f172a;
     }
-    .font-num {
-      font-family: 'Barlow Semi Condensed', 'DIN Alternate', sans-serif;
-      font-feature-settings: "tnum";
-      font-variant-numeric: tabular-nums;
+    .catalog-section-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 9999px;
     }
-    .font-mono-code {
-      font-family: 'JetBrains Mono', monospace;
-    }
-    /* Comparison Card Containers */
-    .catalog-card {
+    .spec-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      overflow: hidden;
+      border-radius: 14px;
+      padding: 20px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
     }
-    .catalog-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    .spec-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #334155;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .code-preview {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-size: 11px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      overflow-x: auto;
+    /* Simulated Mobile Device Frame */
+    .mobile-preview-frame {
+      max-width: 390px;
+      margin: 0 auto;
+      border: 6px solid #1e293b;
+      border-radius: 28px;
+      background: #f6f8fb;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     }
-    .badge-legacy {
-      background: #f1f5f9;
-      color: #64748b;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-    .badge-next {
-      background: #eff6ff;
-      color: #2563eb;
-      border: 1px solid #bfdbfe;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      text-transform: uppercase;
+    .mobile-notch {
+      width: 120px;
+      height: 18px;
+      background: #1e293b;
+      margin: 0 auto;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
     }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-24">
 
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 flex items-center justify-between shadow-xs">
+  <!-- Sticky Global Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-xs">
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-xs">
-        <i class="fa-solid fa-swatchbook text-sm"></i>
+      <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
+        <i class="fa-solid fa-layer-group text-sm"></i>
       </div>
       <div>
-        <h1 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-          UI Component Catalog
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">v2.0 Refactor</span>
+        <h1 class="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+          現場完全同期 コンポーネントカタログ
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">Revo 2.0 実物標本</span>
         </h1>
-        <p class="text-xs text-slate-500">Atomic Design: Atoms / Molecules / Organisms プレビュー＆新旧検証環境</p>
+        <p class="text-xs text-slate-500">実稼働コードと100%同一のCSS・HTML構造によるパーツ＆レスポンシブ検証集</p>
       </div>
     </div>
-    <div class="flex items-center gap-2 text-xs">
-      <a href="./index.html" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1.5 transition">
-        <i class="fa-solid fa-arrow-left"></i> アプリ本体へ戻る
+    <div class="flex items-center gap-3">
+      <a href="./index.html" class="px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition shadow-xs">
+        <i class="fa-solid fa-arrow-left"></i> 本番アプリへ
       </a>
     </div>
   </header>
 
-  <!-- Navigation Anchors -->
-  <nav class="bg-white border-b border-slate-200 px-6 py-2 sticky top-[57px] z-40 flex items-center gap-4 text-xs font-semibold text-slate-600 overflow-x-auto">
-    <span class="text-slate-400 font-medium">JUMP TO:</span>
-    <a href="#section-colors" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-palette text-blue-500"></i> Colors</a>
-    <a href="#section-typography" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-font text-indigo-500"></i> Typography</a>
-    <a href="#section-buttons" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-square-check text-emerald-500"></i> Buttons</a>
-    <a href="#section-forms" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-sliders text-amber-500"></i> Form Controls</a>
-    <a href="#section-badges" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-tag text-purple-500"></i> Badges & Chips</a>
-    <a href="#section-molecules" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-cubes text-cyan-500"></i> Molecules</a>
-    <a href="#section-organisms" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-layer-group text-rose-500"></i> Organisms (Cards & Tables)</a>
+  <!-- Sticky Sub Navigation -->
+  <nav class="bg-white/80 backdrop-blur-xs border-b border-slate-200 px-6 py-2 sticky top-[57px] z-40 flex items-center gap-4 text-xs font-bold text-slate-600 overflow-x-auto whitespace-nowrap">
+    <span class="text-slate-400 font-medium">JUMP:</span>
+    <a href="#sec-kpi" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-chart-pie text-blue-500"></i> 4大KPIカード</a>
+    <a href="#sec-graphs" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-chart-line text-indigo-500"></i> 推移グラフ & 集計</a>
+    <a href="#sec-vd-profile" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-id-card text-emerald-500"></i> ビジター詳細カルテ</a>
+    <a href="#sec-tables-cards" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-table-cells-large text-amber-500"></i> テーブル & スマホカード</a>
+    <a href="#sec-modals" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-window-restore text-rose-500"></i> モーダル & フォーム</a>
+    <a href="#sec-size-variants" class="hover:text-blue-600 flex items-center gap-1"><i class="fa-solid fa-sliders text-purple-500"></i> サイズ・バリエーション</a>
   </nav>
 
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-6 py-8 space-y-12">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-16">
 
     <!-- ========================================== -->
-    <!-- 1. ATOMS: Colors & Tokens -->
+    <!-- SECTION 1: 4大KPIサマリーカード (実物) -->
     <!-- ========================================== -->
-    <section id="section-colors" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">1.1 Colors & Tokens (カラーシステム)</h2>
+    <section id="sec-kpi" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-blue-100 text-blue-800">Organisms</span>
+          <h2 class="text-base font-black text-slate-900">4大主要KPIサマリーカード (実稼働SVGリング＆等幅数値)</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">.dash-hero-grid / .dash-hero-card</span>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <!-- Brand & Semantic -->
-        <div class="catalog-card p-4 space-y-2">
-          <div class="h-12 rounded-lg bg-[#2563eb] flex items-center justify-center text-white font-bold text-xs shadow-inner">
-            #2563eb / #0071e3
+      <!-- Real Live Grid from ViewDashboard.html -->
+      <div class="dash-hero-grid">
+        <!-- KPI 1: 次回定例会 (80% 達成) -->
+        <div class="dash-hero-card hero-weekly" title="次回定例会ビジター名簿を表示">
+          <div class="dash-hero-top-row">
+            <span class="dash-hero-date-label">08/27</span>
+            <span class="kpi-status-dot blue" title="正常"></span>
           </div>
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700">Primary (正常)</span>
-            <span class="text-slate-400 font-mono-code">--primary-accent</span>
-          </div>
-        </div>
-
-        <div class="catalog-card p-4 space-y-2">
-          <div class="h-12 rounded-lg bg-[#ef4444] flex items-center justify-center text-white font-bold text-xs shadow-inner">
-            #ef4444
-          </div>
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700">Danger / Overdue (警告)</span>
-            <span class="text-slate-400 font-mono-code">--danger-accent</span>
-          </div>
-        </div>
-
-        <!-- Temperature / Ranks -->
-        <div class="catalog-card p-4 space-y-2">
-          <div class="h-12 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold text-sm">
-            Rank A (🟢 確度高)
-          </div>
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700">#059669 / #10b981</span>
-            <span class="text-slate-400 font-mono-code">.rank-A</span>
+          <div class="dash-hero-center-widget">
+            <div class="kpi-hero-ring-wrap">
+              <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+                <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+                <circle class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="25.13" />
+              </svg>
+              <div class="kpi-ring-content">
+                <div class="dash-hero-val-container">
+                  <span class="dash-hero-main-number">3</span>
+                  <span class="dash-hero-main-goal">/4</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="catalog-card p-4 space-y-2">
-          <div class="h-12 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-bold text-sm">
-            Rank B (🟡 検討中)
+        <!-- KPI 2: 要対応 (期日超過あり 警告レッド) -->
+        <div class="dash-hero-card hero-actions" title="アクション管理ページを表示">
+          <div class="dash-hero-top-row">
+            <span class="dash-hero-text-label">要対応</span>
+            <span class="kpi-status-dot red" title="超過・警告"></span>
           </div>
-          <div class="flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700">#a16207 / #eab308</span>
-            <span class="text-slate-400 font-mono-code">.rank-B</span>
+          <div class="dash-hero-center-widget">
+            <div class="kpi-hero-ring-wrap">
+              <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+                <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+                <circle class="kpi-ring-fill red" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="37.69" />
+              </svg>
+              <div class="kpi-ring-content">
+                <div class="dash-hero-val-container">
+                  <span class="dash-hero-main-number">5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 3: 申込ビジター総数 -->
+        <div class="dash-hero-card hero-visitors" title="全ビジター統合管理名簿を表示">
+          <div class="dash-hero-top-row">
+            <span class="dash-hero-text-label">申込ビジター</span>
+          </div>
+          <div class="dash-hero-center-widget">
+            <div class="kpi-hero-ring-wrap">
+              <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+                <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+                <circle class="kpi-ring-fill blue" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="0" />
+              </svg>
+              <div class="kpi-ring-content">
+                <div class="dash-hero-val-container">
+                  <span class="dash-hero-main-number">18</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 4: 入会目標達成 (100% 達成時グリーン) -->
+        <div class="dash-hero-card hero-join" title="定例会推移・集計グラフを表示">
+          <div class="dash-hero-top-row">
+            <span class="dash-hero-text-label">入会目標</span>
+          </div>
+          <div class="dash-hero-center-widget">
+            <div class="kpi-hero-ring-wrap">
+              <svg class="kpi-ring-svg" viewBox="0 0 48 48">
+                <circle class="kpi-ring-track" cx="24" cy="24" r="20" />
+                <circle class="kpi-ring-fill success" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="0" />
+              </svg>
+              <div class="kpi-ring-content">
+                <div class="dash-hero-val-container">
+                  <span class="dash-hero-main-number">12</span>
+                  <span class="dash-hero-main-goal">/12</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 1.2 ATOMS: Typography -->
+    <!-- SECTION 2: 推移グラフ ＆ 温度感集計テーブル -->
     <!-- ========================================== -->
-    <section id="section-typography" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">1.2 Typography (タイポグラフィ)</h2>
+    <section id="sec-graphs" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-indigo-100 text-indigo-800">Charts & Stats</span>
+          <h2 class="text-base font-black text-slate-900">推移グラフ & 温度感（Stacked Bar）集計</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">Chart.js + .feel-meter-bar</span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- KPI Numbers -->
-        <div class="catalog-card p-5 space-y-3">
-          <span class="badge-next">KPI Tabular Numbers</span>
-          <div class="flex items-baseline gap-2">
-            <span class="font-num text-4xl font-extrabold text-slate-900 tracking-tight">128</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
-            <span class="font-num text-2xl font-bold text-slate-400 ml-2">/ 150</span>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Real Live Chart.js Canvas -->
+        <div class="lg:col-span-6 section-card p-5">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-chart-line text-blue-500 mr-1"></i> ビジター来訪推移グラフ</span>
+            <span class="text-[11px] font-semibold text-slate-400">直近8週</span>
           </div>
-          <p class="text-xs text-slate-500">Barlow Semi Condensed + 等幅 tabular-nums 設定</p>
+          <div class="relative w-full h-52">
+            <canvas id="demoLineChart"></canvas>
+          </div>
         </div>
 
-        <!-- Section / Headers -->
-        <div class="catalog-card p-5 space-y-2">
-          <span class="badge-next">Headings & Labels</span>
-          <h3 class="text-base font-extrabold text-slate-900">次回定例会ビジター一覧</h3>
-          <p class="text-xs font-bold text-slate-500 tracking-wider uppercase">TH LABEL: 11.5px / 800 W / UPPERCASE</p>
-          <p class="text-xs text-slate-600">本文・補足テキスト: 12px / 13px Noto Sans JP</p>
+        <!-- Weekly Stats Table with Live Feel Meter -->
+        <div class="lg:col-span-6 section-card overflow-hidden">
+          <div class="section-header py-3 px-4 flex justify-between items-center">
+            <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-slate-600 mr-1.5"></i> 定例会別集計 & 感触メーター</span>
+            <span class="text-[11px] text-slate-400">A🟢 / B🟡 / C⚪</span>
+          </div>
+          <div class="table-container max-h-56 overflow-y-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 75px;">日付</th>
+                  <th class="text-center" style="width: 85px;">申込 / 目標</th>
+                  <th class="text-center" style="width: 50px;">参加</th>
+                  <th class="text-center">温度感 (A/B/C)</th>
+                  <th class="text-center" style="width: 60px;">入会</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-num font-bold text-xs">08/20 (木)</td>
+                  <td class="text-center font-num text-xs font-bold">4 / 4</td>
+                  <td class="text-center font-num text-xs font-bold text-blue-600">4</td>
+                  <td>
+                    <div class="feel-meter-wrap" title="A: 2名, B: 1名, C: 1名">
+                      <div class="feel-meter-bar">
+                        <div class="feel-meter-seg seg-a" style="width: 50%;"></div>
+                        <div class="feel-meter-seg seg-b" style="width: 25%;"></div>
+                        <div class="feel-meter-seg seg-c" style="width: 25%;"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center font-num text-xs font-bold text-emerald-600">1</td>
+                </tr>
+                <tr>
+                  <td class="font-num font-bold text-xs">08/13 (木)</td>
+                  <td class="text-center font-num text-xs font-bold">5 / 4</td>
+                  <td class="text-center font-num text-xs font-bold text-blue-600">5</td>
+                  <td>
+                    <div class="feel-meter-wrap" title="A: 3名, B: 2名, C: 0名">
+                      <div class="feel-meter-bar">
+                        <div class="feel-meter-seg seg-a" style="width: 60%;"></div>
+                        <div class="feel-meter-seg seg-b" style="width: 40%;"></div>
+                        <div class="feel-meter-seg seg-c" style="width: 0%;"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center font-num text-xs font-bold text-emerald-600">2</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 1.3 ATOMS: Buttons -->
+    <!-- SECTION 3: ビジター詳細カルテ (実稼働ヘッダー & メタバー) -->
     <!-- ========================================== -->
-    <section id="section-buttons" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">1.3 Buttons (ボタン集)</h2>
+    <section id="sec-vd-profile" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-emerald-100 text-emerald-800">Organisms</span>
+          <h2 class="text-base font-black text-slate-900">ビジター詳細カルテ (特大ランクエンブレム ＆ iOSステータス)</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">.vd-profile-card / .vd-compact-meta-bar</span>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Real Live ViewVisitorDetail Component -->
+      <div class="vd-profile-card shadow-xs">
+        <div class="vd-profile-header">
+          <div class="flex items-center gap-3.5">
+            <!-- Mega Rank Emblem A -->
+            <div class="vd-hero-rank-badge rank-A" title="ヒアリング感触評価ランク A">
+              <span class="vd-hero-rank-label">RANK</span>
+              <span class="vd-hero-rank-char">A</span>
+            </div>
+
+            <div class="vd-profile-title-area">
+              <div class="flex items-baseline gap-2 flex-wrap">
+                <h1 class="vd-profile-name">佐藤 健太</h1>
+                <span class="vd-profile-furigana">サトウ ケンタ</span>
+              </div>
+              <div class="vd-profile-submeta">
+                <span class="font-bold text-slate-800">株式会社ネクストデザイン</span>
+                <span class="text-slate-300">/</span>
+                <span class="text-slate-600">Webマーケティング・SNS運用</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- iOS Picker Style Status Selectors -->
+          <div class="vd-badges-wrap">
+            <div class="vd-status-select-wrap">
+              <select class="vd-status-select" title="出欠状況">
+                <option value="参加" selected>出欠: 参加</option>
+                <option value="未">出欠: 未</option>
+                <option value="不参加">出欠: 不参加</option>
+              </select>
+            </div>
+            <div class="vd-status-select-wrap">
+              <select class="vd-status-select" title="1to1状況">
+                <option value="済" selected>1to1: 済</option>
+                <option value="未">1to1: 未</option>
+                <option value="調整中">1to1: 調整中</option>
+              </select>
+            </div>
+            <div class="vd-status-select-wrap">
+              <select class="vd-status-select" title="入会状況">
+                <option value="検討中" selected>入会: 検討中</option>
+                <option value="未">入会: 未</option>
+                <option value="入会済">入会: 済</option>
+                <option value="見送り">入会: 見送り</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ultra Compact Meta Bar -->
+        <div class="vd-compact-meta-bar">
+          <div class="vd-meta-chip">
+            <i class="fa-solid fa-user-plus text-slate-400"></i>
+            <span>招待:</span> <strong class="text-slate-800">川口 陽平</strong>
+          </div>
+          <div class="vd-meta-chip">
+            <i class="fa-regular fa-calendar-check text-blue-500"></i>
+            <span>参加日:</span> <strong class="text-slate-800">2026-08-20</strong>
+          </div>
+          <div class="vd-meta-chip">
+            <i class="fa-regular fa-envelope text-slate-400"></i>
+            <span>メール:</span> <strong class="text-slate-800 font-mono text-xs">kenta@example.com</strong>
+          </div>
+          <div class="vd-meta-chip">
+            <i class="fa-solid fa-rotate-right text-purple-500"></i>
+            <span>回数:</span> <strong class="text-slate-800">初めて</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 4: テーブル vs スマホカード (レスポンシブ比較) -->
+    <!-- ========================================== -->
+    <section id="sec-tables-cards" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-amber-100 text-amber-800">Responsive Views</span>
+          <h2 class="text-base font-black text-slate-900">PCテーブル ＆ スマホカードビュー (完全再現)</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">.table-container vs .dash-ap-grid</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        <!-- Primary Action -->
-        <div class="catalog-card p-5 space-y-3">
+        <!-- Left: PC Table View (7 Cols) -->
+        <div class="lg:col-span-7 space-y-3">
           <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-700">Primary Action Button</span>
-            <span class="badge-legacy">.btn-action-primary</span>
+            <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-desktop text-blue-500 mr-1.5"></i> PC Table View</span>
+            <span class="text-[11px] text-slate-400">ホバーアクション＆等幅数字</span>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Legacy -->
-            <button class="btn-action-primary">
-              <i class="fa-solid fa-plus"></i> 新規ビジター登録
-            </button>
-            <!-- Next Tailwind v4 -->
-            <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-xs font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-solid fa-plus"></i> 新規ビジター登録
-            </button>
+          <div class="table-container shadow-xs">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 50px;">ランク</th>
+                  <th>氏名 / 会社</th>
+                  <th>招待者</th>
+                  <th>参加日</th>
+                  <th class="text-center" style="width: 100px;">アクション</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="badge-rank-emblem rank-A">A</div>
+                  </td>
+                  <td>
+                    <div class="font-bold text-slate-900">鈴木 健一</div>
+                    <div class="text-[11px] text-slate-400">鈴木税理士事務所 / 税務・財務</div>
+                  </td>
+                  <td class="text-xs font-semibold text-slate-700">高山 俊介</td>
+                  <td class="font-num text-xs font-bold text-slate-700">2026-08-27</td>
+                  <td class="text-center">
+                    <button class="btn-table-action primary">
+                      <i class="fa-solid fa-clipboard-question"></i> ヒアリング
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="badge-rank-emblem rank-B">B</div>
+                  </td>
+                  <td>
+                    <div class="font-bold text-slate-900">田中 友里</div>
+                    <div class="text-[11px] text-slate-400">株式会社ルナ / 店舗内装設計</div>
+                  </td>
+                  <td class="text-xs font-semibold text-slate-700">川口 陽平</td>
+                  <td class="font-num text-xs font-bold text-slate-700">2026-08-27</td>
+                  <td class="text-center">
+                    <button class="btn-table-action">
+                      <i class="fa-solid fa-list-check"></i> アクション
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Secondary Action -->
-        <div class="catalog-card p-5 space-y-3">
+        <!-- Right: Mobile Device Frame (5 Cols) -->
+        <div class="lg:col-span-5 space-y-3">
           <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-700">Secondary / Filter Action</span>
-            <span class="badge-legacy">.btn-action-secondary</span>
+            <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-mobile-screen-button text-purple-500 mr-1.5"></i> Mobile Card View (390px)</span>
+            <span class="text-[11px] text-slate-400">.dash-ap-card</span>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Legacy -->
-            <button class="btn-action-secondary">
-              <i class="fa-solid fa-calendar-check"></i> 定例会を選択
-            </button>
-            <!-- Next Tailwind v4 -->
-            <button class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-solid fa-calendar-check"></i> 定例会を選択
-            </button>
+
+          <div class="mobile-preview-frame p-3 space-y-3">
+            <div class="mobile-notch mb-2"></div>
+
+            <!-- Mobile Card 1 (Overdue Action) -->
+            <div class="dash-ap-card is-overdue shadow-xs">
+              <div class="dash-ap-card-header">
+                <div class="flex items-center gap-2">
+                  <div class="badge-rank-emblem rank-A">A</div>
+                  <div>
+                    <div class="dash-ap-card-name">佐藤 健太</div>
+                    <div class="dash-ap-card-sub">株式会社ネクストデザイン</div>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-rose-600 font-num">08/18 超過</span>
+              </div>
+              <div class="dash-ap-card-body">
+                <div class="dash-ap-card-task">
+                  <i class="fa-solid fa-bullseye text-rose-500 mr-1"></i> 定例会後のZoom 1to1日程を調整する
+                </div>
+              </div>
+              <div class="dash-ap-card-footer">
+                <span class="text-[11px] text-slate-500">担当: 川口 陽平</span>
+                <button class="btn-table-action primary" style="height: 28px; padding: 0 10px; font-size: 11px;">
+                  完了報告
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Card 2 (Completed Action) -->
+            <div class="dash-ap-card is-completed shadow-xs">
+              <div class="dash-ap-card-header">
+                <div class="flex items-center gap-2">
+                  <div class="badge-rank-emblem rank-B">B</div>
+                  <div>
+                    <div class="dash-ap-card-name">田中 友里</div>
+                    <div class="dash-ap-card-sub">株式会社ルナ</div>
+                  </div>
+                </div>
+                <span class="text-[11px] font-bold text-emerald-600 font-num">08/20 済</span>
+              </div>
+              <div class="dash-ap-card-body">
+                <div class="dash-ap-card-report">
+                  <strong><i class="fa-regular fa-comment-dots text-emerald-600"></i> 報告:</strong> 来週の入会申込に向けて役員と協議中とのこと。
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- Minimal Quick Icon Buttons (Apple Style - No Text) -->
-        <div class="catalog-card p-5 space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-700">Apple Minimal Quick Icons</span>
-            <span class="badge-legacy">.btn-icon-quick / .btn-icon-action</span>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 5: モーダル ＆ 実物フォーム標本 -->
+    <!-- ========================================== -->
+    <section id="sec-modals" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-rose-100 text-rose-800">Modals & Forms</span>
+          <h2 class="text-base font-black text-slate-900">実物モーダル（ビジター登録 ＆ ヒアリングシート質問カード）</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">.modal-box-medium / .hearing-q-card</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        
+        <!-- Modal Form 1: Visitor CRUD -->
+        <div class="spec-card space-y-4">
+          <div class="spec-title">
+            <span>新規ビジター手動登録フォーム (.modal-box-medium)</span>
+            <span class="text-xs text-blue-600 font-mono">ModalVisitorCrud.html</span>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- Quick Icon Edit -->
-            <button class="btn-icon-quick" title="編集">
+
+          <div class="space-y-3">
+            <div class="form-group">
+              <label class="form-label">氏名 <span class="text-red-500">*</span></label>
+              <input type="text" class="form-input" placeholder="例：山田 太郎" value="山田 太郎">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="form-group">
+                <label class="form-label">ふりがな</label>
+                <input type="text" class="form-input" placeholder="やまだ たろう" value="やまだ たろう">
+              </div>
+              <div class="form-group">
+                <label class="form-label">参加日 (定例会) <span class="text-red-500">*</span></label>
+                <input type="date" class="form-input font-bold" value="2026-08-27">
+                <div class="flex gap-1.5 mt-1.5">
+                  <button type="button" class="btn-action-secondary text-[10px] py-0.5 px-2">⚡ 次回定例会</button>
+                  <button type="button" class="btn-action-secondary text-[10px] py-0.5 px-2">⚡ 次々回</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="form-group">
+                <label class="form-label">招待者</label>
+                <input type="text" class="form-input" placeholder="紹介メンバー名" value="川口 陽平">
+              </div>
+              <div class="form-group">
+                <label class="form-label">専門分野</label>
+                <input type="text" class="form-input" placeholder="例：店舗内装" value="内装デザイン">
+              </div>
+            </div>
+
+            <div class="modal-footer-btns pt-2 border-t border-slate-100 flex justify-end gap-2">
+              <button type="button" class="btn-cancel">キャンセル</button>
+              <button type="button" class="btn-save">保存する</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Form 2: Hearing Sheet Q-Cards -->
+        <div class="spec-card space-y-4">
+          <div class="spec-title">
+            <span>ヒアリング質問カード (.hearing-q-card)</span>
+            <span class="text-xs text-indigo-600 font-mono">ModalHearingForm.html</span>
+          </div>
+
+          <!-- Live Hearing ABC Selector -->
+          <div class="hearing-top-config-panel p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div class="space-y-1.5">
+              <label class="hearing-section-label text-xs font-bold text-slate-700">
+                <i class="fa-solid fa-gauge-high text-indigo-600 mr-1"></i> 入会への感触評価 (ABC)
+              </label>
+              <div class="hearing-abc-selector flex gap-2">
+                <button type="button" class="hearing-abc-btn abc-btn-a selected flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1">
+                  <span class="text-sm">A</span> (確度高)
+                </button>
+                <button type="button" class="hearing-abc-btn abc-btn-b flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1">
+                  <span class="text-sm">B</span> (検討中)
+                </button>
+                <button type="button" class="hearing-abc-btn abc-btn-c flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1">
+                  <span class="text-sm">C</span> (見送り)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hearing Question Card 1 -->
+          <div class="hearing-q-card border border-slate-200 rounded-xl p-3.5 space-y-2 bg-white">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center">Q1</span>
+                <span class="text-xs font-bold text-slate-800">定例会に参加されたご感想はいかがでしたか？</span>
+              </div>
+            </div>
+            <textarea class="form-input w-full text-xs" rows="2" placeholder="自由記述...">ビジネスの熱気が素晴らしく、紹介の仕組みに非常に感銘を受けました。</textarea>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 6: ボタン・バッジ・サイズバリエーション -->
+    <!-- ========================================== -->
+    <section id="sec-size-variants" class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div class="flex items-center gap-2">
+          <span class="catalog-section-badge bg-purple-100 text-purple-800">Atoms & Tokens</span>
+          <h2 class="text-base font-black text-slate-900">サイズ・バリエーション (Rank Emblems, Action Buttons)</h2>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">Apple Minimal Variants</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Rank Emblems Sizes -->
+        <div class="spec-card space-y-3">
+          <span class="text-xs font-bold text-slate-700">Rank Emblem サイズ比較</span>
+          <div class="flex items-center gap-4">
+            <div class="flex flex-col items-center gap-1">
+              <div class="badge-rank-emblem emblem-lg rank-A">A</div>
+              <span class="text-[10px] text-slate-400">Large (44px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="badge-rank-emblem rank-A">A</div>
+              <span class="text-[10px] text-slate-400">Normal (32px)</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="badge-rank-emblem rank-B">B</div>
+              <span class="text-[10px] text-slate-400">Rank B</span>
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <div class="badge-rank-emblem rank-C">C</div>
+              <span class="text-[10px] text-slate-400">Rank C</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apple Minimal Icons -->
+        <div class="spec-card space-y-3">
+          <span class="text-xs font-bold text-slate-700">Apple Minimal クイック操作アイコン</span>
+          <div class="flex items-center gap-3">
+            <button class="vd-back-btn" title="詳細戻るボタン">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button class="btn-icon-action" title="編集">
               <i class="fa-solid fa-pen"></i>
             </button>
-            <!-- Quick Icon Delete -->
             <button class="btn-icon-action btn-icon-danger" title="削除">
               <i class="fa-solid fa-trash"></i>
             </button>
-            <!-- Detail Back Minimal Chevron -->
-            <button class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition cursor-pointer" title="戻る">
-              <i class="fa-solid fa-chevron-left"></i>
+            <button class="vd-icon-btn" title="共有">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i>
             </button>
           </div>
         </div>
 
-        <!-- Table Row Action -->
-        <div class="catalog-card p-5 space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs font-bold text-slate-700">Table Row Action Buttons</span>
-            <span class="badge-legacy">.btn-table-action</span>
-          </div>
-          <div class="flex flex-wrap items-center gap-3">
+        <!-- Buttons Sizes -->
+        <div class="spec-card space-y-3">
+          <span class="text-xs font-bold text-slate-700">アクションボタン バリエーション</span>
+          <div class="flex flex-wrap items-center gap-2">
+            <button class="btn-action-primary">
+              <i class="fa-solid fa-plus"></i> Primary
+            </button>
+            <button class="btn-action-secondary">
+              <i class="fa-solid fa-filter"></i> Filter
+            </button>
             <button class="btn-table-action primary">
-              <i class="fa-solid fa-clipboard-question"></i> ヒアリング
-            </button>
-            <button class="btn-table-action">
-              <i class="fa-solid fa-list-check"></i> アクション
+              <i class="fa-solid fa-clipboard-question"></i> Table Action
             </button>
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 1.4 ATOMS: Form Controls -->
-    <!-- ========================================== -->
-    <section id="section-forms" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">1.4 Form Controls (フォーム部品)</h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Text Input -->
-        <div class="catalog-card p-4 space-y-2">
-          <label class="block text-xs font-bold text-slate-700">氏名 <span class="text-red-500">*</span></label>
-          <input type="text" placeholder="山田 太郎" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white" />
-        </div>
-
-        <!-- Date Input -->
-        <div class="catalog-card p-4 space-y-2">
-          <label class="block text-xs font-bold text-slate-700">参加日 <span class="text-red-500">*</span></label>
-          <input type="date" value="2026-08-27" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white" />
-        </div>
-
-        <!-- Select Box -->
-        <div class="catalog-card p-4 space-y-2">
-          <label class="block text-xs font-bold text-slate-700">紹介者</label>
-          <select class="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white">
-            <option>川口 陽平 (Web制作)</option>
-            <option>高山 俊介 (税理士)</option>
-          </select>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 1.5 ATOMS: Badges & Rank Emblems -->
-    <!-- ========================================== -->
-    <section id="section-badges" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">1.5 Badges & Rank Emblems (バッジ・ランク表示)</h2>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <!-- Rank Emblems -->
-        <div class="catalog-card p-4 flex flex-col items-center justify-center space-y-2">
-          <span class="text-xs font-bold text-slate-500">Rank A Emblem</span>
-          <div class="badge-rank-emblem emblem-lg rank-A">A</div>
-        </div>
-
-        <div class="catalog-card p-4 flex flex-col items-center justify-center space-y-2">
-          <span class="text-xs font-bold text-slate-500">Rank B Emblem</span>
-          <div class="badge-rank-emblem emblem-lg rank-B">B</div>
-        </div>
-
-        <div class="catalog-card p-4 flex flex-col items-center justify-center space-y-2">
-          <span class="text-xs font-bold text-slate-500">Rank C Emblem</span>
-          <div class="badge-rank-emblem emblem-lg rank-C">C</div>
-        </div>
-
-        <div class="catalog-card p-4 flex flex-col items-center justify-center space-y-2">
-          <span class="text-xs font-bold text-slate-500">Status Indicator Dot</span>
-          <div class="flex items-center gap-3">
-            <span class="w-3 h-3 rounded-full bg-blue-600 shadow-sm" title="正常"></span>
-            <span class="w-3 h-3 rounded-full bg-red-500 shadow-sm animate-pulse" title="警告・超過"></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 2. MOLECULES: Component Units -->
-    <!-- ========================================== -->
-    <section id="section-molecules" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-cyan-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">2. Molecules (入力・評価ユニット)</h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- ABC Feel Selector Toggle -->
-        <div class="catalog-card p-5 space-y-3">
-          <span class="text-xs font-bold text-slate-700">ABC感触評価セレクター</span>
-          <div class="grid grid-cols-3 gap-2">
-            <label class="cursor-pointer border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition">
-              <input type="radio" name="feel_demo" value="A" checked class="hidden">
-              <span class="text-lg font-black text-emerald-600">A</span>
-              <span class="text-[10px] font-bold text-emerald-700">入会確度高</span>
-            </label>
-            <label class="cursor-pointer border border-slate-200 hover:border-amber-400 bg-white rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition">
-              <input type="radio" name="feel_demo" value="B" class="hidden">
-              <span class="text-lg font-black text-slate-400">B</span>
-              <span class="text-[10px] font-bold text-slate-500">検討中</span>
-            </label>
-            <label class="cursor-pointer border border-slate-200 hover:border-slate-400 bg-white rounded-xl p-3 flex flex-col items-center justify-center gap-1 transition">
-              <input type="radio" name="feel_demo" value="C" class="hidden">
-              <span class="text-lg font-black text-slate-400">C</span>
-              <span class="text-[10px] font-bold text-slate-500">見送り</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Feel Meter Stacked Bar -->
-        <div class="catalog-card p-5 space-y-3">
-          <span class="text-xs font-bold text-slate-700">温度感メーター (Stacked Progress)</span>
-          <div class="space-y-1.5">
-            <div class="feel-meter-wrap">
-              <div class="feel-meter-bar">
-                <div class="feel-meter-seg seg-a" style="width: 50%;"></div>
-                <div class="feel-meter-seg seg-b" style="width: 30%;"></div>
-                <div class="feel-meter-seg seg-c" style="width: 20%;"></div>
-              </div>
-            </div>
-            <div class="flex justify-between text-[10px] font-bold text-slate-400 font-num">
-              <span class="text-emerald-600">A: 50%</span>
-              <span class="text-amber-600">B: 30%</span>
-              <span class="text-slate-500">C: 20%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ========================================== -->
-    <!-- 3. ORGANISMS: KPI Cards & Data Table -->
-    <!-- ========================================== -->
-    <section id="section-organisms" class="space-y-4">
-      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-rose-600"></span>
-        <h2 class="text-sm font-black tracking-wider uppercase text-slate-800">3. Organisms (KPIカード & テーブル)</h2>
-      </div>
-
-      <!-- KPI 4-Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        <!-- 1: Next Meeting -->
-        <div class="catalog-card p-5 relative">
-          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">次回定例会</div>
-          <div class="text-2xl font-black text-slate-900 font-num">08/27 <span class="text-sm font-bold text-slate-500">(木)</span></div>
-          <div class="mt-2 text-[11px] font-semibold text-slate-500">ハイブリッド開催</div>
-        </div>
-
-        <!-- 2: Needs Action (Warning Dot) -->
-        <div class="catalog-card p-5 relative border-l-4 border-l-red-500">
-          <span class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
-          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">要対応タスク</div>
-          <div class="text-3xl font-extrabold text-slate-900 font-num">3 <span class="text-xs font-bold text-slate-400">件</span></div>
-          <div class="mt-2 text-[11px] font-semibold text-red-500">期日超過の対応があります</div>
-        </div>
-
-        <!-- 3: Total Visitors -->
-        <div class="catalog-card p-5 relative">
-          <span class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">申込ビジター</div>
-          <div class="text-3xl font-extrabold text-slate-900 font-num">12 <span class="text-xs font-bold text-slate-400">名</span></div>
-          <div class="mt-2 text-[11px] font-semibold text-blue-600">前週比 +4名</div>
-        </div>
-
-        <!-- 4: Target -->
-        <div class="catalog-card p-5 relative">
-          <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">入会目標達成率</div>
-          <div class="text-3xl font-extrabold text-slate-900 font-num">80 <span class="text-xs font-bold text-slate-400">%</span></div>
-          <div class="mt-2 text-[11px] font-semibold text-slate-500">目標 10名 / 現在 8名</div>
-        </div>
-
-      </div>
-
-      <!-- Data Table Preview -->
-      <div class="table-container shadow-xs">
-        <table>
-          <thead>
-            <tr>
-              <th>感触</th>
-              <th>ビジター氏名</th>
-              <th>会社・専門分野</th>
-              <th>紹介者</th>
-              <th>参加予定日</th>
-              <th style="text-align: right;">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <div class="badge-rank-emblem rank-A">A</div>
-              </td>
-              <td>
-                <div class="font-bold text-slate-900">佐藤 健太</div>
-                <div class="text-[11px] text-slate-400">サトウ ケンタ</div>
-              </td>
-              <td>
-                <div class="text-xs font-semibold text-slate-700">株式会社ネクスト</div>
-                <div class="text-[11px] text-slate-400">Webマーケティング</div>
-              </td>
-              <td>川口 陽平</td>
-              <td class="font-num text-xs font-bold text-slate-700">2026-08-27</td>
-              <td style="text-align: right;">
-                <div class="inline-flex items-center gap-1.5">
-                  <button class="btn-table-action primary"><i class="fa-solid fa-clipboard-question"></i> ヒアリング</button>
-                  <button class="btn-icon-action"><i class="fa-solid fa-pen"></i></button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
   </main>
+
+  <!-- Live Chart.js Init Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('demoLineChart');
+      if (ctx) {
+        new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: ['7/9', '7/16', '7/23', '7/30', '8/6', '8/13', '8/20', '8/27'],
+            datasets: [{
+              label: 'ビジター来訪数',
+              data: [3, 4, 6, 2, 5, 4, 5, 3],
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              fill: true,
+              tension: 0.35,
+              pointBackgroundColor: '#2563eb',
+              pointRadius: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, suggestedMax: 8, grid: { color: '#f1f5f9' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+    });
+  </script>
 
 </body>
 </html>
