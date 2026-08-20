@@ -81,6 +81,9 @@
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
       </button>
+      <button class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
     </div>
 
     <div class="drawer-nav-list">
@@ -120,7 +123,7 @@
     <!-- Top Header (Sticky) -->
     <header class="header-bar">
       <div class="logo-area">
-        <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200 shrink-0" onclick="toggleLeftDrawer()" title="メニューを開く">
+        <button class="btn-drawer-trigger text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200 shrink-0" onclick="toggleSidebarCollapse()" title="メニューを開閉">
           <i class="fa-solid fa-bars"></i>
         </button>
         

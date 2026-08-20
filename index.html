@@ -390,18 +390,117 @@ body {
   text-overflow: ellipsis;
 }
 
-/* --- PC Responsive --- */
+/* --- PC Responsive & Collapsed Mode --- */
 @media (min-width: 1024px) {
   body {
     padding-left: 276px;
+    transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .left-drawer {
     transform: translateX(0) !important;
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
     border-right: 1px solid var(--border-color);
   }
-  .drawer-backdrop, .btn-drawer-trigger, .btn-drawer-close { display: none !important; }
+  .drawer-backdrop, .btn-drawer-close { display: none !important; }
+  .btn-sidebar-collapse { display: inline-flex; }
+  .btn-drawer-trigger { display: inline-flex; }
   .container { max-width: 1380px; margin: 0 auto; }
+
+  /* Collapsed Mode (Icons Only) */
+  body.sidebar-collapsed {
+    padding-left: 90px;
+  }
+  body.sidebar-collapsed .left-drawer {
+    width: 74px;
+  }
+  body.sidebar-collapsed .drawer-header {
+    padding: 0 10px;
+    justify-content: center;
+    position: relative;
+  }
+  body.sidebar-collapsed .drawer-brand-text {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-brand {
+    gap: 0;
+    justify-content: center;
+  }
+  body.sidebar-collapsed .btn-sidebar-collapse {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  body.sidebar-collapsed .btn-sidebar-collapse i {
+    transform: rotate(180deg);
+  }
+  body.sidebar-collapsed .drawer-action-wrap {
+    padding: 0 0 10px 0;
+  }
+  body.sidebar-collapsed .drawer-action-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+  body.sidebar-collapsed .drawer-action-btn .nav-label {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-action-btn i {
+    margin: 0 !important;
+  }
+  body.sidebar-collapsed .drawer-nav-list {
+    padding: 12px 8px;
+    gap: 6px;
+  }
+  body.sidebar-collapsed .drawer-nav-item {
+    padding: 11px 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+  body.sidebar-collapsed .drawer-nav-item .nav-label {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-nav-item i {
+    font-size: 18px;
+    width: auto;
+    margin: 0;
+  }
+  body.sidebar-collapsed .drawer-footer {
+    padding: 8px;
+    justify-content: center;
+  }
+  body.sidebar-collapsed .drawer-footer-text {
+    display: none;
+  }
+
+  /* Floating Tooltips on Collapsed Mode Hover */
+  body.sidebar-collapsed .drawer-nav-item:hover::after,
+  body.sidebar-collapsed .drawer-action-btn:hover::after {
+    content: attr(data-tooltip);
+    position: fixed;
+    left: 82px;
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    animation: fadeInTooltip 0.15s ease-out;
+  }
+
+  @keyframes fadeInTooltip {
+    from { opacity: 0; transform: translateX(-4px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
 }
 
 @media (max-width: 1023px) {
@@ -5180,6 +5279,9 @@ tr:last-child td { border-bottom: none; }
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
       </button>
+      <button class="btn-sidebar-collapse" id="btn-sidebar-collapse" onclick="toggleSidebarCollapse()" title="サイドバー折りたたみ/展開">
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
     </div>
 
     <div class="drawer-nav-list">
@@ -5219,7 +5321,7 @@ tr:last-child td { border-bottom: none; }
     <!-- Top Header (Sticky) -->
     <header class="header-bar">
       <div class="logo-area">
-        <button class="btn-drawer-trigger lg:hidden text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200 shrink-0" onclick="toggleLeftDrawer()" title="メニューを開く">
+        <button class="btn-drawer-trigger text-slate-700 bg-slate-100 border border-slate-200 w-9 h-9 rounded-lg flex items-center justify-center text-base cursor-pointer hover:bg-slate-200 shrink-0" onclick="toggleSidebarCollapse()" title="メニューを開閉">
           <i class="fa-solid fa-bars"></i>
         </button>
         
@@ -8689,10 +8791,45 @@ window.CelebrationEffect = (function() {
     if (backdrop) backdrop.classList.remove('open');
   }
 
-  // Ensure sidebar is always clean in normal expanded state
-  try {
-    localStorage.removeItem('sidebar_collapsed');
-  } catch (e) {}
+  function toggleSidebarCollapse() {
+    if (window.innerWidth < 1024) {
+      // On mobile/tablet, open/close drawer instead
+      toggleLeftDrawer();
+      return;
+    }
+    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+    if (document.documentElement) {
+      if (isCollapsed) {
+        document.documentElement.classList.add('sidebar-collapsed');
+      } else {
+        document.documentElement.classList.remove('sidebar-collapsed');
+      }
+    }
+    try {
+      localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+    } catch (e) {}
+
+    // Dispatch resize event so charts or custom grids adjust immediately
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 260);
+  }
+
+  function initSidebarState() {
+    try {
+      const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+      if (isCollapsed && window.innerWidth >= 1024) {
+        document.body.classList.add('sidebar-collapsed');
+        if (document.documentElement) document.documentElement.classList.add('sidebar-collapsed');
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebarState);
+  } else {
+    initSidebarState();
+  }
 
   const PAGE_NAV_INFO = {
     'dashboard': { title: 'ダッシュボード', icon: 'fa-solid fa-chart-pie' },
