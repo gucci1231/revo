@@ -190,7 +190,20 @@ class DashboardService {
 
         $meetingCount = max(1, count($weeklyMap));
         $avgVisitorCount = number_format($totalApplyCount / $meetingCount, 1);
-        $targetJoinGoal = 12;
+
+        // Calculate dynamic targetJoinGoal for the term (6 months by default or based on months involved)
+        $termMonthsCount = 6;
+        $targetJoinGoal = 0;
+        $startYearMonth = date('Y/m', $startDateTs);
+        $termMonthTs = $startDateTs;
+        for ($i = 0; $i < $termMonthsCount; $i++) {
+            $ym = date('Y/m', $termMonthTs);
+            $mGoal = $this->settingRepo->resolveGoalsForMonth($ym);
+            $targetJoinGoal += ($mGoal['target_joined'] ?? 2);
+            $termMonthTs = strtotime('+1 month', $termMonthTs);
+        }
+        if ($targetJoinGoal <= 0) $targetJoinGoal = 12;
+
         $achievementRate = number_format(($totalJoinedCount / $targetJoinGoal) * 100, 1);
         $joinRate = $totalApplyCount > 0 ? number_format(($totalJoinedCount / $totalApplyCount) * 100, 1) : '0.0';
         $hearingRate = $totalApplyCount > 0 ? number_format(($totalHearingCount / $totalApplyCount) * 100, 1) : '0.0';

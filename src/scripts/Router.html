@@ -160,6 +160,7 @@
     } else if (tabName === 'email-templates') {
       fetchEmailTemplatesData(true);
     } else if (tabName === 'settings') {
+      if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();
     }
   }

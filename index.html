@@ -6308,6 +6308,150 @@ tr:last-child td { border-bottom: none; }
     </div>
   </div>
 
+  <!-- 目標値 (KPI) セッティング -->
+  <div class="section-card">
+    <div class="section-header flex justify-between items-center flex-wrap gap-2">
+      <div>
+        <h2 class="section-title text-slate-900 font-bold text-base m-0">
+          <i class="fa-solid fa-bullseye text-blue-500 mr-1.5"></i> 目標値（KPI）セッティング
+        </h2>
+        <div class="text-xs text-slate-500 mt-0.5">月毎の目標数値を設定できます。変更がない月は前月の設定値を自動的に引き継ぎます。</div>
+      </div>
+    </div>
+    <div class="settings-body p-4 sm:p-6">
+
+      <!-- 1. 基本標準目標 (デフォルト) -->
+      <div class="mb-6 pb-6 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-gear text-slate-400"></i> 基本標準目標（デフォルト）
+          </span>
+          <span class="text-[11px] text-slate-400">未設定の月に適用される基準値</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="setting-def-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+              <span class="text-xs text-slate-500 font-bold">名</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="setting-def-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+              <span class="text-xs text-slate-500 font-bold">名/週</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
+            <div class="flex items-center gap-1">
+              <input type="number" step="0.1" id="setting-def-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
+              <span class="text-xs text-slate-500 font-bold">%</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
+            <div class="flex items-center gap-1">
+              <input type="number" step="0.1" id="setting-def-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
+              <span class="text-xs text-slate-500 font-bold">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveDefaultGoalsSetting()">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> 基本目標を保存
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 月別目標のカスタマイズ -->
+      <div>
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定 ＆ 引き継ぎ状況
+          </span>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-500 font-medium">対象月:</label>
+            <select id="setting-month-goal-select" class="form-input text-xs font-bold py-1 px-2.5" onchange="onGoalMonthSelected(this.value)">
+              <option value="">読み込み中...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-slate-800" id="setting-selected-month-title">2026/04 目標設定</span>
+              <span id="setting-month-source-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">自動引継中</span>
+            </div>
+            <button type="button" id="btn-reset-monthly-goal" class="text-xs text-slate-400 hover:text-red-500 transition-colors hidden" onclick="resetMonthlyGoalSetting()">
+              <i class="fa-solid fa-rotate-left mr-1"></i> 前月の設定に戻す（個別設定削除）
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="setting-month-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+                <span class="text-xs text-slate-500 font-bold">名</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="setting-month-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+                <span class="text-xs text-slate-500 font-bold">名/週</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-month-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-month-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveMonthlyGoalSetting()">
+              <i class="fa-solid fa-check mr-1"></i> <span id="btn-save-monthly-goal-label">この月の目標を保存</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 月別一覧プレビューテーブル -->
+        <div class="table-container max-h-60 overflow-y-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>年月</th>
+                <th class="text-center">入会数 (月)</th>
+                <th class="text-center">ビジター (週)</th>
+                <th class="text-center">入会率</th>
+                <th class="text-center">ヒアリング率</th>
+                <th class="text-center">設定種別</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-monthly-goals-preview">
+              <tr><td colspan="7" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="section-card">
     <div class="section-header">
       <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>
@@ -7004,6 +7148,29 @@ const ApiService = {
           url: '/api/settings.php?action=update',
           method: 'POST',
           body: { key: 'startDate', value: args[0] }
+        };
+      case 'getGoalsApi':
+        return {
+          url: '/api/settings.php?action=get_goals',
+          method: 'GET'
+        };
+      case 'saveDefaultGoalsApi':
+        return {
+          url: '/api/settings.php?action=save_default_goals',
+          method: 'POST',
+          body: { goals: args[0] }
+        };
+      case 'saveMonthlyGoalApi':
+        return {
+          url: '/api/settings.php?action=save_monthly_goal',
+          method: 'POST',
+          body: { month: args[0], goals: args[1] }
+        };
+      case 'deleteMonthlyGoalApi':
+        return {
+          url: '/api/settings.php?action=delete_monthly_goal',
+          method: 'POST',
+          body: { month: args[0] }
         };
       case 'getActionPlansApi':
         return { url: '/api/action_plans.php?action=list&visitorId=' + (args[0] || ''), method: 'GET' };
@@ -8440,6 +8607,7 @@ window.CelebrationEffect = (function() {
     } else if (tabName === 'email-templates') {
       fetchEmailTemplatesData(true);
     } else if (tabName === 'settings') {
+      if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();
     }
   }
@@ -13737,6 +13905,271 @@ window.CelebrationEffect = (function() {
       })
       .catch(handleError);
   }
+</script>
+
+<script>
+  /* --- VIEW 5: Settings & KPI Goals Controller --- */
+  let cachedGoalsData = null;
+  let currentSelectedGoalMonth = '';
+
+  function fetchGoalsSettings(forceRefresh = false) {
+    if (typeof ApiService === 'undefined') return;
+
+    ApiService.call('getGoalsApi', [])
+      .then(res => {
+        if (!res || !res.success) return;
+        cachedGoalsData = res;
+        renderGoalsSettings(res);
+      })
+      .catch(err => {
+        console.error('Failed to fetch goals settings:', err);
+      });
+  }
+
+  function renderGoalsSettings(data) {
+    if (!data) return;
+
+    const def = data.defaultGoals || { target_joined: 2, target_visitors_weekly: 4, target_join_rate: 25.0, target_hearing_rate: 100.0 };
+    const defJoinedEl = document.getElementById('setting-def-goal-joined');
+    const defVisitorsEl = document.getElementById('setting-def-goal-visitors');
+    const defJoinRateEl = document.getElementById('setting-def-goal-join-rate');
+    const defHearingRateEl = document.getElementById('setting-def-goal-hearing-rate');
+
+    if (defJoinedEl) defJoinedEl.value = def.target_joined !== undefined ? def.target_joined : 2;
+    if (defVisitorsEl) defVisitorsEl.value = def.target_visitors_weekly !== undefined ? def.target_visitors_weekly : 4;
+    if (defJoinRateEl) defJoinRateEl.value = def.target_join_rate !== undefined ? def.target_join_rate : 25.0;
+    if (defHearingRateEl) defHearingRateEl.value = def.target_hearing_rate !== undefined ? def.target_hearing_rate : 100.0;
+
+    // 月選択セレクトの構築
+    const selectEl = document.getElementById('setting-month-goal-select');
+    if (selectEl) {
+      const monthsPreview = data.monthsPreview || [];
+      const currentMonth = data.currentMonth || new Date().toISOString().substring(0, 7).replace('-', '/');
+      if (!currentSelectedGoalMonth || !monthsPreview.some(m => m.month === currentSelectedGoalMonth)) {
+        currentSelectedGoalMonth = currentMonth;
+      }
+
+      selectEl.innerHTML = '';
+      monthsPreview.forEach(mObj => {
+        const opt = document.createElement('option');
+        opt.value = mObj.month;
+        let suffix = '';
+        if (mObj.is_custom) {
+          suffix = ' (個別設定)';
+        } else if (mObj.source === 'inherited') {
+          suffix = ` (引継: ${mObj.inherited_from})`;
+        }
+        opt.text = `${mObj.month}${suffix}`;
+        if (mObj.month === currentSelectedGoalMonth) {
+          opt.selected = true;
+        }
+        selectEl.appendChild(opt);
+      });
+    }
+
+    onGoalMonthSelected(currentSelectedGoalMonth);
+    renderMonthlyGoalsPreviewTable(data.monthsPreview || []);
+  }
+
+  function onGoalMonthSelected(monthStr) {
+    if (!monthStr || !cachedGoalsData) return;
+    currentSelectedGoalMonth = monthStr;
+
+    const monthsPreview = cachedGoalsData.monthsPreview || [];
+    const monthlyMap = cachedGoalsData.monthlyMap || {};
+    const defaultGoals = cachedGoalsData.defaultGoals || {};
+
+    let targetObj = monthsPreview.find(m => m.month === monthStr);
+    if (!targetObj) {
+      if (monthlyMap[monthStr]) {
+        targetObj = { ...monthlyMap[monthStr], month: monthStr, is_custom: true, source: 'custom' };
+      } else {
+        targetObj = { ...defaultGoals, month: monthStr, is_custom: false, source: 'default' };
+      }
+    }
+
+    const titleEl = document.getElementById('setting-selected-month-title');
+    const badgeEl = document.getElementById('setting-month-source-badge');
+    const resetBtn = document.getElementById('btn-reset-monthly-goal');
+    const saveBtnLabel = document.getElementById('btn-save-monthly-goal-label');
+
+    const mJoinedEl = document.getElementById('setting-month-goal-joined');
+    const mVisitorsEl = document.getElementById('setting-month-goal-visitors');
+    const mJoinRateEl = document.getElementById('setting-month-goal-join-rate');
+    const mHearingRateEl = document.getElementById('setting-month-goal-hearing-rate');
+
+    if (titleEl) titleEl.innerText = `${monthStr} 目標設定`;
+
+    if (mJoinedEl) mJoinedEl.value = targetObj.target_joined !== undefined ? targetObj.target_joined : 2;
+    if (mVisitorsEl) mVisitorsEl.value = targetObj.target_visitors_weekly !== undefined ? targetObj.target_visitors_weekly : 4;
+    if (mJoinRateEl) mJoinRateEl.value = targetObj.target_join_rate !== undefined ? targetObj.target_join_rate : 25.0;
+    if (mHearingRateEl) mHearingRateEl.value = targetObj.target_hearing_rate !== undefined ? targetObj.target_hearing_rate : 100.0;
+
+    if (badgeEl) {
+      if (targetObj.is_custom) {
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800';
+        badgeEl.innerText = '個別設定中';
+      } else if (targetObj.source === 'inherited') {
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800';
+        badgeEl.innerText = `${targetObj.inherited_from} より引き継ぎ中`;
+      } else {
+        badgeEl.className = 'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600';
+        badgeEl.innerText = '基本目標を適用中';
+      }
+    }
+
+    if (resetBtn) {
+      if (targetObj.is_custom) {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+    }
+
+    if (saveBtnLabel) {
+      saveBtnLabel.innerText = `${monthStr} の目標を保存`;
+    }
+  }
+
+  function renderMonthlyGoalsPreviewTable(previewList) {
+    const tbody = document.getElementById('table-monthly-goals-preview');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (!previewList || previewList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-3">データがありません</td></tr>';
+      return;
+    }
+
+    previewList.forEach(mObj => {
+      const tr = document.createElement('tr');
+      let typeBadge = '';
+      if (mObj.is_custom) {
+        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">個別設定</span>';
+      } else if (mObj.source === 'inherited') {
+        typeBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800" title="${mObj.inherited_from}の設定を自動引き継ぎ">引継 (${mObj.inherited_from})</span>`;
+      } else {
+        typeBadge = '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">基本目標</span>';
+      }
+
+      tr.innerHTML = `
+        <td class="font-bold">${mObj.month}</td>
+        <td class="text-center font-bold text-slate-800">${mObj.target_joined || 0}名</td>
+        <td class="text-center font-bold text-blue-600">${mObj.target_visitors_weekly || 0}名/週</td>
+        <td class="text-center font-bold text-emerald-600">${mObj.target_join_rate || 0}%</td>
+        <td class="text-center font-bold text-slate-700">${mObj.target_hearing_rate || 0}%</td>
+        <td class="text-center">${typeBadge}</td>
+        <td class="text-center">
+          <button type="button" class="btn-action-secondary text-xs px-2 py-0.5" onclick="selectGoalMonthFromTable('${mObj.month}')">
+            編集
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function selectGoalMonthFromTable(monthStr) {
+    const selectEl = document.getElementById('setting-month-goal-select');
+    if (selectEl) {
+      selectEl.value = monthStr;
+    }
+    onGoalMonthSelected(monthStr);
+    const targetCard = document.getElementById('setting-selected-month-title');
+    if (targetCard) {
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  function saveDefaultGoalsSetting() {
+    const defJoined = Number(document.getElementById('setting-def-goal-joined').value) || 2;
+    const defVisitors = Number(document.getElementById('setting-def-goal-visitors').value) || 4;
+    const defJoinRate = Number(document.getElementById('setting-def-goal-join-rate').value) || 25.0;
+    const defHearingRate = Number(document.getElementById('setting-def-goal-hearing-rate').value) || 100.0;
+
+    const payload = {
+      target_joined: defJoined,
+      target_visitors_weekly: defVisitors,
+      target_join_rate: defJoinRate,
+      target_hearing_rate: defHearingRate
+    };
+
+    showToast('基本目標を保存中...');
+    ApiService.call('saveDefaultGoalsApi', [payload])
+      .then(res => {
+        if (res && res.success) {
+          showToast('基本目標を保存しました！');
+          fetchGoalsSettings(true);
+          if (typeof fetchDashboardData === 'function') fetchDashboardData(true);
+        } else {
+          showToast('保存に失敗しました', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+
+  function saveMonthlyGoalSetting() {
+    if (!currentSelectedGoalMonth) return;
+
+    const mJoined = Number(document.getElementById('setting-month-goal-joined').value) || 2;
+    const mVisitors = Number(document.getElementById('setting-month-goal-visitors').value) || 4;
+    const mJoinRate = Number(document.getElementById('setting-month-goal-join-rate').value) || 25.0;
+    const mHearingRate = Number(document.getElementById('setting-month-goal-hearing-rate').value) || 100.0;
+
+    const payload = {
+      target_joined: mJoined,
+      target_visitors_weekly: mVisitors,
+      target_join_rate: mJoinRate,
+      target_hearing_rate: mHearingRate
+    };
+
+    showToast(`${currentSelectedGoalMonth} の目標を保存中...`);
+    ApiService.call('saveMonthlyGoalApi', [currentSelectedGoalMonth, payload])
+      .then(res => {
+        if (res && res.success) {
+          showToast(`${currentSelectedGoalMonth} の目標を保存しました！以後の月にも自動引き継ぎされます。`);
+          fetchGoalsSettings(true);
+          if (typeof fetchDashboardData === 'function') fetchDashboardData(true);
+        } else {
+          showToast('保存に失敗しました', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+
+  function resetMonthlyGoalSetting() {
+    if (!currentSelectedGoalMonth) return;
+    if (!confirm(`${currentSelectedGoalMonth} の個別設定を削除し、前月の設定（または基本目標）の自動引き継ぎに戻しますか？`)) {
+      return;
+    }
+
+    showToast(`${currentSelectedGoalMonth} の個別設定を削除中...`);
+    ApiService.call('deleteMonthlyGoalApi', [currentSelectedGoalMonth])
+      .then(res => {
+        if (res && res.success) {
+          showToast(`${currentSelectedGoalMonth} を前月引き継ぎに戻しました。`);
+          fetchGoalsSettings(true);
+          if (typeof fetchDashboardData === 'function') fetchDashboardData(true);
+        } else {
+          showToast('削除に失敗しました', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+
+  // タブ切り替え時または初期ロード時のフック
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchGoalsSettings();
+  });
 </script>
 
 

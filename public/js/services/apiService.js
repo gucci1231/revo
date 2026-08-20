@@ -109,6 +109,29 @@ const ApiService = {
           method: 'POST',
           body: { key: 'startDate', value: args[0] }
         };
+      case 'getGoalsApi':
+        return {
+          url: '/api/settings.php?action=get_goals',
+          method: 'GET'
+        };
+      case 'saveDefaultGoalsApi':
+        return {
+          url: '/api/settings.php?action=save_default_goals',
+          method: 'POST',
+          body: { goals: args[0] }
+        };
+      case 'saveMonthlyGoalApi':
+        return {
+          url: '/api/settings.php?action=save_monthly_goal',
+          method: 'POST',
+          body: { month: args[0], goals: args[1] }
+        };
+      case 'deleteMonthlyGoalApi':
+        return {
+          url: '/api/settings.php?action=delete_monthly_goal',
+          method: 'POST',
+          body: { month: args[0] }
+        };
       case 'getActionPlansApi':
         return { url: '/api/action_plans.php?action=list&visitorId=' + (args[0] || ''), method: 'GET' };
       case 'getActionPlanDetailApi':

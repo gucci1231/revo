@@ -23,6 +23,18 @@ class SettingController extends Controller {
             case 'update':
                 $this->update();
                 break;
+            case 'get_goals':
+                $this->getGoals();
+                break;
+            case 'save_default_goals':
+                $this->saveDefaultGoals();
+                break;
+            case 'save_monthly_goal':
+                $this->saveMonthlyGoal();
+                break;
+            case 'delete_monthly_goal':
+                $this->deleteMonthlyGoal();
+                break;
             default:
                 Response::error('Invalid action');
         }
@@ -47,6 +59,82 @@ class SettingController extends Controller {
         Response::success([
             'key' => $key,
             'value' => $val
+        ]);
+    }
+
+    private function getGoals(): void {
+        $defaultGoals = $this->settingRepo->getDefaultGoals();
+        $monthlyMap = $this->settingRepo->getMonthlyGoalsMap();
+
+        // 過去〜未来6ヶ月程度の月リストを生成し、引き継ぎ解決後のプレビューデータを作成
+        $currentYm = date('Y/m');
+        $monthsPreview = [];
+        $ts = strtotime(date('Y-m-01') . ' -2 months');
+        for ($i = 0; $i < 12; $i++) {
+            $ym = date('Y/m', $ts);
+            $resolved = $this->settingRepo->resolveGoalsForMonth($ym);
+            $monthsPreview[] = $resolved;
+            $ts = strtotime('+1 month', $ts);
+        }
+
+        Response::success([
+            'defaultGoals' => $defaultGoals,
+            'monthlyMap' => $monthlyMap,
+            'monthsPreview' => $monthsPreview,
+            'currentMonth' => $currentYm
+        ]);
+    }
+
+    private function saveDefaultGoals(): void {
+        $goals = $this->getParam('goals', []);
+        if (!is_array($goals)) {
+            Response::error('Goals must be an array');
+        }
+
+        $now = date('Y/m/d H:i');
+        $this->settingRepo->setDefaultGoals($goals, $now);
+
+        Response::success([
+            'defaultGoals' => $this->settingRepo->getDefaultGoals()
+        ]);
+    }
+
+    private function saveMonthlyGoal(): void {
+        $month = $this->getParam('month', '');
+        $goals = $this->getParam('goals', []);
+
+        if (!$month) {
+            Response::error('Month is required');
+        }
+        if (!is_array($goals)) {
+            Response::error('Goals must be an array');
+        }
+
+        $now = date('Y/m/d H:i');
+        $this->settingRepo->setMonthlyGoal($month, $goals, $now);
+
+        $resolved = $this->settingRepo->resolveGoalsForMonth($month);
+        Response::success([
+            'month' => $month,
+            'goals' => $resolved,
+            'monthlyMap' => $this->settingRepo->getMonthlyGoalsMap()
+        ]);
+    }
+
+    private function deleteMonthlyGoal(): void {
+        $month = $this->getParam('month', '');
+        if (!$month) {
+            Response::error('Month is required');
+        }
+
+        $now = date('Y/m/d H:i');
+        $this->settingRepo->setMonthlyGoal($month, null, $now);
+
+        $resolved = $this->settingRepo->resolveGoalsForMonth($month);
+        Response::success([
+            'month' => $month,
+            'goals' => $resolved,
+            'monthlyMap' => $this->settingRepo->getMonthlyGoalsMap()
         ]);
     }
 }

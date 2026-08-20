@@ -14,6 +14,150 @@
     </div>
   </div>
 
+  <!-- 目標値 (KPI) セッティング -->
+  <div class="section-card">
+    <div class="section-header flex justify-between items-center flex-wrap gap-2">
+      <div>
+        <h2 class="section-title text-slate-900 font-bold text-base m-0">
+          <i class="fa-solid fa-bullseye text-blue-500 mr-1.5"></i> 目標値（KPI）セッティング
+        </h2>
+        <div class="text-xs text-slate-500 mt-0.5">月毎の目標数値を設定できます。変更がない月は前月の設定値を自動的に引き継ぎます。</div>
+      </div>
+    </div>
+    <div class="settings-body p-4 sm:p-6">
+
+      <!-- 1. 基本標準目標 (デフォルト) -->
+      <div class="mb-6 pb-6 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-gear text-slate-400"></i> 基本標準目標（デフォルト）
+          </span>
+          <span class="text-[11px] text-slate-400">未設定の月に適用される基準値</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="setting-def-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+              <span class="text-xs text-slate-500 font-bold">名</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
+            <div class="flex items-center gap-1">
+              <input type="number" id="setting-def-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+              <span class="text-xs text-slate-500 font-bold">名/週</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
+            <div class="flex items-center gap-1">
+              <input type="number" step="0.1" id="setting-def-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
+              <span class="text-xs text-slate-500 font-bold">%</span>
+            </div>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
+            <div class="flex items-center gap-1">
+              <input type="number" step="0.1" id="setting-def-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
+              <span class="text-xs text-slate-500 font-bold">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveDefaultGoalsSetting()">
+            <i class="fa-solid fa-floppy-disk mr-1"></i> 基本目標を保存
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 月別目標のカスタマイズ -->
+      <div>
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-slate-400"></i> 月別目標の設定 ＆ 引き継ぎ状況
+          </span>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-500 font-medium">対象月:</label>
+            <select id="setting-month-goal-select" class="form-input text-xs font-bold py-1 px-2.5" onchange="onGoalMonthSelected(this.value)">
+              <option value="">読み込み中...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100 mb-4">
+          <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs text-slate-800" id="setting-selected-month-title">2026/04 目標設定</span>
+              <span id="setting-month-source-badge" class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">自動引継中</span>
+            </div>
+            <button type="button" id="btn-reset-monthly-goal" class="text-xs text-slate-400 hover:text-red-500 transition-colors hidden" onclick="resetMonthlyGoalSetting()">
+              <i class="fa-solid fa-rotate-left mr-1"></i> 前月の設定に戻す（個別設定削除）
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">月間 入会数</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="setting-month-goal-joined" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="2">
+                <span class="text-xs text-slate-500 font-bold">名</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">週別 ビジター数</label>
+              <div class="flex items-center gap-1">
+                <input type="number" id="setting-month-goal-visitors" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="4">
+                <span class="text-xs text-slate-500 font-bold">名/週</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 入会率</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-month-goal-join-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="25.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200/80 shadow-2xs">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">目標 ヒアリング率</label>
+              <div class="flex items-center gap-1">
+                <input type="number" step="0.1" id="setting-month-goal-hearing-rate" min="0" max="100" class="form-input text-right font-bold text-slate-900 bg-white" placeholder="100.0">
+                <span class="text-xs text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5" onclick="saveMonthlyGoalSetting()">
+              <i class="fa-solid fa-check mr-1"></i> <span id="btn-save-monthly-goal-label">この月の目標を保存</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 月別一覧プレビューテーブル -->
+        <div class="table-container max-h-60 overflow-y-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>年月</th>
+                <th class="text-center">入会数 (月)</th>
+                <th class="text-center">ビジター (週)</th>
+                <th class="text-center">入会率</th>
+                <th class="text-center">ヒアリング率</th>
+                <th class="text-center">設定種別</th>
+                <th class="text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody id="table-monthly-goals-preview">
+              <tr><td colspan="7" class="text-center text-slate-400 py-3">読み込み中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="section-card">
     <div class="section-header">
       <h2 class="section-title"><i class="fa-solid fa-rotate"></i> データ保守 ＆ 外部連携同期</h2>

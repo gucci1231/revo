@@ -509,6 +509,119 @@ function handleApiRequest(req, res, urlObj) {
       }
     }
 
+    if (pathname === '/api/settings.php') {
+      const action = parsedUrl.query.action || (input ? input.action : 'get');
+
+      const getDefaultGoals = () => {
+        const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_default';")[0];
+        const def = { target_joined: 2, target_visitors_weekly: 4, target_join_rate: 25.0, target_hearing_rate: 100.0 };
+        if (row && row.value) {
+          try { return { ...def, ...JSON.parse(row.value) }; } catch (e) {}
+        }
+        return def;
+      };
+
+      const getMonthlyGoalsMap = () => {
+        const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_monthly';")[0];
+        if (row && row.value) {
+          try { return JSON.parse(row.value) || {}; } catch (e) {}
+        }
+        return {};
+      };
+
+      const resolveGoalsForMonth = (mStr) => {
+        const norm = mStr.replace(/-/g, '/').trim();
+        const def = getDefaultGoals();
+        const map = getMonthlyGoalsMap();
+        if (map[norm]) {
+          return { ...map[norm], month: norm, source: 'custom', is_custom: true };
+        }
+        const past = Object.keys(map).filter(k => k < norm).sort().reverse();
+        if (past.length > 0) {
+          return { ...map[past[0]], month: norm, source: 'inherited', inherited_from: past[0], is_custom: false };
+        }
+        return { ...def, month: norm, source: 'default', is_custom: false };
+      };
+
+      if (action === 'get') {
+        const rows = runSqlJson("SELECT key, value FROM settings;");
+        const settings = {};
+        rows.forEach(r => { settings[r.key] = r.value; });
+        return res.end(JSON.stringify({ success: true, settings: settings }));
+      }
+
+      if (action === 'update') {
+        const key = esc(input.key || '');
+        const val = esc(input.value || '');
+        const now = new Date().toISOString();
+        runSqlExec(`INSERT INTO settings (key, value, updated_at) VALUES ('${key}', '${val}', '${now}') ON CONFLICT(key) DO UPDATE SET value = '${val}', updated_at = '${now}';`);
+        return res.end(JSON.stringify({ success: true, key: key, value: val }));
+      }
+
+      if (action === 'get_goals') {
+        const defaultGoals = getDefaultGoals();
+        const monthlyMap = getMonthlyGoalsMap();
+        const currentMonth = new Date().toISOString().substring(0, 7).replace('-', '/');
+        const monthsPreview = [];
+        const nowD = new Date();
+        nowD.setDate(1);
+        nowD.setMonth(nowD.getMonth() - 2);
+        for (let i = 0; i < 12; i++) {
+          const ym = nowD.toISOString().substring(0, 7).replace('-', '/');
+          monthsPreview.push(resolveGoalsForMonth(ym));
+          nowD.setMonth(nowD.getMonth() + 1);
+        }
+        return res.end(JSON.stringify({
+          success: true,
+          defaultGoals: defaultGoals,
+          monthlyMap: monthlyMap,
+          monthsPreview: monthsPreview,
+          currentMonth: currentMonth
+        }));
+      }
+
+      if (action === 'save_default_goals') {
+        const goals = input.goals || {};
+        const clean = {
+          target_joined: Number(goals.target_joined || 2),
+          target_visitors_weekly: Number(goals.target_visitors_weekly || 4),
+          target_join_rate: Number(goals.target_join_rate || 25.0),
+          target_hearing_rate: Number(goals.target_hearing_rate || 100.0)
+        };
+        const val = esc(JSON.stringify(clean));
+        const now = new Date().toISOString();
+        runSqlExec(`INSERT INTO settings (key, value, updated_at) VALUES ('goals_default', '${val}', '${now}') ON CONFLICT(key) DO UPDATE SET value = '${val}', updated_at = '${now}';`);
+        return res.end(JSON.stringify({ success: true, defaultGoals: clean }));
+      }
+
+      if (action === 'save_monthly_goal') {
+        const m = (input.month || '').replace(/-/g, '/').trim();
+        const goals = input.goals || {};
+        const clean = {
+          target_joined: Number(goals.target_joined || 2),
+          target_visitors_weekly: Number(goals.target_visitors_weekly || 4),
+          target_join_rate: Number(goals.target_join_rate || 25.0),
+          target_hearing_rate: Number(goals.target_hearing_rate || 100.0)
+        };
+        const map = getMonthlyGoalsMap();
+        map[m] = clean;
+        const val = esc(JSON.stringify(map));
+        const now = new Date().toISOString();
+        runSqlExec(`INSERT INTO settings (key, value, updated_at) VALUES ('goals_monthly', '${val}', '${now}') ON CONFLICT(key) DO UPDATE SET value = '${val}', updated_at = '${now}';`);
+        return res.end(JSON.stringify({ success: true, month: m, goals: resolveGoalsForMonth(m), monthlyMap: map }));
+      }
+
+      if (action === 'delete_monthly_goal') {
+        const m = (input.month || '').replace(/-/g, '/').trim();
+        const map = getMonthlyGoalsMap();
+        delete map[m];
+        const val = esc(JSON.stringify(map));
+        const now = new Date().toISOString();
+        runSqlExec(`INSERT INTO settings (key, value, updated_at) VALUES ('goals_monthly', '${val}', '${now}') ON CONFLICT(key) DO UPDATE SET value = '${val}', updated_at = '${now}';`);
+        return res.end(JSON.stringify({ success: true, month: m, goals: resolveGoalsForMonth(m), monthlyMap: map }));
+      }
+    }
+
     if (pathname === '/api/dashboard.php') {
       const sql = `
         SELECT 
@@ -670,6 +783,19 @@ function handleApiRequest(req, res, urlObj) {
       const meetingCount = Math.max(1, weeklyKeys.length);
       const avgVisitorCount = (totalApplyCount / meetingCount).toFixed(1);
 
+      let targetJoinGoal = 0;
+      let startD = new Date(startDateStr.replace(/\//g, '-'));
+      if (isNaN(startD.getTime())) startD = new Date('2026-04-01');
+      for (let i = 0; i < 6; i++) {
+        const ym = startD.toISOString().substring(0, 7).replace('-', '/');
+        const g = resolveGoalsForMonth(ym);
+        targetJoinGoal += (g.target_joined || 2);
+        startD.setMonth(startD.getMonth() + 1);
+      }
+      if (targetJoinGoal <= 0) targetJoinGoal = 12;
+
+      const achievementRate = targetJoinGoal > 0 ? ((totalJoinedCount / targetJoinGoal) * 100).toFixed(1) : "0.0";
+
       return res.end(JSON.stringify({
         success: true,
         nextThuStr: "08/13",
@@ -678,8 +804,8 @@ function handleApiRequest(req, res, urlObj) {
         metrics: {
           applyCount: totalApplyCount,
           joinedCount: totalJoinedCount,
-          targetJoinGoal: 12,
-          achievementRate: totalJoinedCount > 0 ? ((totalJoinedCount / 12) * 100).toFixed(1) : "0.0",
+          targetJoinGoal: targetJoinGoal,
+          achievementRate: achievementRate,
           joinRate: totalApplyCount > 0 ? ((totalJoinedCount / totalApplyCount) * 100).toFixed(1) : "0.0",
           nextThuCount: nextMeetingVisitors.length,
           afterNextThuCount: 0,
