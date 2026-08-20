@@ -542,7 +542,7 @@
   }
 
   function renderFeelRatesBadgeHtml(row) {
-    if (!row) return '<span class="text-slate-400 text-xs">-</span>';
+    if (!row) return '<span class="feel-meter-empty">-</span>';
 
     const counts = row.feelCounts || {};
     const rates = row.feelRates || {};
@@ -550,15 +550,37 @@
     const countA = counts.A || 0;
     const countB = counts.B || 0;
     const countC = counts.C || 0;
+    const countNone = counts.none || 0;
 
-    const total = row.applyCount !== undefined ? row.applyCount : (row.visitorCount || (countA + countB + countC));
-    const rateA = rates.A || (total > 0 ? ((countA / total) * 100).toFixed(1) + '%' : '0.0%');
-    const rateB = rates.B || (total > 0 ? ((countB / total) * 100).toFixed(1) + '%' : '0.0%');
-    const rateC = rates.C || (total > 0 ? ((countC / total) * 100).toFixed(1) + '%' : '0.0%');
+    const total = row.applyCount !== undefined ? row.applyCount : (row.visitorCount || (countA + countB + countC + countNone));
+    if (total <= 0) return '<span class="feel-meter-empty">-</span>';
 
-    const titleText = `感触内訳: A: ${countA}名 (${rateA}), B: ${countB}名 (${rateB}), C: ${countC}名 (${rateC})`;
+    const pctA = total > 0 ? ((countA / total) * 100).toFixed(1) : '0.0';
+    const pctB = total > 0 ? ((countB / total) * 100).toFixed(1) : '0.0';
+    const pctC = total > 0 ? ((countC / total) * 100).toFixed(1) : '0.0';
+    const pctNone = total > 0 ? ((countNone / total) * 100).toFixed(1) : '0.0';
 
-    return `<span class="text-[12px] text-slate-700 font-medium whitespace-nowrap" title="${titleText}">A: ${rateA} &nbsp; B: ${rateB} &nbsp; C: ${rateC}</span>`;
+    const rateA = rates.A || `${pctA}%`;
+    const rateB = rates.B || `${pctB}%`;
+    const rateC = rates.C || `${pctC}%`;
+
+    const titleText = `感触内訳: A: ${countA}名 (${rateA}), B: ${countB}名 (${rateB}), C: ${countC}名 (${rateC})${countNone > 0 ? `, 未定: ${countNone}名` : ''}`;
+
+    return `
+      <div class="feel-meter-wrap" title="${titleText}">
+        <div class="feel-meter-bar">
+          ${countA > 0 ? `<div class="feel-meter-seg seg-a" style="width: ${pctA}%;"></div>` : ''}
+          ${countB > 0 ? `<div class="feel-meter-seg seg-b" style="width: ${pctB}%;"></div>` : ''}
+          ${countC > 0 ? `<div class="feel-meter-seg seg-c" style="width: ${pctC}%;"></div>` : ''}
+          ${countNone > 0 ? `<div class="feel-meter-seg seg-none" style="width: ${pctNone}%;"></div>` : ''}
+        </div>
+        <div class="feel-meter-labels">
+          <span class="feel-tag-a">A ${countA}</span>
+          <span class="feel-tag-b">B ${countB}</span>
+          <span class="feel-tag-c">C ${countC}</span>
+        </div>
+      </div>
+    `;
   }
 
   function renderPeriodicStatsTable(tbodyId, records, labelKey) {

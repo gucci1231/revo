@@ -127,17 +127,58 @@ tr:last-child td { border-bottom: none; }
   font-size: 12px;
 }
 
-/* Feel Rate Pills (Dashboard Weekly/Monthly stats) */
-.feel-rate-group {
+/* Feel Rate Pills & Stacked Meter (Dashboard Weekly/Monthly stats) */
+.feel-meter-wrap {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
+  gap: 3px;
+  width: 74px;
+  vertical-align: middle;
 }
-.badge-feel-pill {
-  display: inline-flex;
+.feel-meter-bar {
+  display: flex;
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.feel-meter-seg {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.feel-meter-seg.seg-a {
+  background: linear-gradient(135deg, #f43f5e, #e11d48);
+}
+.feel-meter-seg.seg-b {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+}
+.feel-meter-seg.seg-c {
+  background: #94a3b8;
+}
+.feel-meter-seg.seg-none {
+  background: #e2e8f0;
+}
+.feel-meter-labels {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.feel-meter-labels .feel-tag-a { color: #e11d48; }
+.feel-meter-labels .feel-tag-b { color: #d97706; }
+.feel-meter-labels .feel-tag-c { color: #64748b; }
+.feel-meter-empty {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
   gap: 2px;
   padding: 1.5px 6px;
   border-radius: 5px;
