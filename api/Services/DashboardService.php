@@ -114,32 +114,69 @@ class DashboardService {
 
             if ($eDate !== '') {
                 if (!isset($weeklyMap[$eDate])) {
-                    $weeklyMap[$eDate] = ['date' => $eDate, 'applyCount' => 0, 'attendedCount' => 0, 'joinedCount' => 0];
+                    $weeklyMap[$eDate] = [
+                        'date' => $eDate,
+                        'applyCount' => 0,
+                        'attendedCount' => 0,
+                        'joinedCount' => 0,
+                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
+                    ];
                 }
                 $weeklyMap[$eDate]['applyCount']++;
                 if ($isAttendedBool) $weeklyMap[$eDate]['attendedCount']++;
                 if ($isJoinedBool) $weeklyMap[$eDate]['joinedCount']++;
+                if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
+                    $weeklyMap[$eDate]['feelCounts'][$feel]++;
+                } else {
+                    $weeklyMap[$eDate]['feelCounts']['none']++;
+                }
 
                 $monthKey = substr($eDate, 0, 7);
                 if (preg_match('/^\d{4}[\/\-]\d{2}$/', $monthKey)) {
                     if (!isset($monthlyMap[$monthKey])) {
-                        $monthlyMap[$monthKey] = ['month' => $monthKey, 'applyCount' => 0, 'attendedCount' => 0, 'joinedCount' => 0];
+                        $monthlyMap[$monthKey] = [
+                            'month' => $monthKey,
+                            'applyCount' => 0,
+                            'attendedCount' => 0,
+                            'joinedCount' => 0,
+                            'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
+                        ];
                     }
                     $monthlyMap[$monthKey]['applyCount']++;
                     if ($isAttendedBool) $monthlyMap[$monthKey]['attendedCount']++;
                     if ($isJoinedBool) $monthlyMap[$monthKey]['joinedCount']++;
+                    if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
+                        $monthlyMap[$monthKey]['feelCounts'][$feel]++;
+                    } else {
+                        $monthlyMap[$monthKey]['feelCounts']['none']++;
+                    }
                 }
             }
         }
 
         krsort($weeklyMap);
-        $weeklyStats = array_values($weeklyMap);
+        $weeklyStats = [];
+        foreach ($weeklyMap as $wKey => $wData) {
+            $total = $wData['applyCount'];
+            $wData['feelRates'] = [
+                'A' => $total > 0 ? number_format(($wData['feelCounts']['A'] / $total) * 100, 1) . '%' : '0.0%',
+                'B' => $total > 0 ? number_format(($wData['feelCounts']['B'] / $total) * 100, 1) . '%' : '0.0%',
+                'C' => $total > 0 ? number_format(($wData['feelCounts']['C'] / $total) * 100, 1) . '%' : '0.0%',
+            ];
+            $weeklyStats[] = $wData;
+        }
 
         krsort($monthlyMap);
         $monthlyStats = [];
         foreach ($monthlyMap as $mKey => $mData) {
-            $rate = $mData['applyCount'] > 0 ? number_format(($mData['joinedCount'] / $mData['applyCount']) * 100, 1) : '0.0';
+            $total = $mData['applyCount'];
+            $rate = $total > 0 ? number_format(($mData['joinedCount'] / $total) * 100, 1) : '0.0';
             $mData['joinRate'] = $rate . '%';
+            $mData['feelRates'] = [
+                'A' => $total > 0 ? number_format(($mData['feelCounts']['A'] / $total) * 100, 1) . '%' : '0.0%',
+                'B' => $total > 0 ? number_format(($mData['feelCounts']['B'] / $total) * 100, 1) . '%' : '0.0%',
+                'C' => $total > 0 ? number_format(($mData['feelCounts']['C'] / $total) * 100, 1) . '%' : '0.0%',
+            ];
             $monthlyStats[] = $mData;
         }
 

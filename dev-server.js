@@ -598,32 +598,69 @@ function handleApiRequest(req, res, urlObj) {
           }
 
           if (!weeklyMap[eDate]) {
-            weeklyMap[eDate] = { date: eDate, applyCount: 0, attendedCount: 0, joinedCount: 0 };
+            weeklyMap[eDate] = {
+              date: eDate,
+              applyCount: 0,
+              attendedCount: 0,
+              joinedCount: 0,
+              feelCounts: { A: 0, B: 0, C: 0, none: 0 }
+            };
           }
           weeklyMap[eDate].applyCount++;
           if (isAttendedBool) weeklyMap[eDate].attendedCount++;
           if (isJoinedBool) weeklyMap[eDate].joinedCount++;
+          if (feel === 'A' || feel === 'B' || feel === 'C') {
+            weeklyMap[eDate].feelCounts[feel]++;
+          } else {
+            weeklyMap[eDate].feelCounts.none++;
+          }
 
           const mKey = eDate.substring(0, 7);
           if (/^\d{4}[\/\-]\d{2}$/.test(mKey)) {
             if (!monthlyMap[mKey]) {
-              monthlyMap[mKey] = { month: mKey, applyCount: 0, attendedCount: 0, joinedCount: 0 };
+              monthlyMap[mKey] = {
+                month: mKey,
+                applyCount: 0,
+                attendedCount: 0,
+                joinedCount: 0,
+                feelCounts: { A: 0, B: 0, C: 0, none: 0 }
+              };
             }
             monthlyMap[mKey].applyCount++;
             if (isAttendedBool) monthlyMap[mKey].attendedCount++;
             if (isJoinedBool) monthlyMap[mKey].joinedCount++;
+            if (feel === 'A' || feel === 'B' || feel === 'C') {
+              monthlyMap[mKey].feelCounts[feel]++;
+            } else {
+              monthlyMap[mKey].feelCounts.none++;
+            }
           }
         }
       });
 
       const weeklyKeys = Object.keys(weeklyMap).sort().reverse();
-      const weeklyStats = weeklyKeys.map(k => weeklyMap[k]);
+      const weeklyStats = weeklyKeys.map(k => {
+        const w = weeklyMap[k];
+        const total = w.applyCount;
+        const feelRates = {
+          A: total > 0 ? ((w.feelCounts.A / total) * 100).toFixed(1) + "%" : "0.0%",
+          B: total > 0 ? ((w.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
+          C: total > 0 ? ((w.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
+        };
+        return { ...w, feelRates };
+      });
 
       const monthlyKeys = Object.keys(monthlyMap).sort().reverse();
       const monthlyStats = monthlyKeys.map(k => {
         const m = monthlyMap[k];
-        const rate = m.applyCount > 0 ? ((m.joinedCount / m.applyCount) * 100).toFixed(1) : "0.0";
-        return { ...m, joinRate: rate + "%" };
+        const total = m.applyCount;
+        const rate = total > 0 ? ((m.joinedCount / total) * 100).toFixed(1) : "0.0";
+        const feelRates = {
+          A: total > 0 ? ((m.feelCounts.A / total) * 100).toFixed(1) + "%" : "0.0%",
+          B: total > 0 ? ((m.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
+          C: total > 0 ? ((m.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
+        };
+        return { ...m, joinRate: rate + "%", feelRates };
       });
 
       const chartDates = weeklyKeys.slice(0, 10).reverse();

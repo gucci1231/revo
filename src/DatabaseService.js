@@ -470,19 +470,43 @@ function updateSummaryCacheTable() {
       const monthKey = DateUtil.format(eventDate, "yyyy/MM");
       meetingVisitorCountMap[mDateKey] = (meetingVisitorCountMap[mDateKey] || 0) + 1;
 
+      const feel = parseFeelAbc(hInfo.feelAbc);
+
       if (!weeklyMap[mDateKey]) {
-        weeklyMap[mDateKey] = { date: mDateKey, applyCount: 0, attendedCount: 0, joinedCount: 0 };
+        weeklyMap[mDateKey] = {
+          date: mDateKey,
+          applyCount: 0,
+          attendedCount: 0,
+          joinedCount: 0,
+          feelCounts: { A: 0, B: 0, C: 0, none: 0 }
+        };
       }
       weeklyMap[mDateKey].applyCount++;
       if (isAttendedBool) weeklyMap[mDateKey].attendedCount++;
       if (isJoinedBool) weeklyMap[mDateKey].joinedCount++;
+      if (feel === "A" || feel === "B" || feel === "C") {
+        weeklyMap[mDateKey].feelCounts[feel]++;
+      } else {
+        weeklyMap[mDateKey].feelCounts.none++;
+      }
 
       if (!monthlyMap[monthKey]) {
-        monthlyMap[monthKey] = { month: monthKey, applyCount: 0, attendedCount: 0, joinedCount: 0 };
+        monthlyMap[monthKey] = {
+          month: monthKey,
+          applyCount: 0,
+          attendedCount: 0,
+          joinedCount: 0,
+          feelCounts: { A: 0, B: 0, C: 0, none: 0 }
+        };
       }
       monthlyMap[monthKey].applyCount++;
       if (isAttendedBool) monthlyMap[monthKey].attendedCount++;
       if (isJoinedBool) monthlyMap[monthKey].joinedCount++;
+      if (feel === "A" || feel === "B" || feel === "C") {
+        monthlyMap[monthKey].feelCounts[feel]++;
+      } else {
+        monthlyMap[monthKey].feelCounts.none++;
+      }
 
       const visitorRecord = {
         id: vId,
@@ -506,7 +530,6 @@ function updateSummaryCacheTable() {
         hearingUrl: hInfo.url
       };
 
-      const feel = parseFeelAbc(hInfo.feelAbc);
       const isJoined = (st.is_joined === "入会済" || st.is_joined === "済" || st.is_joined === "入会" || st.is_joined === true);
       if (feel === "A" && !isJoined) {
         hotVisitors.push(visitorRecord);
@@ -540,11 +563,25 @@ function updateSummaryCacheTable() {
 
   let weeklyStats = Object.values(weeklyMap);
   weeklyStats.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  weeklyStats.forEach(w => {
+    const total = w.applyCount;
+    w.feelRates = {
+      A: total > 0 ? ((w.feelCounts.A / total) * 100).toFixed(1) + "%" : "0.0%",
+      B: total > 0 ? ((w.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
+      C: total > 0 ? ((w.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
+    };
+  });
 
   let monthlyStats = Object.values(monthlyMap);
   monthlyStats.sort((a, b) => b.month.localeCompare(a.month));
   monthlyStats.forEach(m => {
-    m.joinRate = m.applyCount > 0 ? ((m.joinedCount / m.applyCount) * 100).toFixed(1) + "%" : "0.0%";
+    const total = m.applyCount;
+    m.joinRate = total > 0 ? ((m.joinedCount / total) * 100).toFixed(1) + "%" : "0.0%";
+    m.feelRates = {
+      A: total > 0 ? ((m.feelCounts.A / total) * 100).toFixed(1) + "%" : "0.0%",
+      B: total > 0 ? ((m.feelCounts.B / total) * 100).toFixed(1) + "%" : "0.0%",
+      C: total > 0 ? ((m.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
+    };
   });
 
   let chartLabels = Object.keys(meetingVisitorCountMap);
