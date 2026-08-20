@@ -3,9 +3,10 @@
  */
 const ApiService = {
   call: function(functionName, ...args) {
+    const effectiveArgs = (args.length === 1 && Array.isArray(args[0])) ? args[0] : args;
     return new Promise((resolve, reject) => {
       // 1. Try local SQLite REST API first (<10ms)
-      const restConfig = this.getRestConfig(functionName, args);
+      const restConfig = this.getRestConfig(functionName, effectiveArgs);
 
       if (restConfig) {
         const fetchOptions = {
@@ -23,13 +24,13 @@ const ApiService = {
               resolve(data);
               return;
             }
-            this.fallbackToGas(functionName, args, resolve, reject);
+            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           })
           .catch(() => {
-            this.fallbackToGas(functionName, args, resolve, reject);
+            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           });
       } else {
-        this.fallbackToGas(functionName, args, resolve, reject);
+        this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
       }
     });
   },

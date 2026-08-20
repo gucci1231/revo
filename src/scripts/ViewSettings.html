@@ -186,7 +186,7 @@
     };
 
     showToast('基本目標を保存中...');
-    ApiService.call('saveDefaultGoalsApi', [payload])
+    ApiService.call('saveDefaultGoalsApi', payload)
       .then(res => {
         if (res && res.success) {
           showToast('基本目標を保存しました！');
@@ -218,7 +218,7 @@
     };
 
     showToast(`${currentSelectedGoalMonth} の目標を保存中...`);
-    ApiService.call('saveMonthlyGoalApi', [currentSelectedGoalMonth, payload])
+    ApiService.call('saveMonthlyGoalApi', currentSelectedGoalMonth, payload)
       .then(res => {
         if (res && res.success) {
           showToast(`${currentSelectedGoalMonth} の目標を保存しました！以後の月にも自動引き継ぎされます。`);
@@ -241,7 +241,7 @@
     }
 
     showToast(`${currentSelectedGoalMonth} の個別設定を削除中...`);
-    ApiService.call('deleteMonthlyGoalApi', [currentSelectedGoalMonth])
+    ApiService.call('deleteMonthlyGoalApi', currentSelectedGoalMonth)
       .then(res => {
         if (res && res.success) {
           showToast(`${currentSelectedGoalMonth} を前月引き継ぎに戻しました。`);

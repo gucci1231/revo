@@ -7044,8 +7044,9 @@ tr:last-child td { border-bottom: none; }
  */
 const ApiService = {
   call: function(functionName, ...args) {
+    const effectiveArgs = (args.length === 1 && Array.isArray(args[0])) ? args[0] : args;
     return new Promise((resolve, reject) => {
-      const restConfig = this.getRestConfig(functionName, args);
+      const restConfig = this.getRestConfig(functionName, effectiveArgs);
 
       if (restConfig) {
         const fetchOptions = {
@@ -7063,13 +7064,13 @@ const ApiService = {
               resolve(data);
               return;
             }
-            this.fallbackToGas(functionName, args, resolve, reject);
+            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           })
           .catch(() => {
-            this.fallbackToGas(functionName, args, resolve, reject);
+            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           });
       } else {
-        this.fallbackToGas(functionName, args, resolve, reject);
+        this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
       }
     });
   },
@@ -14095,7 +14096,7 @@ window.CelebrationEffect = (function() {
     };
 
     showToast('基本目標を保存中...');
-    ApiService.call('saveDefaultGoalsApi', [payload])
+    ApiService.call('saveDefaultGoalsApi', payload)
       .then(res => {
         if (res && res.success) {
           showToast('基本目標を保存しました！');
@@ -14127,7 +14128,7 @@ window.CelebrationEffect = (function() {
     };
 
     showToast(`${currentSelectedGoalMonth} の目標を保存中...`);
-    ApiService.call('saveMonthlyGoalApi', [currentSelectedGoalMonth, payload])
+    ApiService.call('saveMonthlyGoalApi', currentSelectedGoalMonth, payload)
       .then(res => {
         if (res && res.success) {
           showToast(`${currentSelectedGoalMonth} の目標を保存しました！以後の月にも自動引き継ぎされます。`);
@@ -14150,7 +14151,7 @@ window.CelebrationEffect = (function() {
     }
 
     showToast(`${currentSelectedGoalMonth} の個別設定を削除中...`);
-    ApiService.call('deleteMonthlyGoalApi', [currentSelectedGoalMonth])
+    ApiService.call('deleteMonthlyGoalApi', currentSelectedGoalMonth)
       .then(res => {
         if (res && res.success) {
           showToast(`${currentSelectedGoalMonth} を前月引き継ぎに戻しました。`);
