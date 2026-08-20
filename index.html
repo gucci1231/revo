@@ -546,56 +546,44 @@ tr:last-child td { border-bottom: none; }
   font-size: 12px;
 }
 
-/* Feel Rate Pills & Stacked Meter (Dashboard Weekly/Monthly stats) */
+/* Feel Meter Minimalist Stacked Bar (Dashboard Weekly/Monthly stats) */
 .feel-meter-wrap {
-  display: inline-flex;
-  flex-direction: column;
+  display: flex;
   align-items: center;
-  gap: 3px;
-  width: 74px;
-  vertical-align: middle;
+  width: 100%;
+  min-width: 60px;
+  max-width: 100%;
+  padding: 4px 0;
+  cursor: help;
 }
 .feel-meter-bar {
   display: flex;
   width: 100%;
   height: 6px;
   border-radius: 9999px;
-  background: #e2e8f0;
+  background: #f1f5f9;
   overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .feel-meter-seg {
   height: 100%;
   transition: width 0.3s ease;
 }
 .feel-meter-seg.seg-a {
-  background: linear-gradient(135deg, #f43f5e, #e11d48);
+  background: #1e293b; /* Deep Slate / Dark */
 }
 .feel-meter-seg.seg-b {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #64748b; /* Medium Slate */
 }
 .feel-meter-seg.seg-c {
-  background: #94a3b8;
+  background: #cbd5e1; /* Light Slate */
 }
 .feel-meter-seg.seg-none {
-  background: #e2e8f0;
+  background: #f1f5f9;
 }
-.feel-meter-labels {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  font-size: 9.5px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.feel-meter-labels .feel-tag-a { color: #e11d48; }
-.feel-meter-labels .feel-tag-b { color: #d97706; }
-.feel-meter-labels .feel-tag-c { color: #64748b; }
 .feel-meter-empty {
   font-size: 11px;
-  color: #94a3b8;
+  color: #cbd5e1;
   font-weight: 500;
 }
   gap: 2px;
@@ -5514,18 +5502,18 @@ tr:last-child td { border-bottom: none; }
       <!-- 週別 -->
       <section class="section-card overflow-hidden">
         <div class="section-header py-3 px-4 flex justify-between items-center">
-          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-blue-500 mr-1.5"></i> 定例会別（週別）</span>
+          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-week text-slate-600 mr-1.5"></i> 定例会別（週別）</span>
           <span class="text-[11px] text-slate-400">週別目標対比</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
           <table>
             <thead>
               <tr>
-                <th>日付</th>
-                <th class="text-center">申込 / 目標</th>
-                <th class="text-center">参加</th>
-                <th class="text-center">温度感別</th>
-                <th class="text-center">入会</th>
+                <th style="width: 70px;">日付</th>
+                <th class="text-center" style="width: 100px;">申込 / 目標</th>
+                <th class="text-center" style="width: 55px;">参加</th>
+                <th class="text-center">温度感</th>
+                <th class="text-center" style="width: 65px;">入会</th>
               </tr>
             </thead>
             <tbody id="table-weekly-stats"></tbody>
@@ -5536,19 +5524,18 @@ tr:last-child td { border-bottom: none; }
       <!-- 月別 -->
       <section class="section-card overflow-hidden">
         <div class="section-header py-3 px-4 flex justify-between items-center">
-          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-days text-emerald-500 mr-1.5"></i> 月別集計</span>
+          <span class="font-bold text-xs sm:text-sm text-slate-800"><i class="fa-solid fa-calendar-days text-slate-600 mr-1.5"></i> 月別集計</span>
           <span class="text-[11px] text-slate-400">KPI目標対比</span>
         </div>
         <div class="table-container max-h-64 overflow-y-auto">
           <table>
             <thead>
               <tr>
-                <th>年月</th>
-                <th class="text-center">申込 / 週目標</th>
-                <th class="text-center">参加</th>
-                <th class="text-center">温度感別</th>
-                <th class="text-center">入会 / 目標</th>
-                <th class="text-center">入会率</th>
+                <th style="width: 80px;">年月</th>
+                <th class="text-center" style="width: 110px;">申込 / 週目標</th>
+                <th class="text-center" style="width: 55px;">参加</th>
+                <th class="text-center">温度感</th>
+                <th class="text-center" style="width: 90px;">入会 / 目標</th>
               </tr>
             </thead>
             <tbody id="table-monthly-stats"></tbody>
@@ -9526,7 +9513,7 @@ window.CelebrationEffect = (function() {
     const rateB = rates.B || `${pctB}%`;
     const rateC = rates.C || `${pctC}%`;
 
-    const titleText = `感触内訳: A: ${countA}名 (${rateA}), B: ${countB}名 (${rateB}), C: ${countC}名 (${rateC})${countNone > 0 ? `, 未定: ${countNone}名` : ''}`;
+    const titleText = `感触: A: ${countA}名 (${rateA}) | B: ${countB}名 (${rateB}) | C: ${countC}名 (${rateC})${countNone > 0 ? ` | 未定: ${countNone}名` : ''}`;
 
     return `
       <div class="feel-meter-wrap" title="${titleText}">
@@ -9535,11 +9522,6 @@ window.CelebrationEffect = (function() {
           ${countB > 0 ? `<div class="feel-meter-seg seg-b" style="width: ${pctB}%;"></div>` : ''}
           ${countC > 0 ? `<div class="feel-meter-seg seg-c" style="width: ${pctC}%;"></div>` : ''}
           ${countNone > 0 ? `<div class="feel-meter-seg seg-none" style="width: ${pctNone}%;"></div>` : ''}
-        </div>
-        <div class="feel-meter-labels">
-          <span class="feel-tag-a">A ${countA}</span>
-          <span class="feel-tag-b">B ${countB}</span>
-          <span class="feel-tag-c">C ${countC}</span>
         </div>
       </div>
     `;
@@ -9551,7 +9533,7 @@ window.CelebrationEffect = (function() {
     tbody.innerHTML = '';
 
     const isMonthly = (tbodyId === 'table-monthly-stats');
-    const colCount = isMonthly ? 6 : 5;
+    const colCount = 5;
 
     if (!records || records.length === 0) {
       tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: #868e96; padding: 15px;">データなし</td></tr>`;
@@ -9568,50 +9550,45 @@ window.CelebrationEffect = (function() {
 
       if (isMonthly) {
         const targetJoined = row.targetJoined !== undefined ? row.targetJoined : (row.goal ? row.goal.target_joined : 2);
-        const targetJoinRate = row.targetJoinRate || (row.goal ? `${row.goal.target_join_rate}%` : '25.0%');
         const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : (row.goal ? row.goal.target_visitors_weekly : 4);
         const avgWeekly = row.avgVisitorsWeekly || (row.meetingCount ? (applyVal / Math.max(1, row.meetingCount)).toFixed(1) : applyVal);
         const isGoalAchieved = joinedVal >= targetJoined;
-        const joinedColor = isGoalAchieved && joinedVal > 0 ? '#16a34a' : '#0f172a';
+        const joinedColor = isGoalAchieved && joinedVal > 0 ? '#15803d' : '#0f172a';
 
         let typeBadge = '';
         if (row.isCustomGoal) {
-          typeBadge = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-1 align-middle" title="個別目標設定月"></span>';
+          typeBadge = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-500 mr-1 align-middle" title="個別目標設定月"></span>';
         }
 
         tr.innerHTML = `
-          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px;">${typeBadge}${labelVal}</td>
+          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${typeBadge}${labelVal}</td>
           <td style="text-align: center; padding: 6px 4px; white-space: nowrap;">
-            <div style="font-weight: 800; color: #2563eb; font-size: 13px; line-height: 1.2;">${applyVal}名</div>
+            <div style="font-weight: 700; color: #0f172a; font-size: 13px; line-height: 1.2;">${applyVal}名</div>
             <div style="font-size: 10px; color: #64748b; font-weight: 500; margin-top: 1px;" title="定例会週平均: ${avgWeekly}名 / 目標: ${targetVisitorsWeekly}名/週">週 ${avgWeekly}/${targetVisitorsWeekly}名</div>
           </td>
           <td style="text-align: center; color: #334155; font-weight: 600; font-size: 12px; padding: 8px 4px; white-space: nowrap;">${attVal}名</td>
-          <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">${feelRatesHtml}</td>
+          <td style="padding: 8px 6px; vertical-align: middle;">${feelRatesHtml}</td>
           <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
-            <span style="font-weight: 800; font-size: 13px; color: ${joinedColor};">${joinedVal}</span>
+            <span style="font-weight: 700; font-size: 13px; color: ${joinedColor};">${joinedVal}</span>
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetJoined}名</span>
-            ${isGoalAchieved && joinedVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #dcfce7; color: #166534; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
-          </td>
-          <td style="text-align: center; padding: 6px 4px; white-space: nowrap;">
-            <div style="font-weight: 800; color: #16a34a; font-size: 13px; line-height: 1.2;">${row.joinRate || '0.0%'}</div>
-            <div style="font-size: 10px; color: #94a3b8; font-weight: 500; margin-top: 1px;">目標 ${targetJoinRate}</div>
+            ${isGoalAchieved && joinedVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #f1f5f9; color: #15803d; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
           </td>
         `;
       } else {
         const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : 4;
         const isWeeklyGoalAchieved = applyVal >= targetVisitorsWeekly;
-        const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#16a34a' : '#2563eb';
+        const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#15803d' : '#0f172a';
 
         tr.innerHTML = `
-          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px;">${labelVal}</td>
+          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${labelVal}</td>
           <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
-            <span style="font-weight: 800; font-size: 13px; color: ${applyColor};">${applyVal}</span>
+            <span style="font-weight: 700; font-size: 13px; color: ${applyColor};">${applyVal}</span>
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetVisitorsWeekly}名</span>
-            ${isWeeklyGoalAchieved && applyVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #dcfce7; color: #166534; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
+            ${isWeeklyGoalAchieved && applyVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #f1f5f9; color: #15803d; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
           </td>
           <td style="text-align: center; color: #334155; font-weight: 600; font-size: 12px; padding: 8px 4px; white-space: nowrap;">${attVal}名</td>
-          <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">${feelRatesHtml}</td>
-          <td style="font-weight: 800; color: #16a34a; font-size: 13px; text-align: center; padding: 8px 4px; white-space: nowrap;">${joinedVal}名</td>
+          <td style="padding: 8px 6px; vertical-align: middle;">${feelRatesHtml}</td>
+          <td style="font-weight: 700; color: #0f172a; font-size: 13px; text-align: center; padding: 8px 4px; white-space: nowrap;">${joinedVal}名</td>
         `;
       }
       tbody.appendChild(tr);

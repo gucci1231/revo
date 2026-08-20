@@ -564,7 +564,7 @@
     const rateB = rates.B || `${pctB}%`;
     const rateC = rates.C || `${pctC}%`;
 
-    const titleText = `感触内訳: A: ${countA}名 (${rateA}), B: ${countB}名 (${rateB}), C: ${countC}名 (${rateC})${countNone > 0 ? `, 未定: ${countNone}名` : ''}`;
+    const titleText = `感触: A: ${countA}名 (${rateA}) | B: ${countB}名 (${rateB}) | C: ${countC}名 (${rateC})${countNone > 0 ? ` | 未定: ${countNone}名` : ''}`;
 
     return `
       <div class="feel-meter-wrap" title="${titleText}">
@@ -573,11 +573,6 @@
           ${countB > 0 ? `<div class="feel-meter-seg seg-b" style="width: ${pctB}%;"></div>` : ''}
           ${countC > 0 ? `<div class="feel-meter-seg seg-c" style="width: ${pctC}%;"></div>` : ''}
           ${countNone > 0 ? `<div class="feel-meter-seg seg-none" style="width: ${pctNone}%;"></div>` : ''}
-        </div>
-        <div class="feel-meter-labels">
-          <span class="feel-tag-a">A ${countA}</span>
-          <span class="feel-tag-b">B ${countB}</span>
-          <span class="feel-tag-c">C ${countC}</span>
         </div>
       </div>
     `;
@@ -589,7 +584,7 @@
     tbody.innerHTML = '';
 
     const isMonthly = (tbodyId === 'table-monthly-stats');
-    const colCount = isMonthly ? 6 : 5;
+    const colCount = 5;
 
     if (!records || records.length === 0) {
       tbody.innerHTML = `<tr><td colspan="${colCount}" style="text-align: center; color: #868e96; padding: 15px;">データなし</td></tr>`;
@@ -606,50 +601,45 @@
 
       if (isMonthly) {
         const targetJoined = row.targetJoined !== undefined ? row.targetJoined : (row.goal ? row.goal.target_joined : 2);
-        const targetJoinRate = row.targetJoinRate || (row.goal ? `${row.goal.target_join_rate}%` : '25.0%');
         const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : (row.goal ? row.goal.target_visitors_weekly : 4);
         const avgWeekly = row.avgVisitorsWeekly || (row.meetingCount ? (applyVal / Math.max(1, row.meetingCount)).toFixed(1) : applyVal);
         const isGoalAchieved = joinedVal >= targetJoined;
-        const joinedColor = isGoalAchieved && joinedVal > 0 ? '#16a34a' : '#0f172a';
+        const joinedColor = isGoalAchieved && joinedVal > 0 ? '#15803d' : '#0f172a';
 
         let typeBadge = '';
         if (row.isCustomGoal) {
-          typeBadge = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 mr-1 align-middle" title="個別目標設定月"></span>';
+          typeBadge = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-500 mr-1 align-middle" title="個別目標設定月"></span>';
         }
 
         tr.innerHTML = `
-          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px;">${typeBadge}${labelVal}</td>
+          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${typeBadge}${labelVal}</td>
           <td style="text-align: center; padding: 6px 4px; white-space: nowrap;">
-            <div style="font-weight: 800; color: #2563eb; font-size: 13px; line-height: 1.2;">${applyVal}名</div>
+            <div style="font-weight: 700; color: #0f172a; font-size: 13px; line-height: 1.2;">${applyVal}名</div>
             <div style="font-size: 10px; color: #64748b; font-weight: 500; margin-top: 1px;" title="定例会週平均: ${avgWeekly}名 / 目標: ${targetVisitorsWeekly}名/週">週 ${avgWeekly}/${targetVisitorsWeekly}名</div>
           </td>
           <td style="text-align: center; color: #334155; font-weight: 600; font-size: 12px; padding: 8px 4px; white-space: nowrap;">${attVal}名</td>
-          <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">${feelRatesHtml}</td>
+          <td style="padding: 8px 6px; vertical-align: middle;">${feelRatesHtml}</td>
           <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
-            <span style="font-weight: 800; font-size: 13px; color: ${joinedColor};">${joinedVal}</span>
+            <span style="font-weight: 700; font-size: 13px; color: ${joinedColor};">${joinedVal}</span>
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetJoined}名</span>
-            ${isGoalAchieved && joinedVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #dcfce7; color: #166534; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
-          </td>
-          <td style="text-align: center; padding: 6px 4px; white-space: nowrap;">
-            <div style="font-weight: 800; color: #16a34a; font-size: 13px; line-height: 1.2;">${row.joinRate || '0.0%'}</div>
-            <div style="font-size: 10px; color: #94a3b8; font-weight: 500; margin-top: 1px;">目標 ${targetJoinRate}</div>
+            ${isGoalAchieved && joinedVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #f1f5f9; color: #15803d; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
           </td>
         `;
       } else {
         const targetVisitorsWeekly = row.targetVisitorsWeekly !== undefined ? row.targetVisitorsWeekly : 4;
         const isWeeklyGoalAchieved = applyVal >= targetVisitorsWeekly;
-        const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#16a34a' : '#2563eb';
+        const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#15803d' : '#0f172a';
 
         tr.innerHTML = `
-          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px;">${labelVal}</td>
+          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${labelVal}</td>
           <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
-            <span style="font-weight: 800; font-size: 13px; color: ${applyColor};">${applyVal}</span>
+            <span style="font-weight: 700; font-size: 13px; color: ${applyColor};">${applyVal}</span>
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetVisitorsWeekly}名</span>
-            ${isWeeklyGoalAchieved && applyVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #dcfce7; color: #166534; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
+            ${isWeeklyGoalAchieved && applyVal > 0 ? '<span style="font-size: 9px; padding: 1px 3px; border-radius: 4px; background: #f1f5f9; color: #15803d; font-weight: 800; margin-left: 2px;">達成</span>' : ''}
           </td>
           <td style="text-align: center; color: #334155; font-weight: 600; font-size: 12px; padding: 8px 4px; white-space: nowrap;">${attVal}名</td>
-          <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">${feelRatesHtml}</td>
-          <td style="font-weight: 800; color: #16a34a; font-size: 13px; text-align: center; padding: 8px 4px; white-space: nowrap;">${joinedVal}名</td>
+          <td style="padding: 8px 6px; vertical-align: middle;">${feelRatesHtml}</td>
+          <td style="font-weight: 700; color: #0f172a; font-size: 13px; text-align: center; padding: 8px 4px; white-space: nowrap;">${joinedVal}名</td>
         `;
       }
       tbody.appendChild(tr);

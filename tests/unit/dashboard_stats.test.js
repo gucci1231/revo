@@ -22,7 +22,7 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     return sandbox;
   }
 
-  it('renders feel rates in stacked progress meter format with tooltip and count labels', () => {
+  it('renders feel rates in sleek monochromatic stacked bar format with tooltip', () => {
     const sandbox = getSandbox();
     const row = {
       applyCount: 4,
@@ -35,10 +35,7 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     assert(html.includes('seg-a') && html.includes('width: 50.0%'), 'Renders seg-a with 50% width');
     assert(html.includes('seg-b') && html.includes('width: 25.0%'), 'Renders seg-b with 25% width');
     assert(html.includes('seg-c') && html.includes('width: 25.0%'), 'Renders seg-c with 25% width');
-    assert(html.includes('A 2'), 'Shows A count label');
-    assert(html.includes('B 1'), 'Shows B count label');
-    assert(html.includes('C 1'), 'Shows C count label');
-    assert(html.includes('title="感触内訳: A: 2名 (50.0%), B: 1名 (25.0%), C: 1名 (25.0%)"'), 'Includes accurate count in tooltip');
+    assert(html.includes('title="感触: A: 2名 (50.0%) | B: 1名 (25.0%) | C: 1名 (25.0%)"'), 'Includes accurate count and rate in tooltip');
   });
 
   it('displays 0 count ratings gracefully in progress bar', () => {
@@ -53,9 +50,6 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     assert(html.includes('seg-a') && html.includes('width: 100.0%'), 'Renders 100% for A');
     assert(!html.includes('seg-b'), 'Omits 0% segment seg-b from bar for clean render');
     assert(!html.includes('seg-c'), 'Omits 0% segment seg-c from bar for clean render');
-    assert(html.includes('A 2'), 'Contains A 2');
-    assert(html.includes('B 0'), 'Contains B 0');
-    assert(html.includes('C 0'), 'Contains C 0');
   });
 
   it('returns hyphen "-" when row is null or empty', () => {
