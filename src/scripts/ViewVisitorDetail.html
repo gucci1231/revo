@@ -194,19 +194,18 @@
 
     listContainer.innerHTML = html;
 
-    // 選択中のアイテムをサイドバーのリスト内でのみ可視領域へスクロール (ページ全体のスクロールに影響を与えない)
+    // 選択中のアイテムをサイドバーのリスト内でのみ可視領域へスクロール (getBoundingClientRectで正確に判定)
     setTimeout(() => {
       const activeEl = listContainer.querySelector('.vd-sidebar-item.is-selected');
       if (activeEl) {
-        const itemTop = activeEl.offsetTop;
-        const itemHeight = activeEl.offsetHeight;
-        const containerScrollTop = listContainer.scrollTop;
-        const containerHeight = listContainer.clientHeight;
+        const listRect = listContainer.getBoundingClientRect();
+        const elRect = activeEl.getBoundingClientRect();
 
-        if (itemTop < containerScrollTop) {
-          listContainer.scrollTo({ top: Math.max(0, itemTop - 12), behavior: 'smooth' });
-        } else if (itemTop + itemHeight > containerScrollTop + containerHeight) {
-          listContainer.scrollTo({ top: itemTop + itemHeight - containerHeight + 12, behavior: 'smooth' });
+        // すでに表示領域内に収まっている場合はスクロールしない
+        if (elRect.top < listRect.top) {
+          listContainer.scrollTop += (elRect.top - listRect.top - 8);
+        } else if (elRect.bottom > listRect.bottom) {
+          listContainer.scrollTop += (elRect.bottom - listRect.bottom + 8);
         }
       }
     }, 50);
@@ -484,6 +483,8 @@
 
         if (scrollToTop && !navDirection) {
           window.scrollTo(0, 0);
+          if (document.documentElement) document.documentElement.scrollTop = 0;
+          if (document.body) document.body.scrollTop = 0;
         }
 
         setTimeout(() => {
