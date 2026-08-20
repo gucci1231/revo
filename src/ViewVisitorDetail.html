@@ -166,15 +166,15 @@
                       <button type="button" class="vd-ap-modal-close-btn" onclick="closeActionPlanModal()" title="閉じる">&times;</button>
                     </div>
 
-                    <form id="vd-form-action-plan" onsubmit="event.preventDefault(); submitNewActionPlan();">
+                    <form id="vd-form-action-plan" class="vd-ap-form" onsubmit="event.preventDefault(); submitNewActionPlan();">
                       <input type="hidden" id="vd-ap-edit-id" value="">
 
                       <!-- セクション1: 期日 ＆ 担当 -->
-                      <div class="vd-form-section mb-5">
+                      <div class="vd-form-section">
                         <div class="vd-form-grid gap-4">
                           <!-- 期日 -->
                           <div class="form-group mb-0">
-                            <div class="flex items-center justify-between flex-wrap gap-1 mb-1.5">
+                            <div class="flex items-center justify-between flex-wrap gap-1 mb-2">
                               <label class="form-label text-xs font-bold text-slate-600 mb-0 flex items-center gap-1.5">
                                 <i class="fa-regular fa-calendar text-blue-600"></i> 期日
                               </label>
@@ -183,7 +183,7 @@
                             <div class="vd-date-input-wrap">
                               <input type="date" id="vd-ap-due-date" class="form-input form-input-highlight vd-ap-date-input" onchange="updateApDateBadge()" required>
                             </div>
-                            <div class="vd-quick-chips mt-2" id="vd-ap-date-quick-chips">
+                            <div class="vd-quick-chips mt-2.5" id="vd-ap-date-quick-chips">
                               <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(0, this)">今日</button>
                               <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(1, this)">明日</button>
                               <button type="button" class="vd-date-pill-btn" onclick="setApDateQuick(3, this)">3日後</button>
@@ -193,19 +193,19 @@
 
                           <!-- 担当メンバー -->
                           <div class="form-group mb-0">
-                            <label class="form-label text-xs font-bold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                            <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
                               <i class="fa-regular fa-user text-indigo-600"></i> 担当メンバー
                             </label>
                             <select id="vd-ap-assignee-select" class="form-input form-select form-input-highlight" required>
                               <option value="">-- 担当メンバーを選択 --</option>
                             </select>
-                            <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2 flex flex-wrap gap-1.5"></div>
+                            <div id="vd-ap-quick-assignees" class="vd-quick-chips mt-2.5 flex flex-wrap gap-1.5"></div>
                           </div>
                         </div>
                       </div>
 
                       <!-- セクション2: アクション種別（タイプ） -->
-                      <div class="vd-form-section mb-5">
+                      <div class="vd-form-section">
                         <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
                           <i class="fa-solid fa-tags text-blue-600"></i> アクション種別（タイプ）
                         </label>
@@ -221,14 +221,14 @@
                       </div>
 
                       <!-- セクション3: アクション内容（詳細） -->
-                      <div class="vd-form-section mb-5">
+                      <div class="vd-form-section">
                         <label class="form-label text-xs font-bold text-slate-600 mb-2 flex items-center gap-1.5">
                           <i class="fa-solid fa-pen-to-square text-emerald-600"></i> アクション内容（詳細）
                         </label>
                         <input type="text" id="vd-ap-action-text" class="form-input form-input-highlight" placeholder="例：zoom日程調整、案件紹介の打診 など" required>
                       </div>
 
-                      <div class="vd-form-actions mt-5">
+                      <div class="vd-form-actions">
                         <button type="button" id="vd-ap-btn-cancel-edit" class="btn-cancel text-xs" onclick="closeActionPlanModal()">閉じる</button>
                         <button type="submit" id="vd-ap-btn-submit" class="btn-save text-xs">
                           <i class="fa-solid fa-check mr-1"></i> <span id="vd-ap-btn-submit-label">保存</span>
