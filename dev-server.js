@@ -760,6 +760,44 @@ function handleApiRequest(req, res, urlObj) {
             }
           }
         }
+      // 指定期間（startDate〜today）内の全木曜日（定例会開催日）を weeklyMap に事前登録
+      const todayObj = new Date();
+      let curD = new Date(startDateStr.replace(/\//g, '-'));
+      if (isNaN(curD.getTime())) curD = new Date('2026-04-01');
+      while (curD <= todayObj) {
+        if (curD.getDay() === 4) { // 木曜日
+          const y = curD.getFullYear();
+          const m = String(curD.getMonth() + 1).padStart(2, '0');
+          const d = String(curD.getDate()).padStart(2, '0');
+          const dStr = `${y}/${m}/${d}`;
+          if (!weeklyMap[dStr]) {
+            weeklyMap[dStr] = {
+              date: dStr,
+              applyCount: 0,
+              attendedCount: 0,
+              joinedCount: 0,
+              feelCounts: { A: 0, B: 0, C: 0, none: 0 }
+            };
+          }
+        }
+        curD.setDate(curD.getDate() + 1);
+      }
+
+      // 月ごとの定例会開催数（経過した木曜日数）を算出
+      const monthlyMeetingCounts = {};
+      Object.keys(monthlyMap).forEach(mKey => {
+        const ymClean = mKey.replace(/\//g, '-');
+        const firstDay = new Date(ymClean + '-01');
+        const lastDay = new Date(firstDay.getFullYear(), firstDay.getMonth() + 1, 0);
+        const endDay = lastDay > todayObj ? todayObj : lastDay;
+
+        let thuCount = 0;
+        let cD = new Date(firstDay);
+        while (cD <= endDay) {
+          if (cD.getDay() === 4) thuCount++;
+          cD.setDate(cD.getDate() + 1);
+        }
+        monthlyMeetingCounts[mKey] = Math.max(1, thuCount);
       });
 
       const weeklyKeys = Object.keys(weeklyMap).sort().reverse();
@@ -791,7 +829,7 @@ function handleApiRequest(req, res, urlObj) {
           C: total > 0 ? ((m.feelCounts.C / total) * 100).toFixed(1) + "%" : "0.0%"
         };
         const g = resolveGoalsForMonth(k);
-        const monthWeeks = weeklyKeys.filter(wk => wk.startsWith(k)).length;
+        const monthWeeks = monthlyMeetingCounts[k] || Math.max(1, weeklyKeys.filter(wk => wk.startsWith(k)).length);
         const avgPerWeek = (total / Math.max(1, monthWeeks)).toFixed(1);
         return {
           ...m,
@@ -813,7 +851,14 @@ function handleApiRequest(req, res, urlObj) {
       const chartLabels = chartDates.map(d => d.substring(5));
       const chartData = chartDates.map(d => weeklyMap[d].applyCount);
 
-      const meetingCount = Math.max(1, weeklyKeys.length);
+      let totalMeetingThursdays = 0;
+      let cTh = new Date(startDateStr.replace(/\//g, '-'));
+      if (isNaN(cTh.getTime())) cTh = new Date('2026-04-01');
+      while (cTh <= todayObj) {
+        if (cTh.getDay() === 4) totalMeetingThursdays++;
+        cTh.setDate(cTh.getDate() + 1);
+      }
+      const meetingCount = Math.max(1, totalMeetingThursdays);
       const avgVisitorCount = (totalApplyCount / meetingCount).toFixed(1);
 
       let targetJoinGoal = 0;

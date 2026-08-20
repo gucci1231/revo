@@ -154,11 +154,53 @@ class DashboardService {
             }
         }
 
-        // 月ごとの定例会開催数
+        // 指定期間（startDate〜today）内の全木曜日（定例会開催日）を weeklyMap に事前登録（0名週の欠落防止）
+        $todayTs = time();
+        $curThuTs = $startDateTs;
+        while ($curThuTs <= $todayTs) {
+            if (date('w', $curThuTs) == 4) {
+                $thuDateStr = date('Y/m/d', $curThuTs);
+                if (!isset($weeklyMap[$thuDateStr])) {
+                    $weeklyMap[$thuDateStr] = [
+                        'date' => $thuDateStr,
+                        'applyCount' => 0,
+                        'attendedCount' => 0,
+                        'joinedCount' => 0,
+                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
+                    ];
+                }
+            }
+            $curThuTs = strtotime('+1 day', $curThuTs);
+        }
+
+        // 月ごとの定例会開催数（経過した木曜日数）を算出
         $monthlyMeetingCounts = [];
-        foreach (array_keys($weeklyMap) as $wKey) {
-            $mK = substr($wKey, 0, 7);
-            $monthlyMeetingCounts[$mK] = ($monthlyMeetingCounts[$mK] ?? 0) + 1;
+        foreach ($monthlyMap as $mKey => $mData) {
+            $ymClean = str_replace('/', '-', $mKey);
+            $firstDayTs = strtotime($ymClean . '-01');
+            $lastDayTs = strtotime(date('Y-m-t', $firstDayTs));
+            $endTs = min($lastDayTs, $todayTs);
+
+            $thuCount = 0;
+            $cTs = $firstDayTs;
+            while ($cTs <= $endTs) {
+                if (date('w', $cTs) == 4) {
+                    $thuCount++;
+                }
+                $cTs = strtotime('+1 day', $cTs);
+            }
+
+            if ($firstDayTs > $todayTs) {
+                $thuCountFuture = 0;
+                $fTs = $firstDayTs;
+                while ($fTs <= $lastDayTs) {
+                    if (date('w', $fTs) == 4) $thuCountFuture++;
+                    $fTs = strtotime('+1 day', $fTs);
+                }
+                $monthlyMeetingCounts[$mKey] = max(1, $thuCountFuture);
+            } else {
+                $monthlyMeetingCounts[$mKey] = max(1, $thuCount);
+            }
         }
 
         krsort($weeklyMap);
@@ -211,7 +253,16 @@ class DashboardService {
             $chartData[] = $weeklyMap[$dStr]['applyCount'];
         }
 
-        $meetingCount = max(1, count($weeklyMap));
+        // 期間全体の経過木曜日数
+        $totalMeetingThursdays = 0;
+        $cTs = $startDateTs;
+        while ($cTs <= $todayTs) {
+            if (date('w', $cTs) == 4) {
+                $totalMeetingThursdays++;
+            }
+            $cTs = strtotime('+1 day', $cTs);
+        }
+        $meetingCount = max(1, $totalMeetingThursdays);
         $avgVisitorCount = number_format($totalApplyCount / $meetingCount, 1);
 
         // Calculate dynamic targetJoinGoal for the term (6 months by default or based on months involved)
