@@ -10706,8 +10706,8 @@ window.CelebrationEffect = (function() {
             ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
           </div>
           <div class="pf-visitor-item-meta">
-            <span><i class="fa-solid fa-user-plus text-rose-500 mr-0.5"></i>${escapeHtml(v.inviter || '-')}</span>
-            ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-0.5"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            <span><i class="fa-solid fa-user-plus text-slate-400 mr-0.5"></i>${escapeHtml(v.inviter || '-')}</span>
+            ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-0.5"></i>${escapeHtml(v.orientUser)}</span>` : ''}
           </div>
           ${memoText ? `<div class="pf-visitor-item-q7">${escapeHtml(memoText)}</div>` : ''}
         </div>
@@ -10812,11 +10812,11 @@ window.CelebrationEffect = (function() {
                     <div class="flex items-center justify-between gap-2 flex-wrap">
                       <div class="flex items-center gap-1.5 flex-wrap">
                         ${renderActionTypeBadgeHtml(p.action_type)}
-                        <span class="px-2 py-0.5 rounded text-[10px] font-black ${isOverdue ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-700'}">
-                          <i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(p.due_date || '期日未定')} ${isOverdue ? '(期限超過)' : ''}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOverdue ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-800 border border-slate-200'}">
+                          <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date || '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200">
-                          <i class="fa-regular fa-user mr-1"></i>${escapeHtml(p.assignee_name || '担当未定')}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                          <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(p.assignee_name || '担当未定')}
                         </span>
                       </div>
                       <div class="flex items-center gap-1.5">
@@ -10875,9 +10875,9 @@ window.CelebrationEffect = (function() {
               </div>
 
               <div class="flex items-center gap-2">
-                <button type="button" class="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-extrabold transition flex items-center gap-1.5 border border-blue-200 shadow-sm" onclick="openPfVisitorFullDetail('${escapeHtml(vid)}')">
-                  <span>全画面カルテで開く</span>
+                <button type="button" class="btn-action-secondary text-xs px-3 py-1.5 font-bold rounded-lg flex items-center gap-1" onclick="openVisitorDetailView('${escapeHtml(vid)}')">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  <span>ビジター詳細画面へ</span>
                 </button>
               </div>
             </div>
@@ -10899,9 +10899,9 @@ window.CelebrationEffect = (function() {
                   ${escapeHtml(v.company || '-')} <span class="text-slate-300">/</span> ${escapeHtml(v.profession || '-')}
                 </div>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
-                  <span><i class="fa-regular fa-calendar text-blue-600 mr-1"></i>参加日: <b>${escapeHtml(v.eventDate || '-')}</b></span>
-                  <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>紹介: <b>${escapeHtml(v.inviter || '-')}</b></span>
-                  ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>担当: <b>${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
+                  <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(v.eventDate || '-')}</b></span>
+                  <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></span>
+                  ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
                 </div>
               </div>
             </div>
