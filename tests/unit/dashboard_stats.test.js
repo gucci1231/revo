@@ -22,7 +22,7 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     return sandbox;
   }
 
-  it('renders feel rate badges correctly for rows with A, B, C ratings', () => {
+  it('renders feel rates in plain text format with A, B, C percentages', () => {
     const sandbox = getSandbox();
     const row = {
       applyCount: 4,
@@ -31,17 +31,13 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     };
 
     const html = sandbox.renderFeelRatesBadgeHtml(row);
-    assert(html.includes('feel-rate-group'), 'Contains feel-rate-group wrapper');
-    assert(html.includes('badge-feel-pill rank-A'), 'Contains A rank pill');
-    assert(html.includes('A 50.0%'), 'Shows A percentage');
-    assert(html.includes('badge-feel-pill rank-B'), 'Contains B rank pill');
-    assert(html.includes('B 25.0%'), 'Shows B percentage');
-    assert(html.includes('badge-feel-pill rank-C'), 'Contains C rank pill');
-    assert(html.includes('C 25.0%'), 'Shows C percentage');
-    assert(html.includes('title="感触 A: 2名 (50.0%)"'), 'Includes accurate count in tooltip');
+    assert(html.includes('A: 50.0%'), 'Shows A percentage');
+    assert(html.includes('B: 25.0%'), 'Shows B percentage');
+    assert(html.includes('C: 25.0%'), 'Shows C percentage');
+    assert(html.includes('title="感触内訳: A: 2名 (50.0%), B: 1名 (25.0%), C: 1名 (25.0%)"'), 'Includes accurate count in tooltip');
   });
 
-  it('omits 0 count ranks and renders only existing ranks', () => {
+  it('displays 0% ratings without omitting them', () => {
     const sandbox = getSandbox();
     const row = {
       applyCount: 2,
@@ -50,21 +46,13 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
     };
 
     const html = sandbox.renderFeelRatesBadgeHtml(row);
-    assert(html.includes('rank-A'), 'Contains A badge');
-    assert(!html.includes('rank-B'), 'Does not contain B badge when count is 0');
-    assert(!html.includes('rank-C'), 'Does not contain C badge when count is 0');
+    assert(html.includes('A: 100.0%'), 'Contains A 100.0%');
+    assert(html.includes('B: 0.0%'), 'Contains B 0.0%');
+    assert(html.includes('C: 0.0%'), 'Contains C 0.0%');
   });
 
-  it('returns hyphen "-" when no feel ratings are present', () => {
+  it('returns hyphen "-" when row is null', () => {
     const sandbox = getSandbox();
-    const rowEmpty = {
-      applyCount: 3,
-      feelCounts: { A: 0, B: 0, C: 0, none: 3 }
-    };
-
-    const html = sandbox.renderFeelRatesBadgeHtml(rowEmpty);
-    assert(html.includes('-'), 'Returns hyphen placeholder for empty ratings');
-
     const htmlNull = sandbox.renderFeelRatesBadgeHtml(null);
     assert(htmlNull.includes('-'), 'Returns hyphen placeholder for null');
   });

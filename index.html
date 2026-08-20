@@ -9268,28 +9268,14 @@ window.CelebrationEffect = (function() {
     const countB = counts.B || 0;
     const countC = counts.C || 0;
 
-    const totalWithFeel = countA + countB + countC;
-    if (totalWithFeel === 0) {
-      return '<span class="text-slate-400 text-xs">-</span>';
-    }
-
-    const total = row.applyCount !== undefined ? row.applyCount : (row.visitorCount || totalWithFeel);
+    const total = row.applyCount !== undefined ? row.applyCount : (row.visitorCount || (countA + countB + countC));
     const rateA = rates.A || (total > 0 ? ((countA / total) * 100).toFixed(1) + '%' : '0.0%');
     const rateB = rates.B || (total > 0 ? ((countB / total) * 100).toFixed(1) + '%' : '0.0%');
     const rateC = rates.C || (total > 0 ? ((countC / total) * 100).toFixed(1) + '%' : '0.0%');
 
-    let html = '<div class="feel-rate-group">';
-    if (countA > 0) {
-      html += `<span class="badge-feel-pill rank-A" title="感触 A: ${countA}名 (${rateA})">A ${rateA}</span>`;
-    }
-    if (countB > 0) {
-      html += `<span class="badge-feel-pill rank-B" title="感触 B: ${countB}名 (${rateB})">B ${rateB}</span>`;
-    }
-    if (countC > 0) {
-      html += `<span class="badge-feel-pill rank-C" title="感触 C: ${countC}名 (${rateC})">C ${rateC}</span>`;
-    }
-    html += '</div>';
-    return html;
+    const titleText = `感触内訳: A: ${countA}名 (${rateA}), B: ${countB}名 (${rateB}), C: ${countC}名 (${rateC})`;
+
+    return `<span class="text-[12px] text-slate-700 font-medium whitespace-nowrap" title="${titleText}">A: ${rateA} &nbsp; B: ${rateB} &nbsp; C: ${rateC}</span>`;
   }
 
   function renderPeriodicStatsTable(tbodyId, records, labelKey) {
