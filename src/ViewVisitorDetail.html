@@ -1,29 +1,5 @@
 <!-- VIEW 4: ビジター詳細カルテ (Apple-Style Minimal & Refined) -->
 <div id="view-visitor-detail" class="view-content">
-  <!-- 上部トップナビゲーションバー (戻る/前後移動/共有) -->
-  <div class="vd-top-bar">
-    <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="一覧に戻る">
-      <i class="fa-solid fa-chevron-left"></i> <span class="hidden sm:inline ml-1">一覧に戻る</span>
-    </button>
-    <div class="vd-top-nav-group">
-      <button type="button" id="vd-nav-prev-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('prev')" title="前のビジター (← キー / 右スワイプ)" disabled>
-        <i class="fa-solid fa-chevron-left"></i>
-      </button>
-      <span id="vd-nav-counter" class="vd-nav-counter">- / -</span>
-      <button type="button" id="vd-nav-next-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('next')" title="次のビジター (→ キー / 左スワイプ)" disabled>
-        <i class="fa-solid fa-chevron-right"></i>
-      </button>
-    </div>
-    <div class="vd-header-buttons">
-      <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
-        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-      </button>
-      <button type="button" class="vd-icon-btn" onclick="openCurrentVisitorInNewTab()" title="別タブで開く">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-      </button>
-    </div>
-  </div>
-
   <div class="vd-page-layout">
     <!-- PC用: 左カラム ビジター一覧サイドバー -->
     <div class="vd-sidebar-list-container">
@@ -46,6 +22,29 @@
 
     <!-- 右カラム (スマホでは全幅): メインカルテ詳細 -->
     <div class="vd-main-detail-container">
+      <div class="vd-top-bar">
+        <button type="button" class="vd-back-btn" onclick="closeVisitorDetailView()" title="戻る">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="vd-top-nav-group">
+          <button type="button" id="vd-nav-prev-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('prev')" title="前のビジター (← キー / 右スワイプ)" disabled>
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span id="vd-nav-counter" class="vd-nav-counter">- / -</span>
+          <button type="button" id="vd-nav-next-btn" class="vd-nav-btn" onclick="navigateVisitorDetail('next')" title="次のビジター (→ キー / 左スワイプ)" disabled>
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="vd-header-buttons">
+          <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+          </button>
+          <button type="button" class="vd-icon-btn" onclick="openCurrentVisitorInNewTab()" title="別タブで開く">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </button>
+        </div>
+      </div>
+
       <div class="vd-profile-card">
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">

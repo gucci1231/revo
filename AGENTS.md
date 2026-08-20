@@ -37,6 +37,10 @@
   - ユーザーから明示的な指示がない限り、ブラウザの立ち上げやブラウザサブエージェント（`browser_subagent`）を一切使用・起動しないこと。
   - クレジットの無駄な消費を防ぐため、ソースコード解析（`grep_search` / `view_file`）および単体テスト（`npm test`）による検証を徹底すること。
 
+## 🎨 UI & Design Principles (Strict)
+- **戻るボタン等のアイコンボタンに説明テキスト（「一覧に戻る」等）を絶対に追加しない**:
+  - 詳細画面の戻るボタン（`.vd-back-btn`）をはじめとするアイコン操作ボタンは、Appleスタイルのミニマルなアイコン（`<i class="fa-solid fa-chevron-left"></i>`）単体で維持すること。余計な説明文言を追加してはならない。
+
 ## 📁 Project Documentation
 - **Tasks & Backlog**: [TASKS.md](file:///Users/kawaguchiyouhei/Library/CloudStorage/GoogleDrive-yk571231@gmail.com/マイドライブ/BNI/02_チャプター運営/ビジホス/VisitorHostRevolution/TASKS.md)
 - **Architectural Memory**: [MEMORY.md](file:///Users/kawaguchiyouhei/Library/CloudStorage/GoogleDrive-yk571231@gmail.com/マイドライブ/BNI/02_チャプター運営/ビジホス/VisitorHostRevolution/MEMORY.md)
