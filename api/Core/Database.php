@@ -340,37 +340,28 @@ class Database {
     }
 
     public function upsert(string $table, array $data, array $uniqueKeys): bool {
-        $cols = array_keys($data);
-        $escapedCols = array_map(fn($c) => "`{$c}`", $cols);
-        $escapedUniqueKeys = array_map(fn($k) => "`{$k}`", $uniqueKeys);
-        $placeholders = array_fill(0, count($cols), '?');
-
-        $updateCols = array_diff($cols, $uniqueKeys);
-        if (empty($updateCols)) {
-            $sql = sprintf(
-                "INSERT INTO `%s` (%s) VALUES (%s) ON CONFLICT(%s) DO NOTHING",
-                $table,
-                implode(', ', $escapedCols),
-                implode(', ', $placeholders),
-                implode(', ', $escapedUniqueKeys)
-            );
-        } else {
-            $setClauses = [];
-            foreach ($updateCols as $uCol) {
-                $setClauses[] = sprintf("`%s` = excluded.`%s`", $uCol, $uCol);
-            }
-            $sql = sprintf(
-                "INSERT INTO `%s` (%s) VALUES (%s) ON CONFLICT(%s) DO UPDATE SET %s",
-                $table,
-                implode(', ', $escapedCols),
-                implode(', ', $placeholders),
-                implode(', ', $escapedUniqueKeys),
-                implode(', ', $setClauses)
-            );
+        $whereClauses = [];
+        $whereParams = [];
+        foreach ($uniqueKeys as $uKey) {
+            $whereClauses[] = "`{$uKey}` = ?";
+            $whereParams[] = $data[$uKey] ?? null;
         }
+        $whereSql = implode(' AND ', $whereClauses);
 
-        $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute(array_values($data));
+        $exists = (int)$this->fetchColumn(sprintf("SELECT COUNT(*) FROM `%s` WHERE %s", $table, $whereSql), $whereParams);
+        if ($exists > 0) {
+            $updateCols = array_diff(array_keys($data), $uniqueKeys);
+            if (empty($updateCols)) {
+                return true; // Nothing to update
+            }
+            $updateData = [];
+            foreach ($updateCols as $col) {
+                $updateData[$col] = $data[$col];
+            }
+            return $this->update($table, $updateData, $whereSql, $whereParams) >= 0;
+        } else {
+            return $this->insert($table, $data) > 0;
+        }
     }
 
     public function transaction(callable $callback): mixed {
