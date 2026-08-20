@@ -2573,6 +2573,32 @@ tr:last-child td { border-bottom: none; }
   }
 }
 
+/* Stats panel compact modern tables (Prevents card overflow & sleek layout) */
+#dash-panel-stats table {
+  width: 100% !important;
+  table-layout: auto !important;
+}
+#dash-panel-stats th {
+  padding: 10px 8px !important;
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+  background: #f8fafc !important;
+}
+#dash-panel-stats th:first-child,
+#dash-panel-stats td:first-child {
+  padding-left: 12px !important;
+}
+#dash-panel-stats th:last-child,
+#dash-panel-stats td:last-child {
+  padding-right: 12px !important;
+}
+#dash-panel-stats td {
+  padding: 8px 8px !important;
+  font-size: 12.5px !important;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+
 /* Responsive Table vs Cards Switching (PC >= 1024px: Table, Mobile/Tablet < 1024px: Cards) */
 .dash-ap-table-wrap {
   display: block !important;
