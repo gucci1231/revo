@@ -378,6 +378,7 @@
 
         tr.innerHTML = `
           <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>
             <div>
               ${renderVisitorNameLinkHtml(r.id, r.name)}
@@ -391,7 +392,6 @@
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
-          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
         `;
         tbody.appendChild(tr);
       }

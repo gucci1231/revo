@@ -5621,11 +5621,10 @@ tr:last-child td { border-bottom: none; }
           <thead>
             <tr>
               <th class="col-w-sm">参加日</th>
+              <th class="text-center col-w-sm">ランク</th>
               <th>氏名 / 会社・専門分野</th>
               <th class="col-w-md">招待者 / 担当</th>
               <th>最新状況・次の一手</th>
-              <th class="text-center col-w-sm">ランク</th>
-
             </tr>
           </thead>
           <tbody id="table-one-month"></tbody>
@@ -11385,6 +11384,7 @@ window.CelebrationEffect = (function() {
 
         tr.innerHTML = `
           <td>${formatEventDateWithElapsed(r.eventDate)}</td>
+          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>
             <div>
               ${renderVisitorNameLinkHtml(r.id, r.name)}
@@ -11398,7 +11398,6 @@ window.CelebrationEffect = (function() {
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
-          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
         `;
         tbody.appendChild(tr);
       }
