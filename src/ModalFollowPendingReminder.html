@@ -1,0 +1,60 @@
+<!-- Modal: 保留（時期尚早）再アプローチ・リマインド設定モーダル -->
+<div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
+  <div class="modal-card" style="max-width: 480px;">
+    
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800 m-0">再アプローチ・リマインド設定</h3>
+          <div class="text-xs text-slate-500 font-medium" id="fpr-visitor-subname">ビジターへの再コンタクト予定を設定</div>
+        </div>
+      </div>
+      <button type="button" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-lg leading-none" onclick="closeFollowPendingReminderModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="form-follow-pending-reminder" onsubmit="submitFollowPendingReminder(event)" class="flex flex-col gap-3.5">
+      <input type="hidden" id="fpr-visitor-id" value="">
+
+      <!-- 再アプローチ予定日 -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center justify-between mb-1.5">
+          <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i>再アプローチ予定日 <span class="text-rose-500">*</span></span>
+          <span class="text-[10px] text-slate-400 font-normal">例: 半年後、独立予定時期など</span>
+        </label>
+        <input type="date" id="fpr-due-date" class="form-input w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none" required>
+      </div>
+
+      <!-- 担当者 -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center gap-1 mb-1.5">
+          <i class="fa-regular fa-user text-indigo-500"></i>担当者
+        </label>
+        <select id="fpr-assignee" class="form-select w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none">
+          <option value="">担当者を選択...</option>
+        </select>
+      </div>
+
+      <!-- 理由・メモ（独立予定・資金準備など） -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center justify-between mb-1.5">
+          <span><i class="fa-regular fa-comment-dots text-indigo-500 mr-1"></i>保留の理由・再コンタクト内容 <span class="text-rose-500">*</span></span>
+        </label>
+        <textarea id="fpr-memo" rows="3" class="form-textarea w-full text-xs p-2.5 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none resize-none" placeholder="例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等" required></textarea>
+      </div>
+
+      <div class="modal-footer-btns pt-3 mt-1 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" class="btn-cancel text-xs py-2 px-3.5" onclick="closeFollowPendingReminderModal()">閉じる</button>
+        <button type="submit" class="btn-action-primary text-xs py-2 px-4 font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-bell"></i>
+          <span>リマインドを登録</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

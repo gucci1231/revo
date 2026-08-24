@@ -95,6 +95,10 @@
       .then(res => {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);
         refreshAllActiveViews();
+
+        if (field === 'isJoined' && value === '保留（時期尚早）' && typeof openFollowPendingReminderModal === 'function') {
+          openFollowPendingReminderModal(id);
+        }
       })
       .catch(handleError);
   }
@@ -106,12 +110,13 @@
     '未': { value: '未', label: '入会: 未', shortLabel: '未', cls: '', priority: 0 },
     '検討中': { value: '検討中', label: '入会: 検討中', shortLabel: '検討中', cls: 'state-considering', priority: 2 },
     '申込書提出': { value: '申込書提出', label: '入会: 申込書提出', shortLabel: '申込書提出', cls: 'state-applying', priority: 3 },
-    'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 4 },
-    '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 5 },
+    '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 4 },
+    'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 5 },
     '入会済': { value: '入会済', label: '入会: 済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
-    '見送り': { value: '見送り', label: '入会: 見送り', shortLabel: '見送り', cls: 'state-rejected', priority: 1 }
+    '保留（時期尚早）': { value: '保留（時期尚早）', label: '入会: 保留（時期尚早）', shortLabel: '保留', cls: 'state-pending-later', priority: 1.5 },
+    'フォロー終了': { value: 'フォロー終了', label: '入会: フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 1 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', 'メンバーシップ審査', '入金待ち', '入会済', '見送り'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', '保留（時期尚早）', 'フォロー終了'];
 
   const ATTEND_STATUS_CONFIG = {
     '未': { value: '未', label: '出欠: 未', shortLabel: '未', cls: '' },
@@ -129,6 +134,8 @@
 
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
+    if (raw === '見送り' || raw === 'フォロー終了') return 'フォロー終了';
+    if (raw === '保留' || raw === '時期尚早' || raw === '保留（時期尚早）') return '保留（時期尚早）';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }

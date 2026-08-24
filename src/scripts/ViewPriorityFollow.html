@@ -112,11 +112,11 @@
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 感触A/Bかつ未入会・未見送りのベースリスト
+    // 感触A/Bかつ未入会・未クローズのベースリスト
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
-      const isRejected = (v.isJoined === '見送り');
-      if (isJoinedBool || isRejected) return false;
+      const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了' || v.isJoined === '保留（時期尚早）' || v.isJoined === '保留');
+      if (isJoinedBool || isClosed) return false;
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||

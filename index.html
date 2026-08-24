@@ -843,6 +843,18 @@ tr:last-child td { border-bottom: none; }
   border-color: #bfdbfe;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
+.status-select.state-pending-later {
+  background-color: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.status-select.state-closed {
+  background-color: #f8fafc;
+  color: #64748b;
+  border-color: #cbd5e1;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
 
 /* Visitors Status Filter Tabs (Modern Slate Pill Segment Control) */
 .visitors-status-tabs {
@@ -951,6 +963,18 @@ tr:last-child td { border-bottom: none; }
   color: #1d4ed8;
   border-color: #bfdbfe;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-pending-later {
+  background-color: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-closed {
+  background-color: #f8fafc;
+  color: #64748b;
+  border-color: #cbd5e1;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 .btn-attend, .select-attend { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); white-space: nowrap; outline: none; transition: all 0.15s ease; }
@@ -6525,10 +6549,11 @@ select.form-input, select.form-select {
                 <option value="未">入会: 未</option>
                 <option value="検討中">入会: 検討中</option>
                 <option value="申込書提出">入会: 申込書提出</option>
-                <option value="メンバーシップ審査">入会: メンバーシップ審査</option>
                 <option value="入金待ち">入会: 入金待ち</option>
+                <option value="メンバーシップ審査">入会: メンバーシップ審査</option>
                 <option value="入会済">入会: 済</option>
-                <option value="見送り">入会: 見送り</option>
+                <option value="保留（時期尚早）">入会: 保留（時期尚早）</option>
+                <option value="フォロー終了">入会: フォロー終了</option>
               </select>
             </div>
           </div>
@@ -7672,6 +7697,67 @@ select.form-input, select.form-select {
 
 </div>
 
+    <!-- Modal: 保留（時期尚早）再アプローチ・リマインド設定モーダル -->
+<div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
+  <div class="modal-card" style="max-width: 480px;">
+    
+    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+          <i class="fa-regular fa-clock"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800 m-0">再アプローチ・リマインド設定</h3>
+          <div class="text-xs text-slate-500 font-medium" id="fpr-visitor-subname">ビジターへの再コンタクト予定を設定</div>
+        </div>
+      </div>
+      <button type="button" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg text-lg leading-none" onclick="closeFollowPendingReminderModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form id="form-follow-pending-reminder" onsubmit="submitFollowPendingReminder(event)" class="flex flex-col gap-3.5">
+      <input type="hidden" id="fpr-visitor-id" value="">
+
+      <!-- 再アプローチ予定日 -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center justify-between mb-1.5">
+          <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i>再アプローチ予定日 <span class="text-rose-500">*</span></span>
+          <span class="text-[10px] text-slate-400 font-normal">例: 半年後、独立予定時期など</span>
+        </label>
+        <input type="date" id="fpr-due-date" class="form-input w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none" required>
+      </div>
+
+      <!-- 担当者 -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center gap-1 mb-1.5">
+          <i class="fa-regular fa-user text-indigo-500"></i>担当者
+        </label>
+        <select id="fpr-assignee" class="form-select w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none">
+          <option value="">担当者を選択...</option>
+        </select>
+      </div>
+
+      <!-- 理由・メモ（独立予定・資金準備など） -->
+      <div class="form-group mb-0">
+        <label class="form-label text-xs font-bold text-slate-700 flex items-center justify-between mb-1.5">
+          <span><i class="fa-regular fa-comment-dots text-indigo-500 mr-1"></i>保留の理由・再コンタクト内容 <span class="text-rose-500">*</span></span>
+        </label>
+        <textarea id="fpr-memo" rows="3" class="form-textarea w-full text-xs p-2.5 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none resize-none" placeholder="例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等" required></textarea>
+      </div>
+
+      <div class="modal-footer-btns pt-3 mt-1 border-t border-slate-100 flex items-center justify-end gap-2">
+        <button type="button" class="btn-cancel text-xs py-2 px-3.5" onclick="closeFollowPendingReminderModal()">閉じる</button>
+        <button type="submit" class="btn-action-primary text-xs py-2 px-4 font-bold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-bell"></i>
+          <span>リマインドを登録</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
 
   </div>
 
@@ -8030,6 +8116,10 @@ const ApiService = {
       .then(res => {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);
         refreshAllActiveViews();
+
+        if (field === 'isJoined' && value === '保留（時期尚早）' && typeof openFollowPendingReminderModal === 'function') {
+          openFollowPendingReminderModal(id);
+        }
       })
       .catch(handleError);
   }
@@ -8041,12 +8131,13 @@ const ApiService = {
     '未': { value: '未', label: '入会: 未', shortLabel: '未', cls: '', priority: 0 },
     '検討中': { value: '検討中', label: '入会: 検討中', shortLabel: '検討中', cls: 'state-considering', priority: 2 },
     '申込書提出': { value: '申込書提出', label: '入会: 申込書提出', shortLabel: '申込書提出', cls: 'state-applying', priority: 3 },
-    'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 4 },
-    '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 5 },
+    '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 4 },
+    'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 5 },
     '入会済': { value: '入会済', label: '入会: 済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
-    '見送り': { value: '見送り', label: '入会: 見送り', shortLabel: '見送り', cls: 'state-rejected', priority: 1 }
+    '保留（時期尚早）': { value: '保留（時期尚早）', label: '入会: 保留（時期尚早）', shortLabel: '保留', cls: 'state-pending-later', priority: 1.5 },
+    'フォロー終了': { value: 'フォロー終了', label: '入会: フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 1 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', 'メンバーシップ審査', '入金待ち', '入会済', '見送り'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', '保留（時期尚早）', 'フォロー終了'];
 
   const ATTEND_STATUS_CONFIG = {
     '未': { value: '未', label: '出欠: 未', shortLabel: '未', cls: '' },
@@ -8064,6 +8155,8 @@ const ApiService = {
 
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
+    if (raw === '見送り' || raw === 'フォロー終了') return 'フォロー終了';
+    if (raw === '保留' || raw === '時期尚早' || raw === '保留（時期尚早）') return '保留（時期尚早）';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }
@@ -11126,11 +11219,11 @@ window.CelebrationEffect = (function() {
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 感触A/Bかつ未入会・未見送りのベースリスト
+    // 感触A/Bかつ未入会・未クローズのベースリスト
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
-      const isRejected = (v.isJoined === '見送り');
-      if (isJoinedBool || isRejected) return false;
+      const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了' || v.isJoined === '保留（時期尚早）' || v.isJoined === '保留');
+      if (isJoinedBool || isClosed) return false;
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
@@ -15524,6 +15617,133 @@ window.CelebrationEffect = (function() {
           openActionReportModal(item.id, item.visitor_id);
         } else {
           showToast('該当のアクションプランが見つかりませんでした');
+        }
+      })
+      .catch(handleError);
+  }
+</script>
+
+<script>
+  /* --- Modal: Follow Pending (時期尚早/保留) Reminder Controller --- */
+
+  function openFollowPendingReminderModal(visitorId) {
+    const modal = document.getElementById('modal-follow-pending-reminder');
+    if (!modal) return;
+
+    const idInput = document.getElementById('fpr-visitor-id');
+    const subnameEl = document.getElementById('fpr-visitor-subname');
+    const dateInput = document.getElementById('fpr-due-date');
+    const memoInput = document.getElementById('fpr-memo');
+    const assigneeSelect = document.getElementById('fpr-assignee');
+
+    if (idInput) idInput.value = visitorId;
+
+    // ビジター名の表示
+    let visitorName = 'ビジター No.' + visitorId;
+    let inviter = '';
+    const allVisitors = cachedAllVisitors || [];
+    const pfVisitors = cachedPriorityFollowList || [];
+    const target = allVisitors.find(v => String(v.id) === String(visitorId)) ||
+                   pfVisitors.find(v => String(v.id || v.visitor_id) === String(visitorId));
+
+    if (target) {
+      visitorName = target.name || target.visitor_name || visitorName;
+      inviter = target.inviter || '';
+    }
+
+    if (subnameEl) {
+      subnameEl.innerText = `ビジター: ${visitorName}${inviter ? ` (紹介: ${inviter})` : ''}`;
+    }
+
+    // デフォルト期日（3ヶ月後の1日）
+    if (dateInput) {
+      const defaultDate = new Date();
+      defaultDate.setMonth(defaultDate.getMonth() + 3);
+      const yyyy = defaultDate.getFullYear();
+      const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(defaultDate.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    if (memoInput) {
+      memoInput.value = '';
+    }
+
+    // 担当者プルダウンの生成
+    if (assigneeSelect) {
+      assigneeSelect.innerHTML = '<option value="">担当者を選択...</option>';
+      const memberList = (typeof cachedMemberList !== 'undefined' && cachedMemberList && cachedMemberList.length > 0)
+        ? cachedMemberList
+        : (typeof rawInitialData !== 'undefined' && rawInitialData && rawInitialData.members ? rawInitialData.members : []);
+
+      if (memberList && memberList.length > 0) {
+        memberList.forEach(m => {
+          const mName = m.name || m.member_name || '';
+          if (!mName) return;
+          const opt = document.createElement('option');
+          opt.value = mName;
+          opt.innerText = `${mName}${m.profession ? ` (${m.profession})` : ''}`;
+          if (inviter && mName === inviter) {
+            opt.selected = true; // 招待者を初期選択
+          }
+          assigneeSelect.appendChild(opt);
+        });
+      }
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeFollowPendingReminderModal() {
+    const modal = document.getElementById('modal-follow-pending-reminder');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+  function submitFollowPendingReminder(e) {
+    if (e) e.preventDefault();
+
+    const vid = document.getElementById('fpr-visitor-id')?.value;
+    const dueDate = document.getElementById('fpr-due-date')?.value;
+    const assignee = document.getElementById('fpr-assignee')?.value || '';
+    const memo = document.getElementById('fpr-memo')?.value.trim();
+
+    if (!vid) {
+      showToast('ビジターIDが見つかりません');
+      return;
+    }
+
+    if (!dueDate) {
+      showToast('再アプローチ予定日を入力してください');
+      return;
+    }
+
+    if (!memo) {
+      showToast('保留の理由・メモを入力してください');
+      return;
+    }
+
+    const actionText = `【保留/再アプローチ】${memo}`;
+
+    const payload = {
+      visitor_id: vid,
+      due_date: dueDate,
+      assignee_name: assignee,
+      action_type: 'その他',
+      action_text: actionText
+    };
+
+    showToast('リマインドを登録中...');
+
+    ApiService.call('createActionPlanApi', payload)
+      .then(res => {
+        if (res && res.success) {
+          showToast(`⏰ ${dueDate} の再アプローチ予定を登録しました！`);
+          closeFollowPendingReminderModal();
+          refreshAllActiveViews();
+        } else {
+          showToast('登録に失敗しました: ' + (res.message || 'エラー'));
         }
       })
       .catch(handleError);

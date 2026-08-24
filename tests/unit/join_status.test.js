@@ -13,9 +13,13 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(utilsHtml.includes('申込書提出'), 'JOIN_STATUS_CONFIG should contain 申込書提出');
     assert.ok(utilsHtml.includes('メンバーシップ審査'), 'JOIN_STATUS_CONFIG should contain メンバーシップ審査');
     assert.ok(utilsHtml.includes('入金待ち'), 'JOIN_STATUS_CONFIG should contain 入金待ち');
+    assert.ok(utilsHtml.includes('保留（時期尚早）'), 'JOIN_STATUS_CONFIG should contain 保留（時期尚早）');
+    assert.ok(utilsHtml.includes('フォロー終了'), 'JOIN_STATUS_CONFIG should contain フォロー終了');
     assert.ok(utilsHtml.includes('state-applying'), 'Utils should support state-applying class');
     assert.ok(utilsHtml.includes('state-review'), 'Utils should support state-review class');
     assert.ok(utilsHtml.includes('state-payment'), 'Utils should support state-payment class');
+    assert.ok(utilsHtml.includes('state-pending-later'), 'Utils should support state-pending-later class');
+    assert.ok(utilsHtml.includes('state-closed'), 'Utils should support state-closed class');
   });
 
   it('uses centralized status helper functions across ViewVisitorDetail and ViewPriorityFollow', () => {
@@ -35,6 +39,8 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(indexHtml.includes('<option value="申込書提出"'));
     assert.ok(indexHtml.includes('<option value="メンバーシップ審査"'));
     assert.ok(indexHtml.includes('<option value="入金待ち"'));
+    assert.ok(indexHtml.includes('<option value="保留（時期尚早）"'));
+    assert.ok(indexHtml.includes('<option value="フォロー終了"'));
     assert.ok(indexHtml.includes('.status-select.state-applying'));
   });
 });

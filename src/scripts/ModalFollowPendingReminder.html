@@ -1,0 +1,126 @@
+<script>
+  /* --- Modal: Follow Pending (時期尚早/保留) Reminder Controller --- */
+
+  function openFollowPendingReminderModal(visitorId) {
+    const modal = document.getElementById('modal-follow-pending-reminder');
+    if (!modal) return;
+
+    const idInput = document.getElementById('fpr-visitor-id');
+    const subnameEl = document.getElementById('fpr-visitor-subname');
+    const dateInput = document.getElementById('fpr-due-date');
+    const memoInput = document.getElementById('fpr-memo');
+    const assigneeSelect = document.getElementById('fpr-assignee');
+
+    if (idInput) idInput.value = visitorId;
+
+    // ビジター名の表示
+    let visitorName = 'ビジター No.' + visitorId;
+    let inviter = '';
+    const allVisitors = cachedAllVisitors || [];
+    const pfVisitors = cachedPriorityFollowList || [];
+    const target = allVisitors.find(v => String(v.id) === String(visitorId)) ||
+                   pfVisitors.find(v => String(v.id || v.visitor_id) === String(visitorId));
+
+    if (target) {
+      visitorName = target.name || target.visitor_name || visitorName;
+      inviter = target.inviter || '';
+    }
+
+    if (subnameEl) {
+      subnameEl.innerText = `ビジター: ${visitorName}${inviter ? ` (紹介: ${inviter})` : ''}`;
+    }
+
+    // デフォルト期日（3ヶ月後の1日）
+    if (dateInput) {
+      const defaultDate = new Date();
+      defaultDate.setMonth(defaultDate.getMonth() + 3);
+      const yyyy = defaultDate.getFullYear();
+      const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(defaultDate.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    if (memoInput) {
+      memoInput.value = '';
+    }
+
+    // 担当者プルダウンの生成
+    if (assigneeSelect) {
+      assigneeSelect.innerHTML = '<option value="">担当者を選択...</option>';
+      const memberList = (typeof cachedMemberList !== 'undefined' && cachedMemberList && cachedMemberList.length > 0)
+        ? cachedMemberList
+        : (typeof rawInitialData !== 'undefined' && rawInitialData && rawInitialData.members ? rawInitialData.members : []);
+
+      if (memberList && memberList.length > 0) {
+        memberList.forEach(m => {
+          const mName = m.name || m.member_name || '';
+          if (!mName) return;
+          const opt = document.createElement('option');
+          opt.value = mName;
+          opt.innerText = `${mName}${m.profession ? ` (${m.profession})` : ''}`;
+          if (inviter && mName === inviter) {
+            opt.selected = true; // 招待者を初期選択
+          }
+          assigneeSelect.appendChild(opt);
+        });
+      }
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeFollowPendingReminderModal() {
+    const modal = document.getElementById('modal-follow-pending-reminder');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+  function submitFollowPendingReminder(e) {
+    if (e) e.preventDefault();
+
+    const vid = document.getElementById('fpr-visitor-id')?.value;
+    const dueDate = document.getElementById('fpr-due-date')?.value;
+    const assignee = document.getElementById('fpr-assignee')?.value || '';
+    const memo = document.getElementById('fpr-memo')?.value.trim();
+
+    if (!vid) {
+      showToast('ビジターIDが見つかりません');
+      return;
+    }
+
+    if (!dueDate) {
+      showToast('再アプローチ予定日を入力してください');
+      return;
+    }
+
+    if (!memo) {
+      showToast('保留の理由・メモを入力してください');
+      return;
+    }
+
+    const actionText = `【保留/再アプローチ】${memo}`;
+
+    const payload = {
+      visitor_id: vid,
+      due_date: dueDate,
+      assignee_name: assignee,
+      action_type: 'その他',
+      action_text: actionText
+    };
+
+    showToast('リマインドを登録中...');
+
+    ApiService.call('createActionPlanApi', payload)
+      .then(res => {
+        if (res && res.success) {
+          showToast(`⏰ ${dueDate} の再アプローチ予定を登録しました！`);
+          closeFollowPendingReminderModal();
+          refreshAllActiveViews();
+        } else {
+          showToast('登録に失敗しました: ' + (res.message || 'エラー'));
+        }
+      })
+      .catch(handleError);
+  }
+</script>
