@@ -9,31 +9,29 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
   // ステージング分類テストロジック（クライアント側実装の仕様検証）
   function categorizeVisitorToStage(v) {
     const isJoined = v.isJoined || '未';
-    const pendingCount = Number(v.pendingActionCount) || 0;
-    const overdueCount = Number(v.overdueActionCount) || 0;
 
-    if (isJoined === 'メンバーシップ審査') {
+    if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
       return 'stage-review'; // ④ 審査
     }
     if (isJoined === '申込書提出' || isJoined === '入金待ち') {
       return 'stage-applying-payment'; // ③ 申込提出・入金待ち
     }
-    if (pendingCount === 0) {
-      return 'stage-stagnant'; // ① 未設定
+    if (isJoined === '検討中') {
+      return 'stage-active'; // ② 検討中
     }
-    return 'stage-active'; // ② 進行中・超過
+    return 'stage-stagnant'; // ① 未対応
   }
 
   it('correctly categorizes visitors into 4 Kanban stages', () => {
-    // 1. 未設定: アクション未登録
+    // 1. 未対応: ステータス未
     const visitor1 = { id: '1', name: '山田', feelAbc: 'A', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0 };
     assert.strictEqual(categorizeVisitorToStage(visitor1), 'stage-stagnant');
 
-    // 2. 進行中: アクションあり（期限内）
+    // 1. 未対応: ステータス未（アクションありでも未対応ステージ）
     const visitor2 = { id: '2', name: '田中', feelAbc: 'A', isJoined: '未', pendingActionCount: 1, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor2), 'stage-active');
+    assert.strictEqual(categorizeVisitorToStage(visitor2), 'stage-stagnant');
 
-    // 2. 進行中・超過: アクションあり（期限超過）
+    // 2. 検討中: ステータス検討中
     const visitor3 = { id: '3', name: '佐藤', feelAbc: 'B', isJoined: '検討中', pendingActionCount: 1, overdueActionCount: 1 };
     assert.strictEqual(categorizeVisitorToStage(visitor3), 'stage-active');
 

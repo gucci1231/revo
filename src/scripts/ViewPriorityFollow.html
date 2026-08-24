@@ -112,7 +112,14 @@
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 感触A/Bかつ未入会・未クローズ・直近フォロー対象のベースリスト
+    // 集計開始日（今期）の取得
+    let startDateStr = '2026/04/01';
+    if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
+      startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
+    }
+    const startDateClean = startDateStr.replace(/\//g, '-');
+
+    // 感触A/Bかつ今期・未入会・未クローズ・直近フォロー対象のベースリスト
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
@@ -120,6 +127,12 @@
       const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
 
       if (isJoinedBool || isClosed || !isFollowActive) return false;
+
+      // 期首判定（今期ビジターに絞り込み）
+      if (v.eventDate) {
+        const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
+        if (evDateClean < startDateClean) return false;
+      }
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
@@ -217,40 +230,36 @@
       return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
     });
 
-    // 4ステージへの自動分類
+    // 4ステージへの自動分類 (入会ステータスに完全連動)
     const stageItems = {
-      'stagnant': [],           // ① 未設定
-      'active': [],             // ② 進行中・超過
+      'stagnant': [],           // ① 未対応
+      'active': [],             // ② 検討中
       'applying-payment': [],   // ③ 申込提出・入金待ち
       'review': []              // ④ 審査
     };
 
     listToRender.forEach(v => {
       const isJoined = v.isJoined || '未';
-      const pendingCount = Number(v.pendingActionCount) || 0;
 
-      if (isJoined === 'メンバーシップ審査') {
+      if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
         stageItems['review'].push(v);
       } else if (isJoined === '申込書提出' || isJoined === '入金待ち') {
         stageItems['applying-payment'].push(v);
-      } else if (pendingCount === 0) {
-        stageItems['stagnant'].push(v);
-      } else {
+      } else if (isJoined === '検討中') {
         stageItems['active'].push(v);
+      } else {
+        stageItems['stagnant'].push(v);
       }
     });
 
-    // 各ステージ内ソート
-    // activeステージ: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
-    stageItems['active'].sort((a, b) => {
-      const oA = Number(a.overdueActionCount) || 0;
-      const oB = Number(b.overdueActionCount) || 0;
-      if (oA !== oB) return oB - oA;
-      return (b.eventDate || '').localeCompare(a.eventDate || '');
-    });
-
-    ['stagnant', 'applying-payment', 'review'].forEach(key => {
-      stageItems[key].sort((a, b) => (b.eventDate || '').localeCompare(a.eventDate || ''));
+    // 各ステージ内ソート: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
+    ['stagnant', 'active', 'applying-payment', 'review'].forEach(key => {
+      stageItems[key].sort((a, b) => {
+        const oA = Number(a.overdueActionCount) || 0;
+        const oB = Number(b.overdueActionCount) || 0;
+        if (oA !== oB) return oB - oA;
+        return (b.eventDate || '').localeCompare(a.eventDate || '');
+      });
     });
 
     // カウントバッジ更新 (PC & Mobile)

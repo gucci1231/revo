@@ -6420,14 +6420,14 @@ select.form-input, select.form-select {
       <div class="pf-mobile-stage-tabs flex gap-1.5 overflow-x-auto p-1 bg-slate-100 rounded-xl" id="pf-mobile-stage-tabs">
         <button type="button" class="pf-mobile-tab-btn active flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-stagnant" onclick="setPriorityFollowMobileStage('stagnant')">
           <span class="flex items-center gap-1 text-[11px] text-slate-600 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-slate-400"></span>放置
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>未対応
           </span>
           <span id="pf-mobile-count-stagnant" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
 
         <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-active" onclick="setPriorityFollowMobileStage('active')">
           <span class="flex items-center gap-1 text-[11px] text-blue-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>進行中・超過
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>検討中
           </span>
           <span id="pf-mobile-count-active" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
@@ -6451,24 +6451,24 @@ select.form-input, select.form-select {
     <!-- 🖥️ カンバンボード 4列グリッド (PC: 4列並び / スマホ: タブ連動1列) -->
     <div class="pf-kanban-board" id="pf-kanban-board">
 
-      <!-- カラム 1: ⚪ 放置 (グレー) -->
+      <!-- カラム 1: ⚪ 未対応 (グレー) -->
       <div class="pf-kanban-column pf-kanban-col-stagnant" id="pf-col-stagnant" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'stagnant')">
         <div class="pf-kanban-column-header">
           <div class="pf-kanban-col-title text-slate-700">
             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-            <span>放置</span>
+            <span>未対応</span>
           </div>
           <span class="pf-kanban-col-count bg-slate-100 text-slate-700" id="pf-kanban-count-stagnant">0</span>
         </div>
         <div class="pf-kanban-card-list" id="pf-kanban-list-stagnant"></div>
       </div>
 
-      <!-- カラム 2: 🔵 進行中・超過 (ブルー / 超過レッド) -->
+      <!-- カラム 2: 🔵 検討中 (ブルー) -->
       <div class="pf-kanban-column pf-kanban-col-active" id="pf-col-active" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'active')">
         <div class="pf-kanban-column-header">
           <div class="pf-kanban-col-title text-blue-700">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-            <span>進行中・超過</span>
+            <span>検討中</span>
           </div>
           <span class="pf-kanban-col-count bg-blue-100 text-blue-800" id="pf-kanban-count-active">0</span>
         </div>
@@ -11762,7 +11762,14 @@ window.CelebrationEffect = (function() {
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 感触A/Bかつ未入会・未クローズ・直近フォロー対象のベースリスト
+    // 集計開始日（今期）の取得
+    let startDateStr = '2026/04/01';
+    if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
+      startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
+    }
+    const startDateClean = startDateStr.replace(/\//g, '-');
+
+    // 感触A/Bかつ今期・未入会・未クローズ・直近フォロー対象のベースリスト
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
@@ -11770,6 +11777,12 @@ window.CelebrationEffect = (function() {
       const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
 
       if (isJoinedBool || isClosed || !isFollowActive) return false;
+
+      // 期首判定（今期ビジターに絞り込み）
+      if (v.eventDate) {
+        const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
+        if (evDateClean < startDateClean) return false;
+      }
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
@@ -11867,40 +11880,36 @@ window.CelebrationEffect = (function() {
       return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
     });
 
-    // 4ステージへの自動分類
+    // 4ステージへの自動分類 (入会ステータスに完全連動)
     const stageItems = {
-      'stagnant': [],           // ① 未設定
-      'active': [],             // ② 進行中・超過
+      'stagnant': [],           // ① 未対応
+      'active': [],             // ② 検討中
       'applying-payment': [],   // ③ 申込提出・入金待ち
       'review': []              // ④ 審査
     };
 
     listToRender.forEach(v => {
       const isJoined = v.isJoined || '未';
-      const pendingCount = Number(v.pendingActionCount) || 0;
 
-      if (isJoined === 'メンバーシップ審査') {
+      if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
         stageItems['review'].push(v);
       } else if (isJoined === '申込書提出' || isJoined === '入金待ち') {
         stageItems['applying-payment'].push(v);
-      } else if (pendingCount === 0) {
-        stageItems['stagnant'].push(v);
-      } else {
+      } else if (isJoined === '検討中') {
         stageItems['active'].push(v);
+      } else {
+        stageItems['stagnant'].push(v);
       }
     });
 
-    // 各ステージ内ソート
-    // activeステージ: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
-    stageItems['active'].sort((a, b) => {
-      const oA = Number(a.overdueActionCount) || 0;
-      const oB = Number(b.overdueActionCount) || 0;
-      if (oA !== oB) return oB - oA;
-      return (b.eventDate || '').localeCompare(a.eventDate || '');
-    });
-
-    ['stagnant', 'applying-payment', 'review'].forEach(key => {
-      stageItems[key].sort((a, b) => (b.eventDate || '').localeCompare(a.eventDate || ''));
+    // 各ステージ内ソート: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
+    ['stagnant', 'active', 'applying-payment', 'review'].forEach(key => {
+      stageItems[key].sort((a, b) => {
+        const oA = Number(a.overdueActionCount) || 0;
+        const oB = Number(b.overdueActionCount) || 0;
+        if (oA !== oB) return oB - oA;
+        return (b.eventDate || '').localeCompare(a.eventDate || '');
+      });
     });
 
     // カウントバッジ更新 (PC & Mobile)
