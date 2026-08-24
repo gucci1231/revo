@@ -10546,7 +10546,7 @@ window.CelebrationEffect = (function() {
         const visitorCellHtml = `
           <div>
             <div style="font-weight: 800; color: #0f172a; font-size: 14px;">
-              <i class="fa-solid fa-user-tag text-blue-600 text-xs mr-1"></i>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
+              ${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}
             </div>
             ${p.visitor_company ? `<div style="font-size: 11px; color: #64748b; margin-top: 1px;">${escapeHtml(p.visitor_company)}</div>` : ''}
           </div>
@@ -10600,7 +10600,6 @@ window.CelebrationEffect = (function() {
           <div class="dash-ap-card-top-row">
             <div class="dash-ap-card-visitor-left">
               <div class="dash-ap-card-visitor-name">
-                <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
                 <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
               </div>
               ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
@@ -11633,7 +11632,6 @@ window.CelebrationEffect = (function() {
         <div class="dash-ap-card-top-row">
           <div class="dash-ap-card-visitor-left">
             <div class="dash-ap-card-visitor-name">
-              <i class="fa-solid fa-user-tag text-blue-600 text-sm"></i>
               <span>${escapeHtml(p.visitor_name || 'ビジター No.' + p.visitor_id)}</span>
             </div>
             ${p.visitor_company ? `<div class="dash-ap-card-visitor-sub">${escapeHtml(p.visitor_company)}</div>` : ''}
