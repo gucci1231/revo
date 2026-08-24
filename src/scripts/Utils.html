@@ -954,6 +954,59 @@
   }
   window.initAutoResizeTextareas = initAutoResizeTextareas;
 
+  /* --- 📇 Standard Visitor Card Component (Shared across Views) --- */
+  function renderStandardVisitorCardHtml(v, options = {}) {
+    if (!v) return '';
+    const resolvedInviter = typeof resolveMemberName === 'function' ? resolveMemberName(v.inviter) : (v.inviter || '');
+    const resolvedOrientUser = typeof resolveMemberName === 'function' ? resolveMemberName(v.orientUser) : (v.orientUser || '');
+    const isClickable = options.clickable !== false;
+    const clickAttr = isClickable ? `onclick="openVisitorDetailView('${escapeHtml(v.id)}')"` : '';
+    const dateStr = v.eventDate ? (typeof formatShortDate === 'function' ? formatShortDate(v.eventDate) : v.eventDate.replace(/^\d{4}\//, '')) : '-';
+
+    return `
+      <div class="dash-ap-card" ${clickAttr}>
+        <!-- 上段: ランク + 名前 + 会社/業種 + 参加日 + シェブロン -->
+        <div class="dash-card-main-row">
+          <div class="dash-card-left">
+            ${renderRankBadgeHtml(v.feelAbc, 'large')}
+            <div class="dash-card-info">
+              <div class="dash-card-name-row">
+                <span class="dash-card-name">${escapeHtml(v.name || 'ビジター No.' + v.id)}</span>
+                ${typeof renderRepeatBadgeHtml === 'function' ? renderRepeatBadgeHtml(v) : ''}
+              </div>
+              <div class="dash-card-company">
+                ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-card-right">
+            <span class="dash-card-date-badge">${escapeHtml(dateStr)}</span>
+            <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+        </div>
+
+        <!-- 中段: 紹介者・担当者 (オプション) -->
+        ${(resolvedInviter || resolvedOrientUser) ? `
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+            <div class="dash-card-meta-left text-[11px] text-slate-500">
+              ${resolvedInviter ? `<span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>${escapeHtml(resolvedInviter)}</span>` : ''}
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- 下段: ステータスボタン / アクション状況 -->
+        <div class="dash-card-status-row">
+          ${typeof renderAttendButtonHtml === 'function' ? renderAttendButtonHtml(v.id, v.isAttended) : ''}
+          ${typeof renderJoinedButtonHtml === 'function' ? renderJoinedButtonHtml(v.id, v.isJoined) : ''}
+          ${typeof renderFollowTypeButtonHtml === 'function' ? renderFollowTypeButtonHtml(v.id, v.followType) : ''}
+        </div>
+      </div>
+    `;
+  }
+  window.renderStandardVisitorCardHtml = renderStandardVisitorCardHtml;
+
   function handleError(err) {
     const loading = document.getElementById('loading');
     if (loading) loading.style.display = 'none';

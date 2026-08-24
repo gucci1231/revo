@@ -324,54 +324,30 @@
 
     let html = '';
     filtered.forEach(v => {
-      const feel = parseFeelAbc(v.feelAbc);
-      let feelBadge = '';
-      if (feel === 'A') {
-        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">A</span>';
-      } else if (feel === 'B') {
-        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">B</span>';
-      } else if (feel === 'C') {
-        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">C</span>';
+      if (typeof renderStandardVisitorCardHtml === 'function') {
+        html += renderStandardVisitorCardHtml(v);
+      } else {
+        const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '';
+        html += `
+          <div class="dash-ap-card" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
+            <div class="dash-card-main-row">
+              <div class="dash-card-left">
+                ${renderRankBadgeHtml(v.feelAbc, 'large')}
+                <div class="dash-card-info">
+                  <div class="dash-card-name-row">
+                    <span class="dash-card-name">${escapeHtml(v.name || 'ビジター')}</span>
+                  </div>
+                  <div class="dash-card-company">${escapeHtml(v.company || '')}</div>
+                </div>
+              </div>
+              <div class="dash-card-right">
+                <span class="dash-card-date-badge">${escapeHtml(dateStr)}</span>
+                <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              </div>
+            </div>
+          </div>
+        `;
       }
-
-      const joinStatus = getJoinStatusInfo(v.isJoined);
-      const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '';
-
-      html += `
-        <div class="bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-3.5 shadow-2xs transition-all flex flex-col justify-between cursor-pointer" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
-          <div>
-            <div class="flex items-center justify-between gap-2 mb-1.5">
-              <span class="text-[11px] font-bold text-slate-400 font-mono">
-                ${escapeHtml(dateStr)}
-              </span>
-              <div class="flex items-center gap-1.5">
-                ${feelBadge}
-                <span class="text-[10px] font-extrabold ${joinStatus.cls}">${escapeHtml(joinStatus.label)}</span>
-              </div>
-            </div>
-
-            <div class="mb-2">
-              <div class="text-sm font-black text-slate-900 truncate">
-                ${escapeHtml(v.name || 'ビジター')} <span class="text-xs font-normal text-slate-400">様</span>
-              </div>
-              <div class="text-[11px] text-slate-400 font-bold truncate">
-                ${escapeHtml(v.company || '')} ${v.company && v.profession ? '•' : ''} ${escapeHtml(v.profession || '')}
-              </div>
-            </div>
-
-            ${v.nextActionText ? `
-              <div class="text-[11px] text-slate-600 font-bold truncate bg-slate-50 p-2 rounded-lg border border-slate-100 mb-1">
-                <span class="text-slate-400 font-normal">次:</span> ${escapeHtml(v.nextActionText)}
-              </div>
-            ` : ''}
-          </div>
-
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold">
-            <span>カルテ表示</span>
-            <i class="fa-solid fa-chevron-right text-[10px]"></i>
-          </div>
-        </div>
-      `;
     });
 
     gridEl.innerHTML = html;
