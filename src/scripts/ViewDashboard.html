@@ -528,7 +528,7 @@
     }
 
     gridEl.innerHTML = stages.map(s => `
-      <div class="dash-pipeline-step ${s.cls}" onclick="switchTab('visitors')" title="全ビジター一覧で確認">
+      <div class="dash-pipeline-step ${s.cls}" onclick="switchTab('priority-follow')" title="${s.label}">
         <span class="dash-pipeline-step-label">${s.label}</span>
         <span class="dash-pipeline-step-count">${counts[s.key] || 0}</span>
       </div>
