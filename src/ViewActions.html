@@ -4,7 +4,7 @@
   <!-- 1. トップサマリーKPIカード -->
   <div class="dash-hero-grid grid-3">
     <!-- KPI 1: 進行中 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('pending')" title="進行中アクションに絞り込み">
+    <div class="dash-hero-card cursor-pointer active-kpi-card" id="actions-kpi-card-pending" onclick="setActionsStatusFilter('pending')" title="進行中アクションに絞り込み">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <span class="dash-hero-title">進行中</span>
@@ -19,7 +19,7 @@
     </div>
 
     <!-- KPI 2: 期限超過 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('overdue')" title="期限超過アクションに絞り込み">
+    <div class="dash-hero-card cursor-pointer" id="actions-kpi-card-overdue" onclick="setActionsStatusFilter('overdue')" title="期限超過アクションに絞り込み">
       <div class="dash-hero-split">
         <div class="dash-hero-left flex items-center gap-1.5">
           <span class="dash-hero-title">期限超過</span>
@@ -35,7 +35,7 @@
     </div>
 
     <!-- KPI 3: 完了済 -->
-    <div class="dash-hero-card" onclick="setActionsStatusFilter('completed')" title="完了済実績に絞り込み">
+    <div class="dash-hero-card cursor-pointer" id="actions-kpi-card-completed" onclick="setActionsStatusFilter('completed')" title="完了済実績に絞り込み">
       <div class="dash-hero-split">
         <div class="dash-hero-left">
           <span class="dash-hero-title">完了実績</span>
@@ -52,32 +52,14 @@
 
   <section class="section-card overflow-hidden">
     <!-- ヘッダー ＆ 検索フィルターバー -->
-    <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
-      <!-- セグメントタブ -->
-      <div class="seg-pill-group">
-        <button type="button" class="seg-pill-btn active" id="actions-filter-btn-pending" onclick="setActionsStatusFilter('pending')">
-          進行中 <span id="actions-badge-pending" class="dash-nav-badge">0</span>
-        </button>
-        <button type="button" class="seg-pill-btn" id="actions-filter-btn-overdue" onclick="setActionsStatusFilter('overdue')">
-          ⚠️ 期限超過 <span id="actions-badge-overdue" class="dash-nav-badge danger">0</span>
-        </button>
-        <button type="button" class="seg-pill-btn" id="actions-filter-btn-all" onclick="setActionsStatusFilter('all')">
-          すべて <span id="actions-badge-all" class="dash-nav-badge">0</span>
-        </button>
-        <button type="button" class="seg-pill-btn" id="actions-filter-btn-completed" onclick="setActionsStatusFilter('completed')">
-          ✅ 完了済 <span id="actions-badge-completed" class="dash-nav-badge">0</span>
-        </button>
-      </div>
-
+    <div class="p-4 border-b border-slate-100 flex items-center justify-end gap-2 flex-wrap">
       <!-- 担当者＆検索 -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <select id="actions-assignee-filter" class="form-input text-xs py-1.5 px-2.5 rounded-lg border-slate-200 bg-slate-50" onchange="filterActionsList()" style="width: auto; font-weight: 700;">
-          <option value="">担当者: 全員</option>
-        </select>
-        <div class="relative flex-1 sm:w-48">
-          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-          <input type="text" id="actions-search-input" class="form-input text-xs py-1.5 pl-8 pr-3 rounded-lg border-slate-200 bg-slate-50 w-full" placeholder="検索..." oninput="filterActionsList()">
-        </div>
+      <select id="actions-assignee-filter" class="form-input text-xs py-1.5 px-2.5 rounded-lg border-slate-200 bg-slate-50" onchange="filterActionsList()" style="width: auto; font-weight: 700;">
+        <option value="">担当者: 全員</option>
+      </select>
+      <div class="relative w-48 sm:w-64">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+        <input type="text" id="actions-search-input" class="form-input text-xs py-1.5 pl-8 pr-3 rounded-lg border-slate-200 bg-slate-50 w-full" placeholder="検索..." oninput="filterActionsList()">
       </div>
     </div>
 

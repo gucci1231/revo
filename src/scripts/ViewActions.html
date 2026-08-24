@@ -105,13 +105,13 @@
 
   function setActionsStatusFilter(mode) {
     currentActionsFilter = mode;
-    ['pending', 'overdue', 'all', 'completed'].forEach(m => {
-      const btn = document.getElementById(`actions-filter-btn-${m}`);
-      if (btn) {
+    ['pending', 'overdue', 'completed'].forEach(m => {
+      const card = document.getElementById(`actions-kpi-card-${m}`);
+      if (card) {
         if (m === mode) {
-          btn.classList.add('active');
+          card.classList.add('active-kpi-card');
         } else {
-          btn.classList.remove('active');
+          card.classList.remove('active-kpi-card');
         }
       }
     });
