@@ -2441,12 +2441,13 @@
 @media (min-width: 1024px) {
   .pf-kanban-board {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px;
   }
 }
 
 .pf-kanban-column {
   background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  border: none;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -2469,24 +2470,24 @@
 }
 
 .pf-kanban-column.drag-over {
-  border-color: #3b82f6;
+  border: 1px dashed #3b82f6;
   background: #eff6ff;
 }
 
 .pf-kanban-column-header {
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid transparent;
+  border-bottom: none;
   background: #ffffff;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
-.pf-kanban-col-stagnant .pf-kanban-column-header { border-bottom-color: #cbd5e1; }
-.pf-kanban-col-active .pf-kanban-column-header { border-bottom-color: #bfdbfe; }
-.pf-kanban-col-applying-review .pf-kanban-column-header { border-bottom-color: #a7f3d0; }
+.pf-kanban-col-stagnant .pf-kanban-column-header { }
+.pf-kanban-col-active .pf-kanban-column-header { }
+.pf-kanban-col-applying-review .pf-kanban-column-header { }
 
 .pf-kanban-col-title {
   font-size: 13px;
@@ -2505,12 +2506,12 @@
 }
 
 .pf-kanban-card-list {
-  padding: 10px;
+  padding: 16px;
   overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 20px;
 }
 
 .pf-kanban-card-list::-webkit-scrollbar {
