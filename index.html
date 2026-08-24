@@ -10569,10 +10569,10 @@ window.CelebrationEffect = (function() {
       if (typeof updateVisitorNavUI === 'function') {
         updateVisitorNavUI();
       }
-      return;
+      return Promise.resolve(cachedAllVisitors);
     }
     showTableSkeleton('table-all-visitors', 9, 5);
-    ApiService.call('getAllVisitorsDataApi')
+    return ApiService.call('getAllVisitorsDataApi')
       .then(res => {
         if (res && res.success) {
           cachedAllVisitors = res.visitors || res.list || [];
@@ -10580,9 +10580,14 @@ window.CelebrationEffect = (function() {
           if (typeof updateVisitorNavUI === 'function') {
             updateVisitorNavUI();
           }
+          return cachedAllVisitors;
         }
+        return [];
       })
-      .catch(handleError);
+      .catch(err => {
+        handleError(err);
+        return [];
+      });
   }
 
   function fetchHearingListData(forceRefresh = false) {
@@ -12182,14 +12187,28 @@ window.CelebrationEffect = (function() {
   let isAllMembersSummaryView = false;
 
   function initMemberDashboard(targetMemberName = null) {
-    populateMemberDashDropdown();
+    const promises = [];
     
-    // 全ビジターデータのキャッシュが空なら読み込む
-    if (!cachedAllVisitors || cachedAllVisitors.length === 0) {
-      fetchAllVisitorsData(false, () => {
+    // メンバーマスターデータのキャッシュ確認
+    if ((!cachedFlatMembers || cachedFlatMembers.length === 0) && typeof fetchMembersMasterData === 'function') {
+      promises.push(fetchMembersMasterData(false));
+    }
+
+    // 全ビジターデータのキャッシュ確認
+    if ((!cachedAllVisitors || cachedAllVisitors.length === 0) && typeof fetchAllVisitorsData === 'function') {
+      promises.push(fetchAllVisitorsData(false));
+    }
+
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
+        populateMemberDashDropdown();
+        setupMemberDashboardView(targetMemberName);
+      }).catch(() => {
+        populateMemberDashDropdown();
         setupMemberDashboardView(targetMemberName);
       });
     } else {
+      populateMemberDashDropdown();
       setupMemberDashboardView(targetMemberName);
     }
   }
@@ -16887,17 +16906,28 @@ window.CelebrationEffect = (function() {
   /* --- 👥 Member Master Setting CRUD Controls --- */
   let cachedFlatMembers = [];
 
-  function fetchMembersMasterData() {
-    document.getElementById('loading').style.display = 'flex';
-    ApiService.call('getMemberListApi')
+  function fetchMembersMasterData(showLoadingOverlay = true) {
+    if (showLoadingOverlay) {
+      const loadEl = document.getElementById('loading');
+      if (loadEl) loadEl.style.display = 'flex';
+    }
+    return ApiService.call('getMemberListApi')
       .then(res => {
-        document.getElementById('loading').style.display = 'none';
-        if (res.success) {
+        const loadEl = document.getElementById('loading');
+        if (loadEl) loadEl.style.display = 'none';
+        if (res && res.success) {
           cachedFlatMembers = res.flatMembers || [];
           renderMembersMasterTable(cachedFlatMembers);
+          return cachedFlatMembers;
         }
+        return [];
       })
-      .catch(handleError);
+      .catch(err => {
+        const loadEl = document.getElementById('loading');
+        if (loadEl) loadEl.style.display = 'none';
+        handleError(err);
+        return [];
+      });
   }
 
   function renderMembersMasterTable(members) {

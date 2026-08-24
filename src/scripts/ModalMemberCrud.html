@@ -2,17 +2,28 @@
   /* --- 👥 Member Master Setting CRUD Controls --- */
   let cachedFlatMembers = [];
 
-  function fetchMembersMasterData() {
-    document.getElementById('loading').style.display = 'flex';
-    ApiService.call('getMemberListApi')
+  function fetchMembersMasterData(showLoadingOverlay = true) {
+    if (showLoadingOverlay) {
+      const loadEl = document.getElementById('loading');
+      if (loadEl) loadEl.style.display = 'flex';
+    }
+    return ApiService.call('getMemberListApi')
       .then(res => {
-        document.getElementById('loading').style.display = 'none';
-        if (res.success) {
+        const loadEl = document.getElementById('loading');
+        if (loadEl) loadEl.style.display = 'none';
+        if (res && res.success) {
           cachedFlatMembers = res.flatMembers || [];
           renderMembersMasterTable(cachedFlatMembers);
+          return cachedFlatMembers;
         }
+        return [];
       })
-      .catch(handleError);
+      .catch(err => {
+        const loadEl = document.getElementById('loading');
+        if (loadEl) loadEl.style.display = 'none';
+        handleError(err);
+        return [];
+      });
   }
 
   function renderMembersMasterTable(members) {

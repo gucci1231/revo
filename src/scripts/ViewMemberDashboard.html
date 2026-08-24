@@ -5,14 +5,28 @@
   let isAllMembersSummaryView = false;
 
   function initMemberDashboard(targetMemberName = null) {
-    populateMemberDashDropdown();
+    const promises = [];
     
-    // 全ビジターデータのキャッシュが空なら読み込む
-    if (!cachedAllVisitors || cachedAllVisitors.length === 0) {
-      fetchAllVisitorsData(false, () => {
+    // メンバーマスターデータのキャッシュ確認
+    if ((!cachedFlatMembers || cachedFlatMembers.length === 0) && typeof fetchMembersMasterData === 'function') {
+      promises.push(fetchMembersMasterData(false));
+    }
+
+    // 全ビジターデータのキャッシュ確認
+    if ((!cachedAllVisitors || cachedAllVisitors.length === 0) && typeof fetchAllVisitorsData === 'function') {
+      promises.push(fetchAllVisitorsData(false));
+    }
+
+    if (promises.length > 0) {
+      Promise.all(promises).then(() => {
+        populateMemberDashDropdown();
+        setupMemberDashboardView(targetMemberName);
+      }).catch(() => {
+        populateMemberDashDropdown();
         setupMemberDashboardView(targetMemberName);
       });
     } else {
+      populateMemberDashDropdown();
       setupMemberDashboardView(targetMemberName);
     }
   }

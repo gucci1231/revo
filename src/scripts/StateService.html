@@ -214,10 +214,10 @@
       if (typeof updateVisitorNavUI === 'function') {
         updateVisitorNavUI();
       }
-      return;
+      return Promise.resolve(cachedAllVisitors);
     }
     showTableSkeleton('table-all-visitors', 9, 5);
-    ApiService.call('getAllVisitorsDataApi')
+    return ApiService.call('getAllVisitorsDataApi')
       .then(res => {
         if (res && res.success) {
           cachedAllVisitors = res.visitors || res.list || [];
@@ -225,9 +225,14 @@
           if (typeof updateVisitorNavUI === 'function') {
             updateVisitorNavUI();
           }
+          return cachedAllVisitors;
         }
+        return [];
       })
-      .catch(handleError);
+      .catch(err => {
+        handleError(err);
+        return [];
+      });
   }
 
   function fetchHearingListData(forceRefresh = false) {
