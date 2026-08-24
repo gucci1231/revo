@@ -67,7 +67,6 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-stagnant'), 'Should define stagnant stage col');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-active'), 'Should define active stage col');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-applying-review'), 'Should define applying-review stage col');
-    assert.ok(viewPriorityFollowHtml.includes('pf-mobile-stage-tabs'), 'Should define mobile stage tabs container');
   });
 
   it('contains Kanban rendering and mobile switch functions in ViewPriorityFollow script', () => {

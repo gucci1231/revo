@@ -40,11 +40,19 @@
   function setPriorityFollowMobileStage(stageKey) {
     pfMobileActiveStage = stageKey;
 
-    // タブボタンのアクティブ更新
+    // KPIカード & カラムのアクティブ更新
     const stages = ['stagnant', 'active', 'applying-review'];
     stages.forEach(s => {
+      const card = document.getElementById(`pf-kpi-card-${s}`);
       const btn = document.getElementById(`pf-mobile-tab-${s}`);
       const col = document.getElementById(`pf-col-${s}`);
+      if (card) {
+        if (s === stageKey) {
+          card.classList.add('active-kpi-card');
+        } else {
+          card.classList.remove('active-kpi-card');
+        }
+      }
       if (btn) {
         if (s === stageKey) {
           btn.classList.add('active');

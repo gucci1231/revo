@@ -7072,7 +7072,7 @@ select.form-input, select.form-select {
   <!-- 1. 最優先フォロー 3大ステージ KPIカード -->
   <div class="dash-hero-grid grid-3">
     <!-- KPI 1: 放置 -->
-    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('stagnant')" title="放置ビジターにフォーカス">
+    <div class="dash-hero-card cursor-pointer active-kpi-card" id="pf-kpi-card-stagnant" onclick="setPriorityFollowMobileStage('stagnant')" title="放置ビジターにフォーカス">
       <div class="dash-hero-split">
         <div class="dash-hero-left flex items-center gap-1.5">
           <span class="dash-hero-title">放置</span>
@@ -7088,7 +7088,7 @@ select.form-input, select.form-select {
     </div>
 
     <!-- KPI 2: 検討中 -->
-    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('active')" title="検討中ビジターにフォーカス">
+    <div class="dash-hero-card cursor-pointer" id="pf-kpi-card-active" onclick="setPriorityFollowMobileStage('active')" title="検討中ビジターにフォーカス">
       <div class="dash-hero-split">
         <div class="dash-hero-left flex items-center gap-1.5">
           <span class="dash-hero-title">検討中</span>
@@ -7104,7 +7104,7 @@ select.form-input, select.form-select {
     </div>
 
     <!-- KPI 3: 申込済み -->
-    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('applying-review')" title="申込済み・審査中ビジターにフォーカス">
+    <div class="dash-hero-card cursor-pointer" id="pf-kpi-card-applying-review" onclick="setPriorityFollowMobileStage('applying-review')" title="申込済み・審査中ビジターにフォーカス">
       <div class="dash-hero-split">
         <div class="dash-hero-left flex items-center gap-1.5">
           <span class="dash-hero-title">申込済み</span>
@@ -7165,32 +7165,6 @@ select.form-input, select.form-select {
   <!-- 📌 1. カンバンボード表示 (デフォルト) -->
   <!-- ======================================================== -->
   <div id="pf-kanban-container" class="pf-kanban-view-container">
-
-    <!-- 📱 スマホ用: ステージ切り替えタブバー (横スクロール) -->
-    <div class="pf-mobile-stage-tabs-wrapper lg:hidden mb-3">
-      <div class="pf-mobile-stage-tabs flex gap-1.5 overflow-x-auto p-1 bg-slate-100 rounded-xl" id="pf-mobile-stage-tabs">
-        <button type="button" class="pf-mobile-tab-btn active flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-stagnant" onclick="setPriorityFollowMobileStage('stagnant')">
-          <span class="flex items-center gap-1 text-[11px] text-slate-600 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-slate-400"></span>放置
-          </span>
-          <span id="pf-mobile-count-stagnant" class="text-xs font-black tabular-nums text-slate-800">0</span>
-        </button>
-
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-active" onclick="setPriorityFollowMobileStage('active')">
-          <span class="flex items-center gap-1 text-[11px] text-blue-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>検討中
-          </span>
-          <span id="pf-mobile-count-active" class="text-xs font-black tabular-nums text-slate-800">0</span>
-        </button>
-
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying-review" onclick="setPriorityFollowMobileStage('applying-review')">
-          <span class="flex items-center gap-1 text-[11px] text-emerald-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>申込済み
-          </span>
-          <span id="pf-mobile-count-applying-review" class="text-xs font-black tabular-nums text-slate-800">0</span>
-        </button>
-      </div>
-    </div>
 
     <!-- 🖥️ カンバンボード 3列グリッド (PC: 3列並び / スマホ: タブ連動1列) -->
     <div class="pf-kanban-board" id="pf-kanban-board">
@@ -14617,11 +14591,19 @@ window.CelebrationEffect = (function() {
   function setPriorityFollowMobileStage(stageKey) {
     pfMobileActiveStage = stageKey;
 
-    // タブボタンのアクティブ更新
+    // KPIカード & カラムのアクティブ更新
     const stages = ['stagnant', 'active', 'applying-review'];
     stages.forEach(s => {
+      const card = document.getElementById(`pf-kpi-card-${s}`);
       const btn = document.getElementById(`pf-mobile-tab-${s}`);
       const col = document.getElementById(`pf-col-${s}`);
+      if (card) {
+        if (s === stageKey) {
+          card.classList.add('active-kpi-card');
+        } else {
+          card.classList.remove('active-kpi-card');
+        }
+      }
       if (btn) {
         if (s === stageKey) {
           btn.classList.add('active');
