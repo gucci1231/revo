@@ -559,7 +559,12 @@
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    const validRecords = (cachedDashboardHotRecords || []).filter(r => r.isJoined !== '見送り' && r.isJoined !== 'フォロー終了');
+    const list = Array.isArray(cachedDashboardHotRecords) ? cachedDashboardHotRecords : [];
+    const dedupedRecords = typeof deduplicateVisitorListClient === 'function'
+      ? deduplicateVisitorListClient(list)
+      : list;
+
+    const validRecords = dedupedRecords.filter(r => r.isJoined !== '見送り' && r.isJoined !== 'フォロー終了');
     const todayStr = new Date().toISOString().slice(0, 10);
 
     // 危険度分類とソート

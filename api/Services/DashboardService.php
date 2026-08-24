@@ -86,6 +86,8 @@ class DashboardService {
             }
         }
 
+        // 1. 各申込レコードごとの定例会集計 & 最新アクション紐付け
+        $periodVisitors = [];
         foreach ($visitors as $r) {
             $eDate = trim($r['eventDate']);
             $eTs = strtotime(str_replace('/', '-', $eDate));
@@ -98,9 +100,74 @@ class DashboardService {
             $rawJoin = trim($r['isJoined'] ?? '');
             $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
             $isAttendedBool = ($r['isAttended'] === '参加' || $r['isAttended'] === '済');
+
+            $totalApplyCount++;
+            if ($isJoinedBool) $totalJoinedCount++;
+            if ($isAttendedBool) $totalAttendedCount++;
+            if ($r['hasHearingSheet']) $totalHearingCount++;
+
+            $r['latestActionPlan'] = $apMap[(string)$r['id']] ?? null;
+
+            if ($eDate === $nextThuFull || strpos($eDate, $nextThuStr) !== false) {
+                $nextMeetingVisitors[] = $r;
+            } else if ($eDate === $lastThuFull || strpos($eDate, $lastThuStr) !== false) {
+                $lastMeetingVisitors[] = $r;
+            }
+
+            if ($eDate !== '') {
+                if (!isset($weeklyMap[$eDate])) {
+                    $weeklyMap[$eDate] = [
+                        'date' => $eDate,
+                        'applyCount' => 0,
+                        'attendedCount' => 0,
+                        'joinedCount' => 0,
+                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
+                    ];
+                }
+                $weeklyMap[$eDate]['applyCount']++;
+                if ($isAttendedBool) $weeklyMap[$eDate]['attendedCount']++;
+                if ($isJoinedBool) $weeklyMap[$eDate]['joinedCount']++;
+                $feel = strtoupper(trim($r['feelAbc'] ?? ''));
+                if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
+                    $weeklyMap[$eDate]['feelCounts'][$feel]++;
+                } else {
+                    $weeklyMap[$eDate]['feelCounts']['none']++;
+                }
+
+                $monthKey = substr($eDate, 0, 7);
+                if (preg_match('/^\d{4}[\/\-]\d{2}$/', $monthKey)) {
+                    if (!isset($monthlyMap[$monthKey])) {
+                        $monthlyMap[$monthKey] = [
+                            'month' => $monthKey,
+                            'applyCount' => 0,
+                            'attendedCount' => 0,
+                            'joinedCount' => 0,
+                            'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
+                        ];
+                    }
+                    $monthlyMap[$monthKey]['applyCount']++;
+                    if ($isAttendedBool) $monthlyMap[$monthKey]['attendedCount']++;
+                    if ($isJoinedBool) $monthlyMap[$monthKey]['joinedCount']++;
+                    if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
+                        $monthlyMap[$monthKey]['feelCounts'][$feel]++;
+                    } else {
+                        $monthlyMap[$monthKey]['feelCounts']['none']++;
+                    }
+                }
+            }
+
+            $periodVisitors[] = $r;
+        }
+
+        // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
+        $uniqueVisitors = $this->deduplicateVisitorsList($periodVisitors, $apMap);
+
+        // 3. ユニークビジターに対するパイプライン・最優先フォロー・1ヶ月フォロー集計
+        foreach ($uniqueVisitors as $uv) {
+            $rawJoin = trim($uv['isJoined'] ?? '');
+            $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
             $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了');
 
-            // パイプライン集計
             if ($isJoinedBool) {
                 $pipelineCounts['入会済']++;
             } else if ($rawJoin === '審査' || $rawJoin === 'メンバーシップ審査' || $rawJoin === '審査中') {
@@ -115,29 +182,17 @@ class DashboardService {
                 $pipelineCounts['未']++;
             }
 
-            $totalApplyCount++;
-            if ($isJoinedBool) $totalJoinedCount++;
-            if ($isAttendedBool) $totalAttendedCount++;
-            if ($r['hasHearingSheet']) $totalHearingCount++;
-
-            $r['latestActionPlan'] = $apMap[(string)$r['id']] ?? null;
-
-            $feel = strtoupper(trim($r['feelAbc']));
+            $feel = strtoupper(trim($uv['feelAbc'] ?? ''));
             if ($feel === 'A' && !$isJoinedBool && !$isRejected) {
-                $hotVisitors[] = $r;
+                $hotVisitors[] = $uv;
             }
 
-            if ($eDate === $nextThuFull || strpos($eDate, $nextThuStr) !== false) {
-                $nextMeetingVisitors[] = $r;
-            } else if ($eDate === $lastThuFull || strpos($eDate, $lastThuStr) !== false) {
-                $lastMeetingVisitors[] = $r;
+            $uDate = trim($uv['eventDate'] ?? '');
+            $uTs = strtotime(str_replace('/', '-', $uDate));
+            if ($uTs && $uTs >= $oneMonthAgoTs && !$isJoinedBool && !$isRejected) {
+                $oneMonthFollowupVisitors[] = $uv;
             }
-
-            if ($eTs && $eTs >= $oneMonthAgoTs && !$isJoinedBool && !$isRejected) {
-                $oneMonthFollowupVisitors[] = $r;
-            }
-
-            if ($eDate !== '') {
+        }
                 if (!isset($weeklyMap[$eDate])) {
                     $weeklyMap[$eDate] = [
                         'date' => $eDate,
@@ -384,5 +439,109 @@ class DashboardService {
         $daysSinceThu = ($dayOfWeek - 4 + 7) % 7;
         if ($daysSinceThu === 0) $daysSinceThu = 7;
         return date('Y/m/d', strtotime("-{$daysSinceThu} days", $ts));
+    }
+
+    /**
+     * 重複ビジター（同一人物の複数回参加）を名寄せして1件に統合
+     */
+    private function deduplicateVisitorsList(array $list, array $apMap = []): array {
+        if (empty($list)) return [];
+
+        $result = [];
+        $emailMap = [];
+        $nameMap = [];
+        $furiganaMap = [];
+
+        foreach ($list as $r) {
+            $rawName = trim($r['name'] ?? '');
+            $isGeneric = ($rawName === '' || preg_match('/^ビジター\s*(no\.?\s*\d+)?$/i', $rawName));
+            $emailKey = !empty($r['email']) ? $this->normalizeKey($r['email']) : '';
+            $nameKey = !$isGeneric ? $this->normalizeKey($rawName) : '';
+            $furiganaKey = (!empty($r['furigana']) && !$isGeneric) ? $this->normalizeKey($r['furigana']) : '';
+
+            $matchIdx = null;
+            if ($emailKey !== '' && isset($emailMap[$emailKey])) {
+                $matchIdx = $emailMap[$emailKey];
+            } else if ($nameKey !== '' && isset($nameMap[$nameKey])) {
+                $matchIdx = $nameMap[$nameKey];
+            } else if ($furiganaKey !== '' && isset($furiganaMap[$furiganaKey])) {
+                $matchIdx = $furiganaMap[$furiganaKey];
+            }
+
+            if ($matchIdx !== null) {
+                $existing = &$result[$matchIdx];
+                if (!isset($existing['allIds'])) $existing['allIds'] = [(string)$existing['id']];
+                if (!in_array((string)$r['id'], $existing['allIds'], true)) {
+                    $existing['allIds'][] = (string)$r['id'];
+                }
+                $existing['visitCount'] = count($existing['allIds']);
+
+                // 最新日程のレコードを基本情報として優先
+                $isNewer = (!empty($r['eventDate']) && (empty($existing['eventDate']) || $r['eventDate'] >= $existing['eventDate']));
+                if ($isNewer) {
+                    $existing['id'] = $r['id'];
+                    $existing['isAttended'] = $r['isAttended'] ?? '未';
+                    $existing['eventDate'] = $r['eventDate'];
+                    if (!empty($r['inviter'])) $existing['inviter'] = $r['inviter'];
+                    if (!empty($r['profession'])) $existing['profession'] = $r['profession'];
+                    if (!empty($r['company'])) $existing['company'] = $r['company'];
+                    if (!empty($r['remarks'])) $existing['remarks'] = $r['remarks'];
+                }
+
+                // 入会ステータスはより進んでいる方を採用
+                $curPriority = $this->getJoinPriority($existing['isJoined'] ?? '');
+                $newPriority = $this->getJoinPriority($r['isJoined'] ?? '');
+                if ($newPriority > $curPriority) {
+                    $existing['isJoined'] = $r['isJoined'];
+                }
+
+                // 感触ランクは最高評価（A > B > C）を採用
+                $curFeel = strtoupper(trim($existing['feelAbc'] ?? ''));
+                $newFeel = strtoupper(trim($r['feelAbc'] ?? ''));
+                if ($newFeel === 'A' || ($newFeel === 'B' && $curFeel !== 'A') || ($newFeel === 'C' && empty($curFeel))) {
+                    $existing['feelAbc'] = $newFeel;
+                }
+
+                // 最新アクションプランの紐付け
+                if (!empty($apMap[(string)$r['id']])) {
+                    $existing['latestActionPlan'] = $apMap[(string)$r['id']];
+                }
+            } else {
+                $item = $r;
+                $item['allIds'] = [(string)$item['id']];
+                $item['visitCount'] = 1;
+                $item['feelAbc'] = strtoupper(trim($item['feelAbc'] ?? ''));
+                if (!empty($apMap[(string)$item['id']])) {
+                    $item['latestActionPlan'] = $apMap[(string)$item['id']];
+                }
+                $idx = count($result);
+                $result[] = $item;
+
+                if ($emailKey !== '') $emailMap[$emailKey] = $idx;
+                if ($nameKey !== '') $nameMap[$nameKey] = $idx;
+                if ($furiganaKey !== '') $furiganaMap[$furiganaKey] = $idx;
+            }
+        }
+
+        return $result;
+    }
+
+    private function normalizeKey(?string $str): string {
+        if (!$str) return '';
+        $s = mb_convert_kana($str, 'KVas', 'UTF-8');
+        $s = mb_convert_kana($s, 'c', 'UTF-8');
+        $s = preg_replace('/[・·\.\,\-\_\s\x{3000}\t\r\n]+/u', '', $s);
+        return mb_strtolower($s, 'UTF-8');
+    }
+
+    private function getJoinPriority(string $status): int {
+        switch ($status) {
+            case '入会済': case '済': case '入会': return 5;
+            case '審査': case 'メンバーシップ審査': case '審査中': return 4;
+            case '入金待ち': return 3;
+            case '申込書提出': return 2;
+            case '検討中': return 1;
+            default: return 0;
+        }
     }
 }
