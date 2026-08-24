@@ -6,49 +6,44 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
   const viewPriorityFollowHtml = fs.readFileSync(path.join(__dirname, '../../src/ViewPriorityFollow.html'), 'utf8');
   const scriptPfHtml = fs.readFileSync(path.join(__dirname, '../../src/scripts/ViewPriorityFollow.html'), 'utf8');
 
-  // ステージング分類テストロジック（クライアント側実装の仕様検証）
+  // ステージング分類テストロジック（クライアント側実装の仕様検証: 3ステージ）
   function categorizeVisitorToStage(v) {
     const isJoined = v.isJoined || '未';
 
     if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
-      return 'stage-review'; // ④ 審査
+      return 'stage-review'; // ③ 審査
     }
-    if (isJoined === '申込書提出' || isJoined === '入金待ち') {
-      return 'stage-applying-payment'; // ③ 申込提出・入金待ち
+    if (isJoined === '入金待ち') {
+      return 'stage-payment'; // ② 入金待ち
     }
-    if (isJoined === '検討中') {
-      return 'stage-active'; // ② 検討中
+    if (isJoined === '申込書提出' || isJoined === '申込') {
+      return 'stage-applying'; // ① 申込提出
     }
-    return 'stage-stagnant'; // ① 放置
+    return null; // カンバン対象外（未・検討中等）
   }
 
-  it('correctly categorizes visitors into 4 Kanban stages', () => {
-    // 1. 放置: ステータス未
-    const visitor1 = { id: '1', name: '山田', feelAbc: 'A', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor1), 'stage-stagnant');
+  it('correctly categorizes visitors into 3 Kanban stages', () => {
+    // 1. 申込提出: 申込書提出 / 申込
+    const visitor1 = { id: '1', name: '鈴木', feelAbc: 'A', isJoined: '申込書提出', pendingActionCount: 1, overdueActionCount: 0 };
+    assert.strictEqual(categorizeVisitorToStage(visitor1), 'stage-applying');
 
-    // 1. 放置: ステータス未（アクションありでも放置/未着手ステージ）
-    const visitor2 = { id: '2', name: '田中', feelAbc: 'A', isJoined: '未', pendingActionCount: 1, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor2), 'stage-stagnant');
+    // 2. 入金待ち: 入金待ち
+    const visitor2 = { id: '2', name: '高橋', feelAbc: 'A', isJoined: '入金待ち', pendingActionCount: 0, overdueActionCount: 0 };
+    assert.strictEqual(categorizeVisitorToStage(visitor2), 'stage-payment');
 
-    // 2. 検討中: ステータス検討中
-    const visitor3 = { id: '3', name: '佐藤', feelAbc: 'B', isJoined: '検討中', pendingActionCount: 1, overdueActionCount: 1 };
-    assert.strictEqual(categorizeVisitorToStage(visitor3), 'stage-active');
+    // 3. 審査: メンバーシップ審査 / 審査
+    const visitor3 = { id: '3', name: '伊藤', feelAbc: 'A', isJoined: 'メンバーシップ審査', pendingActionCount: 0, overdueActionCount: 0 };
+    assert.strictEqual(categorizeVisitorToStage(visitor3), 'stage-review');
 
-    // 3. 申込提出・入金待ち: 申込書提出
-    const visitor4 = { id: '4', name: '鈴木', feelAbc: 'A', isJoined: '申込書提出', pendingActionCount: 1, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor4), 'stage-applying-payment');
+    const visitor4 = { id: '4', name: '渡辺', feelAbc: 'A', isJoined: '審査', pendingActionCount: 0, overdueActionCount: 0 };
+    assert.strictEqual(categorizeVisitorToStage(visitor4), 'stage-review');
 
-    // 3. 申込提出・入金待ち: 入金待ち
-    const visitor5 = { id: '5', name: '高橋', feelAbc: 'A', isJoined: '入金待ち', pendingActionCount: 0, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor5), 'stage-applying-payment');
-
-    // 4. 審査: メンバーシップ審査
-    const visitor6 = { id: '6', name: '伊藤', feelAbc: 'A', isJoined: 'メンバーシップ審査', pendingActionCount: 0, overdueActionCount: 0 };
-    assert.strictEqual(categorizeVisitorToStage(visitor6), 'stage-review');
+    // 対象外
+    const visitor5 = { id: '5', name: '山田', feelAbc: 'A', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0 };
+    assert.strictEqual(categorizeVisitorToStage(visitor5), null);
   });
 
-  it('sorts overdue visitors to the top of active stage', () => {
+  it('sorts overdue visitors to the top of stage', () => {
     const items = [
       { id: '1', name: '通常A', pendingActionCount: 1, overdueActionCount: 0, eventDate: '2026-08-20' },
       { id: '2', name: '超過B', pendingActionCount: 1, overdueActionCount: 1, eventDate: '2026-08-10' },
@@ -66,11 +61,10 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
     assert.strictEqual(sorted[1].id, '3', 'Newer date must come before older date');
   });
 
-  it('contains Kanban board HTML elements in ViewPriorityFollow.html', () => {
+  it('contains 3-column Kanban board HTML elements in ViewPriorityFollow.html', () => {
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-board'), 'Should define pf-kanban-board');
-    assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-stagnant'), 'Should define stagnant stage col');
-    assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-active'), 'Should define active stage col');
-    assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-applying-payment'), 'Should define applying/payment stage col');
+    assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-applying'), 'Should define applying stage col');
+    assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-payment'), 'Should define payment stage col');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-review'), 'Should define review stage col');
     assert.ok(viewPriorityFollowHtml.includes('pf-mobile-stage-tabs'), 'Should define mobile stage tabs container');
   });

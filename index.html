@@ -3751,7 +3751,7 @@ select.form-input, select.form-select {
 
 @media (min-width: 1024px) {
   .pf-kanban-board {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -3795,9 +3795,8 @@ select.form-input, select.form-select {
   border-top-right-radius: 15px;
 }
 
-.pf-kanban-col-stagnant .pf-kanban-column-header { border-bottom-color: #cbd5e1; }
-.pf-kanban-col-active .pf-kanban-column-header { border-bottom-color: #bfdbfe; }
-.pf-kanban-col-applying-payment .pf-kanban-column-header { border-bottom-color: #a7f3d0; }
+.pf-kanban-col-applying .pf-kanban-column-header { border-bottom-color: #bfdbfe; }
+.pf-kanban-col-payment .pf-kanban-column-header { border-bottom-color: #fde68a; }
 .pf-kanban-col-review .pf-kanban-column-header { border-bottom-color: #a7f3d0; }
 
 .pf-kanban-col-title {
@@ -6402,28 +6401,21 @@ select.form-input, select.form-select {
     <!-- 📱 スマホ用: ステージ切り替えタブバー (横スクロール) -->
     <div class="pf-mobile-stage-tabs-wrapper lg:hidden mb-3">
       <div class="pf-mobile-stage-tabs flex gap-1.5 overflow-x-auto p-1 bg-slate-100 rounded-xl" id="pf-mobile-stage-tabs">
-        <button type="button" class="pf-mobile-tab-btn active flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-stagnant" onclick="setPriorityFollowMobileStage('stagnant')">
-          <span class="flex items-center gap-1 text-[11px] text-slate-600 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-slate-400"></span>放置
-          </span>
-          <span id="pf-mobile-count-stagnant" class="text-xs font-black tabular-nums text-slate-800">0</span>
-        </button>
-
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-active" onclick="setPriorityFollowMobileStage('active')">
+        <button type="button" class="pf-mobile-tab-btn active flex-1 min-w-[90px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying" onclick="setPriorityFollowMobileStage('applying')">
           <span class="flex items-center gap-1 text-[11px] text-blue-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>検討中
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>申込提出
           </span>
-          <span id="pf-mobile-count-active" class="text-xs font-black tabular-nums text-slate-800">0</span>
+          <span id="pf-mobile-count-applying" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
 
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying-payment" onclick="setPriorityFollowMobileStage('applying-payment')">
-          <span class="flex items-center gap-1 text-[11px] text-emerald-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>申込・入金
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[90px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-payment" onclick="setPriorityFollowMobileStage('payment')">
+          <span class="flex items-center gap-1 text-[11px] text-amber-700 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>入金待ち
           </span>
-          <span id="pf-mobile-count-applying-payment" class="text-xs font-black tabular-nums text-slate-800">0</span>
+          <span id="pf-mobile-count-payment" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
 
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-review" onclick="setPriorityFollowMobileStage('review')">
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[90px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-review" onclick="setPriorityFollowMobileStage('review')">
           <span class="flex items-center gap-1 text-[11px] text-emerald-700 whitespace-nowrap">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>審査
           </span>
@@ -6432,46 +6424,34 @@ select.form-input, select.form-select {
       </div>
     </div>
 
-    <!-- 🖥️ カンバンボード 4列グリッド (PC: 4列並び / スマホ: タブ連動1列) -->
+    <!-- 🖥️ カンバンボード 3列グリッド (PC: 3列並び / スマホ: タブ連動1列) -->
     <div class="pf-kanban-board" id="pf-kanban-board">
 
-      <!-- カラム 1: ⚪ 放置 (グレー) -->
-      <div class="pf-kanban-column pf-kanban-col-stagnant" id="pf-col-stagnant" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'stagnant')">
-        <div class="pf-kanban-column-header">
-          <div class="pf-kanban-col-title text-slate-700">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-            <span>放置</span>
-          </div>
-          <span class="pf-kanban-col-count bg-slate-100 text-slate-700" id="pf-kanban-count-stagnant">0</span>
-        </div>
-        <div class="pf-kanban-card-list" id="pf-kanban-list-stagnant"></div>
-      </div>
-
-      <!-- カラム 2: 🔵 検討中 (ブルー) -->
-      <div class="pf-kanban-column pf-kanban-col-active" id="pf-col-active" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'active')">
+      <!-- カラム 1: 🔵 申込提出 (ブルー) -->
+      <div class="pf-kanban-column pf-kanban-col-applying" id="pf-col-applying" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'applying')">
         <div class="pf-kanban-column-header">
           <div class="pf-kanban-col-title text-blue-700">
             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-            <span>検討中</span>
+            <span>申込提出</span>
           </div>
-          <span class="pf-kanban-col-count bg-blue-100 text-blue-800" id="pf-kanban-count-active">0</span>
+          <span class="pf-kanban-col-count bg-blue-100 text-blue-800" id="pf-kanban-count-applying">0</span>
         </div>
-        <div class="pf-kanban-card-list" id="pf-kanban-list-active"></div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-applying"></div>
       </div>
 
-      <!-- カラム 3: 🟢 申込提出・入金待ち (グリーン) -->
-      <div class="pf-kanban-column pf-kanban-col-applying-payment" id="pf-col-applying-payment" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'applying-payment')">
+      <!-- カラム 2: 🟡 入金待ち (アンバー/イエロー) -->
+      <div class="pf-kanban-column pf-kanban-col-payment" id="pf-col-payment" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'payment')">
         <div class="pf-kanban-column-header">
-          <div class="pf-kanban-col-title text-emerald-700">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span>申込提出・入金待ち</span>
+          <div class="pf-kanban-col-title text-amber-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span>入金待ち</span>
           </div>
-          <span class="pf-kanban-col-count bg-emerald-100 text-emerald-800" id="pf-kanban-count-applying-payment">0</span>
+          <span class="pf-kanban-col-count bg-amber-100 text-amber-800" id="pf-kanban-count-payment">0</span>
         </div>
-        <div class="pf-kanban-card-list" id="pf-kanban-list-applying-payment"></div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-payment"></div>
       </div>
 
-      <!-- カラム 4: 🟢 審査 (グリーン) -->
+      <!-- カラム 3: 🟢 審査 (エメラルドグリーン) -->
       <div class="pf-kanban-column pf-kanban-col-review" id="pf-col-review" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'review')">
         <div class="pf-kanban-column-header">
           <div class="pf-kanban-col-title text-emerald-700">
@@ -11719,7 +11699,7 @@ window.CelebrationEffect = (function() {
   const PF_PAGE_SIZE = 50;
   let selectedPfVisitorId = null;
   let pfViewMode = 'kanban'; // 'kanban' | 'list'
-  let pfMobileActiveStage = 'stagnant'; // 'stagnant' | 'active' | 'applying-payment' | 'review'
+  let pfMobileActiveStage = 'applying'; // 'applying' | 'payment' | 'review'
 
   // モバイル用スワイプ追跡
   let pfTouchStartX = 0;
@@ -11753,7 +11733,7 @@ window.CelebrationEffect = (function() {
     pfMobileActiveStage = stageKey;
 
     // タブボタンのアクティブ更新
-    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    const stages = ['applying', 'payment', 'review'];
     stages.forEach(s => {
       const btn = document.getElementById(`pf-mobile-tab-${s}`);
       const col = document.getElementById(`pf-col-${s}`);
@@ -11942,12 +11922,11 @@ window.CelebrationEffect = (function() {
       return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
     });
 
-    // 4ステージへの自動分類 (入会ステータスに完全連動)
+    // 3ステージへの自動分類 (申込提出・入金待ち・審査)
     const stageItems = {
-      'stagnant': [],           // ① 未対応
-      'active': [],             // ② 検討中
-      'applying-payment': [],   // ③ 申込提出・入金待ち
-      'review': []              // ④ 審査
+      'applying': [],   // ① 申込提出
+      'payment': [],    // ② 入金待ち
+      'review': []      // ③ 審査
     };
 
     listToRender.forEach(v => {
@@ -11955,17 +11934,15 @@ window.CelebrationEffect = (function() {
 
       if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
         stageItems['review'].push(v);
-      } else if (isJoined === '申込書提出' || isJoined === '入金待ち') {
-        stageItems['applying-payment'].push(v);
-      } else if (isJoined === '検討中') {
-        stageItems['active'].push(v);
-      } else {
-        stageItems['stagnant'].push(v);
+      } else if (isJoined === '入金待ち') {
+        stageItems['payment'].push(v);
+      } else if (isJoined === '申込書提出' || isJoined === '申込') {
+        stageItems['applying'].push(v);
       }
     });
 
     // 各ステージ内ソート: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
-    ['stagnant', 'active', 'applying-payment', 'review'].forEach(key => {
+    ['applying', 'payment', 'review'].forEach(key => {
       stageItems[key].sort((a, b) => {
         const oA = Number(a.overdueActionCount) || 0;
         const oB = Number(b.overdueActionCount) || 0;
@@ -11975,7 +11952,7 @@ window.CelebrationEffect = (function() {
     });
 
     // カウントバッジ更新 (PC & Mobile)
-    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    const stages = ['applying', 'payment', 'review'];
     stages.forEach(key => {
       const count = stageItems[key].length;
       const pcCountEl = document.getElementById(`pf-kanban-count-${key}`);
@@ -12188,12 +12165,11 @@ window.CelebrationEffect = (function() {
     const vid = e.dataTransfer ? (e.dataTransfer.getData('text/plain') || draggedPfVisitorId) : draggedPfVisitorId;
     if (!vid) return;
 
-    // ステージ移動に応じた入会ステータス更新マッピング
+    // ステージ移動に応じた入会ステータス更新マッピング (3ステージ)
     const stageStatusMap = {
-      'stagnant': '未',
-      'active': '検討中',
-      'applying-payment': '申込書提出',
-      'review': 'メンバーシップ審査'
+      'applying': '申込書提出',
+      'payment': '入金待ち',
+      'review': '審査'
     };
 
     const newStatus = stageStatusMap[targetStage];
@@ -12227,7 +12203,7 @@ window.CelebrationEffect = (function() {
   function handlePfSwipe() {
     const swipeThreshold = 50;
     const diff = pfTouchStartX - pfTouchEndX;
-    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    const stages = ['applying', 'payment', 'review'];
     const currentIndex = stages.indexOf(pfMobileActiveStage);
     if (currentIndex === -1) return;
 
