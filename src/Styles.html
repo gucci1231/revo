@@ -3444,6 +3444,169 @@ select.form-input, select.form-select {
   width: 100%;
 }
 
+/* --- 📌 Priority Follow Kanban Board Styles --- */
+.pf-kanban-view-container {
+  width: 100%;
+}
+
+.pf-mobile-tab-btn {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.pf-mobile-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.pf-kanban-board {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .pf-kanban-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.pf-kanban-column {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  max-height: calc(100vh - 180px);
+  overflow: hidden;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* スマホ表示時: 非アクティブ列は隠す */
+@media (max-width: 1023px) {
+  .pf-kanban-column {
+    display: none;
+    min-height: 380px;
+    max-height: none;
+  }
+  .pf-kanban-column.is-mobile-active {
+    display: flex;
+  }
+}
+
+.pf-kanban-column.drag-over {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.pf-kanban-column-header {
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  background: #ffffff;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.pf-kanban-col-stagnant .pf-kanban-column-header { border-bottom-color: #fde68a; }
+.pf-kanban-col-active .pf-kanban-column-header { border-bottom-color: #bfdbfe; }
+.pf-kanban-col-applying-payment .pf-kanban-column-header { border-bottom-color: #e9d5ff; }
+.pf-kanban-col-review .pf-kanban-column-header { border-bottom-color: #fed7aa; }
+
+.pf-kanban-col-title {
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-kanban-col-count {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 12px;
+  line-height: 1;
+}
+
+.pf-kanban-card-list {
+  padding: 10px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-kanban-card-list::-webkit-scrollbar {
+  width: 5px;
+}
+.pf-kanban-card-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* カンバンカード本体 */
+.pf-kanban-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: grab;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  user-select: none;
+}
+
+.pf-kanban-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.06);
+}
+
+.pf-kanban-card:active {
+  cursor: grabbing;
+}
+
+.pf-kanban-card.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.97);
+}
+
+.pf-kanban-card.is-overdue-card {
+  border-left: 4px solid #ef4444;
+}
+
+.pf-kanban-empty-placeholder {
+  text-align: center;
+  padding: 36px 12px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.5);
+}
+
 .pf-master-panel {
   width: 100%;
   margin-bottom: 0;

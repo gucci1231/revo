@@ -3494,6 +3494,169 @@ select.form-input, select.form-select {
   width: 100%;
 }
 
+/* --- 📌 Priority Follow Kanban Board Styles --- */
+.pf-kanban-view-container {
+  width: 100%;
+}
+
+.pf-mobile-tab-btn {
+  background: transparent;
+  color: #64748b;
+  border: 1px solid transparent;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.pf-mobile-tab-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.pf-kanban-board {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  width: 100%;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .pf-kanban-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.pf-kanban-column {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+  max-height: calc(100vh - 180px);
+  overflow: hidden;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* スマホ表示時: 非アクティブ列は隠す */
+@media (max-width: 1023px) {
+  .pf-kanban-column {
+    display: none;
+    min-height: 380px;
+    max-height: none;
+  }
+  .pf-kanban-column.is-mobile-active {
+    display: flex;
+  }
+}
+
+.pf-kanban-column.drag-over {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.pf-kanban-column-header {
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  background: #ffffff;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+}
+
+.pf-kanban-col-stagnant .pf-kanban-column-header { border-bottom-color: #fde68a; }
+.pf-kanban-col-active .pf-kanban-column-header { border-bottom-color: #bfdbfe; }
+.pf-kanban-col-applying-payment .pf-kanban-column-header { border-bottom-color: #e9d5ff; }
+.pf-kanban-col-review .pf-kanban-column-header { border-bottom-color: #fed7aa; }
+
+.pf-kanban-col-title {
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pf-kanban-col-count {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 12px;
+  line-height: 1;
+}
+
+.pf-kanban-card-list {
+  padding: 10px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-kanban-card-list::-webkit-scrollbar {
+  width: 5px;
+}
+.pf-kanban-card-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+/* カンバンカード本体 */
+.pf-kanban-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: grab;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  user-select: none;
+}
+
+.pf-kanban-card:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.06);
+}
+
+.pf-kanban-card:active {
+  cursor: grabbing;
+}
+
+.pf-kanban-card.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.97);
+}
+
+.pf-kanban-card.is-overdue-card {
+  border-left: 4px solid #ef4444;
+}
+
+.pf-kanban-empty-placeholder {
+  text-align: center;
+  padding: 36px 12px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.5);
+}
+
 .pf-master-panel {
   width: 100%;
   margin-bottom: 0;
@@ -5965,35 +6128,151 @@ select.form-input, select.form-select {
 
 </div>
 
-    <!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価 2カラム Master-Detail) -->
+    <!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価 カンバンボード ＆ リスト Master-Detail) -->
 <div id="view-priority-follow" class="view-content">
-  <div class="pf-2col-layout">
+
+  <!-- 最優先フォロー トップヘッダー ＆ コントロールバー -->
+  <div class="section-card p-3.5 mb-3.5 bg-white border border-slate-200">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      
+      <!-- タイトル ＆ 感触フィルター -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <h2 class="section-title text-base font-bold text-slate-800 m-0 flex items-center gap-1.5">
+          <i class="fa-solid fa-fire text-rose-600"></i> 最優先フォロー
+        </h2>
+        <span id="pf-total-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-100 text-slate-700">0</span>
+
+        <!-- 感触フィルター (ALL / A / B) -->
+        <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg">
+          <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')">ALL</button>
+          <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')">A</button>
+          <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')">B</button>
+        </div>
+      </div>
+
+      <!-- 検索ボックス ＆ 表示切替トグル (カンバン / リスト) -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1 md:w-60">
+          <input type="text" id="search-priority-follow-input" class="search-box w-full text-xs py-1.5 pl-3" placeholder="🔍 ビジター・担当者検索..." onkeyup="filterPriorityFollowTable()">
+        </div>
+        
+        <!-- ビュー切り替えトグル (Kanban / List) -->
+        <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg shrink-0" id="pf-view-mode-group">
+          <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold flex items-center gap-1" id="pf-mode-btn-kanban" onclick="togglePfViewMode('kanban')" title="カンバンボード表示">
+            <i class="fa-solid fa-table-columns"></i>
+            <span class="hidden sm:inline">ボード</span>
+          </button>
+          <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold flex items-center gap-1" id="pf-mode-btn-list" onclick="togglePfViewMode('list')" title="リスト・詳細カルテ表示">
+            <i class="fa-solid fa-list-ul"></i>
+            <span class="hidden sm:inline">リスト</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 📌 1. カンバンボード表示 (デフォルト) -->
+  <!-- ======================================================== -->
+  <div id="pf-kanban-container" class="pf-kanban-view-container">
+
+    <!-- 📱 スマホ用: ステージ切り替えタブバー (横スクロール) -->
+    <div class="pf-mobile-stage-tabs-wrapper lg:hidden mb-3">
+      <div class="pf-mobile-stage-tabs flex gap-1.5 overflow-x-auto p-1 bg-slate-100 rounded-xl" id="pf-mobile-stage-tabs">
+        <button type="button" class="pf-mobile-tab-btn active flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-stagnant" onclick="setPriorityFollowMobileStage('stagnant')">
+          <span class="flex items-center gap-1 text-[11px] text-amber-700 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>未設定
+          </span>
+          <span id="pf-mobile-count-stagnant" class="text-xs font-black tabular-nums text-slate-800">0</span>
+        </button>
+
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-active" onclick="setPriorityFollowMobileStage('active')">
+          <span class="flex items-center gap-1 text-[11px] text-blue-700 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>進行中・超過
+          </span>
+          <span id="pf-mobile-count-active" class="text-xs font-black tabular-nums text-slate-800">0</span>
+        </button>
+
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying-payment" onclick="setPriorityFollowMobileStage('applying-payment')">
+          <span class="flex items-center gap-1 text-[11px] text-purple-700 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span>申込・入金
+          </span>
+          <span id="pf-mobile-count-applying-payment" class="text-xs font-black tabular-nums text-slate-800">0</span>
+        </button>
+
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-review" onclick="setPriorityFollowMobileStage('review')">
+          <span class="flex items-center gap-1 text-[11px] text-orange-700 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span>審査
+          </span>
+          <span id="pf-mobile-count-review" class="text-xs font-black tabular-nums text-slate-800">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 🖥️ カンバンボード 4列グリッド (PC: 4列並び / スマホ: タブ連動1列) -->
+    <div class="pf-kanban-board" id="pf-kanban-board">
+
+      <!-- カラム 1: 🟡 未設定 -->
+      <div class="pf-kanban-column pf-kanban-col-stagnant" id="pf-col-stagnant" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'stagnant')">
+        <div class="pf-kanban-column-header">
+          <div class="pf-kanban-col-title text-amber-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+            <span>未設定</span>
+          </div>
+          <span class="pf-kanban-col-count bg-amber-100 text-amber-800" id="pf-kanban-count-stagnant">0</span>
+        </div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-stagnant"></div>
+      </div>
+
+      <!-- カラム 2: 🔵 進行中・超過 -->
+      <div class="pf-kanban-column pf-kanban-col-active" id="pf-col-active" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'active')">
+        <div class="pf-kanban-column-header">
+          <div class="pf-kanban-col-title text-blue-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <span>進行中・超過</span>
+          </div>
+          <span class="pf-kanban-col-count bg-blue-100 text-blue-800" id="pf-kanban-count-active">0</span>
+        </div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-active"></div>
+      </div>
+
+      <!-- カラム 3: 🟣 申込提出・入金待ち -->
+      <div class="pf-kanban-column pf-kanban-col-applying-payment" id="pf-col-applying-payment" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'applying-payment')">
+        <div class="pf-kanban-column-header">
+          <div class="pf-kanban-col-title text-purple-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+            <span>申込提出・入金待ち</span>
+          </div>
+          <span class="pf-kanban-col-count bg-purple-100 text-purple-800" id="pf-kanban-count-applying-payment">0</span>
+        </div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-applying-payment"></div>
+      </div>
+
+      <!-- カラム 4: 🟠 審査 -->
+      <div class="pf-kanban-column pf-kanban-col-review" id="pf-col-review" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'review')">
+        <div class="pf-kanban-column-header">
+          <div class="pf-kanban-col-title text-orange-700">
+            <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+            <span>審査</span>
+          </div>
+          <span class="pf-kanban-col-count bg-orange-100 text-orange-800" id="pf-kanban-count-review">0</span>
+        </div>
+        <div class="pf-kanban-card-list" id="pf-kanban-list-review"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- 📋 2. リスト表示 (従来の 2カラム Master-Detail) -->
+  <!-- ======================================================== -->
+  <div id="pf-list-container" class="pf-2col-layout hidden">
     
     <!-- 左カラム: 最優先フォロー名簿パネル (Master List) -->
     <div class="pf-master-panel section-card">
-      <div class="section-header flex-col gap-2.5 p-4 bg-white">
-        <div class="flex items-center justify-between gap-2 w-full">
-          <div class="flex items-center gap-2">
-            <h2 class="section-title text-base font-bold text-slate-800 m-0 flex items-center gap-1.5">
-              <i class="fa-solid fa-fire text-rose-600"></i> 最優先フォロー
-            </h2>
-          </div>
-          <span id="pf-total-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-100 text-slate-700">0</span>
-        </div>
-
-        <!-- 1行目: 感触フィルター (ALL/A/B) + 検索ボックス -->
-        <div class="flex items-center gap-2 w-full">
-          <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
-            <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')">ALL</button>
-            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')">A</button>
-            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')">B</button>
-          </div>
-          <div class="relative flex-1">
-            <input type="text" id="search-priority-follow-input" class="search-box w-full text-xs py-1.5 pl-3" placeholder="🔍 検索..." onkeyup="filterPriorityFollowTable()">
-          </div>
-        </div>
-
-        <!-- 2行目: アクション状況スマートセグメント (全件 / 🔴 超過 / 🟡 未設定 / 🔵 進行中) -->
+      <div class="section-header flex-col gap-2 p-3 bg-white">
+        <!-- アクション状況スマートセグメント (全件 / 🔴 超過 / 🟡 未設定 / 🔵 進行中) -->
         <div class="w-full overflow-x-auto pb-0.5">
           <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg w-full" id="pf-action-filter-group">
             <button type="button" class="tab-btn active flex-1 py-1 text-xs font-bold text-center" id="pf-action-filter-all" onclick="setPriorityFollowActionFilter('ALL')">
@@ -6040,6 +6319,7 @@ select.form-input, select.form-select {
     </div>
 
   </div>
+
 </div>
 
     <!-- VIEW 2: ビジター全一覧 (CRUD統合管理 - Apple Minimal & Clean) -->
@@ -10712,13 +10992,68 @@ window.CelebrationEffect = (function() {
 </script>
 
 <script>
-  /* --- VIEW 2: Priority Follow 2-Column Master-Detail View Controller --- */
+  /* --- VIEW 2: Priority Follow Kanban & List View Controller --- */
   let currentPfGradeFilter = 'ALL';
   let currentPfActionFilter = 'ALL'; // 'ALL' | 'STAGNANT' | 'OVERDUE' | 'ACTIVE'
   let filteredPfVisitors = [];
   let pfCurrentPage = 1;
   const PF_PAGE_SIZE = 50;
   let selectedPfVisitorId = null;
+  let pfViewMode = 'kanban'; // 'kanban' | 'list'
+  let pfMobileActiveStage = 'stagnant'; // 'stagnant' | 'active' | 'applying-payment' | 'review'
+
+  // モバイル用スワイプ追跡
+  let pfTouchStartX = 0;
+  let pfTouchEndX = 0;
+
+  function togglePfViewMode(mode) {
+    pfViewMode = mode;
+    try {
+      localStorage.setItem('pf_view_mode', mode);
+    } catch(e) {}
+
+    const btnKanban = document.getElementById('pf-mode-btn-kanban');
+    const btnList = document.getElementById('pf-mode-btn-list');
+    const kanbanContainer = document.getElementById('pf-kanban-container');
+    const listContainer = document.getElementById('pf-list-container');
+
+    if (mode === 'kanban') {
+      if (btnKanban) btnKanban.classList.add('active');
+      if (btnList) btnList.classList.remove('active');
+      if (kanbanContainer) kanbanContainer.classList.remove('hidden');
+      if (listContainer) listContainer.classList.add('hidden');
+    } else {
+      if (btnList) btnList.classList.add('active');
+      if (btnKanban) btnKanban.classList.remove('active');
+      if (listContainer) listContainer.classList.remove('hidden');
+      if (kanbanContainer) kanbanContainer.classList.add('hidden');
+    }
+  }
+
+  function setPriorityFollowMobileStage(stageKey) {
+    pfMobileActiveStage = stageKey;
+
+    // タブボタンのアクティブ更新
+    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    stages.forEach(s => {
+      const btn = document.getElementById(`pf-mobile-tab-${s}`);
+      const col = document.getElementById(`pf-col-${s}`);
+      if (btn) {
+        if (s === stageKey) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+      if (col) {
+        if (s === stageKey) {
+          col.classList.add('is-mobile-active');
+        } else {
+          col.classList.remove('is-mobile-active');
+        }
+      }
+    });
+  }
 
   function setPriorityFollowGradeFilter(grade) {
     currentPfGradeFilter = grade;
@@ -10854,7 +11189,287 @@ window.CelebrationEffect = (function() {
 
     pfCurrentPage = 1;
     renderPriorityFollowCurrentPage();
+    renderPriorityFollowKanban(basePfList, search);
   }
+
+  // ==========================================
+  // 📌 カンバンボード レンダリング＆ドラッグ＆ドロップ
+  // ==========================================
+  function renderPriorityFollowKanban(sourceList, search) {
+    const listToRender = (sourceList || []).filter(v => {
+      if (!search) return true;
+      const name = (v.name || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const actionText = (v.nextActionText || '').toLowerCase();
+      const assignee = (v.nextActionAssignee || '').toLowerCase();
+      return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
+    });
+
+    // 4ステージへの自動分類
+    const stageItems = {
+      'stagnant': [],           // ① 未設定
+      'active': [],             // ② 進行中・超過
+      'applying-payment': [],   // ③ 申込提出・入金待ち
+      'review': []              // ④ 審査
+    };
+
+    listToRender.forEach(v => {
+      const isJoined = v.isJoined || '未';
+      const pendingCount = Number(v.pendingActionCount) || 0;
+
+      if (isJoined === 'メンバーシップ審査') {
+        stageItems['review'].push(v);
+      } else if (isJoined === '申込書提出' || isJoined === '入金待ち') {
+        stageItems['applying-payment'].push(v);
+      } else if (pendingCount === 0) {
+        stageItems['stagnant'].push(v);
+      } else {
+        stageItems['active'].push(v);
+      }
+    });
+
+    // 各ステージ内ソート
+    // activeステージ: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
+    stageItems['active'].sort((a, b) => {
+      const oA = Number(a.overdueActionCount) || 0;
+      const oB = Number(b.overdueActionCount) || 0;
+      if (oA !== oB) return oB - oA;
+      return (b.eventDate || '').localeCompare(a.eventDate || '');
+    });
+
+    ['stagnant', 'applying-payment', 'review'].forEach(key => {
+      stageItems[key].sort((a, b) => (b.eventDate || '').localeCompare(a.eventDate || ''));
+    });
+
+    // カウントバッジ更新 (PC & Mobile)
+    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    stages.forEach(key => {
+      const count = stageItems[key].length;
+      const pcCountEl = document.getElementById(`pf-kanban-count-${key}`);
+      const mobCountEl = document.getElementById(`pf-mobile-count-${key}`);
+      if (pcCountEl) pcCountEl.innerText = count;
+      if (mobCountEl) mobCountEl.innerText = count;
+
+      // カラム内カードリストを描画
+      const container = document.getElementById(`pf-kanban-list-${key}`);
+      if (!container) return;
+
+      container.innerHTML = '';
+      if (count === 0) {
+        container.innerHTML = `
+          <div class="pf-kanban-empty-placeholder">
+            <i class="fa-solid fa-inbox text-slate-300 text-2xl"></i>
+            <span>該当ビジターなし</span>
+          </div>
+        `;
+        return;
+      }
+
+      stageItems[key].forEach(v => {
+        const vid = String(v.id || v.visitorId);
+        const feel = (v.feelAbc || '').toUpperCase().trim();
+        const feelTag = feel ? renderRankBadgeHtml(feel) : '';
+        const count = v.visitCount || (v.allIds && v.allIds.length) || 1;
+        const repeatTag = count > 1 ? `<span style="font-size:10px; color:#d97706; background:#fef3c7; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${count}回</span>` : '';
+        const elapsedText = formatPfElapsed(v.eventDate);
+
+        const oCount = Number(v.overdueActionCount) || 0;
+        const pCount = Number(v.pendingActionCount) || 0;
+        const isOverdue = (oCount > 0);
+
+        // 次回アクション表示ブロック
+        let actionBlockHtml = '';
+        if (v.nextActionText) {
+          const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(v.nextActionDueDate)}</span>` : '';
+          const assigneeText = v.nextActionAssignee ? `<span class="text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(v.nextActionAssignee)}</span>` : '';
+          const overdueBadge = isOverdue ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200"><i class="fa-solid fa-circle-exclamation"></i> 超過</span>` : '';
+
+          actionBlockHtml = `
+            <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 mt-1">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 truncate">
+                  ${renderActionTypeBadgeHtml(v.nextActionType)}
+                  ${overdueBadge}
+                </div>
+                ${actionDateText}
+              </div>
+              <div class="text-xs font-semibold text-slate-800 line-clamp-2">${escapeHtml(v.nextActionText)}</div>
+              ${assigneeText ? `<div class="text-[10px] text-right mt-1">${assigneeText}</div>` : ''}
+            </div>
+          `;
+        } else {
+          actionBlockHtml = `
+            <div class="p-2 bg-amber-50/60 rounded-lg border border-dashed border-amber-200 mt-1 flex items-center justify-between text-amber-700 text-xs">
+              <span class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> 未設定</span>
+              <button type="button" class="btn-action-primary text-[10px] py-0.5 px-2 font-bold" onclick="event.stopPropagation(); openPfVisitorFullDetail('${vid}');">設定</button>
+            </div>
+          `;
+        }
+
+        // 入会ステータスセレクト
+        const joinStatusSelectHtml = renderJoinedButtonHtml(vid, v.isJoined);
+
+        const card = document.createElement('div');
+        card.className = `pf-kanban-card ${isOverdue ? 'is-overdue-card' : ''}`;
+        card.setAttribute('draggable', 'true');
+        card.setAttribute('data-visitor-id', vid);
+        card.setAttribute('data-stage', key);
+        card.ondragstart = (e) => onPfCardDragStart(e, vid);
+        card.onclick = () => openPfVisitorFullDetail(vid);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0">
+              ${feelTag}
+              <div class="truncate font-bold text-sm text-slate-800 hover:text-blue-600">
+                ${escapeHtml(v.name || '名称未設定')}
+                ${repeatTag}
+              </div>
+            </div>
+            <span class="text-[10px] text-slate-400 font-semibold shrink-0">${elapsedText}</span>
+          </div>
+
+          <div class="text-[11px] text-slate-500 font-medium truncate flex items-center gap-1">
+            ${v.company ? `<span class="truncate">${escapeHtml(v.company)}</span>` : ''}
+            ${v.profession ? `<span class="text-slate-400">/</span><span class="truncate">${escapeHtml(v.profession)}</span>` : ''}
+          </div>
+
+          ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(v.inviter)}</span></div>` : ''}
+
+          ${actionBlockHtml}
+
+          <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100" onclick="event.stopPropagation()">
+            <span class="text-[10px] font-bold text-slate-400">進捗</span>
+            <div class="shrink-0">
+              ${joinStatusSelectHtml}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    });
+
+    // モバイルの初期アクティブステージ同期
+    setPriorityFollowMobileStage(pfMobileActiveStage);
+    initPfMobileSwipeEvents();
+  }
+
+  function formatPfElapsed(eventDate) {
+    if (!eventDate) return '';
+    const clean = String(eventDate).replace(/\//g, '-').trim();
+    const d = new Date(clean);
+    if (isNaN(d.getTime())) return '';
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diff = Math.floor((now.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff === 0) return '本日参加';
+    if (diff < 0) return '参加予定';
+    return `${diff}日前`;
+  }
+
+  // ==========================================
+  // 🖱️ カンバン ドラッグ＆ドロップ イベントハンドラー
+  // ==========================================
+  let draggedPfVisitorId = null;
+
+  function onPfCardDragStart(e, vid) {
+    draggedPfVisitorId = String(vid);
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', vid);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+    e.currentTarget.classList.add('is-dragging');
+  }
+
+  function onPfColumnDragOver(e) {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+    const col = e.currentTarget;
+    if (col && !col.classList.contains('drag-over')) {
+      col.classList.add('drag-over');
+    }
+  }
+
+  function onPfColumnDragLeave(e) {
+    const col = e.currentTarget;
+    if (col) {
+      col.classList.remove('drag-over');
+    }
+  }
+
+  function onPfColumnDrop(e, targetStage) {
+    e.preventDefault();
+    const col = e.currentTarget;
+    if (col) {
+      col.classList.remove('drag-over');
+    }
+    document.querySelectorAll('.pf-kanban-card.is-dragging').forEach(el => el.classList.remove('is-dragging'));
+
+    const vid = e.dataTransfer ? (e.dataTransfer.getData('text/plain') || draggedPfVisitorId) : draggedPfVisitorId;
+    if (!vid) return;
+
+    // ステージ移動に応じた入会ステータス更新マッピング
+    const stageStatusMap = {
+      'stagnant': '未',
+      'active': '検討中',
+      'applying-payment': '申込書提出',
+      'review': 'メンバーシップ審査'
+    };
+
+    const newStatus = stageStatusMap[targetStage];
+    if (newStatus && typeof changeVisitorStatus === 'function') {
+      changeVisitorStatus(vid, 'isJoined', newStatus);
+    }
+  }
+
+  // ==========================================
+  // 📱 モバイル スワイプイベント登録
+  // ==========================================
+  function initPfMobileSwipeEvents() {
+    const board = document.getElementById('pf-kanban-board');
+    if (!board || board._swipeInitialized) return;
+    board._swipeInitialized = true;
+
+    board.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length === 1) {
+        pfTouchStartX = e.touches[0].clientX;
+      }
+    }, { passive: true });
+
+    board.addEventListener('touchend', (e) => {
+      if (e.changedTouches && e.changedTouches.length === 1) {
+        pfTouchEndX = e.changedTouches[0].clientX;
+        handlePfSwipe();
+      }
+    }, { passive: true });
+  }
+
+  function handlePfSwipe() {
+    const swipeThreshold = 50;
+    const diff = pfTouchStartX - pfTouchEndX;
+    const stages = ['stagnant', 'active', 'applying-payment', 'review'];
+    const currentIndex = stages.indexOf(pfMobileActiveStage);
+    if (currentIndex === -1) return;
+
+    if (diff > swipeThreshold) {
+      // 左スワイプ ➜ 次のステージ
+      if (currentIndex < stages.length - 1) {
+        setPriorityFollowMobileStage(stages[currentIndex + 1]);
+      }
+    } else if (diff < -swipeThreshold) {
+      // 右スワイプ ➜ 前のステージ
+      if (currentIndex > 0) {
+        setPriorityFollowMobileStage(stages[currentIndex - 1]);
+      }
+    }
+  }
+
 
   function changePriorityFollowPage(delta) {
     const totalPages = Math.ceil(filteredPfVisitors.length / PF_PAGE_SIZE) || 1;
@@ -11430,6 +12045,16 @@ window.CelebrationEffect = (function() {
       })
       .catch(handleError);
   }
+
+  // 初期ビューモードの復元
+  document.addEventListener('DOMContentLoaded', () => {
+    try {
+      const savedMode = localStorage.getItem('pf_view_mode');
+      if (savedMode && (savedMode === 'kanban' || savedMode === 'list')) {
+        togglePfViewMode(savedMode);
+      }
+    } catch (e) {}
+  });
 </script>
 
 <script>
