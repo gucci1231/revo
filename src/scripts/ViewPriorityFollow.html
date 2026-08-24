@@ -7,7 +7,7 @@
   const PF_PAGE_SIZE = 50;
   let selectedPfVisitorId = null;
   let pfViewMode = 'kanban'; // 'kanban' | 'list'
-  let pfMobileActiveStage = 'applying'; // 'applying' | 'payment' | 'review'
+  let pfMobileActiveStage = 'stagnant'; // 'stagnant' | 'active' | 'applying-review'
 
   // モバイル用スワイプ追跡
   let pfTouchStartX = 0;
@@ -41,7 +41,7 @@
     pfMobileActiveStage = stageKey;
 
     // タブボタンのアクティブ更新
-    const stages = ['applying', 'payment', 'review'];
+    const stages = ['stagnant', 'active', 'applying-review'];
     stages.forEach(s => {
       const btn = document.getElementById(`pf-mobile-tab-${s}`);
       const col = document.getElementById(`pf-col-${s}`);
@@ -230,27 +230,27 @@
       return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
     });
 
-    // 3ステージへの自動分類 (申込提出・入金待ち・審査)
+    // 3ステージへの自動分類 (① 放置 / ② 検討中 / ③ 申込提出・入金待ち・審査)
     const stageItems = {
-      'applying': [],   // ① 申込提出
-      'payment': [],    // ② 入金待ち
-      'review': []      // ③ 審査
+      'stagnant': [],           // ① 放置
+      'active': [],             // ② 検討中
+      'applying-review': []     // ③ 申込提出・入金待ち・審査
     };
 
     listToRender.forEach(v => {
       const isJoined = v.isJoined || '未';
 
-      if (isJoined === 'メンバーシップ審査' || isJoined === '審査') {
-        stageItems['review'].push(v);
-      } else if (isJoined === '入金待ち') {
-        stageItems['payment'].push(v);
-      } else if (isJoined === '申込書提出' || isJoined === '申込') {
-        stageItems['applying'].push(v);
+      if (isJoined === 'メンバーシップ審査' || isJoined === '審査' || isJoined === '申込書提出' || isJoined === '申込' || isJoined === '入金待ち') {
+        stageItems['applying-review'].push(v);
+      } else if (isJoined === '検討中') {
+        stageItems['active'].push(v);
+      } else {
+        stageItems['stagnant'].push(v);
       }
     });
 
     // 各ステージ内ソート: 期限超過（overdueActionCount > 0）を最上位に、次に参加日降順
-    ['applying', 'payment', 'review'].forEach(key => {
+    ['stagnant', 'active', 'applying-review'].forEach(key => {
       stageItems[key].sort((a, b) => {
         const oA = Number(a.overdueActionCount) || 0;
         const oB = Number(b.overdueActionCount) || 0;
@@ -260,7 +260,7 @@
     });
 
     // カウントバッジ更新 (PC & Mobile)
-    const stages = ['applying', 'payment', 'review'];
+    const stages = ['stagnant', 'active', 'applying-review'];
     stages.forEach(key => {
       const count = stageItems[key].length;
       const pcCountEl = document.getElementById(`pf-kanban-count-${key}`);
@@ -475,9 +475,9 @@
 
     // ステージ移動に応じた入会ステータス更新マッピング (3ステージ)
     const stageStatusMap = {
-      'applying': '申込書提出',
-      'payment': '入金待ち',
-      'review': '審査'
+      'stagnant': '未',
+      'active': '検討中',
+      'applying-review': '申込書提出'
     };
 
     const newStatus = stageStatusMap[targetStage];
@@ -511,7 +511,7 @@
   function handlePfSwipe() {
     const swipeThreshold = 50;
     const diff = pfTouchStartX - pfTouchEndX;
-    const stages = ['applying', 'payment', 'review'];
+    const stages = ['stagnant', 'active', 'applying-review'];
     const currentIndex = stages.indexOf(pfMobileActiveStage);
     if (currentIndex === -1) return;
 
