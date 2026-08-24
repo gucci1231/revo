@@ -120,8 +120,11 @@
           existing.lastActionReporter = r.lastActionReporter || '';
         }
 
-        if (r.followType && r.followType !== '直近フォロー') {
-          existing.followType = r.followType;
+        const normRFollow = typeof normalizeFollowType === 'function' ? normalizeFollowType(r.followType) : (r.followType || 'フォロー');
+        if (normRFollow !== 'フォロー') {
+          existing.followType = normRFollow;
+        } else if (!existing.followType) {
+          existing.followType = 'フォロー';
         }
 
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
@@ -135,7 +138,7 @@
         item.eventDates = [item.eventDate].filter(Boolean);
         item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
-        item.followType = item.followType || '直近フォロー';
+        item.followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(item.followType) : (item.followType || 'フォロー');
         item.pendingActionCount = Number(item.pendingActionCount) || 0;
         item.overdueActionCount = Number(item.overdueActionCount) || 0;
         item.completedActionCount = Number(item.completedActionCount) || 0;

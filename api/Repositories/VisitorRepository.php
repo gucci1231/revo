@@ -126,7 +126,8 @@ class VisitorRepository {
                 COALESCE(s.is_attended, '未') as isAttended,
                 COALESCE(s.is_joined, '未') as isJoined,
                 COALESCE(s.is_1to1, '未') as is1to1,
-                COALESCE(s.is_matched, '未') as matching
+                COALESCE(s.is_matched, '未') as matching,
+                COALESCE(s.follow_type, '直近フォロー') as followType
             FROM visitors v
             LEFT JOIN visitors_status s ON v.id = s.visitor_id
             WHERE v.id IN ({$placeholders})
@@ -138,7 +139,11 @@ class VisitorRepository {
     public function getStatusByVisitorId(string $visitorId): ?array {
         $linkedIds = $this->getLinkedVisitorIds($visitorId);
         if (empty($linkedIds)) {
-            return $this->db->fetchOne("SELECT * FROM visitors_status WHERE visitor_id = ?", [$visitorId]);
+            $status = $this->db->fetchOne("SELECT * FROM visitors_status WHERE visitor_id = ?", [$visitorId]);
+            if ($status && !isset($status['follow_type'])) {
+                $status['follow_type'] = '直近フォロー';
+            }
+            return $status;
         }
 
         $placeholders = implode(',', array_fill(0, count($linkedIds), '?'));
@@ -150,14 +155,16 @@ class VisitorRepository {
                 'is_attended' => '未',
                 'is_joined' => '未',
                 'is_1to1' => '未',
-                'is_matched' => '未'
+                'is_matched' => '未',
+                'follow_type' => '直近フォロー'
             ];
         }
 
         $merged = $rows[0];
         $merged['visitor_id'] = $visitorId;
+        $merged['follow_type'] = $merged['follow_type'] ?? '直近フォロー';
 
-        $joinedPriority = ['入会済' => 6, '済' => 6, '入金待ち' => 5, 'メンバーシップ審査' => 4, '申込書提出' => 3, '検討中' => 2, '見送り' => 1, '未' => 0];
+        $joinedPriority = ['入会済' => 6, '済' => 6, '入金待ち' => 5, 'メンバーシップ審査' => 4, '申込書提出' => 3, '検討中' => 2, 'フォロー終了' => 1, '見送り' => 1, '未' => 0];
         foreach ($rows as $r) {
             if (($r['is_attended'] ?? '') === '参加') $merged['is_attended'] = '参加';
             $curJ = $merged['is_joined'] ?? '未';
@@ -169,6 +176,9 @@ class VisitorRepository {
             }
             if (($r['is_1to1'] ?? '') === '済') $merged['is_1to1'] = '済';
             if (($r['is_matched'] ?? '') === '成功') $merged['is_matched'] = '成功';
+            if (!empty($r['follow_type']) && empty($merged['follow_type'])) {
+                $merged['follow_type'] = $r['follow_type'];
+            }
         }
 
         return $merged;

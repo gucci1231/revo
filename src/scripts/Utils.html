@@ -92,6 +92,30 @@
       }
     }
 
+    // 詳細画面が開いている場合、セレクトボックスのクラスとローカル状態を即時更新
+    if (field === 'followType') {
+      const selectFollowType = document.getElementById('vd-select-follow-type');
+      if (selectFollowType) {
+        const info = getFollowTypeInfo(value);
+        selectFollowType.value = info.value;
+        selectFollowType.className = 'vd-status-select ' + info.cls;
+      }
+    } else if (field === 'isJoined') {
+      const selectJoin = document.getElementById('vd-select-joined');
+      if (selectJoin) {
+        const info = getJoinStatusInfo(value);
+        selectJoin.value = info.value;
+        selectJoin.className = 'vd-status-select ' + info.cls;
+      }
+    } else if (field === 'isAttended') {
+      const selectAtt = document.getElementById('vd-select-attended');
+      if (selectAtt) {
+        const info = getAttendStatusInfo(value);
+        selectAtt.value = info.value;
+        selectAtt.className = 'vd-status-select ' + info.cls;
+      }
+    }
+
     ApiService.call('updateVisitorStatusApi', id, field, value)
       .then(res => {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);

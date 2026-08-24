@@ -130,14 +130,16 @@ class VisitorController extends Controller {
                 'attendanceCount' => $visitor['attendance_count'],
                 'remarks' => $visitor['remarks'],
                 'allIds' => $linkedIds,
-                'visitCount' => count($visits)
+                'visitCount' => count($visits),
+                'followType' => $status['follow_type'] ?? '直近フォロー'
             ],
             'visits' => $visits,
             'status' => [
                 'isAttended' => $status['is_attended'] ?? '未',
                 'isJoined' => $status['is_joined'] ?? '未',
                 'is1to1' => $status['is_1to1'] ?? '未',
-                'matching' => $status['is_matched'] ?? '未'
+                'matching' => $status['is_matched'] ?? '未',
+                'followType' => $status['follow_type'] ?? '直近フォロー'
             ],
             'hearing' => $formatHearing($fallbackHearing),
             'currentHearing' => $formatHearing($directHearing),

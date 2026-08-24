@@ -48,5 +48,17 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(indexHtml.includes('<option value="フォロー"'));
     assert.ok(indexHtml.includes('<option value="時期尚早"'));
     assert.ok(indexHtml.includes('<option value="関係維持"'));
+    assert.ok(indexHtml.includes('<option value="フォロー終了"'));
+  });
+
+  it('ensures detail API and Repository correctly include and persist followType and closed statuses', () => {
+    const visitorControllerPhp = fs.readFileSync(path.join(__dirname, '../../api/Controllers/VisitorController.php'), 'utf8');
+    const visitorRepositoryPhp = fs.readFileSync(path.join(__dirname, '../../api/Repositories/VisitorRepository.php'), 'utf8');
+
+    // VisitorController must output followType in detail() response
+    assert.ok(visitorControllerPhp.includes("'followType' => $status['follow_type']"), 'VisitorController detail status should include followType');
+    // VisitorRepository must query follow_type in getVisitsByVisitorIds and getStatusByVisitorId
+    assert.ok(visitorRepositoryPhp.includes("COALESCE(s.follow_type, '直近フォロー') as followType"), 'VisitorRepository getVisitsByVisitorIds should include followType');
+    assert.ok(visitorRepositoryPhp.includes("'フォロー終了' => 1"), 'VisitorRepository joinedPriority should include フォロー終了');
   });
 });
