@@ -14475,10 +14475,11 @@ window.CelebrationEffect = (function() {
       const duePart = p.due_date || '期日未定';
 
       const shareText = `【REvo アクション共有・報告依頼】\n` +
+        `以下のアクションについて\n こちらから報告書を提出して下さい\n` +
+        `${shareUrl}\n\n` +
         `👤 対象: ${visitorName}${companyPart}\n` +
         `📅 期日: ${duePart} / 担当: ${assigneePart}\n` +
-        `🎯 アクション内容:\n${p.action_text}\n\n` +
-        `👇 こちらから報告・確認できます\n${shareUrl}`;
+        `🎯 アクション内容:\n${p.action_text}`;
 
       if (navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
         navigator.share({
