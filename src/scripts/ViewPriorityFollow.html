@@ -259,12 +259,14 @@
       });
     });
 
-    // カウントバッジ更新 (PC & Mobile)
+    // カウントバッジ ＆ KPIカード更新 (PC & Mobile)
     const stages = ['stagnant', 'active', 'applying-review'];
     stages.forEach(key => {
       const count = stageItems[key].length;
+      const kpiEl = document.getElementById(`pf-kpi-${key}`);
       const pcCountEl = document.getElementById(`pf-kanban-count-${key}`);
       const mobCountEl = document.getElementById(`pf-mobile-count-${key}`);
+      if (kpiEl) kpiEl.innerText = count;
       if (pcCountEl) pcCountEl.innerText = count;
       if (mobCountEl) mobCountEl.innerText = count;
 

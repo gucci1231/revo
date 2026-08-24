@@ -59,7 +59,10 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
     assert.strictEqual(sorted[1].id, '3', 'Newer date must come before older date');
   });
 
-  it('contains 3-column Kanban board HTML elements in ViewPriorityFollow.html', () => {
+  it('contains 3-column KPI hero cards and Kanban board HTML elements in ViewPriorityFollow.html', () => {
+    assert.ok(viewPriorityFollowHtml.includes('pf-kpi-stagnant'), 'Should define pf-kpi-stagnant');
+    assert.ok(viewPriorityFollowHtml.includes('pf-kpi-active'), 'Should define pf-kpi-active');
+    assert.ok(viewPriorityFollowHtml.includes('pf-kpi-applying-review'), 'Should define pf-kpi-applying-review');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-board'), 'Should define pf-kanban-board');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-stagnant'), 'Should define stagnant stage col');
     assert.ok(viewPriorityFollowHtml.includes('pf-kanban-col-active'), 'Should define active stage col');

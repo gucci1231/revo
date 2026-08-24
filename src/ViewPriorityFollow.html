@@ -1,6 +1,57 @@
 <!-- VIEW: 最優先フォロービジター一覧 (感触A・B評価 カンバンボード ＆ リスト Master-Detail) -->
 <div id="view-priority-follow" class="view-content">
 
+  <!-- 1. 最優先フォロー 3大ステージ KPIカード -->
+  <div class="dash-hero-grid grid-3">
+    <!-- KPI 1: 放置 -->
+    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('stagnant')" title="放置ビジターにフォーカス">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left flex items-center gap-1.5">
+          <span class="dash-hero-title">放置</span>
+          <span class="kpi-status-dot slate" style="background:#94a3b8;" title="未対応・放置"></span>
+        </div>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="pf-kpi-stagnant" style="color: #64748b;">-</span>
+            <span class="dash-hero-unit-text">名</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI 2: 検討中 -->
+    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('active')" title="検討中ビジターにフォーカス">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left flex items-center gap-1.5">
+          <span class="dash-hero-title">検討中</span>
+          <span class="kpi-status-dot blue" title="検討中"></span>
+        </div>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="pf-kpi-active" style="color: #0071e3;">-</span>
+            <span class="dash-hero-unit-text">名</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI 3: 申込済み -->
+    <div class="dash-hero-card cursor-pointer" onclick="setPriorityFollowMobileStage('applying-review')" title="申込済み・審査中ビジターにフォーカス">
+      <div class="dash-hero-split">
+        <div class="dash-hero-left flex items-center gap-1.5">
+          <span class="dash-hero-title">申込済み</span>
+          <span class="kpi-status-dot green" style="background:#10b981;" title="申込提出・審査中"></span>
+        </div>
+        <div class="dash-hero-right">
+          <div class="dash-hero-val-container">
+            <span class="dash-hero-number" id="pf-kpi-applying-review" style="color: #10b981;">-</span>
+            <span class="dash-hero-unit-text">名</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 最優先フォロー トップヘッダー ＆ コントロールバー -->
   <div class="section-card p-3.5 mb-3.5 bg-white border border-slate-200">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
