@@ -6763,6 +6763,8 @@ select.form-input, select.form-select {
                 <option value="入金待ち">入金待ち</option>
                 <option value="審査">審査</option>
                 <option value="入会済">入会済</option>
+                <option value="フォロー終了">フォロー終了</option>
+                <option value="見送り">見送り</option>
               </select>
             </div>
             <div class="vd-status-select-wrap">
@@ -6770,7 +6772,7 @@ select.form-input, select.form-select {
                 <option value="フォロー">フォロー</option>
                 <option value="時期尚早">時期尚早</option>
                 <option value="関係維持">関係維持</option>
-                <option value="終了">終了</option>
+                <option value="フォロー終了">フォロー終了</option>
               </select>
             </div>
           </div>
@@ -8362,25 +8364,28 @@ const ApiService = {
     '申込書提出': { value: '申込書提出', label: '申込書提出', shortLabel: '申込書提出', cls: 'state-applying', priority: 2 },
     '入金待ち': { value: '入金待ち', label: '入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 3 },
     '審査': { value: '審査', label: '審査', shortLabel: '審査', cls: 'state-review', priority: 4 },
-    '入会済': { value: '入会済', label: '入会済', shortLabel: '入会済', cls: 'state-joined', priority: 5 }
+    '入会済': { value: '入会済', label: '入会済', shortLabel: '入会済', cls: 'state-joined', priority: 5 },
+    'フォロー終了': { value: 'フォロー終了', label: 'フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 6 },
+    '見送り': { value: '見送り', label: '見送り', shortLabel: '見送り', cls: 'state-closed', priority: 6 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済', 'フォロー終了', '見送り'];
 
   const FOLLOW_TYPE_CONFIG = {
     'フォロー': { value: 'フォロー', label: 'フォロー', shortLabel: 'フォロー', cls: 'follow-type-active', color: '#0284c7' },
     '時期尚早': { value: '時期尚早', label: '時期尚早', shortLabel: '時期尚早', cls: 'follow-type-pending', color: '#6366f1' },
     '関係維持': { value: '関係維持', label: '関係維持', shortLabel: '関係維持', cls: 'follow-type-alliance', color: '#059669' },
-    '終了': { value: '終了', label: '終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' }
+    'フォロー終了': { value: 'フォロー終了', label: 'フォロー終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' },
+    '終了': { value: 'フォロー終了', label: 'フォロー終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' }
   };
-  const FOLLOW_TYPE_ORDER = ['フォロー', '時期尚早', '関係維持', '終了'];
+  const FOLLOW_TYPE_ORDER = ['フォロー', '時期尚早', '関係維持', 'フォロー終了'];
 
   function normalizeFollowType(raw) {
     if (!raw) return 'フォロー';
-    if (FOLLOW_TYPE_CONFIG[raw]) return raw;
+    if (FOLLOW_TYPE_CONFIG[raw]) return FOLLOW_TYPE_CONFIG[raw].value;
     if (raw === '直近フォロー' || raw === '直近' || raw === 'フォロー') return 'フォロー';
     if (raw === '保留' || raw === '保留（時期尚早）' || raw.includes('時期尚早')) return '時期尚早';
     if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト' || raw.includes('関係維持')) return '関係維持';
-    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了' || raw === '終了') return '終了';
+    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了' || raw === '終了' || raw === '見送り') return 'フォロー終了';
     return 'フォロー';
   }
 
@@ -8393,7 +8398,7 @@ const ApiService = {
     const current = normalizeFollowType(selectedVal);
     return FOLLOW_TYPE_ORDER.map(key => {
       const info = FOLLOW_TYPE_CONFIG[key];
-      const isSel = current === key ? ' selected' : '';
+      const isSel = current === info.value ? ' selected' : '';
       return `<option value="${info.value}"${isSel}>${info.label}</option>`;
     }).join('\n');
   }
@@ -8415,6 +8420,8 @@ const ApiService = {
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
     if (raw === 'メンバーシップ審査' || raw === '審査中' || raw === '審査') return '審査';
+    if (raw === '終了' || raw === 'フォロー終了') return 'フォロー終了';
+    if (raw === '見送り') return '見送り';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }
