@@ -54,8 +54,8 @@ class ReportContextService {
         $origin = 'https://revo.k-d-o.biz';
 
         // 全ビジター取得
-        $allVisitors = $this->visitorRepo->getAll();
-        $allActionPlans = $this->actionPlanRepo->getAll();
+        $allVisitors = $this->visitorRepo->getAllWithStatusAndHearing();
+        $allActionPlans = $this->actionPlanRepo->getAllWithVisitor(null, 500);
 
         // 1. 次回定例会申込ビジター
         $cleanMeetingDate = preg_replace('/\([^\)]+\)/', '', $meetingDateStr);
@@ -63,8 +63,9 @@ class ReportContextService {
         $inviterMap = [];
 
         foreach ($allVisitors as $v) {
-            $evDate = str_replace('-', '/', substr($v['event_date'] ?? '', 0, 10));
-            if ($evDate === $cleanMeetingDate || strpos($v['event_date'] ?? '', $cleanMeetingDate) !== false) {
+            $rawEventDate = $v['event_date'] ?? $v['eventDate'] ?? '';
+            $evDate = str_replace('-', '/', substr($rawEventDate, 0, 10));
+            if ($evDate === $cleanMeetingDate || strpos($rawEventDate, $cleanMeetingDate) !== false) {
                 $upcomingVisitors[] = $v;
             }
             $inv = trim($v['inviter'] ?? '');
@@ -106,9 +107,9 @@ class ReportContextService {
         $upLine = '';
         if (!empty($upcomingVisitors)) {
             foreach ($upcomingVisitors as $i => $v) {
-                $name = htmlspecialchars($v['name'] ?? 'ビジター', ENT_QUOTES, 'UTF-8');
+                $name = htmlspecialchars($v['name'] ?? $v['visitor_name'] ?? 'ビジター', ENT_QUOTES, 'UTF-8');
                 $company = htmlspecialchars($v['company'] ?? '', ENT_QUOTES, 'UTF-8');
-                $category = htmlspecialchars($v['business_category'] ?? '専門分野', ENT_QUOTES, 'UTF-8');
+                $category = htmlspecialchars($v['business_category'] ?? $v['profession'] ?? '専門分野', ENT_QUOTES, 'UTF-8');
                 $inv = htmlspecialchars($v['inviter'] ?? 'チャプター', ENT_QUOTES, 'UTF-8');
 
                 $companyDisp = !empty($company) ? "<span style=\"font-size:11.5px; font-weight:normal; color:#64748b;\">({$company})</span>" : "";
@@ -125,7 +126,9 @@ class ReportContextService {
                   </table>
                 </div>";
                 $idxNum = $i + 1;
-                $upLine .= "{$idxNum}. " . ($v['name'] ?? '') . " 様 (" . ($v['company'] ?? '') . ") / 専門: " . ($v['business_category'] ?? '') . " (招待: " . ($v['inviter'] ?? '') . " 様)\n";
+                $vNameRaw = $v['name'] ?? $v['visitor_name'] ?? '';
+                $vCatRaw = $v['business_category'] ?? $v['profession'] ?? '';
+                $upLine .= "{$idxNum}. {$vNameRaw} 様 (" . ($v['company'] ?? '') . ") / 専門: {$vCatRaw} (招待: " . ($v['inviter'] ?? '') . " 様)\n";
             }
         } else {
             $upHtml = '<div style="background:#f8fafc; border:1px solid #e6ebf1; border-radius:10px; padding:16px; text-align:center; font-size:12px; color:#8898aa;">次回定例会の参加予定ビジターはまだ登録されていません。</div>';
@@ -142,7 +145,8 @@ class ReportContextService {
 
         $todayDateOnly = date('Y-m-d');
         foreach ($allActionPlans as $ap) {
-            if (!empty($ap['completed_at'])) {
+            $isComp = intval($ap['is_completed'] ?? 0);
+            if ($isComp === 1 || !empty($ap['completed_at'])) {
                 $completedActionsCount++;
             } else {
                 $pendingTodosCount++;
@@ -150,7 +154,7 @@ class ReportContextService {
                 if ($dueDate === $todayDateOnly || ($dueDate < $todayDateOnly && !empty($dueDate))) {
                     $todayDueCount++;
                     $vName = htmlspecialchars($ap['visitor_name'] ?? 'ビジター', ENT_QUOTES, 'UTF-8');
-                    $act = htmlspecialchars($ap['action'] ?? $ap['content'] ?? 'フォロー', ENT_QUOTES, 'UTF-8');
+                    $act = htmlspecialchars($ap['action_text'] ?? $ap['action'] ?? $ap['content'] ?? 'フォロー', ENT_QUOTES, 'UTF-8');
                     $assignee = htmlspecialchars($ap['assignee_name'] ?? '担当者', ENT_QUOTES, 'UTF-8');
                     $isOverdue = $dueDate < $todayDateOnly;
                     $dueLabel = $isOverdue ? '超過' : '本日中';
@@ -162,7 +166,8 @@ class ReportContextService {
                       <td style=\"padding:10px 12px; border-bottom:1px solid #f0f4f8; color:#334155; font-size:11.5px;\">{$act}</td>
                       <td style=\"padding:10px 12px; border-bottom:1px solid #f0f4f8; font-weight:700; color:#0071e3;\">{$assignee} 様</td>
                     </tr>";
-                    $todayDueLine .= "・【{$dueLabel}】{$ap['visitor_name']} 様: {$act} (担当: {$ap['assignee_name']} 様)\n";
+                    $actRaw = $ap['action_text'] ?? $ap['action'] ?? $ap['content'] ?? 'フォロー';
+                    $todayDueLine .= "・【{$dueLabel}】{$ap['visitor_name']} 様: {$actRaw} (担当: {$ap['assignee_name']} 様)\n";
                 }
             }
         }
@@ -181,22 +186,22 @@ class ReportContextService {
         $followCount = 0;
 
         foreach ($allVisitors as $v) {
-            $feel = $v['feel_raw'] ?? $v['feel'] ?? '';
-            $followType = $v['follow_type'] ?? '';
+            $feel = $v['feelAbc'] ?? $v['feel_raw'] ?? $v['feel'] ?? '';
+            $followType = $v['followType'] ?? $v['follow_type'] ?? '';
             if ($followType === 'フォロー終了') continue;
 
             if (strpos($feel, 'A') !== false || strpos($feel, 'B') !== false) {
                 $followCount++;
                 if ($followCount <= 5) {
-                    $vName = htmlspecialchars($v['name'] ?? 'ビジター', ENT_QUOTES, 'UTF-8');
-                    $category = htmlspecialchars($v['business_category'] ?? '', ENT_QUOTES, 'UTF-8');
+                    $vName = htmlspecialchars($v['name'] ?? $v['visitor_name'] ?? 'ビジター', ENT_QUOTES, 'UTF-8');
+                    $category = htmlspecialchars($v['profession'] ?? $v['business_category'] ?? '', ENT_QUOTES, 'UTF-8');
                     $isA = strpos($feel, 'A') !== false;
                     $badge = $isA
                         ? '<span style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; font-weight:800; font-size:10.5px; padding:2px 6px; border-radius:4px;">🟢 Aランク</span>'
                         : '<span style="background:#fefce8; color:#ca8a04; border:1px solid #fef08a; font-weight:800; font-size:10.5px; padding:2px 6px; border-radius:4px;">🟡 Bランク</span>';
                     
                     $catDisp = !empty($category) ? "<span style=\"font-size:11px; color:#64748b; font-weight:normal;\">({$category})</span>" : "";
-                    $nextAct = htmlspecialchars($v['current_status'] ?? $v['next_action'] ?? '1to1日程調整', ENT_QUOTES, 'UTF-8');
+                    $nextAct = htmlspecialchars($v['nextActionText'] ?? $v['current_status'] ?? $v['next_action'] ?? '1to1日程調整', ENT_QUOTES, 'UTF-8');
 
                     $followUpRows .= "<tr>
                       <td style=\"padding:10px 12px; border-bottom:1px solid #f0f4f8; font-weight:700; color:#0a2540;\">{$vName} 様 {$catDisp}</td>
@@ -204,7 +209,9 @@ class ReportContextService {
                       <td style=\"padding:10px 12px; border-bottom:1px solid #f0f4f8; color:#334155; font-size:11.5px;\">{$nextAct}</td>
                     </tr>";
                     $rankStr = $isA ? 'Aランク' : 'Bランク';
-                    $followUpLine .= "・{$v['name']} 様 ({$rankStr}): {$nextAct}\n";
+                    $rawName = $v['name'] ?? $v['visitor_name'] ?? 'ビジター';
+                    $rawAct = $v['nextActionText'] ?? $v['current_status'] ?? $v['next_action'] ?? '1to1日程調整';
+                    $followUpLine .= "・{$rawName} 様 ({$rankStr}): {$rawAct}\n";
                 }
             }
         }
