@@ -12,7 +12,7 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(utilsHtml.includes('JOIN_STATUS_CONFIG'), 'Utils should define JOIN_STATUS_CONFIG');
     assert.ok(utilsHtml.includes('FOLLOW_TYPE_CONFIG'), 'Utils should define FOLLOW_TYPE_CONFIG');
     assert.ok(utilsHtml.includes('申込書提出'), 'JOIN_STATUS_CONFIG should contain 申込書提出');
-    assert.ok(utilsHtml.includes('メンバーシップ審査'), 'JOIN_STATUS_CONFIG should contain メンバーシップ審査');
+    assert.ok(utilsHtml.includes('審査'), 'JOIN_STATUS_CONFIG should contain 審査');
     assert.ok(utilsHtml.includes('入金待ち'), 'JOIN_STATUS_CONFIG should contain 入金待ち');
     assert.ok(utilsHtml.includes('フォロー終了'), 'JOIN_STATUS_CONFIG should contain フォロー終了');
     assert.ok(utilsHtml.includes('フォロー'), 'FOLLOW_TYPE_CONFIG should contain フォロー');
@@ -41,7 +41,7 @@ describe('Join Status Options & UI Unit Tests', () => {
 
   it('compiles new join status options into index.html', () => {
     assert.ok(indexHtml.includes('<option value="申込書提出"'));
-    assert.ok(indexHtml.includes('<option value="メンバーシップ審査"'));
+    assert.ok(indexHtml.includes('<option value="審査"'));
     assert.ok(indexHtml.includes('<option value="入金待ち"'));
     assert.ok(indexHtml.includes('<option value="フォロー終了"'));
     assert.ok(indexHtml.includes('<option value="フォロー"'));
