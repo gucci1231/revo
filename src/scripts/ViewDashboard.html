@@ -182,6 +182,11 @@
       initLineChart(chartLabels, chartValues);
     }
 
+    // 🌟 Alerts & Pipeline Bar
+    const allVisitorsList = data.allVisitors || t.allVisitors || (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
+    renderDashboardAlerts(data);
+    renderDashboardPipelineBar(allVisitorsList);
+
     // Tables
     renderDashboardActionPlansTable(allActionPlans);
     renderWeeklyStatsTable(t.weeklyStats || []);
@@ -413,37 +418,205 @@
     });
   }
 
+  // 🌟 1. 今日の要対応アラート (スマートバナー)
+  function renderDashboardAlerts(data) {
+    const bannerEl = document.getElementById('dash-today-alerts');
+    if (!bannerEl) return;
+
+    const t = data.tables || data;
+    const m = data.metrics || data;
+    const allActionPlans = t.actionPlans || [];
+    const hotList = t.hotVisitors || [];
+    const allVisitors = data.allVisitors || t.allVisitors || (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+
+    // 1. 期限超過アクション
+    const overdueActions = allActionPlans.filter(p => Number(p.is_completed) === 0 && p.due_date && p.due_date < todayStr);
+
+    // 2. 放置・未設定の感触Aビジター
+    const stagnantHot = hotList.filter(r => {
+      const ap = r.latestActionPlan;
+      return !ap || (!ap.action_text && !ap.due_date);
+    });
+
+    // 3. 再アプローチ期日到来（時期尚早で今日以前）
+    const pendingReminders = allVisitors.filter(v => {
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : v.followType;
+      if (followType !== '時期尚早' && followType !== '関係維持') return false;
+      const rDate = v.reapproachDate || v.followPendingDate;
+      return rDate && rDate <= todayStr;
+    });
+
+    const totalAlerts = overdueActions.length + stagnantHot.length + pendingReminders.length;
+
+    if (totalAlerts === 0) {
+      bannerEl.style.display = 'none';
+      bannerEl.innerHTML = '';
+      return;
+    }
+
+    const hasOverdue = overdueActions.length > 0 || stagnantHot.length > 0;
+    bannerEl.className = `dash-alerts-banner ${hasOverdue ? 'has-overdue' : ''}`;
+    bannerEl.style.display = 'flex';
+
+    bannerEl.innerHTML = `
+      <div class="dash-alerts-content">
+        <span class="font-bold text-slate-800 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation ${hasOverdue ? 'text-red-500' : 'text-amber-500'}"></i>
+          <span>今日・直近の要対応:</span>
+        </span>
+        ${overdueActions.length > 0 ? `
+          <span class="dash-alert-chip chip-red" onclick="switchTab('actions')" title="期限超過のアクションプランを確認">
+            <i class="fa-solid fa-clock text-[10px]"></i> 期限超過アクション <strong>${overdueActions.length}件</strong>
+          </span>
+        ` : ''}
+        ${stagnantHot.length > 0 ? `
+          <span class="dash-alert-chip chip-orange" onclick="switchDashboardPanel('hot'); filterDashboardHotVisitors('STAGNANT');" title="未対応・放置の感触Aビジターを確認">
+            <i class="fa-solid fa-fire text-[10px]"></i> アクション未設定(感触A) <strong>${stagnantHot.length}名</strong>
+          </span>
+        ` : ''}
+        ${pendingReminders.length > 0 ? `
+          <span class="dash-alert-chip chip-indigo" onclick="switchTab('visitors')" title="再アプローチ期日到来のビジターを確認">
+            <i class="fa-solid fa-calendar-check text-[10px]"></i> 再アプローチ到来 <strong>${pendingReminders.length}名</strong>
+          </span>
+        ` : ''}
+      </div>
+      <div class="text-xs text-slate-400 font-semibold cursor-pointer hover:text-slate-600 transition" onclick="document.getElementById('dash-today-alerts').style.display='none'">
+        <i class="fa-solid fa-xmark"></i>
+      </div>
+    `;
+  }
+
+  // 🌟 2. 入会進捗ミニ・パイプラインバー (Pipeline Stage Summary)
+  function renderDashboardPipelineBar(visitorsList) {
+    const gridEl = document.getElementById('dash-pipeline-grid');
+    if (!gridEl) return;
+
+    const list = Array.isArray(visitorsList) ? visitorsList : (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
+    const dedupedList = typeof deduplicateVisitorListClient === 'function' ? deduplicateVisitorListClient(list) : list;
+
+    const stages = [
+      { key: '未', label: '未対応', cls: 'step-stagnant', filterStatus: 'all' },
+      { key: '検討中', label: '検討中', cls: 'step-considering', filterStatus: 'follow' },
+      { key: '申込書提出', label: '申込書提出', cls: 'step-applying', filterStatus: 'follow' },
+      { key: '入金待ち', label: '入金待ち', cls: 'step-payment', filterStatus: 'follow' },
+      { key: '審査', label: '審査中', cls: 'step-review', filterStatus: 'follow' },
+      { key: '入会済', label: '入会済', cls: 'step-joined', filterStatus: 'joined' }
+    ];
+
+    const counts = { '未': 0, '検討中': 0, '申込書提出': 0, '入金待ち': 0, '審査': 0, '入会済': 0 };
+
+    dedupedList.forEach(v => {
+      const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
+      if (counts[status] !== undefined) {
+        counts[status]++;
+      } else {
+        counts['未']++;
+      }
+    });
+
+    gridEl.innerHTML = stages.map(s => `
+      <div class="dash-pipeline-step ${s.cls}" onclick="switchTab('visitors')" title="全ビジター一覧で確認">
+        <span class="dash-pipeline-step-label">${s.label}</span>
+        <span class="dash-pipeline-step-count">${counts[s.key] || 0}</span>
+      </div>
+    `).join('');
+  }
+
+  // 🌟 3. 最優先フォローステージ別フィルター & レンダラー
+  let currentDashboardHotFilter = 'ALL';
+  let cachedDashboardHotRecords = [];
+
+  function filterDashboardHotVisitors(mode) {
+    currentDashboardHotFilter = mode;
+    ['all', 'stagnant', 'overdue', 'active'].forEach(m => {
+      const btn = document.getElementById(`dash-hot-filter-${m}`);
+      if (btn) {
+        if (m.toUpperCase() === mode) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+    renderHotVisitorsTable(cachedDashboardHotRecords);
+  }
+
   function renderHotVisitorsTable(records) {
+    if (records) {
+      cachedDashboardHotRecords = records;
+    }
     const tbody = document.getElementById('table-hot-visitors');
     const cardsContainer = document.getElementById('cards-hot-visitors');
 
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    const validRecords = (records || []).filter(r => r.isJoined !== '見送り');
+    const validRecords = (cachedDashboardHotRecords || []).filter(r => r.isJoined !== '見送り' && r.isJoined !== 'フォロー終了');
+    const todayStr = new Date().toISOString().slice(0, 10);
 
-    if (!validRecords || validRecords.length === 0) {
-      if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #868e96; padding: 24px;">現在フォロー対象のホットビジターはいません</td></tr>';
+    // 危険度分類とソート
+    const classified = validRecords.map(r => {
+      const ap = r.latestActionPlan;
+      const isCompleted = ap && Number(ap.is_completed) === 1;
+      const isOverdue = ap && !isCompleted && ap.due_date && ap.due_date < todayStr;
+      const hasPendingAction = ap && !isCompleted && ap.action_text;
+      
+      let stage = 'ACTIVE';
+      if (!hasPendingAction && !isCompleted) {
+        stage = 'STAGNANT'; // 放置・未設定
+      } else if (isOverdue) {
+        stage = 'OVERDUE';  // 期限超過
+      } else {
+        stage = 'ACTIVE';   // 進行中
+      }
+
+      return { record: r, stage, isOverdue, hasPendingAction };
+    });
+
+    // フィルタリング
+    const filtered = classified.filter(item => {
+      if (currentDashboardHotFilter === 'ALL') return true;
+      return item.stage === currentDashboardHotFilter;
+    });
+
+    // 優先度ソート: 期限超過 → 放置 → 進行中の順
+    filtered.sort((a, b) => {
+      const rank = { 'OVERDUE': 0, 'STAGNANT': 1, 'ACTIVE': 2 };
+      return (rank[a.stage] || 3) - (rank[b.stage] || 3);
+    });
+
+    if (filtered.length === 0) {
+      const msg = currentDashboardHotFilter === 'STAGNANT' ? '🎉 アクション未設定（放置）の最優先ビジターはいません' :
+                  (currentDashboardHotFilter === 'OVERDUE' ? '🎉 期限超過の最優先ビジターはいません' : '現在フォロー対象の最優先ビジターはいません');
+
+      if (tbody) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 28px;">${msg}</td></tr>`;
       if (cardsContainer) {
         cardsContainer.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; color: #868e96; padding: 36px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
             <i class="fa-solid fa-fire text-2xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">現在フォロー対象のホットビジターはいません</div>
+            <div class="font-bold text-sm text-slate-600">${msg}</div>
           </div>
         `;
       }
       return;
     }
 
-    validRecords.forEach(r => {
+    filtered.forEach(({ record: r, stage }) => {
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
+
+        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
+          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+          : '';
+
         tr.innerHTML = `
           <td style="font-size: 11px; color: #64748b; white-space: nowrap; padding: 8px 6px;">
             ${formatEventDateWithElapsed(r.eventDate)}
@@ -463,6 +636,9 @@
           <td style="white-space: normal !important; word-break: break-word; max-width: none !important; line-height: 1.4; padding: 8px 10px; vertical-align: top;">
             ${renderCurrentStatusColumnHtml(r)}
           </td>
+          <td style="padding: 6px 4px; vertical-align: top; width: 140px;" class="text-center">
+            ${statusGroupHtml}
+          </td>
         `;
         tbody.appendChild(tr);
       }
@@ -471,11 +647,22 @@
       if (cardsContainer) {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
-        card.onclick = function() {
+        card.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
 
         const actionBlockHtml = renderHotVisitorActionFullWidthHtml(r);
+        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
+          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+          : '';
+
+        let stageBadgeHtml = '';
+        if (stage === 'STAGNANT') {
+          stageBadgeHtml = '<span class="badge" style="font-size:10px; font-weight:800; background:#ffe4e6; color:#e11d48; padding:2px 6px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>放置</span>';
+        } else if (stage === 'OVERDUE') {
+          stageBadgeHtml = '<span class="badge" style="font-size:10px; font-weight:800; background:#ffe3e3; color:#e03131; padding:2px 6px; border-radius:6px;"><i class="fa-solid fa-clock mr-1"></i>超過</span>';
+        }
 
         card.innerHTML = `
           <div class="dash-card-main-row">
@@ -485,6 +672,7 @@
                 <div class="dash-card-name-row">
                   <span class="dash-card-name">${escapeHtml(r.name || 'ビジター No.' + r.id)}</span>
                   ${renderRepeatBadgeHtml(r)}
+                  ${stageBadgeHtml}
                 </div>
                 <div class="dash-card-company">
                   ${escapeHtml(r.company || '-')}${r.profession ? ` / ${escapeHtml(r.profession)}` : ''}
@@ -504,17 +692,22 @@
           </div>
 
           <!-- 担当と紹介者を下の列に -->
-          <div class="dash-card-bottom-row">
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-tags">
               <span class="dash-card-meta-tag">
                 <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(r.inviter || '-')}</strong>
               </span>
               ${r.orientUser ? `
-                <span class="dash-card-meta-tag">
+                <span class="dash-card-meta-tag ml-2">
                   <i class="fa-solid fa-user-check text-indigo-500"></i> 担当: <strong class="text-slate-800">${escapeHtml(r.orientUser)}</strong>
                 </span>
               ` : ''}
             </div>
+          </div>
+
+          <!-- ステータスセレクター群 -->
+          <div class="pt-2">
+            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);

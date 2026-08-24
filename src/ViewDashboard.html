@@ -1,6 +1,9 @@
 <!-- VIEW 1: ダッシュボード (Apple-Style Minimal & Refined) -->
 <div id="view-dashboard" class="view-content active">
 
+  <!-- 0. 今日の要対応アラート (スマート表示) -->
+  <div id="dash-today-alerts" style="display: none;"></div>
+
   <!-- 1. 4大主要KPIサマリー (Integrated Ring-Number Main Visual with Minimal Status Dots) -->
   <div class="dash-hero-grid">
     <!-- KPI 1: 次回定例会 (日付ラベル & 右上ステータスドット & 中央特大数字リング) -->
@@ -104,6 +107,22 @@
     </div>
   </div>
 
+  <!-- 1.5. 入会進捗ミニ・パイプラインバー (Pipeline Flow) -->
+  <div class="dash-pipeline-card" id="dash-pipeline-card">
+    <div class="dash-pipeline-header">
+      <div class="dash-pipeline-title">
+        <i class="fa-solid fa-bars-progress text-blue-600"></i>
+        <span>入会進捗パイプライン</span>
+      </div>
+      <button type="button" class="text-xs font-semibold text-blue-600 hover:text-blue-800 transition" onclick="switchTab('visitors')" title="全ビジター一覧で確認">
+        全ビジター一覧 <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
+      </button>
+    </div>
+    <div class="dash-pipeline-grid" id="dash-pipeline-grid">
+      <!-- JSで動的レンダリング -->
+    </div>
+  </div>
+
   <!-- 2. セグメントコントロール -->
   <div class="dash-nav-wrap">
     <button type="button" class="dash-nav-btn active" id="dash-tab-btn-hot" onclick="switchDashboardPanel('hot')">
@@ -128,13 +147,21 @@
     <!-- パネル 1: 最優先フォロー -->
     <div id="dash-panel-hot" class="dash-panel active">
       <section class="section-card overflow-hidden">
-        <div class="section-header flex justify-between items-center py-3 px-4">
-          <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
-            <i class="fa-solid fa-fire text-slate-400 mr-1"></i> 最優先フォロー (感触A)
-          </h2>
-          <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('priority-follow')" title="最優先フォロー全件表示">
-            <i class="fa-solid fa-chevron-right text-xs"></i>
-          </button>
+        <div class="section-header flex justify-between items-center py-3 px-4 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <h2 class="section-title text-slate-900 font-bold text-sm sm:text-base m-0">
+              <i class="fa-solid fa-fire text-amber-500 mr-1"></i> 最優先フォロー (感触A)
+            </h2>
+            <button type="button" class="btn-action-secondary text-xs px-2.5 py-1" onclick="switchTab('priority-follow')" title="最優先フォロー管理ボードを開く">
+              <i class="fa-solid fa-chevron-right text-xs"></i>
+            </button>
+          </div>
+          <div class="seg-pill-group w-full sm:w-auto">
+            <button type="button" class="seg-pill-btn active" id="dash-hot-filter-all" onclick="filterDashboardHotVisitors('ALL')">すべて</button>
+            <button type="button" class="seg-pill-btn text-rose-600" id="dash-hot-filter-stagnant" onclick="filterDashboardHotVisitors('STAGNANT')">🚨 放置</button>
+            <button type="button" class="seg-pill-btn text-red-600" id="dash-hot-filter-overdue" onclick="filterDashboardHotVisitors('OVERDUE')">⏰ 超過</button>
+            <button type="button" class="seg-pill-btn text-blue-600" id="dash-hot-filter-active" onclick="filterDashboardHotVisitors('ACTIVE')">🏃 進行中</button>
+          </div>
         </div>
 
         <!-- PCテーブル -->
@@ -146,6 +173,7 @@
                 <th style="width: 110px; min-width: 95px; max-width: 120px;">氏名 / 会社</th>
                 <th style="width: 80px; min-width: 75px; max-width: 85px;">招待 / 担当</th>
                 <th style="width: auto;">最新状況・次の一手</th>
+                <th style="width: 140px; text-align: center;">ステータス</th>
               </tr>
             </thead>
             <tbody id="table-hot-visitors"></tbody>
@@ -217,8 +245,7 @@
               <th>会社名 / 専門分野</th>
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
-              <th class="text-center col-w-sm">出欠</th>
-
+              <th class="text-center" style="width: 140px;">ステータス</th>
             </tr>
           </thead>
           <tbody id="table-next-meeting"></tbody>
@@ -247,7 +274,7 @@
               <th>会社名 / 専門分野</th>
               <th>招待者</th>
               <th class="text-center col-w-sm">ランク</th>
-              <th class="text-center col-w-sm">出欠</th>
+              <th class="text-center" style="width: 140px;">ステータス</th>
 
             </tr>
           </thead>

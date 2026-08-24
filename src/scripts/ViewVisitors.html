@@ -271,23 +271,26 @@
       const companyPart = formatTruncatedCell(r.company, 12);
       const profPart = formatTruncatedCell(r.profession, 12);
       const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
+      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
+        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        : renderAttendButtonHtml(r.id, r.isAttended);
 
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
 
         tr.innerHTML = `
           <td>${idx + 1}</td>
-          <td>${renderVisitorNameLinkHtml(r.id, r.name)}</td>
+          <td>${renderVisitorNameLinkHtml(r.id, r.name, r)}</td>
           <td>${companyCell}</td>
           <td>${formatTruncatedCell(r.inviter, 10)}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-          <td class="text-center">${renderAttendButtonHtml(r.id, r.isAttended)}</td>
+          <td class="text-center" style="width: 140px; padding: 6px 4px;">${statusGroupHtml}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -296,7 +299,8 @@
       if (cardsContainer) {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
-        card.onclick = function() {
+        card.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -321,13 +325,15 @@
             </div>
           </div>
 
-          <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+            <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
+              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-            <div class="dash-card-status-right">
-              ${renderAttendButtonHtml(r.id, r.isAttended)}
-            </div>
+          </div>
+
+          <div class="pt-2">
+            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -353,7 +359,7 @@
     if (tbody) tbody.innerHTML = '';
     if (cardsContainer) cardsContainer.innerHTML = '';
 
-    const list = (currentDashboardOneMonthList || []).filter(r => r.isJoined !== '見送り');
+    const list = (currentDashboardOneMonthList || []).filter(r => r.isJoined !== '見送り' && r.isJoined !== 'フォロー終了');
     const filterMode = (typeof currentDashboardOneMonthFilter !== 'undefined') ? currentDashboardOneMonthFilter : 'pending';
 
     let filtered = list;
@@ -381,12 +387,16 @@
     }
 
     filtered.forEach(r => {
+      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
+        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        : '';
+
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -395,7 +405,7 @@
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>
             <div>
-              ${renderVisitorNameLinkHtml(r.id, r.name)}
+              ${renderVisitorNameLinkHtml(r.id, r.name, r)}
               <div style="font-size:11px; color:#64748b;">${escapeHtml(r.company || '-')} / ${escapeHtml(r.profession || '-')}</div>
             </div>
           </td>
@@ -414,7 +424,8 @@
       if (cardsContainer) {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
-        card.onclick = function() {
+        card.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -439,14 +450,20 @@
             </div>
           </div>
 
-          <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
+          <!-- アクション/進捗状況 -->
+          <div class="dash-hot-action-block">
+            ${renderCurrentStatusColumnHtml(r)}
+          </div>
+
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+            <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-            <div class="dash-card-status-right">
-              ${renderCurrentStatusColumnHtml(r)}
-            </div>
+          </div>
+
+          <div class="pt-2">
+            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
