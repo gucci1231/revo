@@ -1,0 +1,405 @@
+<script>
+  /* --- 📢 Report & Message Manager Logic (HTML Email & LINE Reports Center) --- */
+  let cachedReportTemplates = [];
+  let currentSelectedReportId = 'meeting_recap';
+  let currentReportChannel = 'email'; // 'email' | 'line'
+
+  const REPORT_TAGS = {
+    meeting_recap: [
+      { tag: '{{定例会日付}}', label: '定例会日付' },
+      { tag: '{{本日来訪数}}', label: '本日来訪数' },
+      { tag: '{{高感触A数}}', label: 'Aランク数' },
+      { tag: '{{要対応ToDo数}}', label: '要対応ToDo数' },
+      { tag: '{{来訪ビジターテーブルHTML}}', label: '来訪者テーブル(HTML)' },
+      { tag: '{{来訪ビジターLINE一覧}}', label: '来訪者一覧(LINE)' },
+      { tag: '{{要対応アクションリストHTML}}', label: 'ToDoリスト(HTML)' },
+      { tag: '{{要対応アクションLINE一覧}}', label: 'ToDo一覧(LINE)' },
+      { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
+    ],
+    member_remind: [
+      { tag: '{{メンバー名}}', label: 'メンバー名' },
+      { tag: '{{担当ToDo件数}}', label: '担当ToDo数' },
+      { tag: '{{メンバー担当ToDoHTML}}', label: '担当ToDo(HTML)' },
+      { tag: '{{メンバー担当ToDoLINE}}', label: '担当ToDo(LINE)' },
+      { tag: '{{メンバー個別URL}}', label: '個人ダッシュボードURL' }
+    ],
+    weekly_summary: [
+      { tag: '{{月間招待数}}', label: '今期招待ビジター数' },
+      { tag: '{{月間入会数}}', label: '入会決定数' },
+      { tag: '{{成約率}}', label: '入会成約率' },
+      { tag: '{{フォロー中件数}}', label: 'フォロー中件数' },
+      { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
+    ],
+    action_cleared: [
+      { tag: '{{ビジター名}}', label: 'ビジター名' },
+      { tag: '{{担当者名}}', label: '担当者名' },
+      { tag: '{{アクション内容}}', label: 'アクション内容' },
+      { tag: '{{報告内容}}', label: '報告内容' },
+      { tag: '{{カルテURL}}', label: 'カルテURL' }
+    ]
+  };
+
+  function initReportManager() {
+    fetchReportTemplatesData(false);
+  }
+
+  function fetchReportTemplatesData(force = false) {
+    if (!force && cachedReportTemplates && cachedReportTemplates.length > 0) {
+      renderReportManagerUI();
+      return;
+    }
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('getReportTemplatesApi').then(res => {
+        if (res && res.templates) {
+          cachedReportTemplates = res.templates;
+        }
+        renderReportManagerUI();
+      }).catch(err => {
+        console.error('Failed to load report templates:', err);
+        renderReportManagerUI();
+      });
+    }
+  }
+
+  function switchReportTab(reportId) {
+    currentSelectedReportId = reportId;
+
+    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+      const btn = document.getElementById('rm-tab-btn-' + id);
+      if (btn) {
+        if (id === reportId) {
+          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer';
+        } else {
+          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+      }
+    });
+
+    renderReportManagerUI();
+  }
+
+  function switchReportChannel(channel) {
+    currentReportChannel = channel;
+
+    const btnEmail = document.getElementById('rm-channel-btn-email');
+    const btnLine = document.getElementById('rm-channel-btn-line');
+    const formEmail = document.getElementById('rm-form-email');
+    const formLine = document.getElementById('rm-form-line');
+    const previewEmail = document.getElementById('rm-preview-container-email');
+    const previewLine = document.getElementById('rm-preview-container-line');
+
+    if (channel === 'email') {
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
+      if (formEmail) formEmail.style.display = 'block';
+      if (formLine) formLine.style.display = 'none';
+      if (previewEmail) previewEmail.style.display = 'block';
+      if (previewLine) previewLine.style.display = 'none';
+    } else {
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
+      if (formEmail) formEmail.style.display = 'none';
+      if (formLine) formLine.style.display = 'block';
+      if (previewEmail) previewEmail.style.display = 'none';
+      if (previewLine) previewLine.style.display = 'block';
+    }
+
+    updateReportPreview();
+  }
+
+  function getCurrentTemplate() {
+    return cachedReportTemplates.find(t => t.id === currentSelectedReportId) || {
+      id: currentSelectedReportId,
+      title: 'テンプレート',
+      is_enabled: 1,
+      email_subject: '',
+      email_html_body: '',
+      line_template_body: '',
+      default_recipients: 'info@k-d-o.biz'
+    };
+  }
+
+  function renderReportManagerUI() {
+    const t = getCurrentTemplate();
+
+    const titleEl = document.getElementById('rm-current-title');
+    const toggleEl = document.getElementById('rm-enabled-toggle');
+    const labelEl = document.getElementById('rm-enabled-label');
+    const recipientsEl = document.getElementById('rm-email-recipients');
+    const subjectEl = document.getElementById('rm-email-subject');
+    const emailBodyEl = document.getElementById('rm-email-body');
+    const lineBodyEl = document.getElementById('rm-line-body');
+
+    if (titleEl) titleEl.innerText = t.title || '報告テンプレート';
+    const isEnabled = Number(t.is_enabled) === 1;
+    if (toggleEl) toggleEl.checked = isEnabled;
+    if (labelEl) {
+      labelEl.innerText = isEnabled ? '有効 (配信対象)' : '無効 (停止中)';
+      labelEl.className = isEnabled ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-slate-400';
+    }
+
+    if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
+    if (subjectEl) subjectEl.value = t.email_subject || '';
+    if (emailBodyEl) emailBodyEl.value = t.email_html_body || '';
+    if (lineBodyEl) lineBodyEl.value = t.line_template_body || '';
+
+    renderPlaceholderChips();
+    updateReportPreview();
+  }
+
+  function renderPlaceholderChips() {
+    const tags = REPORT_TAGS[currentSelectedReportId] || [];
+    const emailContainer = document.getElementById('rm-email-placeholder-chips');
+    const lineContainer = document.getElementById('rm-line-placeholder-chips');
+
+    const makeChips = (targetInputId) => {
+      return tags.map(item => `
+        <button type="button" onclick="insertTagIntoTextarea('${targetInputId}', '${item.tag}')" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-mono border border-slate-200/80 transition cursor-pointer" title="${item.label}">
+          ${escapeHtml(item.tag)}
+        </button>
+      `).join('');
+    };
+
+    if (emailContainer) emailContainer.innerHTML = makeChips('rm-email-body');
+    if (lineContainer) lineContainer.innerHTML = makeChips('rm-line-body');
+  }
+
+  function insertTagIntoTextarea(targetId, tag) {
+    const textarea = document.getElementById(targetId);
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const val = textarea.value;
+    textarea.value = val.substring(0, start) + tag + val.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + tag.length;
+    textarea.focus();
+    updateReportPreview();
+  }
+
+  function getReportSampleContext() {
+    const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+    const origin = window.location.origin;
+
+    // 実データから抽出
+    const visitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) ? cachedAllVisitors : [];
+    const flatMembers = (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers)) ? cachedFlatMembers : [];
+    
+    // 最近の定例会ビジター
+    const recentVisitors = visitors.slice(0, 4);
+    const feelACount = recentVisitors.filter(v => parseFeelAbc(v.feelAbc) === 'A').length;
+
+    // 来訪ビジターテーブル (HTML)
+    let visitorTableHtml = '<table class="table"><thead><tr><th>ビジター氏名</th><th>会社・専門分野</th><th>感触</th><th>招待者</th></tr></thead><tbody>';
+    if (recentVisitors.length > 0) {
+      recentVisitors.forEach(v => {
+        const feel = parseFeelAbc(v.feelAbc);
+        const feelBadge = feel === 'A' ? '<span class="badge badge-a">A (高感触)</span>' : (feel === 'B' ? '<span class="badge badge-b">B (中感触)</span>' : '<span class="badge badge-c">C (その他)</span>');
+        visitorTableHtml += `<tr><td style="font-weight:bold;">${escapeHtml(v.name || '')} 様</td><td>${escapeHtml(v.company || '')}</td><td>${feelBadge}</td><td>${escapeHtml(v.inviter || '')}</td></tr>`;
+      });
+    } else {
+      visitorTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">本日のビジターデータはありません</td></tr>';
+    }
+    visitorTableHtml += '</tbody></table>';
+
+    // 来訪ビジターLINE一覧
+    let visitorLineList = '';
+    if (recentVisitors.length > 0) {
+      recentVisitors.forEach((v, i) => {
+        visitorLineList += `${i + 1}. ${v.name || 'ビジター'} 様 (${v.company || ''}) / 招待: ${v.inviter || ''} / 感触: [${parseFeelAbc(v.feelAbc)}]\n`;
+      });
+    } else {
+      visitorLineList = '（本日の来訪者はありません）';
+    }
+
+    // 要対応アクション
+    const apList = (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) ? currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0).slice(0, 3) : [];
+    
+    let actionTableHtml = '<table class="table"><thead><tr><th>期日</th><th>ビジター</th><th>アクション内容</th><th>担当者</th></tr></thead><tbody>';
+    if (apList.length > 0) {
+      apList.forEach(p => {
+        actionTableHtml += `<tr><td style="color:#dc2626; font-weight:bold;">${escapeHtml(p.due_date || '')}</td><td>${escapeHtml(p.visitor_name || '')} 様</td><td>${escapeHtml(p.action_text || '')}</td><td>${escapeHtml(p.assignee_name || '')}</td></tr>`;
+      });
+    } else {
+      actionTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">現在未対応のアクションはありません</td></tr>';
+    }
+    actionTableHtml += '</tbody></table>';
+
+    let actionLineList = '';
+    if (apList.length > 0) {
+      apList.forEach((p, i) => {
+        actionLineList += `・【${p.due_date || '期日未設定'}】${p.visitor_name || ''}様: ${p.action_text || ''} (担当: ${p.assignee_name || ''})\n`;
+      });
+    } else {
+      actionLineList = '（未対応のTo-Doはありません）';
+    }
+
+    // サンプルメンバー
+    const sampleMember = flatMembers[0] || { id: '1', name: '居原田 晃司' };
+    const memberShareUrl = `${origin}/member/${sampleMember.id || '1'}`;
+
+    return {
+      '{{定例会日付}}': todayStr,
+      '{{本日来訪数}}': `${recentVisitors.length}`,
+      '{{高感触A数}}': `${feelACount}`,
+      '{{要対応ToDo数}}': `${apList.length}`,
+      '{{来訪ビジターテーブルHTML}}': visitorTableHtml,
+      '{{来訪ビジターLINE一覧}}': visitorLineList.trim(),
+      '{{要対応アクションリストHTML}}': actionTableHtml,
+      '{{要対応アクションLINE一覧}}': actionLineList.trim(),
+      '{{ダッシュボードURL}}': `${origin}/#dashboard`,
+      '{{メンバー名}}': sampleMember.name,
+      '{{担当ToDo件数}}': '2',
+      '{{メンバー担当ToDoHTML}}': '<div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #e2e8f0;"><div style="font-weight:bold;">お礼連絡 ＆ フォロー1to1日程調整</div><div style="font-size:11px; color:#dc2626;">期日: 本日中</div></div>',
+      '{{メンバー担当ToDoLINE}}': '・山田 太郎様: お礼連絡 ＆ 1to1日程調整 (期日: 本日中)\n・鈴木 次郎様: 次回定例会リマインド (期日: 次回開催前)',
+      '{{メンバー個別URL}}': memberShareUrl,
+      '{{月間招待数}}': '18',
+      '{{月間入会数}}': '5',
+      '{{成約率}}': '28',
+      '{{フォロー中件数}}': '8',
+      '{{ビジター名}}': recentVisitors[0] ? recentVisitors[0].name : '山田 太郎',
+      '{{担当者名}}': sampleMember.name,
+      '{{アクション内容}}': 'フォロー1to1 実施完了',
+      '{{報告内容}}': '自社サービスとBNIの仕組みについて詳しくご案内。前向きにご検討中とのことです！',
+      '{{カルテURL}}': `${origin}/#visitor/${recentVisitors[0] ? recentVisitors[0].id : '1'}`
+    };
+  }
+
+  function replacePlaceholders(templateText, context) {
+    if (!templateText) return '';
+    let result = templateText;
+    for (const [key, value] of Object.entries(context)) {
+      result = result.split(key).join(value);
+    }
+    return result;
+  }
+
+  function updateReportPreview() {
+    const context = getReportSampleContext();
+
+    // 1. メールプレビュー
+    const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
+    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+    const replacedSubject = replacePlaceholders(subjectRaw, context);
+    const replacedBody = replacePlaceholders(bodyRaw, context);
+
+    const previewSubjectEl = document.getElementById('rm-preview-email-subject');
+    if (previewSubjectEl) previewSubjectEl.innerText = replacedSubject;
+
+    const iframe = document.getElementById('rm-email-preview-frame');
+    if (iframe) {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(replacedBody);
+      doc.close();
+    }
+
+    // 2. LINEプレビュー
+    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const replacedLine = replacePlaceholders(lineRaw, context);
+    const linePreviewEl = document.getElementById('rm-preview-line-content');
+    if (linePreviewEl) linePreviewEl.innerText = replacedLine;
+  }
+
+  function saveCurrentReportTemplate() {
+    const t = getCurrentTemplate();
+    const title = document.getElementById('rm-current-title')?.innerText || t.title;
+    const isEnabled = document.getElementById('rm-enabled-toggle')?.checked ? 1 : 0;
+    const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
+    const subject = document.getElementById('rm-email-subject')?.value || '';
+    const emailBody = document.getElementById('rm-email-body')?.value || '';
+    const lineBody = document.getElementById('rm-line-body')?.value || '';
+
+    const payload = {
+      id: currentSelectedReportId,
+      title: title,
+      is_enabled: isEnabled,
+      default_recipients: recipients,
+      email_subject: subject,
+      email_html_body: emailBody,
+      line_template_body: lineBody
+    };
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('updateReportTemplateApi', payload).then(res => {
+        if (res && res.success) {
+          showToast('テンプレートを保存しました', 'success');
+          // キャッシュ更新
+          const idx = cachedReportTemplates.findIndex(x => x.id === currentSelectedReportId);
+          if (idx !== -1) {
+            cachedReportTemplates[idx] = res.template || payload;
+          }
+        }
+      }).catch(err => {
+        showToast('保存に失敗しました', 'error');
+      });
+    }
+  }
+
+  function onReportToggleChange(checked) {
+    const isEnabled = checked ? 1 : 0;
+    const labelEl = document.getElementById('rm-enabled-label');
+    if (labelEl) {
+      labelEl.innerText = checked ? '有効 (配信対象)' : '無効 (停止中)';
+      labelEl.className = checked ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-slate-400';
+    }
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('toggleReportTemplateApi', currentSelectedReportId, isEnabled).then(res => {
+        showToast(checked ? 'この報告を「有効」にしました' : 'この報告を「無効」にしました', 'info');
+        const t = cachedReportTemplates.find(x => x.id === currentSelectedReportId);
+        if (t) t.is_enabled = isEnabled;
+      }).catch(() => {
+        showToast('設定の変更に失敗しました', 'error');
+      });
+    }
+  }
+
+  function sendTestReportEmail() {
+    const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
+    const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
+    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+
+    const context = getReportSampleContext();
+    const replacedSubject = replacePlaceholders(subjectRaw, context);
+    const replacedBody = replacePlaceholders(bodyRaw, context);
+
+    if (!recipients) {
+      showToast('送信先アドレスを入力してください', 'warning');
+      return;
+    }
+
+    showToast('info@k-d-o.biz からテストメールを送信中...', 'info');
+
+    // 複数アドレスの場合は最初のアドレスでテスト送信
+    const firstRecipient = recipients.split(',')[0].trim();
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('sendReportMailApi', firstRecipient, replacedSubject, replacedBody).then(res => {
+        if (res && res.success) {
+          showToast(`送信成功: ${firstRecipient} にメールを送信しました`, 'success');
+        }
+      }).catch(err => {
+        showToast('メール送信に失敗しました', 'error');
+      });
+    }
+  }
+
+  function copyReplacedLineReportText() {
+    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const context = getReportSampleContext();
+    const replacedLine = replacePlaceholders(lineRaw, context);
+
+    if (!replacedLine) {
+      showToast('コピーする文面がありません', 'warning');
+      return;
+    }
+
+    navigator.clipboard.writeText(replacedLine).then(() => {
+      showToast('LINE報告文をクリップボードにコピーしました！', 'success');
+    }).catch(() => {
+      showToast('コピーに失敗しました', 'error');
+    });
+  }
+</script>

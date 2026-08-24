@@ -92,8 +92,8 @@
       } else if (hash.includes('period') || hash.includes('term')) {
         setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('period'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates'].includes(hash)) {
-      switchTab(hash === 'action-plans' ? 'actions' : hash, false);
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports'].includes(hash)) {
+      switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
     }
   }
 
@@ -185,6 +185,7 @@
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
     'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
+    'report-manager': { title: '報告・メッセージ管理', icon: 'fa-solid fa-paper-plane' },
     'settings': { title: '各種設定・メンバー管理', icon: 'fa-solid fa-gear' },
     'visitor-detail': { title: 'ビジター詳細', icon: 'fa-solid fa-user-tag' }
   };
@@ -212,7 +213,7 @@
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -254,6 +255,8 @@
       fetchScheduledEmailsData(true);
     } else if (tabName === 'email-templates') {
       fetchEmailTemplatesData(true);
+    } else if (tabName === 'report-manager') {
+      if (typeof initReportManager === 'function') initReportManager();
     } else if (tabName === 'settings') {
       if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();

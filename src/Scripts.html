@@ -11,6 +11,7 @@
 <?!= include('scripts/ViewHearings'); ?>
 <?!= include('scripts/ViewEmailSchedule'); ?>
 <?!= include('scripts/ViewEmailTemplates'); ?>
+<?!= include('scripts/ViewReportManager'); ?>
 <?!= include('scripts/ViewVisitorDetail'); ?>
 <?!= include('scripts/ModalVisitorCrud'); ?>
 <?!= include('scripts/ModalHearingForm'); ?>
@@ -91,7 +92,7 @@
       setTimeout(() => {
         if (typeof initMemberDashboard === 'function') initMemberDashboard(targetMember);
       }, 50);
-    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);
