@@ -512,13 +512,29 @@
       const list = Array.isArray(dataOrList) ? dataOrList : (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
       const dedupedList = typeof deduplicateVisitorListClient === 'function' ? deduplicateVisitorListClient(list) : list;
 
+      let startDateStr = '2026/04/01';
+      if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
+        startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
+      }
+      const startDateClean = startDateStr.replace(/\//g, '-');
+
       dedupedList.forEach(v => {
+        // 期首判定（今期ビジターに絞り込み）
+        if (v.eventDate) {
+          const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
+          if (evDateClean < startDateClean) return;
+        }
+
         const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
         const feel = typeof parseFeelAbc === 'function' ? parseFeelAbc(v.feelAbc) : (v.feelAbc || '');
         const isFeelBOrAbove = (feel === 'A' || feel === 'B');
+        const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
+        const isFollowClosed = (followType === 'フォロー終了');
+        const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
+        const isRejected = (status === '見送り' || status === 'フォロー終了' || isFollowClosed);
 
         if (status === '未') {
-          if (isFeelBOrAbove && v.isJoined !== '見送り' && v.isJoined !== 'フォロー終了') {
+          if (isFeelBOrAbove && !isRejected && isFollowActive) {
             counts['未']++;
           }
         } else if (counts[status] !== undefined) {

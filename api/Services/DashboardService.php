@@ -159,14 +159,17 @@ class DashboardService {
             $periodVisitors[] = $r;
         }
 
-        // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
+                // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
         $uniqueVisitors = $this->deduplicateVisitorsList($periodVisitors, $apMap);
 
         // 3. ユニークビジターに対するパイプライン・最優先フォロー・1ヶ月フォロー集計
         foreach ($uniqueVisitors as $uv) {
             $rawJoin = trim($uv['isJoined'] ?? '');
             $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
-            $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了');
+            $rawFollow = trim($uv['followType'] ?? '');
+            $isFollowClosed = ($rawFollow === 'フォロー終了' || $rawFollow === '終了');
+            $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了' || $isFollowClosed);
+            $isFollowActive = ($rawFollow === '' || $rawFollow === 'フォロー' || $rawFollow === '直近フォロー');
             $feel = strtoupper(trim($uv['feelAbc'] ?? ''));
             $isFeelBOrAbove = ($feel === 'A' || $feel === 'B');
 
@@ -180,11 +183,11 @@ class DashboardService {
                 $pipelineCounts['申込書提出']++;
             } else if ($rawJoin === '検討中') {
                 $pipelineCounts['検討中']++;
-            } else if (!$isRejected && $isFeelBOrAbove) {
+            } else if (!$isRejected && $isFeelBOrAbove && $isFollowActive) {
                 $pipelineCounts['未']++;
             }
 
-            if ($feel === 'A' && !$isJoinedBool && !$isRejected) {
+            if ($feel === 'A' && !$isJoinedBool && !$isRejected && $isFollowActive) {
                 $hotVisitors[] = $uv;
             }
 
