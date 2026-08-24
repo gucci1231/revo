@@ -436,10 +436,64 @@ body {
 @media (max-width: 1023px) {
   body {
     padding-left: 16px;
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
   }
-  .left-drawer { transform: translateX(-100%); }
-  .left-drawer.open { transform: translateX(0); }
-  .btn-drawer-trigger { display: inline-flex; }
+  .left-drawer {
+    width: min(320px, 86vw);
+    transform: translateX(-100%);
+  }
+  .left-drawer.open {
+    transform: translateX(0);
+  }
+  .btn-drawer-trigger {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+    border-radius: 10px;
+  }
+  .drawer-header {
+    height: 68px;
+    padding: 0 18px;
+  }
+  .drawer-brand {
+    font-size: 16.5px;
+    gap: 12px;
+  }
+  .drawer-brand i {
+    font-size: 22px;
+  }
+  .btn-drawer-close {
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+    border-radius: 8px;
+  }
+  .drawer-nav-list {
+    padding: 14px 12px;
+    gap: 6px;
+  }
+  .drawer-nav-item {
+    font-size: 15.5px;
+    padding: 13px 16px;
+    gap: 14px;
+    border-radius: 10px;
+  }
+  .drawer-nav-item i {
+    font-size: 19px;
+    width: 24px;
+  }
+  .drawer-action-btn {
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  .drawer-footer {
+    min-height: 54px;
+    padding: 14px 18px;
+  }
+  .drawer-footer-text {
+    font-size: 12px;
+  }
 }
 
