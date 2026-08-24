@@ -1,7 +1,8 @@
 <script>
   /* --- 👤 Member Personal Dashboard Logic (Radical Minimalism & Apple-Style Clean Slate) --- */
   let currentSelectedMemberName = '';
-  let currentMemberVisitorsFilter = 'all';
+  let currentMemberRoleView = 'invited'; // 'invited' | 'oriented'
+  let currentMemberVisitorsFilter = 'all'; // 'all' | 'active' | 'joined'
   let isAllMembersSummaryView = false;
 
   function initMemberDashboard(targetMemberName = null) {
@@ -191,25 +192,51 @@
     return rawMatched;
   }
 
+  function getVisitorsByOrientationUser(orientMemberName) {
+    if (!orientMemberName || !cachedAllVisitors) return [];
+    const cleanOrient = normalizeNameKey(orientMemberName);
+
+    const rawMatched = cachedAllVisitors.filter(v => {
+      const vOrient = (v.orientUser || v.orient_user || '').trim();
+      if (!vOrient) return false;
+      if (normalizeNameKey(vOrient) === cleanOrient) return true;
+      if (typeof findMemberByName === 'function') {
+        const found = findMemberByName(vOrient);
+        if (found && (found.name === orientMemberName || normalizeNameKey(found.name) === cleanOrient)) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    // 同一人物を1人として名寄せ統合
+    if (typeof deduplicateVisitorListClient === 'function') {
+      return deduplicateVisitorListClient(rawMatched);
+    }
+    return rawMatched;
+  }
+
   function renderMemberDashboardData(memberName) {
-    const visitors = getVisitorsByInviter(memberName);
-    
-    const totalVisitors = visitors.length;
-    let joinedCount = 0;
-    let activeCount = 0;
+    const invitedVisitors = getVisitorsByInviter(memberName);
+    const orientedVisitors = getVisitorsByOrientationUser(memberName);
+
+    // 1. 招待実績
+    const totalInvited = invitedVisitors.length;
+    let invitedJoinedCount = 0;
+    let invitedActiveCount = 0;
     const todoList = [];
 
     const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
 
-    visitors.forEach(v => {
+    invitedVisitors.forEach(v => {
       const joinVal = String(v.isJoined || '').trim();
       const isJoined = (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済');
       const isDeclined = (joinVal === '辞退' || joinVal === '不参加' || joinVal === '見送り');
 
       if (isJoined) {
-        joinedCount++;
+        invitedJoinedCount++;
       } else if (!isDeclined) {
-        activeCount++;
+        invitedActiveCount++;
       }
 
       if (v.nextActionText && v.nextActionDueDate) {
@@ -253,20 +280,43 @@
       }
     });
 
-    const joinRate = totalVisitors > 0 ? Math.round((joinedCount / totalVisitors) * 100) : 0;
+    // 2. オリエンテーション＆クロージング実績
+    const totalOriented = orientedVisitors.length;
+    let orientJoinedCount = 0;
+    orientedVisitors.forEach(v => {
+      const joinVal = String(v.isJoined || '').trim();
+      const isJoined = (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済');
+      if (isJoined) {
+        orientJoinedCount++;
+      }
+    });
 
+    const joinRate = totalInvited > 0 ? Math.round((invitedJoinedCount / totalInvited) * 100) : 0;
+    const closingRate = totalOriented > 0 ? Math.round((orientJoinedCount / totalOriented) * 100) : 0;
+
+    // DOM更新
     const totalEl = document.getElementById('member-kpi-total-visitors');
     const joinedEl = document.getElementById('member-kpi-joined-count');
+    const orientCountEl = document.getElementById('member-kpi-orient-count');
+    const orientJoinedEl = document.getElementById('member-kpi-orient-joined-count');
     const activeEl = document.getElementById('member-kpi-active-count');
     const todoEl = document.getElementById('member-kpi-todo-count');
     const todoDot = document.getElementById('member-kpi-todo-dot');
     const joinRateEl = document.getElementById('member-dash-join-rate');
+    const closingRateEl = document.getElementById('member-dash-closing-rate');
+    const roleCountInvitedEl = document.getElementById('role-count-invited');
+    const roleCountOrientedEl = document.getElementById('role-count-oriented');
 
-    if (totalEl) totalEl.innerText = totalVisitors;
-    if (joinedEl) joinedEl.innerText = joinedCount;
-    if (activeEl) activeEl.innerText = activeCount;
+    if (totalEl) totalEl.innerText = totalInvited;
+    if (joinedEl) joinedEl.innerText = invitedJoinedCount;
+    if (orientCountEl) orientCountEl.innerText = totalOriented;
+    if (orientJoinedEl) orientJoinedEl.innerText = orientJoinedCount;
+    if (activeEl) activeEl.innerText = invitedActiveCount;
     if (todoEl) todoEl.innerText = todoList.length;
     if (joinRateEl) joinRateEl.innerText = `${joinRate}%`;
+    if (closingRateEl) closingRateEl.innerText = `${closingRate}%`;
+    if (roleCountInvitedEl) roleCountInvitedEl.innerText = totalInvited;
+    if (roleCountOrientedEl) roleCountOrientedEl.innerText = totalOriented;
 
     if (todoDot) {
       const hasOverdue = todoList.some(t => t.isOverdue);
@@ -275,6 +325,28 @@
     }
 
     renderMemberTodoList(todoList, memberName);
+
+    const activeList = currentMemberRoleView === 'oriented' ? orientedVisitors : invitedVisitors;
+    renderMemberVisitorCards(activeList);
+  }
+
+  function switchMemberRoleView(role) {
+    currentMemberRoleView = role;
+    ['invited', 'oriented'].forEach(r => {
+      const btn = document.getElementById('tab-role-' + r);
+      if (btn) {
+        if (r === role) {
+          btn.className = 'px-3 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer';
+        } else {
+          btn.className = 'px-3 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer';
+        }
+      }
+    });
+
+    const visitors = currentMemberRoleView === 'oriented'
+      ? getVisitorsByOrientationUser(currentSelectedMemberName)
+      : getVisitorsByInviter(currentSelectedMemberName);
+
     renderMemberVisitorCards(visitors);
   }
 
@@ -344,7 +416,10 @@
       }
     });
 
-    const visitors = getVisitorsByInviter(currentSelectedMemberName);
+    const visitors = currentMemberRoleView === 'oriented'
+      ? getVisitorsByOrientationUser(currentSelectedMemberName)
+      : getVisitorsByInviter(currentSelectedMemberName);
+
     renderMemberVisitorCards(visitors);
   }
 
@@ -440,47 +515,60 @@
 
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
     if (members.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center py-6 text-slate-400">メンバー情報がありません</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center py-6 text-slate-400">メンバー情報がありません</td></tr>';
       return;
     }
 
     const summaryList = members.map(m => {
       const mName = (m.name || '').trim();
-      const visitors = getVisitorsByInviter(mName);
-      const totalVisitors = visitors.length;
-      let joinedCount = 0;
-      let activeCount = 0;
+      const invitedVisitors = getVisitorsByInviter(mName);
+      const orientedVisitors = getVisitorsByOrientationUser(mName);
+
+      // 招待実績
+      const totalInvited = invitedVisitors.length;
+      let invitedJoinedCount = 0;
       let todoCount = 0;
 
       const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
 
-      visitors.forEach(v => {
+      invitedVisitors.forEach(v => {
         const joinVal = String(v.isJoined || '').trim();
         if (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済') {
-          joinedCount++;
-        } else if (joinVal !== '辞退' && joinVal !== '不参加' && joinVal !== '見送り') {
-          activeCount++;
+          invitedJoinedCount++;
         }
 
         if (v.nextActionText && v.nextActionDueDate) todoCount++;
         if (v.eventDate && v.eventDate >= todayStr && (!v.isAttended || v.isAttended === '未')) todoCount++;
       });
 
-      const joinRate = totalVisitors > 0 ? Math.round((joinedCount / totalVisitors) * 100) : 0;
+      // オリエン実績
+      const totalOriented = orientedVisitors.length;
+      let orientJoinedCount = 0;
+      orientedVisitors.forEach(v => {
+        const joinVal = String(v.isJoined || '').trim();
+        if (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済') {
+          orientJoinedCount++;
+        }
+      });
+
+      const joinRate = totalInvited > 0 ? Math.round((invitedJoinedCount / totalInvited) * 100) : 0;
+      const closingRate = totalOriented > 0 ? Math.round((orientJoinedCount / totalOriented) * 100) : 0;
 
       return {
         name: mName,
         category: m.category || 'その他',
         profession: m.profession || '',
-        totalVisitors,
-        joinedCount,
+        totalInvited,
+        invitedJoinedCount,
         joinRate,
-        activeCount,
+        totalOriented,
+        orientJoinedCount,
+        closingRate,
         todoCount
       };
     });
 
-    summaryList.sort((a, b) => b.totalVisitors - a.totalVisitors || b.joinedCount - a.joinedCount);
+    summaryList.sort((a, b) => (b.totalInvited + b.totalOriented) - (a.totalInvited + a.totalOriented) || b.totalInvited - a.totalInvited);
 
     let filtered = summaryList;
     if (query) {
@@ -497,10 +585,12 @@
           <td class="py-2.5 px-3 text-slate-500 font-bold text-[11px]">
             ${escapeHtml(s.category)}
           </td>
-          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalVisitors}</td>
-          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.joinedCount}</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalInvited}</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.invitedJoinedCount}</td>
           <td class="py-2.5 px-3 text-center font-bold text-slate-500 font-mono text-xs">${s.joinRate}%</td>
-          <td class="py-2.5 px-3 text-center font-bold text-slate-700 font-mono text-xs">${s.activeCount}</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalOriented}</td>
+          <td class="py-2.5 px-3 text-center font-black text-emerald-600 font-mono text-xs">${s.orientJoinedCount}</td>
+          <td class="py-2.5 px-3 text-center font-extrabold text-blue-600 font-mono text-xs">${s.closingRate}%</td>
           <td class="py-2.5 px-3 text-center font-mono text-xs">
             ${s.todoCount > 0 ? `<span class="font-bold text-red-600">${s.todoCount}</span>` : '<span class="text-slate-300">-</span>'}
           </td>

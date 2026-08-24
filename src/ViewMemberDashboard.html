@@ -65,50 +65,75 @@
           </div>
         </div>
 
-        <div class="text-right shrink-0">
-          <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">成約率</div>
-          <div class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-join-rate">0%</div>
+        <div class="flex items-center gap-4 shrink-0">
+          <div class="text-right">
+            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">招待成約率</div>
+            <div class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-join-rate">0%</div>
+          </div>
+          <div class="w-px h-8 bg-slate-200"></div>
+          <div class="text-right">
+            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">クロージング率</div>
+            <div class="text-lg sm:text-xl font-black text-blue-600 font-mono tracking-tight" id="member-dash-closing-rate">0%</div>
+          </div>
         </div>
       </div>
 
-      <!-- 4大KPIカード (Radical Minimalism: Pure White & DIN Numbers) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
-        <!-- 招待ビジター数 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
-          <div class="text-[11px] font-bold text-slate-400 mb-1">招待ビジター</div>
+      <!-- 6大KPIカード (招待力 ＆ オリエン・クロージング力) -->
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-5">
+        <!-- 招待数 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待ビジター</div>
           <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
-            <span class="text-[11px] font-bold text-slate-400">名</span>
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
+            <span class="text-[10px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
-        <!-- 入会決定数 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
-          <div class="text-[11px] font-bold text-slate-400 mb-1">入会決定</div>
+        <!-- 招待入会 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待入会</div>
           <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
-            <span class="text-[11px] font-bold text-slate-400">名</span>
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
+            <span class="text-[10px] font-bold text-slate-400">名</span>
+          </div>
+        </div>
+
+        <!-- オリエン担当回数 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン担当</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-count">0</span>
+            <span class="text-[10px] font-bold text-slate-400">回</span>
+          </div>
+        </div>
+
+        <!-- オリエン入会決定 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン入会</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-2xl font-black text-emerald-600 font-mono tracking-tight" id="member-kpi-orient-joined-count">0</span>
+            <span class="text-[10px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
         <!-- フォロー中 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
-          <div class="text-[11px] font-bold text-slate-400 mb-1">フォロー中</div>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="text-[10px] font-bold text-slate-400 mb-0.5">フォロー中</div>
           <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
-            <span class="text-[11px] font-bold text-slate-400">名</span>
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
+            <span class="text-[10px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
         <!-- 要対応アクション -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-bold text-slate-400">要対応To-Do</span>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[10px] font-bold text-slate-400">要対応To-Do</span>
             <span id="member-kpi-todo-dot" class="kpi-status-dot blue" title="正常"></span>
           </div>
           <div class="flex items-baseline gap-1">
-            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
-            <span class="text-[11px] font-bold text-slate-400">件</span>
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
+            <span class="text-[10px] font-bold text-slate-400">件</span>
           </div>
         </div>
       </div>
@@ -128,12 +153,21 @@
         </div>
       </div>
 
-      <!-- セクション 2: 招待ビジター進捗一覧 -->
+      <!-- セクション 2: ビジター進捗一覧 (招待 ⇄ オリエン担当 切り替え) -->
       <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
-          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">招待ビジター</h3>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-3">
           
-          <!-- フィルタ -->
+          <!-- 役割タブ (招待 ⇄ オリエン担当) -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-role-filter-tabs">
+            <button type="button" id="tab-role-invited" class="px-3 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="switchMemberRoleView('invited')">
+              招待ビジター (<span id="role-count-invited">0</span>)
+            </button>
+            <button type="button" id="tab-role-oriented" class="px-3 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="switchMemberRoleView('oriented')">
+              オリエン担当 (<span id="role-count-oriented">0</span>)
+            </button>
+          </div>
+          
+          <!-- 状態フィルタ -->
           <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-visitor-filter-tabs">
             <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
             <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
@@ -157,12 +191,12 @@
 
   </div>
 
-  <!-- 3. チャプター全メンバー招待状況サマリー一覧 (全体ビュー) -->
+  <!-- 3. チャプター全メンバー招待＆オリエン状況サマリー一覧 (全体ビュー) -->
   <div id="member-all-summary-container" style="display: none;">
     <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-slate-100 gap-3">
         <div>
-          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0">チャプターメンバー別 招待実績</h3>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0">チャプターメンバー別 招待＆オリエン実績</h3>
         </div>
         <div>
           <input type="text" id="all-members-search-input" placeholder="メンバー検索..." class="text-xs bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400" oninput="renderAllMembersSummaryTable()">
@@ -175,10 +209,12 @@
             <tr class="border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               <th class="py-2.5 px-3">メンバー</th>
               <th class="py-2.5 px-3">カテゴリ</th>
-              <th class="py-2.5 px-3 text-center">招待</th>
-              <th class="py-2.5 px-3 text-center">入会</th>
-              <th class="py-2.5 px-3 text-center">成約率</th>
-              <th class="py-2.5 px-3 text-center">フォロー中</th>
+              <th class="py-2.5 px-3 text-center">招待数</th>
+              <th class="py-2.5 px-3 text-center">招待入会</th>
+              <th class="py-2.5 px-3 text-center">招待成約率</th>
+              <th class="py-2.5 px-3 text-center">オリエン数</th>
+              <th class="py-2.5 px-3 text-center">オリエン入会</th>
+              <th class="py-2.5 px-3 text-center">クロージング率</th>
               <th class="py-2.5 px-3 text-center">To-Do</th>
               <th class="py-2.5 px-3 text-right"></th>
             </tr>
