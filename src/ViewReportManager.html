@@ -22,155 +22,155 @@
   </div>
 
   <!-- 2. メイン 2カラム レイアウト (左: 6大報告一覧 / 右: 設定・エディタ・プレビュー) -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-    <!-- ==================== 左カラム: 報告一覧リスト (4カラム) ==================== -->
-    <div class="lg:col-span-4 xl:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-4">
+    <!-- ==================== 左カラム: 報告一覧リスト (3カラム・コンパクト) ==================== -->
+    <div class="lg:col-span-3 xl:col-span-3 bg-white border border-slate-200/80 rounded-xl p-3 shadow-2xs space-y-3">
       
       <!-- セクション 1: 📅 週次定期配信 -->
       <div>
-        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100 px-1">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">定期配信 (週次)</span>
-          <span class="text-[10px] font-bold font-mono text-slate-400">3</span>
+        <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-100 px-0.5">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">定期配信 (週次)</span>
+          <span class="text-[9px] font-bold font-mono text-slate-400">3</span>
         </div>
 
-        <div class="space-y-1.5">
+        <div class="space-y-1">
           <!-- 1. 今週のビジター申込状況 -->
-          <div id="rm-item-weekly_visitor_status" onclick="switchReportTab('weekly_visitor_status')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-weekly_visitor_status" onclick="switchReportTab('weekly_visitor_status')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border-2 border-blue-600 bg-blue-50/50 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-fire"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">ビジター申込状況</span>
-                  <span id="rm-badge-weekly_visitor_status" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">ビジター申込状況</span>
+                  <span id="rm-badge-weekly_visitor_status" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週日曜 20:00</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">日 20:00</span>
                   <span>目標必達</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0"></i>
           </div>
 
           <!-- 2. 今週参加するビジター紹介 -->
-          <div id="rm-item-tuesday_visitor_intro" onclick="switchReportTab('tuesday_visitor_intro')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-tuesday_visitor_intro" onclick="switchReportTab('tuesday_visitor_intro')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-2 group">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-handshake"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">参加ビジター紹介</span>
-                  <span id="rm-badge-tuesday_visitor_intro" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">参加ビジター紹介</span>
+                  <span id="rm-badge-tuesday_visitor_intro" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週火曜 12:00</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">火 12:00</span>
                   <span>事前歓迎</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
 
           <!-- 3. 週間活動総合レポート -->
-          <div id="rm-item-weekly_full_report" onclick="switchReportTab('weekly_full_report')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-weekly_full_report" onclick="switchReportTab('weekly_full_report')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-2 group">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-chart-pie"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">週間総合レポート</span>
-                  <span id="rm-badge-weekly_full_report" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">週間総合レポート</span>
+                  <span id="rm-badge-weekly_full_report" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週日曜 21:00</span>
-                  <span>集計・進捗</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">日 21:00</span>
+                  <span>集計進捗</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
         </div>
       </div>
 
       <!-- セクション 2: ⚡ 都度・日次配信 -->
       <div>
-        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100 px-1">
-          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">都度・日次配信</span>
-          <span class="text-[10px] font-bold font-mono text-slate-400">3</span>
+        <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-100 px-0.5">
+          <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">都度・日次配信</span>
+          <span class="text-[9px] font-bold font-mono text-slate-400">3</span>
         </div>
 
-        <div class="space-y-1.5">
+        <div class="space-y-1">
           <!-- 4. アクション完了報告 -->
-          <div id="rm-item-action_completed" onclick="switchReportTab('action_completed')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-action_completed" onclick="switchReportTab('action_completed')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-2 group">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-award"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">アクション完了・称賛</span>
-                  <span id="rm-badge-action_completed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">アクション完了・称賛</span>
+                  <span id="rm-badge-action_completed" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
-                  <span>称賛・共有</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
+                  <span>称賛共有</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
 
           <!-- 5. 本日期限のタスク -->
-          <div id="rm-item-today_due_tasks" onclick="switchReportTab('today_due_tasks')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-today_due_tasks" onclick="switchReportTab('today_due_tasks')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-2 group">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-clock-rotate-left"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">本日期限タスク</span>
-                  <span id="rm-badge-today_due_tasks" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">本日期限タスク</span>
+                  <span id="rm-badge-today_due_tasks" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎朝 08:00</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">朝 08:00</span>
                   <span>漏れゼロ</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
 
           <!-- 6. ビジター新規申込速報 -->
-          <div id="rm-item-new_visitor_applied" onclick="switchReportTab('new_visitor_applied')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+          <div id="rm-item-new_visitor_applied" onclick="switchReportTab('new_visitor_applied')" class="rm-nav-item p-2 sm:p-2.5 rounded-lg border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-2 group">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] shrink-0">
                 <i class="fa-solid fa-rocket"></i>
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5 mb-0.5">
-                  <span class="text-xs font-black text-slate-900 truncate">新規ビジター申込速報</span>
-                  <span id="rm-badge-new_visitor_applied" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                  <span class="text-[11.5px] font-bold text-slate-900 truncate">新規申込速報</span>
+                  <span id="rm-badge-new_visitor_applied" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
-                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
-                  <span>速報・準備</span>
+                <div class="text-[9.5px] text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
+                  <span>速報準備</span>
                 </div>
               </div>
             </div>
-            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[9px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ==================== 右カラム: 設定・編集エディタ ＆ プレビュー (8カラム) ==================== -->
-    <div class="lg:col-span-8 xl:col-span-8 space-y-4">
+    <!-- ==================== 右カラム: 設定・編集エディタ ＆ プレビュー (9カラム) ==================== -->
+    <div class="lg:col-span-9 xl:col-span-9 space-y-4">
       
       <!-- 1. 配信タイミング設定 ＆ チャンネル切り替えカード -->
       <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
