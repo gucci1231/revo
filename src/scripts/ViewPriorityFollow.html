@@ -42,13 +42,9 @@
       const btn = map[s];
       if (btn) {
         if (s === actionStatus) {
-          btn.classList.add('active', 'ring-2', 'ring-offset-1');
-          if (s === 'STAGNANT') btn.classList.add('ring-amber-400');
-          else if (s === 'OVERDUE') btn.classList.add('ring-rose-400');
-          else if (s === 'ACTIVE') btn.classList.add('ring-blue-400');
-          else btn.classList.add('ring-slate-400');
+          btn.classList.add('active');
         } else {
-          btn.classList.remove('active', 'ring-2', 'ring-offset-1', 'ring-amber-400', 'ring-rose-400', 'ring-blue-400', 'ring-slate-400');
+          btn.classList.remove('active');
         }
       }
     });
@@ -105,11 +101,11 @@
       const oCount = Number(v.overdueActionCount) || 0;
 
       if (currentPfActionFilter === 'STAGNANT') {
-        if (pCount > 0) return false; // 未完了タスクがない＝停滞
+        if (pCount > 0) return false;
       } else if (currentPfActionFilter === 'OVERDUE') {
-        if (oCount === 0) return false; // 期限超過タスクあり
+        if (oCount === 0) return false;
       } else if (currentPfActionFilter === 'ACTIVE') {
-        if (pCount === 0 || oCount > 0) return false; // 期限内の未完了タスクあり
+        if (pCount === 0 || oCount > 0) return false;
       }
 
       if (!search) return true;
@@ -129,16 +125,15 @@
       const getPriorityRank = (v) => {
         const p = Number(v.pendingActionCount) || 0;
         const o = Number(v.overdueActionCount) || 0;
-        if (o > 0) return 1; // 最優先: 期限超過
-        if (p === 0) return 2; // 第2優先: 停滞（アクションなし）
-        return 3; // 第3優先: 進行中
+        if (o > 0) return 1;
+        if (p === 0) return 2;
+        return 3;
       };
 
       const rankA = getPriorityRank(a);
       const rankB = getPriorityRank(b);
       if (rankA !== rankB) return rankA - rankB;
 
-      // 同一優先度内は最新の参加日順
       const dateA = a.eventDate || '';
       const dateB = b.eventDate || '';
       return dateB.localeCompare(dateA);
@@ -194,7 +189,7 @@
     if (listContainer) listContainer.innerHTML = '';
 
     const total = filteredPfVisitors.length;
-    if (totalBadge) totalBadge.innerText = `${total}件`;
+    if (totalBadge) totalBadge.innerText = `${total}`;
 
     const totalPages = Math.ceil(total / PF_PAGE_SIZE) || 1;
     if (pfCurrentPage > totalPages) pfCurrentPage = totalPages;
@@ -212,7 +207,7 @@
         listContainer.innerHTML = `
           <div style="text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; margin: 12px;">
             <i class="fa-solid fa-filter-circle-xmark text-3xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">条件に合致する最優先フォロー対象はいません</div>
+            <div class="font-bold text-sm text-slate-600">該当するビジターはいません</div>
           </div>
         `;
       }
@@ -228,7 +223,7 @@
       return;
     }
 
-    // 選択中IDの検証（現在のページ内またはリスト内にあるか）
+    // 選択中IDの検証
     const exists = pageItems.some(v => String(v.id || v.visitorId) === String(selectedPfVisitorId));
     if (!exists || !selectedPfVisitorId) {
       selectedPfVisitorId = String(pageItems[0].id || pageItems[0].visitorId);
@@ -252,22 +247,22 @@
       if (oCount > 0) {
         borderAccentClass = 'border-l-4 border-l-rose-500';
         actionStatusBadge = `
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200" title="期限超過タスクあり">
-            <i class="fa-solid fa-clock-rotate-left text-rose-500"></i>超過 (${escapeHtml(v.nextActionDueDate || '期限切')})
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200" title="期限超過">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>${escapeHtml(v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '超過')}
           </span>
         `;
       } else if (pCount === 0) {
         borderAccentClass = 'border-l-4 border-l-amber-400 bg-amber-50/15';
         actionStatusBadge = `
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200" title="アクション未設定・停滞中">
-            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>アクション未設定
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200" title="未設定">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>未設定
           </span>
         `;
       } else {
         const nextDate = v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '進行中';
         actionStatusBadge = `
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 max-w-[140px] truncate" title="${escapeHtml(v.nextActionText || '')}">
-            <i class="fa-regular fa-clock text-blue-500 shrink-0"></i>${escapeHtml(nextDate)}: ${escapeHtml(v.nextActionText || '予定あり')}
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200 max-w-[120px] truncate" title="${escapeHtml(v.nextActionText || '')}">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>${escapeHtml(nextDate)}
           </span>
         `;
       }
