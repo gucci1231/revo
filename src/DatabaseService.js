@@ -905,6 +905,26 @@ function syncFormResponsesToRdb() {
 }
 
 /**
+ * Xserver (SQLite RDB) へ最新データを即時プッシュ同期
+ */
+function pushSyncToXserver() {
+  try {
+    const url = "https://revo.k-d-o.biz/api/sync.php";
+    const options = {
+      method: "post",
+      muteHttpExceptions: true,
+      headers: {
+        "User-Agent": "Google-Apps-Script"
+      }
+    };
+    const res = UrlFetchApp.fetch(url, options);
+    Logger.log("[Xserver Webhook同期完了] " + res.getContentText());
+  } catch (err) {
+    Logger.log("[Xserver Webhook同期エラー] " + err);
+  }
+}
+
+/**
  * 【定期自動同期エンジン】スプレッドシートを定期チェックし、新着データの自動取り込み・整合性修復・高速キャッシュ更新を全自動で行う
  */
 function autoCheckAndSyncSheets() {
@@ -916,6 +936,8 @@ function autoCheckAndSyncSheets() {
     runDataFormatCheckAndRepair();
     // 3. 最新集計結果の高速キャッシュ構築
     const updatedSummary = updateSummaryCacheTable();
+    // 4. Xserver (SQLite DB) への即時プッシュ同期
+    pushSyncToXserver();
 
     Logger.log(`[自動定期同期完了] 新着追加: ${addedCount}件 / タイムスタンプ: ${new Date()}`);
     return { success: true, addedCount: addedCount, summary: updatedSummary };
