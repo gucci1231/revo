@@ -12462,15 +12462,18 @@ window.CelebrationEffect = (function() {
     } else if (currentSelectedMemberName) {
       selectMemberDashboard(currentSelectedMemberName, false);
     } else {
-      showMemberDashEmpty();
+      // メンバー未指定時はデフォルトで全体一覧を表示
+      toggleAllMembersView(true);
     }
   }
 
   function onMemberDashSelectChange(val) {
     if (!val) {
-      showMemberDashEmpty();
+      // セレクターで未選択に戻した場合は全体一覧を表示
+      currentSelectedMemberName = '';
+      toggleAllMembersView(true);
       if (window.history && window.history.pushState) {
-        window.history.pushState(null, '', '/#settings');
+        window.history.pushState(null, '', '/#member-dashboard');
       }
       return;
     }
@@ -12486,9 +12489,8 @@ window.CelebrationEffect = (function() {
 
     currentSelectedMemberName = memberName;
 
-    if (isAllMembersSummaryView) {
-      toggleAllMembersView(false);
-    }
+    // 個別ダッシュボードを表示
+    toggleAllMembersView(false);
 
     const select = document.getElementById('member-dash-select');
     if (select) {
@@ -12519,10 +12521,7 @@ window.CelebrationEffect = (function() {
 
   function showMemberDashEmpty() {
     currentSelectedMemberName = '';
-    const emptyEl = document.getElementById('member-dash-empty');
-    const contentEl = document.getElementById('member-dash-content');
-    if (emptyEl) emptyEl.style.display = 'block';
-    if (contentEl) contentEl.style.display = 'none';
+    toggleAllMembersView(true);
   }
 
   function renderMemberProfileHeader(memberObj) {
