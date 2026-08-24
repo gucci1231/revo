@@ -1,5 +1,5 @@
 <script>
-  /* --- 👤 Member Personal Dashboard Logic --- */
+  /* --- 👤 Member Personal Dashboard Logic (Radical Minimalism & Apple-Style Clean Slate) --- */
   let currentSelectedMemberName = '';
   let currentMemberVisitorsFilter = 'all';
   let isAllMembersSummaryView = false;
@@ -24,7 +24,7 @@
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
     const prevVal = select.value || currentSelectedMemberName;
 
-    let html = '<option value="">メンバーを選択してください...</option>';
+    let html = '<option value="">メンバーを選択...</option>';
     members.forEach(m => {
       const mName = (m.name || '').trim();
       const cat = m.category ? ` (${m.category})` : '';
@@ -40,16 +40,18 @@
 
     let nameToSelect = targetMemberName;
     if (!nameToSelect) {
-      // URL Hash or Query check
       const hash = decodeURIComponent(window.location.hash || '');
-      const match = hash.match(/[?&]name=([^&]+)/);
-      if (match) {
-        nameToSelect = match[1];
+      if (hash.startsWith('member/')) {
+        nameToSelect = hash.replace('member/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&]name=([^&]+)/);
+        if (match) {
+          nameToSelect = match[1];
+        }
       }
     }
 
     if (nameToSelect) {
-      // 名前の一致確認（正規化対応）
       const found = typeof findMemberByName === 'function' ? findMemberByName(nameToSelect) : null;
       const finalName = found ? found.name : nameToSelect;
       selectMemberDashboard(finalName, false);
@@ -73,7 +75,6 @@
     if (!memberName) return;
     currentSelectedMemberName = memberName;
 
-    // もし全体ビューが表示されていたら個別ビューに戻す
     if (isAllMembersSummaryView) {
       toggleAllMembersView(false);
     }
@@ -84,17 +85,13 @@
     }
 
     if (updateHash) {
-      updateUrlHash(`member-dashboard?name=${encodeURIComponent(memberName)}`);
+      updateUrlHash(`member/${encodeURIComponent(memberName)}`);
     }
 
-    // メンバー詳細情報を取得
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
     const memberObj = members.find(m => (m.name || '').trim() === memberName) || { name: memberName, category: 'メンバー', profession: '' };
 
-    // ヘッダー情報描画
     renderMemberProfileHeader(memberObj);
-
-    // メンバーのビジター一覧・To-Do・KPIを集計
     renderMemberDashboardData(memberName);
   }
 
@@ -132,7 +129,6 @@
       const vInviter = (v.inviter || '').trim();
       if (!vInviter) return false;
       if (normalizeNameKey(vInviter) === cleanInviter) return true;
-      // 名簿正規化での判定
       if (typeof findMemberByName === 'function') {
         const found = findMemberByName(vInviter);
         if (found && (found.name === inviterName || normalizeNameKey(found.name) === cleanInviter)) {
@@ -146,7 +142,6 @@
   function renderMemberDashboardData(memberName) {
     const visitors = getVisitorsByInviter(memberName);
     
-    // KPI 計算
     const totalVisitors = visitors.length;
     let joinedCount = 0;
     let activeCount = 0;
@@ -165,8 +160,6 @@
         activeCount++;
       }
 
-      // To-Do の自動抽出 & アクションプラン
-      // 1. ビジターに設定されている次回アクション
       if (v.nextActionText && v.nextActionDueDate) {
         const isOverdue = v.nextActionDueDate < todayStr;
         todoList.push({
@@ -181,12 +174,11 @@
         });
       }
 
-      // 2. 直近定例会への参加予定ビジター（定例会前日リマインドTo-Do）
       if (v.eventDate && v.eventDate >= todayStr && (!v.isAttended || v.isAttended === '未')) {
         todoList.push({
           visitorId: v.id,
           visitorName: v.name,
-          title: `定例会参加のリマインド連絡（当日案内・Zoomリンク確認）`,
+          title: `定例会参加リマインド連絡 (Zoomリンク送付)`,
           dueDate: v.eventDate,
           assignee: memberName,
           isOverdue: false,
@@ -195,12 +187,11 @@
         });
       }
 
-      // 3. 参加済みで1to1未実施かつ入会未定（フォロー1to1提案To-Do）
       if (v.isAttended === '出席' && (!v.is1to1 || v.is1to1 === '未') && !isJoined && !isDeclined) {
         todoList.push({
           visitorId: v.id,
           visitorName: v.name,
-          title: `お礼連絡 ＆ フォロー1to1の日程調整`,
+          title: `お礼連絡 ＆ フォロー1to1日程調整`,
           dueDate: v.eventDate || todayStr,
           assignee: memberName,
           isOverdue: false,
@@ -210,10 +201,8 @@
       }
     });
 
-    // 成約率
     const joinRate = totalVisitors > 0 ? Math.round((joinedCount / totalVisitors) * 100) : 0;
 
-    // KPI DOM 更新
     const totalEl = document.getElementById('member-kpi-total-visitors');
     const joinedEl = document.getElementById('member-kpi-joined-count');
     const activeEl = document.getElementById('member-kpi-active-count');
@@ -233,10 +222,7 @@
       todoDot.title = hasOverdue ? '期限切れアクションあり' : '正常';
     }
 
-    // To-Do リスト描画
     renderMemberTodoList(todoList, memberName);
-
-    // 招待ビジターカード一覧描画
     renderMemberVisitorCards(visitors);
   }
 
@@ -245,50 +231,44 @@
     const badgeEl = document.getElementById('member-todo-summary-badge');
     if (!listEl) return;
 
-    if (badgeEl) badgeEl.innerText = `${todoList.length}件`;
+    if (badgeEl) badgeEl.innerText = `${todoList.length}`;
 
     if (todoList.length === 0) {
       listEl.innerHTML = `
-        <div class="p-6 text-center bg-slate-50 border border-slate-100 rounded-xl">
-          <div class="text-emerald-500 text-2xl mb-1.5"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="text-xs font-extrabold text-slate-700">やり残しのアクションはありません</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">現在すべてのフォローや事前連絡が完了しています。</div>
+        <div class="py-6 text-center text-xs font-bold text-slate-400">
+          やり残しアクションはありません
         </div>
       `;
       return;
     }
 
     let html = '';
-    todoList.forEach((todo, idx) => {
-      const overdueClass = todo.isOverdue ? 'border-red-200 bg-red-50/40' : 'border-slate-200/80 bg-white';
-      const badgeClass = todo.isOverdue ? 'bg-red-100 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-      const dateText = todo.dueDate ? todo.dueDate.replace(/^\d{4}\//, '') : '期日未設定';
+    todoList.forEach(todo => {
+      const isOverdue = todo.isOverdue;
+      const dateText = todo.dueDate ? todo.dueDate.replace(/^\d{4}\//, '') : '';
 
       html += `
-        <div class="p-3.5 rounded-xl border ${overdueClass} transition-all hover:border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-start gap-3 min-w-0">
-            <div class="mt-0.5 shrink-0">
-              <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${badgeClass}">
+        <div class="p-3 rounded-xl border ${isOverdue ? 'border-red-200 bg-red-50/20' : 'border-slate-200/80 bg-white'} flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded border ${isOverdue ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200/60'}">
                 ${escapeHtml(todo.actionType)}
               </span>
+              <span class="text-xs font-extrabold text-slate-900 truncate">
+                ${escapeHtml(todo.visitorName || 'ビジター')} 様
+              </span>
             </div>
-            <div class="min-w-0">
-              <div class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">
-                ${escapeHtml(todo.title)}
-              </div>
-              <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                <span class="font-bold text-slate-700"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(todo.visitorName || 'ビジター')} 様</span>
-                <span>•</span>
-                <span class="${todo.isOverdue ? 'text-red-600 font-extrabold' : 'text-slate-500'}">
-                  <i class="fa-regular fa-calendar mr-1"></i>期日: ${escapeHtml(dateText)} ${todo.isOverdue ? '(期限超過)' : ''}
-                </span>
-              </div>
+            <div class="text-xs text-slate-700 font-bold truncate">
+              ${escapeHtml(todo.title)}
+            </div>
+            <div class="text-[10px] font-bold ${isOverdue ? 'text-red-600' : 'text-slate-400'} mt-0.5">
+              期日: ${escapeHtml(dateText)} ${isOverdue ? '(期限切れ)' : ''}
             </div>
           </div>
-          <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div class="shrink-0">
             ${todo.visitorId ? `
-              <button type="button" onclick="openVisitorDetailView('${escapeHtml(todo.visitorId)}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-colors cursor-pointer" title="ビジター詳細を開く">
-                詳細 <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
+              <button type="button" onclick="openVisitorDetailView('${escapeHtml(todo.visitorId)}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs border border-slate-200/60 transition-colors cursor-pointer" title="詳細">
+                <i class="fa-solid fa-chevron-right"></i>
               </button>
             ` : ''}
           </div>
@@ -305,9 +285,9 @@
       const btn = document.getElementById('tab-mv-' + f);
       if (btn) {
         if (f === filterType) {
-          btn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-800 shadow-xs cursor-pointer';
+          btn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer';
         } else {
-          btn.className = 'px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer';
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer';
         }
       }
     });
@@ -345,61 +325,50 @@
     let html = '';
     filtered.forEach(v => {
       const feel = parseFeelAbc(v.feelAbc);
-      let feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">温度感: -</span>';
+      let feelBadge = '';
       if (feel === 'A') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 温度感 A (高)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">A</span>';
       } else if (feel === 'B') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">🟡 温度感 B (中)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">B</span>';
       } else if (feel === 'C') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-300">⚪ 温度感 C (低)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">C</span>';
       }
 
       const joinStatus = getJoinStatusInfo(v.isJoined);
-      const attendedStr = v.isAttended === '出席' ? '<span class="text-blue-600 font-bold">参加済</span>' : (v.isAttended === '欠席' ? '<span class="text-red-500 font-bold">欠席</span>' : '<span class="text-slate-400">参加予定</span>');
-
-      const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '日程未定';
+      const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '';
 
       html += `
-        <div class="bg-white border border-slate-200/90 hover:border-blue-300 rounded-xl p-4 shadow-2xs transition-all flex flex-col justify-between cursor-pointer" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
+        <div class="bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-3.5 shadow-2xs transition-all flex flex-col justify-between cursor-pointer" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
           <div>
-            <!-- 上段: 参加日 & 温度感 -->
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
-                <i class="fa-regular fa-calendar"></i> ${escapeHtml(dateStr)} (${attendedStr})
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-[11px] font-bold text-slate-400 font-mono">
+                ${escapeHtml(dateStr)}
               </span>
-              <div>${feelBadge}</div>
+              <div class="flex items-center gap-1.5">
+                ${feelBadge}
+                <span class="text-[10px] font-extrabold ${joinStatus.cls}">${escapeHtml(joinStatus.label)}</span>
+              </div>
             </div>
 
-            <!-- 中段: ビジター名 & 会社/業種 -->
-            <div class="mb-3">
-              <h4 class="text-base font-black text-slate-900 leading-tight">
-                ${escapeHtml(v.name || 'ビジター')} <span class="text-xs font-normal text-slate-500">様</span>
-              </h4>
-              <div class="text-xs text-slate-500 font-medium truncate mt-0.5">
+            <div class="mb-2">
+              <div class="text-sm font-black text-slate-900 truncate">
+                ${escapeHtml(v.name || 'ビジター')} <span class="text-xs font-normal text-slate-400">様</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-bold truncate">
                 ${escapeHtml(v.company || '')} ${v.company && v.profession ? '•' : ''} ${escapeHtml(v.profession || '')}
               </div>
             </div>
 
-            <!-- 下段メモ/ステータス -->
-            <div class="bg-slate-50 rounded-lg p-2 text-[11px] text-slate-600 mb-3 border border-slate-100">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-bold text-slate-400">ステータス</span>
-                <span class="font-extrabold ${joinStatus.cls}">${escapeHtml(joinStatus.label)}</span>
+            ${v.nextActionText ? `
+              <div class="text-[11px] text-slate-600 font-bold truncate bg-slate-50 p-2 rounded-lg border border-slate-100 mb-1">
+                <span class="text-slate-400 font-normal">次:</span> ${escapeHtml(v.nextActionText)}
               </div>
-              ${v.nextActionText ? `
-                <div class="text-slate-700 font-bold truncate">
-                  <i class="fa-solid fa-arrow-right text-blue-500 text-[10px] mr-1"></i>次: ${escapeHtml(v.nextActionText)}
-                </div>
-              ` : `
-                <div class="text-slate-400">最新アクション完了</div>
-              `}
-            </div>
+            ` : ''}
           </div>
 
-          <!-- フッター: 詳細リンク -->
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-bold">
-            <span>ビジターカルテを開く</span>
-            <i class="fa-solid fa-chevron-right text-[11px]"></i>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold">
+            <span>カルテ表示</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         </div>
       `;
@@ -408,7 +377,6 @@
     gridEl.innerHTML = html;
   }
 
-  /* --- 📊 全メンバーサマリー一覧の切り替え & 描画 --- */
   function toggleAllMembersView(forceState = null) {
     if (forceState !== null) {
       isAllMembersSummaryView = forceState;
@@ -423,12 +391,12 @@
     if (isAllMembersSummaryView) {
       if (singleContainer) singleContainer.style.display = 'none';
       if (allContainer) allContainer.style.display = 'block';
-      if (labelEl) labelEl.innerText = '個別ダッシュボード';
+      if (labelEl) labelEl.innerText = '個別';
       renderAllMembersSummaryTable();
     } else {
       if (singleContainer) singleContainer.style.display = 'block';
       if (allContainer) allContainer.style.display = 'none';
-      if (labelEl) labelEl.innerText = '全体一覧';
+      if (labelEl) labelEl.innerText = '全体';
       if (currentSelectedMemberName) {
         selectMemberDashboard(currentSelectedMemberName, false);
       }
@@ -484,7 +452,6 @@
       };
     });
 
-    // 招待数順でソート
     summaryList.sort((a, b) => b.totalVisitors - a.totalVisitors || b.joinedCount - a.joinedCount);
 
     let filtered = summaryList;
@@ -496,26 +463,21 @@
     filtered.forEach(s => {
       html += `
         <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(s.name)}')">
-          <td class="py-3 px-3 font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <span class="w-6 h-6 rounded-md bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center shrink-0">
-              ${escapeHtml(s.name.slice(0, 1))}
-            </span>
-            <span>${escapeHtml(s.name)}</span>
+          <td class="py-2.5 px-3 font-extrabold text-slate-900 text-xs">
+            ${escapeHtml(s.name)}
           </td>
-          <td class="py-3 px-3 text-slate-500 font-bold">
-            <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px]">${escapeHtml(s.category)}</span>
+          <td class="py-2.5 px-3 text-slate-500 font-bold text-[11px]">
+            ${escapeHtml(s.category)}
           </td>
-          <td class="py-3 px-3 text-center font-black text-slate-800 font-mono text-sm">${s.totalVisitors}</td>
-          <td class="py-3 px-3 text-center font-black text-emerald-600 font-mono text-sm">${s.joinedCount}</td>
-          <td class="py-3 px-3 text-center font-extrabold text-blue-600 font-mono text-xs">${s.joinRate}%</td>
-          <td class="py-3 px-3 text-center font-bold text-slate-700 font-mono text-xs">${s.activeCount}</td>
-          <td class="py-3 px-3 text-center">
-            ${s.todoCount > 0 ? `<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-extrabold text-[10px]">${s.todoCount}件</span>` : '<span class="text-slate-300">-</span>'}
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalVisitors}</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.joinedCount}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-500 font-mono text-xs">${s.joinRate}%</td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-700 font-mono text-xs">${s.activeCount}</td>
+          <td class="py-2.5 px-3 text-center font-mono text-xs">
+            ${s.todoCount > 0 ? `<span class="font-bold text-red-600">${s.todoCount}</span>` : '<span class="text-slate-300">-</span>'}
           </td>
-          <td class="py-3 px-3 text-right">
-            <button type="button" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs">
-              ダッシュボード <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
-            </button>
+          <td class="py-2.5 px-3 text-right">
+            <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
           </td>
         </tr>
       `;
@@ -529,20 +491,22 @@
     selectMemberDashboard(memberName, true);
   }
 
-  /* --- 🔗 共有ロジック (URLコピー & LINEテキストコピー) --- */
+  function getMemberShareUrl(memberName) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}#member/${encodeURIComponent(memberName)}`;
+  }
+
   function copyMemberDashUrl() {
     if (!currentSelectedMemberName) {
       showToast('メンバーを選択してください', 'warning');
       return;
     }
 
-    const baseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${baseUrl}#member-dashboard?name=${encodeURIComponent(currentSelectedMemberName)}`;
-
+    const shareUrl = getMemberShareUrl(currentSelectedMemberName);
     navigator.clipboard.writeText(shareUrl).then(() => {
-      showToast(`「${currentSelectedMemberName}」さんの専用URLをコピーしました！`, 'success');
+      showToast(`URLをコピーしました (${currentSelectedMemberName} 様)`, 'success');
     }).catch(() => {
-      showToast('URLのコピーに失敗しました', 'error');
+      showToast('コピーに失敗しました', 'error');
     });
   }
 
@@ -553,8 +517,7 @@
     }
 
     const visitors = getVisitorsByInviter(currentSelectedMemberName);
-    const baseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${baseUrl}#member-dashboard?name=${encodeURIComponent(currentSelectedMemberName)}`;
+    const shareUrl = getMemberShareUrl(currentSelectedMemberName);
 
     let activeSummary = '';
     const activeVisitors = visitors.filter(v => {
@@ -565,15 +528,15 @@
     if (activeVisitors.length > 0) {
       activeSummary = activeVisitors.map(v => `・${v.name} 様 (${v.feelAbc ? '温度感' + v.feelAbc : 'フォロー中'})`).join('\n');
     } else {
-      activeSummary = '現在フォロー中のビジターはいません';
+      activeSummary = '現在フォロー中のゲストはいません';
     }
 
-    const text = `${currentSelectedMemberName}さん\nいつもビジター招待ありがとうございます！\n\n招待いただいたゲスト様の最新フォロー状況・To-Doはこちらからご確認いただけます👇\n${shareUrl}\n\n【現在フォロー中のゲスト】\n${activeSummary}\n\nご不明点があればビジホスチームまでお気軽にご連絡ください！`;
+    const text = `${currentSelectedMemberName}さん\nビジター招待ありがとうございます！\n\n最新フォロー状況・To-Doはこちら👇\n${shareUrl}\n\n【現在フォロー中のゲスト】\n${activeSummary}`;
 
     navigator.clipboard.writeText(text).then(() => {
-      showToast('LINE送信用テキストをコピーしました！', 'success');
+      showToast('LINE共有文をコピーしました', 'success');
     }).catch(() => {
-      showToast('テキストのコピーに失敗しました', 'error');
+      showToast('コピーに失敗しました', 'error');
     });
   }
 </script>

@@ -57,8 +57,18 @@
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash.startsWith('member-dashboard')) {
+    } else if (hash.startsWith('member/') || hash.startsWith('member-dashboard')) {
       switchTab('member-dashboard', false);
+      let targetMember = null;
+      if (hash.startsWith('member/')) {
+        targetMember = hash.replace('member/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&]name=([^&]+)/);
+        if (match) targetMember = match[1];
+      }
+      setTimeout(() => {
+        if (typeof initMemberDashboard === 'function') initMemberDashboard(targetMember);
+      }, 50);
     } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {

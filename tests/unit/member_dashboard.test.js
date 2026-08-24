@@ -16,11 +16,9 @@ describe('Member Personal Dashboard Feature Tests', () => {
   });
 
   it('verifies member dashboard is accessible from settings and not in main navigation drawer', () => {
-    // メインメニューには含めない
     assert.strictEqual(indexHtml.includes('id="drawer-item-member-dashboard"'), false);
-    // 設定ページのメンバー管理からアクセス可能
     assert.strictEqual(indexHtml.includes('switchTab(\'member-dashboard\')'), true);
-    assert.strictEqual(indexHtml.includes('メンバー別活動ダッシュボード＆招待To-Do'), true);
+    assert.strictEqual(indexHtml.includes('メンバー別活動ダッシュボード'), true);
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
   });
 

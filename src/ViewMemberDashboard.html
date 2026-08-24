@@ -1,172 +1,154 @@
-<!-- VIEW: メンバー専用パーソナルダッシュボード (Apple-Style Minimal & Refined) -->
+<!-- VIEW: メンバー専用パーソナルダッシュボード (Radical Minimalism & Apple-Style Clean Slate) -->
 <div id="view-member-dashboard" class="view-content">
 
-  <!-- 1. Top Controls: メンバー選択 & アクション共有バー -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      
-      <!-- メンバー選択 -->
-      <div class="flex items-center gap-3 flex-1 min-w-0">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 text-lg">
-          <i class="fa-solid fa-user-check"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Select Member</div>
-          <div class="relative">
-            <select id="member-dash-select" class="w-full bg-slate-50 border border-slate-200 text-slate-900 font-extrabold text-sm sm:text-base rounded-xl px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all cursor-pointer" onchange="onMemberDashSelectChange(this.value)">
-              <option value="">メンバーを選択してください...</option>
-            </select>
-          </div>
-        </div>
+  <!-- 1. Header Toolbar (Back button, Member Selector, Share actions) -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 mb-5 flex items-center justify-between gap-3 shadow-2xs">
+    
+    <!-- 左側: 戻るボタン ＆ メンバー選択 -->
+    <div class="flex items-center gap-2.5 flex-1 min-w-0">
+      <button type="button" onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors shrink-0 cursor-pointer" title="設定に戻る">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <div class="flex-1 min-w-0 max-w-xs sm:max-w-sm">
+        <select id="member-dash-select" class="w-full bg-slate-50 border border-slate-200 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 pr-7 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition-all cursor-pointer truncate" onchange="onMemberDashSelectChange(this.value)">
+          <option value="">メンバーを選択...</option>
+        </select>
       </div>
-
-      <!-- アクションボタン群（全体一覧切り替え / 共有URLコピー / LINEテキストコピー） -->
-      <div class="flex items-center gap-2 shrink-0 flex-wrap">
-        <button type="button" id="btn-toggle-all-members-view" onclick="toggleAllMembersView()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer" title="チャプター全員の招待一覧">
-          <i class="fa-solid fa-table-list"></i>
-          <span id="label-toggle-all-members">全体一覧</span>
-        </button>
-
-        <button type="button" onclick="copyMemberDashUrl()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer" title="このメンバー専用URLをコピー">
-          <i class="fa-solid fa-link"></i>
-          <span>URL共有</span>
-        </button>
-
-        <button type="button" onclick="copyMemberDashLineText()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer" title="LINE送信用メッセージをコピー">
-          <i class="fa-solid fa-comment-dots"></i>
-          <span>LINE共有文</span>
-        </button>
-      </div>
-
     </div>
+
+    <!-- 右側: シェア＆ビュー切り替え (Apple Minimal Icon Action Group) -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" id="btn-toggle-all-members-view" onclick="toggleAllMembersView()" class="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200/60 transition-colors flex items-center gap-1.5 cursor-pointer" title="全体一覧/個別表示 切り替え">
+        <i class="fa-solid fa-list-ul"></i>
+        <span id="label-toggle-all-members" class="hidden sm:inline">全体</span>
+      </button>
+
+      <button type="button" onclick="copyMemberDashUrl()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors cursor-pointer" title="共有URLをコピー">
+        <i class="fa-solid fa-link"></i>
+      </button>
+
+      <button type="button" onclick="copyMemberDashLineText()" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-black text-white flex items-center justify-center text-sm transition-colors cursor-pointer" title="LINE共有文をコピー">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+      </button>
+    </div>
+
   </div>
 
   <!-- 2. 個別メンバーダッシュボードコンテナ -->
   <div id="member-single-dash-container">
 
     <!-- 未選択時のプレースホルダー -->
-    <div id="member-dash-empty" class="bg-white border border-slate-200 rounded-2xl p-12 text-center my-6">
-      <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-4 text-2xl">
-        <i class="fa-solid fa-user-gear"></i>
+    <div id="member-dash-empty" class="bg-white border border-slate-200/80 rounded-2xl p-12 text-center my-4">
+      <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center text-slate-400 mx-auto mb-3 text-lg">
+        <i class="fa-solid fa-user"></i>
       </div>
-      <h3 class="text-base font-extrabold text-slate-800 mb-1">メンバーを選択してください</h3>
-      <p class="text-xs text-slate-500 max-w-md mx-auto">上のドロップダウンからメンバーを選択すると、その方が招待したビジターの進捗や未完了To-Doが確認できます。</p>
+      <div class="text-sm font-extrabold text-slate-800 mb-0.5">メンバーを選択</div>
+      <p class="text-xs text-slate-400 max-w-xs mx-auto m-0">上部のセレクターからメンバーを選択してください。</p>
     </div>
 
     <!-- メンバーコンテンツ領域 -->
     <div id="member-dash-content" style="display: none;">
 
-      <!-- メンバープロフィール・ヘッダー -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-extrabold text-2xl flex items-center justify-center shadow-sm shrink-0" id="member-dash-avatar">
+      <!-- メンバープロフィール・ヘッダー (Pure White & Typography Focus) -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white font-black text-xl flex items-center justify-center shrink-0 tracking-tight" id="member-dash-avatar">
             名
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span id="member-dash-category-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">カテゴリ</span>
-              <span id="member-dash-profession" class="text-xs text-slate-500 font-bold">専門分野</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span id="member-dash-category-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200/60">カテゴリ</span>
+              <span id="member-dash-profession" class="text-xs text-slate-400 font-bold truncate">専門分野</span>
             </div>
-            <h2 id="member-dash-name" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">メンバー氏名</h2>
+            <h2 id="member-dash-name" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight m-0 truncate">メンバー氏名</h2>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="text-right">
-            <div class="text-[11px] font-bold text-slate-400 uppercase">入会成約率</div>
-            <div class="text-xl font-black text-blue-600 font-mono" id="member-dash-join-rate">0%</div>
-          </div>
+        <div class="text-right shrink-0">
+          <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">成約率</div>
+          <div class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-join-rate">0%</div>
         </div>
       </div>
 
-      <!-- KPI 4カード -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+      <!-- 4大KPIカード (Radical Minimalism: Pure White & DIN Numbers) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <!-- 招待ビジター数 -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">招待ビジター総数</div>
-          <div class="flex items-baseline gap-1.5">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">招待ビジター</div>
+          <div class="flex items-baseline gap-1">
             <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
         <!-- 入会決定数 -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">入会決定数</div>
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-3xl font-black text-emerald-600 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">入会決定</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
-        <!-- フォロー中（追客中） -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">現在フォロー中</div>
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-3xl font-black text-blue-600 font-mono tracking-tight" id="member-kpi-active-count">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+        <!-- フォロー中 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">フォロー中</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
-        <!-- 要対応アクション (To-Do) -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
+        <!-- 要対応アクション -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-slate-400 text-xs font-bold">やり残しTo-Do</span>
+            <span class="text-[11px] font-bold text-slate-400">要対応To-Do</span>
             <span id="member-kpi-todo-dot" class="kpi-status-dot blue" title="正常"></span>
           </div>
-          <div class="flex items-baseline gap-1.5">
+          <div class="flex items-baseline gap-1">
             <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
-            <span class="text-xs font-bold text-slate-400">件</span>
+            <span class="text-[11px] font-bold text-slate-400">件</span>
           </div>
         </div>
       </div>
 
-      <!-- セクション 1: やるべきアクション（マイTo-Do） -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-list-check"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800">やるべきアクション (未完了To-Do)</h3>
-          </div>
-          <span class="text-xs font-bold text-slate-400" id="member-todo-summary-badge">0件</span>
+      <!-- セクション 1: やるべきアクション (To-Do) -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+            <span>やるべきアクション</span>
+          </h3>
+          <span class="text-xs font-bold text-slate-400 font-mono" id="member-todo-summary-badge">0</span>
         </div>
 
         <!-- To-Do リスト -->
-        <div id="member-todo-list" class="space-y-3">
+        <div id="member-todo-list" class="space-y-2.5">
           <!-- JSで動的描画 -->
         </div>
       </div>
 
-      <!-- セクション 2: 招待ビジターの進捗・フォロー状況 -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-slate-100 gap-2">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800">招待ビジター進捗一覧</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <!-- フィルタタブ -->
-            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold" id="member-visitor-filter-tabs">
-              <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-800 shadow-xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
-              <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
-              <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
-            </div>
+      <!-- セクション 2: 招待ビジター進捗一覧 -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
+          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">招待ビジター</h3>
+          
+          <!-- フィルタ -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-visitor-filter-tabs">
+            <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
+            <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
+            <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
           </div>
         </div>
 
         <!-- ビジターカード一覧 -->
-        <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <!-- JSで動的描画 -->
         </div>
 
         <!-- 空状態 -->
-        <div id="member-visitor-empty" class="text-center py-10" style="display: none;">
-          <div class="text-slate-300 text-3xl mb-2"><i class="fa-solid fa-user-slash"></i></div>
-          <p class="text-xs font-bold text-slate-400">該当するビジターはいません</p>
+        <div id="member-visitor-empty" class="text-center py-8" style="display: none;">
+          <div class="text-xs font-bold text-slate-400">該当するビジターはいません</div>
         </div>
 
       </div>
@@ -175,34 +157,30 @@
 
   </div>
 
-  <!-- 3. チャプター全メンバー招待状況サマリー一覧（全体ビュー） -->
+  <!-- 3. チャプター全メンバー招待状況サマリー一覧 (全体ビュー) -->
   <div id="member-all-summary-container" style="display: none;">
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-slate-100 gap-3">
         <div>
-          <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-ranking-star text-amber-500"></i>
-            チャプター全メンバー 招待＆フォロー状況
-          </h3>
-          <p class="text-xs text-slate-400 mt-0.5">メンバー名をクリックすると、その人のパーソナルダッシュボードが開きます。</p>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0">チャプターメンバー別 招待実績</h3>
         </div>
-        <div class="flex items-center gap-2">
-          <input type="text" id="all-members-search-input" placeholder="メンバー名・カテゴリで検索..." class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="renderAllMembersSummaryTable()">
+        <div>
+          <input type="text" id="all-members-search-input" placeholder="メンバー検索..." class="text-xs bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400" oninput="renderAllMembersSummaryTable()">
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              <th class="py-3 px-3">メンバー</th>
-              <th class="py-3 px-3">カテゴリ</th>
-              <th class="py-3 px-3 text-center">招待数</th>
-              <th class="py-3 px-3 text-center">入会数</th>
-              <th class="py-3 px-3 text-center">成約率</th>
-              <th class="py-3 px-3 text-center">フォロー中</th>
-              <th class="py-3 px-3 text-center">未完了To-Do</th>
-              <th class="py-3 px-3 text-right">操作</th>
+            <tr class="border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <th class="py-2.5 px-3">メンバー</th>
+              <th class="py-2.5 px-3">カテゴリ</th>
+              <th class="py-2.5 px-3 text-center">招待</th>
+              <th class="py-2.5 px-3 text-center">入会</th>
+              <th class="py-2.5 px-3 text-center">成約率</th>
+              <th class="py-2.5 px-3 text-center">フォロー中</th>
+              <th class="py-2.5 px-3 text-center">To-Do</th>
+              <th class="py-2.5 px-3 text-right"></th>
             </tr>
           </thead>
           <tbody id="all-members-summary-tbody" class="divide-y divide-slate-100">

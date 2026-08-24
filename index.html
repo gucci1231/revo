@@ -6352,175 +6352,157 @@ select.form-input, select.form-select {
 
 </div>
 
-    <!-- VIEW: メンバー専用パーソナルダッシュボード (Apple-Style Minimal & Refined) -->
+    <!-- VIEW: メンバー専用パーソナルダッシュボード (Radical Minimalism & Apple-Style Clean Slate) -->
 <div id="view-member-dashboard" class="view-content">
 
-  <!-- 1. Top Controls: メンバー選択 & アクション共有バー -->
-  <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      
-      <!-- メンバー選択 -->
-      <div class="flex items-center gap-3 flex-1 min-w-0">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 text-lg">
-          <i class="fa-solid fa-user-check"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-[11px] font-bold text-slate-400 tracking-wider uppercase mb-1">Select Member</div>
-          <div class="relative">
-            <select id="member-dash-select" class="w-full bg-slate-50 border border-slate-200 text-slate-900 font-extrabold text-sm sm:text-base rounded-xl px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all cursor-pointer" onchange="onMemberDashSelectChange(this.value)">
-              <option value="">メンバーを選択してください...</option>
-            </select>
-          </div>
-        </div>
+  <!-- 1. Header Toolbar (Back button, Member Selector, Share actions) -->
+  <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 mb-5 flex items-center justify-between gap-3 shadow-2xs">
+    
+    <!-- 左側: 戻るボタン ＆ メンバー選択 -->
+    <div class="flex items-center gap-2.5 flex-1 min-w-0">
+      <button type="button" onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors shrink-0 cursor-pointer" title="設定に戻る">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <div class="flex-1 min-w-0 max-w-xs sm:max-w-sm">
+        <select id="member-dash-select" class="w-full bg-slate-50 border border-slate-200 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 pr-7 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition-all cursor-pointer truncate" onchange="onMemberDashSelectChange(this.value)">
+          <option value="">メンバーを選択...</option>
+        </select>
       </div>
-
-      <!-- アクションボタン群（全体一覧切り替え / 共有URLコピー / LINEテキストコピー） -->
-      <div class="flex items-center gap-2 shrink-0 flex-wrap">
-        <button type="button" id="btn-toggle-all-members-view" onclick="toggleAllMembersView()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer" title="チャプター全員の招待一覧">
-          <i class="fa-solid fa-table-list"></i>
-          <span id="label-toggle-all-members">全体一覧</span>
-        </button>
-
-        <button type="button" onclick="copyMemberDashUrl()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 cursor-pointer" title="このメンバー専用URLをコピー">
-          <i class="fa-solid fa-link"></i>
-          <span>URL共有</span>
-        </button>
-
-        <button type="button" onclick="copyMemberDashLineText()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer" title="LINE送信用メッセージをコピー">
-          <i class="fa-solid fa-comment-dots"></i>
-          <span>LINE共有文</span>
-        </button>
-      </div>
-
     </div>
+
+    <!-- 右側: シェア＆ビュー切り替え (Apple Minimal Icon Action Group) -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" id="btn-toggle-all-members-view" onclick="toggleAllMembersView()" class="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl border border-slate-200/60 transition-colors flex items-center gap-1.5 cursor-pointer" title="全体一覧/個別表示 切り替え">
+        <i class="fa-solid fa-list-ul"></i>
+        <span id="label-toggle-all-members" class="hidden sm:inline">全体</span>
+      </button>
+
+      <button type="button" onclick="copyMemberDashUrl()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors cursor-pointer" title="共有URLをコピー">
+        <i class="fa-solid fa-link"></i>
+      </button>
+
+      <button type="button" onclick="copyMemberDashLineText()" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-black text-white flex items-center justify-center text-sm transition-colors cursor-pointer" title="LINE共有文をコピー">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+      </button>
+    </div>
+
   </div>
 
   <!-- 2. 個別メンバーダッシュボードコンテナ -->
   <div id="member-single-dash-container">
 
     <!-- 未選択時のプレースホルダー -->
-    <div id="member-dash-empty" class="bg-white border border-slate-200 rounded-2xl p-12 text-center my-6">
-      <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-4 text-2xl">
-        <i class="fa-solid fa-user-gear"></i>
+    <div id="member-dash-empty" class="bg-white border border-slate-200/80 rounded-2xl p-12 text-center my-4">
+      <div class="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-center text-slate-400 mx-auto mb-3 text-lg">
+        <i class="fa-solid fa-user"></i>
       </div>
-      <h3 class="text-base font-extrabold text-slate-800 mb-1">メンバーを選択してください</h3>
-      <p class="text-xs text-slate-500 max-w-md mx-auto">上のドロップダウンからメンバーを選択すると、その方が招待したビジターの進捗や未完了To-Doが確認できます。</p>
+      <div class="text-sm font-extrabold text-slate-800 mb-0.5">メンバーを選択</div>
+      <p class="text-xs text-slate-400 max-w-xs mx-auto m-0">上部のセレクターからメンバーを選択してください。</p>
     </div>
 
     <!-- メンバーコンテンツ領域 -->
     <div id="member-dash-content" style="display: none;">
 
-      <!-- メンバープロフィール・ヘッダー -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-extrabold text-2xl flex items-center justify-center shadow-sm shrink-0" id="member-dash-avatar">
+      <!-- メンバープロフィール・ヘッダー (Pure White & Typography Focus) -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5 min-w-0">
+          <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white font-black text-xl flex items-center justify-center shrink-0 tracking-tight" id="member-dash-avatar">
             名
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span id="member-dash-category-badge" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">カテゴリ</span>
-              <span id="member-dash-profession" class="text-xs text-slate-500 font-bold">専門分野</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span id="member-dash-category-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200/60">カテゴリ</span>
+              <span id="member-dash-profession" class="text-xs text-slate-400 font-bold truncate">専門分野</span>
             </div>
-            <h2 id="member-dash-name" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">メンバー氏名</h2>
+            <h2 id="member-dash-name" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight m-0 truncate">メンバー氏名</h2>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="text-right">
-            <div class="text-[11px] font-bold text-slate-400 uppercase">入会成約率</div>
-            <div class="text-xl font-black text-blue-600 font-mono" id="member-dash-join-rate">0%</div>
-          </div>
+        <div class="text-right shrink-0">
+          <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">成約率</div>
+          <div class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-join-rate">0%</div>
         </div>
       </div>
 
-      <!-- KPI 4カード -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-6">
+      <!-- 4大KPIカード (Radical Minimalism: Pure White & DIN Numbers) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
         <!-- 招待ビジター数 -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">招待ビジター総数</div>
-          <div class="flex items-baseline gap-1.5">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">招待ビジター</div>
+          <div class="flex items-baseline gap-1">
             <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
         <!-- 入会決定数 -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">入会決定数</div>
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-3xl font-black text-emerald-600 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">入会決定</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
-        <!-- フォロー中（追客中） -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
-          <div class="text-slate-400 text-xs font-bold mb-1">現在フォロー中</div>
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-3xl font-black text-blue-600 font-mono tracking-tight" id="member-kpi-active-count">0</span>
-            <span class="text-xs font-bold text-slate-400">名</span>
+        <!-- フォロー中 -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
+          <div class="text-[11px] font-bold text-slate-400 mb-1">フォロー中</div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
+            <span class="text-[11px] font-bold text-slate-400">名</span>
           </div>
         </div>
 
-        <!-- 要対応アクション (To-Do) -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-4.5 shadow-sm">
+        <!-- 要対応アクション -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-slate-400 text-xs font-bold">やり残しTo-Do</span>
+            <span class="text-[11px] font-bold text-slate-400">要対応To-Do</span>
             <span id="member-kpi-todo-dot" class="kpi-status-dot blue" title="正常"></span>
           </div>
-          <div class="flex items-baseline gap-1.5">
+          <div class="flex items-baseline gap-1">
             <span class="text-3xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
-            <span class="text-xs font-bold text-slate-400">件</span>
+            <span class="text-[11px] font-bold text-slate-400">件</span>
           </div>
         </div>
       </div>
 
-      <!-- セクション 1: やるべきアクション（マイTo-Do） -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-list-check"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800">やるべきアクション (未完了To-Do)</h3>
-          </div>
-          <span class="text-xs font-bold text-slate-400" id="member-todo-summary-badge">0件</span>
+      <!-- セクション 1: やるべきアクション (To-Do) -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+            <span>やるべきアクション</span>
+          </h3>
+          <span class="text-xs font-bold text-slate-400 font-mono" id="member-todo-summary-badge">0</span>
         </div>
 
         <!-- To-Do リスト -->
-        <div id="member-todo-list" class="space-y-3">
+        <div id="member-todo-list" class="space-y-2.5">
           <!-- JSで動的描画 -->
         </div>
       </div>
 
-      <!-- セクション 2: 招待ビジターの進捗・フォロー状況 -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-slate-100 gap-2">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800">招待ビジター進捗一覧</h3>
-          </div>
-          <div class="flex items-center gap-2">
-            <!-- フィルタタブ -->
-            <div class="inline-flex rounded-xl bg-slate-100 p-1 text-xs font-bold" id="member-visitor-filter-tabs">
-              <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-800 shadow-xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
-              <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
-              <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
-            </div>
+      <!-- セクション 2: 招待ビジター進捗一覧 -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-2">
+          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">招待ビジター</h3>
+          
+          <!-- フィルタ -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-visitor-filter-tabs">
+            <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
+            <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
+            <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
           </div>
         </div>
 
         <!-- ビジターカード一覧 -->
-        <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <!-- JSで動的描画 -->
         </div>
 
         <!-- 空状態 -->
-        <div id="member-visitor-empty" class="text-center py-10" style="display: none;">
-          <div class="text-slate-300 text-3xl mb-2"><i class="fa-solid fa-user-slash"></i></div>
-          <p class="text-xs font-bold text-slate-400">該当するビジターはいません</p>
+        <div id="member-visitor-empty" class="text-center py-8" style="display: none;">
+          <div class="text-xs font-bold text-slate-400">該当するビジターはいません</div>
         </div>
 
       </div>
@@ -6529,34 +6511,30 @@ select.form-input, select.form-select {
 
   </div>
 
-  <!-- 3. チャプター全メンバー招待状況サマリー一覧（全体ビュー） -->
+  <!-- 3. チャプター全メンバー招待状況サマリー一覧 (全体ビュー) -->
   <div id="member-all-summary-container" style="display: none;">
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 mb-4 border-b border-slate-100 gap-3">
         <div>
-          <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-ranking-star text-amber-500"></i>
-            チャプター全メンバー 招待＆フォロー状況
-          </h3>
-          <p class="text-xs text-slate-400 mt-0.5">メンバー名をクリックすると、その人のパーソナルダッシュボードが開きます。</p>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0">チャプターメンバー別 招待実績</h3>
         </div>
-        <div class="flex items-center gap-2">
-          <input type="text" id="all-members-search-input" placeholder="メンバー名・カテゴリで検索..." class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="renderAllMembersSummaryTable()">
+        <div>
+          <input type="text" id="all-members-search-input" placeholder="メンバー検索..." class="text-xs bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400" oninput="renderAllMembersSummaryTable()">
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr class="border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              <th class="py-3 px-3">メンバー</th>
-              <th class="py-3 px-3">カテゴリ</th>
-              <th class="py-3 px-3 text-center">招待数</th>
-              <th class="py-3 px-3 text-center">入会数</th>
-              <th class="py-3 px-3 text-center">成約率</th>
-              <th class="py-3 px-3 text-center">フォロー中</th>
-              <th class="py-3 px-3 text-center">未完了To-Do</th>
-              <th class="py-3 px-3 text-right">操作</th>
+            <tr class="border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <th class="py-2.5 px-3">メンバー</th>
+              <th class="py-2.5 px-3">カテゴリ</th>
+              <th class="py-2.5 px-3 text-center">招待</th>
+              <th class="py-2.5 px-3 text-center">入会</th>
+              <th class="py-2.5 px-3 text-center">成約率</th>
+              <th class="py-2.5 px-3 text-center">フォロー中</th>
+              <th class="py-2.5 px-3 text-center">To-Do</th>
+              <th class="py-2.5 px-3 text-right"></th>
             </tr>
           </thead>
           <tbody id="all-members-summary-tbody" class="divide-y divide-slate-100">
@@ -7560,20 +7538,20 @@ select.form-input, select.form-select {
   <!-- SubTab 3: メンバーマスター管理 -->
   <div id="settings-pane-members" class="settings-subtab-pane">
 
-    <!-- メンバー別ダッシュボードへの導線カード -->
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/90 rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0 shadow-sm">
+    <!-- メンバー別ダッシュボードへの導線カード (Pure White Minimal) -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 mb-5 shadow-2xs flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 text-base shrink-0">
           <i class="fa-solid fa-id-badge"></i>
         </div>
-        <div>
-          <h3 class="text-sm sm:text-base font-black text-slate-900 mb-0.5">メンバー別活動ダッシュボード＆招待To-Do</h3>
-          <p class="text-xs text-slate-600 m-0">メンバーごとのビジター招待進捗・入会成約率の確認や、LINE共有メッセージの生成ができます。</p>
+        <div class="min-w-0">
+          <div class="text-sm font-extrabold text-slate-900 leading-tight mb-0.5">メンバー別活動ダッシュボード</div>
+          <div class="text-xs text-slate-400 font-medium truncate">招待ビジターの進捗確認・To-Do管理・共有リンク生成</div>
         </div>
       </div>
-      <button type="button" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer" onclick="switchTab('member-dashboard')">
-        <span>メンバーダッシュボードを開く</span>
-        <i class="fa-solid fa-arrow-right text-xs"></i>
+      <button type="button" class="h-9 px-3.5 bg-slate-900 hover:bg-black text-white font-extrabold text-xs rounded-xl transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer" onclick="switchTab('member-dashboard')">
+        <span>開く</span>
+        <i class="fa-solid fa-arrow-right text-[10px]"></i>
       </button>
     </div>
 
@@ -10116,12 +10094,16 @@ window.CelebrationEffect = (function() {
       if (vid && vid !== currentVdVisitorId) {
         openVisitorDetailView(vid, false);
       }
-    } else if (hash.startsWith('member-dashboard')) {
+    } else if (hash.startsWith('member/') || hash.startsWith('member-dashboard')) {
       switchTab('member-dashboard', false);
       let targetMember = null;
-      const match = hash.match(/[?&]name=([^&]+)/);
-      if (match) {
-        targetMember = match[1];
+      if (hash.startsWith('member/')) {
+        targetMember = hash.replace('member/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&]name=([^&]+)/);
+        if (match) {
+          targetMember = match[1];
+        }
       }
       setTimeout(() => {
         if (typeof initMemberDashboard === 'function') {
@@ -12141,7 +12123,7 @@ window.CelebrationEffect = (function() {
 </script>
 
 <script>
-  /* --- 👤 Member Personal Dashboard Logic --- */
+  /* --- 👤 Member Personal Dashboard Logic (Radical Minimalism & Apple-Style Clean Slate) --- */
   let currentSelectedMemberName = '';
   let currentMemberVisitorsFilter = 'all';
   let isAllMembersSummaryView = false;
@@ -12166,7 +12148,7 @@ window.CelebrationEffect = (function() {
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
     const prevVal = select.value || currentSelectedMemberName;
 
-    let html = '<option value="">メンバーを選択してください...</option>';
+    let html = '<option value="">メンバーを選択...</option>';
     members.forEach(m => {
       const mName = (m.name || '').trim();
       const cat = m.category ? ` (${m.category})` : '';
@@ -12182,16 +12164,18 @@ window.CelebrationEffect = (function() {
 
     let nameToSelect = targetMemberName;
     if (!nameToSelect) {
-      // URL Hash or Query check
       const hash = decodeURIComponent(window.location.hash || '');
-      const match = hash.match(/[?&]name=([^&]+)/);
-      if (match) {
-        nameToSelect = match[1];
+      if (hash.startsWith('member/')) {
+        nameToSelect = hash.replace('member/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&]name=([^&]+)/);
+        if (match) {
+          nameToSelect = match[1];
+        }
       }
     }
 
     if (nameToSelect) {
-      // 名前の一致確認（正規化対応）
       const found = typeof findMemberByName === 'function' ? findMemberByName(nameToSelect) : null;
       const finalName = found ? found.name : nameToSelect;
       selectMemberDashboard(finalName, false);
@@ -12215,7 +12199,6 @@ window.CelebrationEffect = (function() {
     if (!memberName) return;
     currentSelectedMemberName = memberName;
 
-    // もし全体ビューが表示されていたら個別ビューに戻す
     if (isAllMembersSummaryView) {
       toggleAllMembersView(false);
     }
@@ -12226,17 +12209,13 @@ window.CelebrationEffect = (function() {
     }
 
     if (updateHash) {
-      updateUrlHash(`member-dashboard?name=${encodeURIComponent(memberName)}`);
+      updateUrlHash(`member/${encodeURIComponent(memberName)}`);
     }
 
-    // メンバー詳細情報を取得
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
     const memberObj = members.find(m => (m.name || '').trim() === memberName) || { name: memberName, category: 'メンバー', profession: '' };
 
-    // ヘッダー情報描画
     renderMemberProfileHeader(memberObj);
-
-    // メンバーのビジター一覧・To-Do・KPIを集計
     renderMemberDashboardData(memberName);
   }
 
@@ -12274,7 +12253,6 @@ window.CelebrationEffect = (function() {
       const vInviter = (v.inviter || '').trim();
       if (!vInviter) return false;
       if (normalizeNameKey(vInviter) === cleanInviter) return true;
-      // 名簿正規化での判定
       if (typeof findMemberByName === 'function') {
         const found = findMemberByName(vInviter);
         if (found && (found.name === inviterName || normalizeNameKey(found.name) === cleanInviter)) {
@@ -12288,7 +12266,6 @@ window.CelebrationEffect = (function() {
   function renderMemberDashboardData(memberName) {
     const visitors = getVisitorsByInviter(memberName);
     
-    // KPI 計算
     const totalVisitors = visitors.length;
     let joinedCount = 0;
     let activeCount = 0;
@@ -12307,8 +12284,6 @@ window.CelebrationEffect = (function() {
         activeCount++;
       }
 
-      // To-Do の自動抽出 & アクションプラン
-      // 1. ビジターに設定されている次回アクション
       if (v.nextActionText && v.nextActionDueDate) {
         const isOverdue = v.nextActionDueDate < todayStr;
         todoList.push({
@@ -12323,12 +12298,11 @@ window.CelebrationEffect = (function() {
         });
       }
 
-      // 2. 直近定例会への参加予定ビジター（定例会前日リマインドTo-Do）
       if (v.eventDate && v.eventDate >= todayStr && (!v.isAttended || v.isAttended === '未')) {
         todoList.push({
           visitorId: v.id,
           visitorName: v.name,
-          title: `定例会参加のリマインド連絡（当日案内・Zoomリンク確認）`,
+          title: `定例会参加リマインド連絡 (Zoomリンク送付)`,
           dueDate: v.eventDate,
           assignee: memberName,
           isOverdue: false,
@@ -12337,12 +12311,11 @@ window.CelebrationEffect = (function() {
         });
       }
 
-      // 3. 参加済みで1to1未実施かつ入会未定（フォロー1to1提案To-Do）
       if (v.isAttended === '出席' && (!v.is1to1 || v.is1to1 === '未') && !isJoined && !isDeclined) {
         todoList.push({
           visitorId: v.id,
           visitorName: v.name,
-          title: `お礼連絡 ＆ フォロー1to1の日程調整`,
+          title: `お礼連絡 ＆ フォロー1to1日程調整`,
           dueDate: v.eventDate || todayStr,
           assignee: memberName,
           isOverdue: false,
@@ -12352,10 +12325,8 @@ window.CelebrationEffect = (function() {
       }
     });
 
-    // 成約率
     const joinRate = totalVisitors > 0 ? Math.round((joinedCount / totalVisitors) * 100) : 0;
 
-    // KPI DOM 更新
     const totalEl = document.getElementById('member-kpi-total-visitors');
     const joinedEl = document.getElementById('member-kpi-joined-count');
     const activeEl = document.getElementById('member-kpi-active-count');
@@ -12375,10 +12346,7 @@ window.CelebrationEffect = (function() {
       todoDot.title = hasOverdue ? '期限切れアクションあり' : '正常';
     }
 
-    // To-Do リスト描画
     renderMemberTodoList(todoList, memberName);
-
-    // 招待ビジターカード一覧描画
     renderMemberVisitorCards(visitors);
   }
 
@@ -12387,50 +12355,44 @@ window.CelebrationEffect = (function() {
     const badgeEl = document.getElementById('member-todo-summary-badge');
     if (!listEl) return;
 
-    if (badgeEl) badgeEl.innerText = `${todoList.length}件`;
+    if (badgeEl) badgeEl.innerText = `${todoList.length}`;
 
     if (todoList.length === 0) {
       listEl.innerHTML = `
-        <div class="p-6 text-center bg-slate-50 border border-slate-100 rounded-xl">
-          <div class="text-emerald-500 text-2xl mb-1.5"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="text-xs font-extrabold text-slate-700">やり残しのアクションはありません</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">現在すべてのフォローや事前連絡が完了しています。</div>
+        <div class="py-6 text-center text-xs font-bold text-slate-400">
+          やり残しアクションはありません
         </div>
       `;
       return;
     }
 
     let html = '';
-    todoList.forEach((todo, idx) => {
-      const overdueClass = todo.isOverdue ? 'border-red-200 bg-red-50/40' : 'border-slate-200/80 bg-white';
-      const badgeClass = todo.isOverdue ? 'bg-red-100 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200';
-      const dateText = todo.dueDate ? todo.dueDate.replace(/^\d{4}\//, '') : '期日未設定';
+    todoList.forEach(todo => {
+      const isOverdue = todo.isOverdue;
+      const dateText = todo.dueDate ? todo.dueDate.replace(/^\d{4}\//, '') : '';
 
       html += `
-        <div class="p-3.5 rounded-xl border ${overdueClass} transition-all hover:border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div class="flex items-start gap-3 min-w-0">
-            <div class="mt-0.5 shrink-0">
-              <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${badgeClass}">
+        <div class="p-3 rounded-xl border ${isOverdue ? 'border-red-200 bg-red-50/20' : 'border-slate-200/80 bg-white'} flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded border ${isOverdue ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200/60'}">
                 ${escapeHtml(todo.actionType)}
               </span>
+              <span class="text-xs font-extrabold text-slate-900 truncate">
+                ${escapeHtml(todo.visitorName || 'ビジター')} 様
+              </span>
             </div>
-            <div class="min-w-0">
-              <div class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">
-                ${escapeHtml(todo.title)}
-              </div>
-              <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                <span class="font-bold text-slate-700"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(todo.visitorName || 'ビジター')} 様</span>
-                <span>•</span>
-                <span class="${todo.isOverdue ? 'text-red-600 font-extrabold' : 'text-slate-500'}">
-                  <i class="fa-regular fa-calendar mr-1"></i>期日: ${escapeHtml(dateText)} ${todo.isOverdue ? '(期限超過)' : ''}
-                </span>
-              </div>
+            <div class="text-xs text-slate-700 font-bold truncate">
+              ${escapeHtml(todo.title)}
+            </div>
+            <div class="text-[10px] font-bold ${isOverdue ? 'text-red-600' : 'text-slate-400'} mt-0.5">
+              期日: ${escapeHtml(dateText)} ${isOverdue ? '(期限切れ)' : ''}
             </div>
           </div>
-          <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <div class="shrink-0">
             ${todo.visitorId ? `
-              <button type="button" onclick="openVisitorDetailView('${escapeHtml(todo.visitorId)}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-colors cursor-pointer" title="ビジター詳細を開く">
-                詳細 <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
+              <button type="button" onclick="openVisitorDetailView('${escapeHtml(todo.visitorId)}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs border border-slate-200/60 transition-colors cursor-pointer" title="詳細">
+                <i class="fa-solid fa-chevron-right"></i>
               </button>
             ` : ''}
           </div>
@@ -12447,9 +12409,9 @@ window.CelebrationEffect = (function() {
       const btn = document.getElementById('tab-mv-' + f);
       if (btn) {
         if (f === filterType) {
-          btn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-800 shadow-xs cursor-pointer';
+          btn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer';
         } else {
-          btn.className = 'px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 cursor-pointer';
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer';
         }
       }
     });
@@ -12487,61 +12449,50 @@ window.CelebrationEffect = (function() {
     let html = '';
     filtered.forEach(v => {
       const feel = parseFeelAbc(v.feelAbc);
-      let feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">温度感: -</span>';
+      let feelBadge = '';
       if (feel === 'A') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 温度感 A (高)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">A</span>';
       } else if (feel === 'B') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300">🟡 温度感 B (中)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">B</span>';
       } else if (feel === 'C') {
-        feelBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-300">⚪ 温度感 C (低)</span>';
+        feelBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">C</span>';
       }
 
       const joinStatus = getJoinStatusInfo(v.isJoined);
-      const attendedStr = v.isAttended === '出席' ? '<span class="text-blue-600 font-bold">参加済</span>' : (v.isAttended === '欠席' ? '<span class="text-red-500 font-bold">欠席</span>' : '<span class="text-slate-400">参加予定</span>');
-
-      const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '日程未定';
+      const dateStr = v.eventDate ? v.eventDate.replace(/^\d{4}\//, '') : '';
 
       html += `
-        <div class="bg-white border border-slate-200/90 hover:border-blue-300 rounded-xl p-4 shadow-2xs transition-all flex flex-col justify-between cursor-pointer" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
+        <div class="bg-white border border-slate-200/80 hover:border-slate-300 rounded-xl p-3.5 shadow-2xs transition-all flex flex-col justify-between cursor-pointer" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
           <div>
-            <!-- 上段: 参加日 & 温度感 -->
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-[11px] font-extrabold text-slate-500 flex items-center gap-1">
-                <i class="fa-regular fa-calendar"></i> ${escapeHtml(dateStr)} (${attendedStr})
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-[11px] font-bold text-slate-400 font-mono">
+                ${escapeHtml(dateStr)}
               </span>
-              <div>${feelBadge}</div>
+              <div class="flex items-center gap-1.5">
+                ${feelBadge}
+                <span class="text-[10px] font-extrabold ${joinStatus.cls}">${escapeHtml(joinStatus.label)}</span>
+              </div>
             </div>
 
-            <!-- 中段: ビジター名 & 会社/業種 -->
-            <div class="mb-3">
-              <h4 class="text-base font-black text-slate-900 leading-tight">
-                ${escapeHtml(v.name || 'ビジター')} <span class="text-xs font-normal text-slate-500">様</span>
-              </h4>
-              <div class="text-xs text-slate-500 font-medium truncate mt-0.5">
+            <div class="mb-2">
+              <div class="text-sm font-black text-slate-900 truncate">
+                ${escapeHtml(v.name || 'ビジター')} <span class="text-xs font-normal text-slate-400">様</span>
+              </div>
+              <div class="text-[11px] text-slate-400 font-bold truncate">
                 ${escapeHtml(v.company || '')} ${v.company && v.profession ? '•' : ''} ${escapeHtml(v.profession || '')}
               </div>
             </div>
 
-            <!-- 下段メモ/ステータス -->
-            <div class="bg-slate-50 rounded-lg p-2 text-[11px] text-slate-600 mb-3 border border-slate-100">
-              <div class="flex items-center justify-between mb-1">
-                <span class="font-bold text-slate-400">ステータス</span>
-                <span class="font-extrabold ${joinStatus.cls}">${escapeHtml(joinStatus.label)}</span>
+            ${v.nextActionText ? `
+              <div class="text-[11px] text-slate-600 font-bold truncate bg-slate-50 p-2 rounded-lg border border-slate-100 mb-1">
+                <span class="text-slate-400 font-normal">次:</span> ${escapeHtml(v.nextActionText)}
               </div>
-              ${v.nextActionText ? `
-                <div class="text-slate-700 font-bold truncate">
-                  <i class="fa-solid fa-arrow-right text-blue-500 text-[10px] mr-1"></i>次: ${escapeHtml(v.nextActionText)}
-                </div>
-              ` : `
-                <div class="text-slate-400">最新アクション完了</div>
-              `}
-            </div>
+            ` : ''}
           </div>
 
-          <!-- フッター: 詳細リンク -->
-          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-bold">
-            <span>ビジターカルテを開く</span>
-            <i class="fa-solid fa-chevron-right text-[11px]"></i>
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-bold">
+            <span>カルテ表示</span>
+            <i class="fa-solid fa-chevron-right text-[10px]"></i>
           </div>
         </div>
       `;
@@ -12550,7 +12501,6 @@ window.CelebrationEffect = (function() {
     gridEl.innerHTML = html;
   }
 
-  /* --- 📊 全メンバーサマリー一覧の切り替え & 描画 --- */
   function toggleAllMembersView(forceState = null) {
     if (forceState !== null) {
       isAllMembersSummaryView = forceState;
@@ -12565,12 +12515,12 @@ window.CelebrationEffect = (function() {
     if (isAllMembersSummaryView) {
       if (singleContainer) singleContainer.style.display = 'none';
       if (allContainer) allContainer.style.display = 'block';
-      if (labelEl) labelEl.innerText = '個別ダッシュボード';
+      if (labelEl) labelEl.innerText = '個別';
       renderAllMembersSummaryTable();
     } else {
       if (singleContainer) singleContainer.style.display = 'block';
       if (allContainer) allContainer.style.display = 'none';
-      if (labelEl) labelEl.innerText = '全体一覧';
+      if (labelEl) labelEl.innerText = '全体';
       if (currentSelectedMemberName) {
         selectMemberDashboard(currentSelectedMemberName, false);
       }
@@ -12626,7 +12576,6 @@ window.CelebrationEffect = (function() {
       };
     });
 
-    // 招待数順でソート
     summaryList.sort((a, b) => b.totalVisitors - a.totalVisitors || b.joinedCount - a.joinedCount);
 
     let filtered = summaryList;
@@ -12638,26 +12587,21 @@ window.CelebrationEffect = (function() {
     filtered.forEach(s => {
       html += `
         <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(s.name)}')">
-          <td class="py-3 px-3 font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <span class="w-6 h-6 rounded-md bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center shrink-0">
-              ${escapeHtml(s.name.slice(0, 1))}
-            </span>
-            <span>${escapeHtml(s.name)}</span>
+          <td class="py-2.5 px-3 font-extrabold text-slate-900 text-xs">
+            ${escapeHtml(s.name)}
           </td>
-          <td class="py-3 px-3 text-slate-500 font-bold">
-            <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px]">${escapeHtml(s.category)}</span>
+          <td class="py-2.5 px-3 text-slate-500 font-bold text-[11px]">
+            ${escapeHtml(s.category)}
           </td>
-          <td class="py-3 px-3 text-center font-black text-slate-800 font-mono text-sm">${s.totalVisitors}</td>
-          <td class="py-3 px-3 text-center font-black text-emerald-600 font-mono text-sm">${s.joinedCount}</td>
-          <td class="py-3 px-3 text-center font-extrabold text-blue-600 font-mono text-xs">${s.joinRate}%</td>
-          <td class="py-3 px-3 text-center font-bold text-slate-700 font-mono text-xs">${s.activeCount}</td>
-          <td class="py-3 px-3 text-center">
-            ${s.todoCount > 0 ? `<span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-extrabold text-[10px]">${s.todoCount}件</span>` : '<span class="text-slate-300">-</span>'}
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalVisitors}</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.joinedCount}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-500 font-mono text-xs">${s.joinRate}%</td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-700 font-mono text-xs">${s.activeCount}</td>
+          <td class="py-2.5 px-3 text-center font-mono text-xs">
+            ${s.todoCount > 0 ? `<span class="font-bold text-red-600">${s.todoCount}</span>` : '<span class="text-slate-300">-</span>'}
           </td>
-          <td class="py-3 px-3 text-right">
-            <button type="button" class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs">
-              ダッシュボード <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
-            </button>
+          <td class="py-2.5 px-3 text-right">
+            <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
           </td>
         </tr>
       `;
@@ -12671,20 +12615,22 @@ window.CelebrationEffect = (function() {
     selectMemberDashboard(memberName, true);
   }
 
-  /* --- 🔗 共有ロジック (URLコピー & LINEテキストコピー) --- */
+  function getMemberShareUrl(memberName) {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}#member/${encodeURIComponent(memberName)}`;
+  }
+
   function copyMemberDashUrl() {
     if (!currentSelectedMemberName) {
       showToast('メンバーを選択してください', 'warning');
       return;
     }
 
-    const baseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${baseUrl}#member-dashboard?name=${encodeURIComponent(currentSelectedMemberName)}`;
-
+    const shareUrl = getMemberShareUrl(currentSelectedMemberName);
     navigator.clipboard.writeText(shareUrl).then(() => {
-      showToast(`「${currentSelectedMemberName}」さんの専用URLをコピーしました！`, 'success');
+      showToast(`URLをコピーしました (${currentSelectedMemberName} 様)`, 'success');
     }).catch(() => {
-      showToast('URLのコピーに失敗しました', 'error');
+      showToast('コピーに失敗しました', 'error');
     });
   }
 
@@ -12695,8 +12641,7 @@ window.CelebrationEffect = (function() {
     }
 
     const visitors = getVisitorsByInviter(currentSelectedMemberName);
-    const baseUrl = window.location.origin + window.location.pathname;
-    const shareUrl = `${baseUrl}#member-dashboard?name=${encodeURIComponent(currentSelectedMemberName)}`;
+    const shareUrl = getMemberShareUrl(currentSelectedMemberName);
 
     let activeSummary = '';
     const activeVisitors = visitors.filter(v => {
@@ -12707,15 +12652,15 @@ window.CelebrationEffect = (function() {
     if (activeVisitors.length > 0) {
       activeSummary = activeVisitors.map(v => `・${v.name} 様 (${v.feelAbc ? '温度感' + v.feelAbc : 'フォロー中'})`).join('\n');
     } else {
-      activeSummary = '現在フォロー中のビジターはいません';
+      activeSummary = '現在フォロー中のゲストはいません';
     }
 
-    const text = `${currentSelectedMemberName}さん\nいつもビジター招待ありがとうございます！\n\n招待いただいたゲスト様の最新フォロー状況・To-Doはこちらからご確認いただけます👇\n${shareUrl}\n\n【現在フォロー中のゲスト】\n${activeSummary}\n\nご不明点があればビジホスチームまでお気軽にご連絡ください！`;
+    const text = `${currentSelectedMemberName}さん\nビジター招待ありがとうございます！\n\n最新フォロー状況・To-Doはこちら👇\n${shareUrl}\n\n【現在フォロー中のゲスト】\n${activeSummary}`;
 
     navigator.clipboard.writeText(text).then(() => {
-      showToast('LINE送信用テキストをコピーしました！', 'success');
+      showToast('LINE共有文をコピーしました', 'success');
     }).catch(() => {
-      showToast('テキストのコピーに失敗しました', 'error');
+      showToast('コピーに失敗しました', 'error');
     });
   }
 </script>
@@ -17869,8 +17814,18 @@ window.CelebrationEffect = (function() {
       }
     } else if (hash.startsWith('visitor/')) {
       openVisitorDetailView(hash.replace('visitor/', ''), false);
-    } else if (hash.startsWith('member-dashboard')) {
+    } else if (hash.startsWith('member/') || hash.startsWith('member-dashboard')) {
       switchTab('member-dashboard', false);
+      let targetMember = null;
+      if (hash.startsWith('member/')) {
+        targetMember = hash.replace('member/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&]name=([^&]+)/);
+        if (match) targetMember = match[1];
+      }
+      setTimeout(() => {
+        if (typeof initMemberDashboard === 'function') initMemberDashboard(targetMember);
+      }, 50);
     } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
