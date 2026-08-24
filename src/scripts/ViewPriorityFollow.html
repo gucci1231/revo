@@ -306,10 +306,9 @@
               ${assigneeText ? `<div class="text-[10px] text-right mt-1">${assigneeText}</div>` : ''}
             </div>
           `;
-        } else {
           actionBlockHtml = `
-            <div class="p-2 bg-amber-50/60 rounded-lg border border-dashed border-amber-200 mt-1 flex items-center justify-between text-amber-700 text-xs">
-              <span class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation"></i> 未設定</span>
+            <div class="p-2 bg-slate-50 rounded-lg border border-dashed border-slate-200 mt-1 flex items-center justify-between text-slate-500 text-xs">
+              <span class="font-bold flex items-center gap-1"><i class="fa-solid fa-minus text-slate-400"></i> アクション未設定</span>
               <button type="button" class="btn-action-primary text-[10px] py-0.5 px-2 font-bold" onclick="event.stopPropagation(); openPfVisitorFullDetail('${vid}');">設定</button>
             </div>
           `;
