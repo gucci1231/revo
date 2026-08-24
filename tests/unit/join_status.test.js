@@ -10,20 +10,22 @@ describe('Join Status Options & UI Unit Tests', () => {
 
   it('defines centralized status configurations and option generators in Utils.html', () => {
     assert.ok(utilsHtml.includes('JOIN_STATUS_CONFIG'), 'Utils should define JOIN_STATUS_CONFIG');
+    assert.ok(utilsHtml.includes('FOLLOW_TYPE_CONFIG'), 'Utils should define FOLLOW_TYPE_CONFIG');
     assert.ok(utilsHtml.includes('申込書提出'), 'JOIN_STATUS_CONFIG should contain 申込書提出');
     assert.ok(utilsHtml.includes('メンバーシップ審査'), 'JOIN_STATUS_CONFIG should contain メンバーシップ審査');
     assert.ok(utilsHtml.includes('入金待ち'), 'JOIN_STATUS_CONFIG should contain 入金待ち');
-    assert.ok(utilsHtml.includes('保留（時期尚早）'), 'JOIN_STATUS_CONFIG should contain 保留（時期尚早）');
     assert.ok(utilsHtml.includes('フォロー終了'), 'JOIN_STATUS_CONFIG should contain フォロー終了');
+    assert.ok(utilsHtml.includes('直近フォロー'), 'FOLLOW_TYPE_CONFIG should contain 直近フォロー');
+    assert.ok(utilsHtml.includes('時期尚早'), 'FOLLOW_TYPE_CONFIG should contain 時期尚早');
+    assert.ok(utilsHtml.includes('関係維持'), 'FOLLOW_TYPE_CONFIG should contain 関係維持');
     assert.ok(utilsHtml.includes('state-applying'), 'Utils should support state-applying class');
     assert.ok(utilsHtml.includes('state-review'), 'Utils should support state-review class');
     assert.ok(utilsHtml.includes('state-payment'), 'Utils should support state-payment class');
-    assert.ok(utilsHtml.includes('state-pending-later'), 'Utils should support state-pending-later class');
-    assert.ok(utilsHtml.includes('state-closed'), 'Utils should support state-closed class');
   });
 
   it('uses centralized status helper functions across ViewVisitorDetail and ViewPriorityFollow', () => {
     assert.ok(visitorDetailHtml.includes('vd-select-joined'));
+    assert.ok(visitorDetailHtml.includes('vd-select-follow-type'));
     assert.ok(viewPriorityFollowHtml.includes('renderJoinStatusOptionsHtml(st.isJoined)'));
     assert.ok(viewPriorityFollowHtml.includes('joinInfo.cls'));
   });
@@ -33,14 +35,17 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(utilsHtml.includes('normalizeJoinStatus'), 'Utils should define normalizeJoinStatus');
     assert.ok(utilsHtml.includes('getJoinStatusInfo'), 'Utils should define getJoinStatusInfo');
     assert.ok(utilsHtml.includes('renderJoinStatusOptionsHtml'), 'Utils should define renderJoinStatusOptionsHtml');
+    assert.ok(utilsHtml.includes('FOLLOW_TYPE_CONFIG'), 'Utils should define FOLLOW_TYPE_CONFIG');
+    assert.ok(utilsHtml.includes('normalizeFollowType'), 'Utils should define normalizeFollowType');
   });
 
   it('compiles new join status options into index.html', () => {
     assert.ok(indexHtml.includes('<option value="申込書提出"'));
     assert.ok(indexHtml.includes('<option value="メンバーシップ審査"'));
     assert.ok(indexHtml.includes('<option value="入金待ち"'));
-    assert.ok(indexHtml.includes('<option value="保留（時期尚早）"'));
     assert.ok(indexHtml.includes('<option value="フォロー終了"'));
-    assert.ok(indexHtml.includes('.status-select.state-applying'));
+    assert.ok(indexHtml.includes('<option value="直近フォロー"'));
+    assert.ok(indexHtml.includes('<option value="時期尚早"'));
+    assert.ok(indexHtml.includes('<option value="関係維持"'));
   });
 });

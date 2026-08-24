@@ -6552,8 +6552,15 @@ select.form-input, select.form-select {
                 <option value="入金待ち">入会: 入金待ち</option>
                 <option value="メンバーシップ審査">入会: メンバーシップ審査</option>
                 <option value="入会済">入会: 済</option>
-                <option value="保留（時期尚早）">入会: 保留（時期尚早）</option>
                 <option value="フォロー終了">入会: フォロー終了</option>
+              </select>
+            </div>
+            <div class="vd-status-select-wrap">
+              <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
+                <option value="直近フォロー">🔥 直近入会フォロー</option>
+                <option value="時期尚早">⏰ 時期尚早・保留</option>
+                <option value="関係維持">🤝 関係維持・アライアンス</option>
+                <option value="終了">⚪ 終了</option>
               </select>
             </div>
           </div>
@@ -7697,17 +7704,17 @@ select.form-input, select.form-select {
 
 </div>
 
-    <!-- Modal: 保留（時期尚早）再アプローチ・リマインド設定モーダル -->
+    <!-- Modal: フォロー方針（時期尚早 / 関係維持）リマインド設定モーダル -->
 <div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
   <div class="modal-card" style="max-width: 480px;">
     
     <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
-          <i class="fa-regular fa-clock"></i>
+        <div id="fpr-icon-wrap" class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">
+          <i id="fpr-icon" class="fa-regular fa-clock"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800 m-0">再アプローチ・リマインド設定</h3>
+          <h3 id="fpr-title" class="text-base font-bold text-slate-800 m-0">再アプローチ・リマインド設定</h3>
           <div class="text-xs text-slate-500 font-medium" id="fpr-visitor-subname">ビジターへの再コンタクト予定を設定</div>
         </div>
       </div>
@@ -7718,12 +7725,13 @@ select.form-input, select.form-select {
 
     <form id="form-follow-pending-reminder" onsubmit="submitFollowPendingReminder(event)" class="flex flex-col gap-3.5">
       <input type="hidden" id="fpr-visitor-id" value="">
+      <input type="hidden" id="fpr-follow-type" value="">
 
-      <!-- 再アプローチ予定日 -->
+      <!-- 再アプローチ予定日 / 次回連絡日 -->
       <div class="form-group mb-0">
         <label class="form-label text-xs font-bold text-slate-700 flex items-center justify-between mb-1.5">
-          <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i>再アプローチ予定日 <span class="text-rose-500">*</span></span>
-          <span class="text-[10px] text-slate-400 font-normal">例: 半年後、独立予定時期など</span>
+          <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i><span id="fpr-date-label">再アプローチ予定日</span> <span class="text-rose-500">*</span></span>
+          <span class="text-[10px] text-slate-400 font-normal" id="fpr-date-hint">例: 半年後、独立予定時期など</span>
         </label>
         <input type="date" id="fpr-due-date" class="form-input w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none" required>
       </div>
@@ -8085,7 +8093,8 @@ const ApiService = {
     const fieldLabels = {
       'isAttended': '出欠',
       'is1to1': '1to1',
-      'isJoined': '入会'
+      'isJoined': '入会',
+      'followType': 'フォロー方針'
     };
     const fieldName = fieldLabels[field] || field;
     showToast(`${fieldName}を【${value}】に変更中...`);
@@ -8117,8 +8126,8 @@ const ApiService = {
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);
         refreshAllActiveViews();
 
-        if (field === 'isJoined' && value === '保留（時期尚早）' && typeof openFollowPendingReminderModal === 'function') {
-          openFollowPendingReminderModal(id);
+        if (field === 'followType' && (value === '時期尚早' || value === '関係維持') && typeof openFollowPendingReminderModal === 'function') {
+          openFollowPendingReminderModal(id, value);
         }
       })
       .catch(handleError);
@@ -8134,10 +8143,40 @@ const ApiService = {
     '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 4 },
     'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 5 },
     '入会済': { value: '入会済', label: '入会: 済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
-    '保留（時期尚早）': { value: '保留（時期尚早）', label: '入会: 保留（時期尚早）', shortLabel: '保留', cls: 'state-pending-later', priority: 1.5 },
     'フォロー終了': { value: 'フォロー終了', label: '入会: フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 1 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', '保留（時期尚早）', 'フォロー終了'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', 'フォロー終了'];
+
+  const FOLLOW_TYPE_CONFIG = {
+    '直近フォロー': { value: '直近フォロー', label: '🔥 直近入会フォロー', shortLabel: '直近', cls: 'follow-type-active', icon: 'fa-fire', color: '#0284c7' },
+    '時期尚早': { value: '時期尚早', label: '⏰ 時期尚早・保留', shortLabel: '時期尚早', cls: 'follow-type-pending', icon: 'fa-clock', color: '#6366f1' },
+    '関係維持': { value: '関係維持', label: '🤝 関係維持・アライアンス', shortLabel: '関係維持', cls: 'follow-type-alliance', icon: 'fa-handshake', color: '#059669' },
+    '終了': { value: '終了', label: '⚪ 終了', shortLabel: '終了', cls: 'follow-type-closed', icon: 'fa-circle-xmark', color: '#64748b' }
+  };
+  const FOLLOW_TYPE_ORDER = ['直近フォロー', '時期尚早', '関係維持', '終了'];
+
+  function normalizeFollowType(raw) {
+    if (!raw) return '直近フォロー';
+    if (FOLLOW_TYPE_CONFIG[raw]) return raw;
+    if (raw === '保留' || raw === '保留（時期尚早）') return '時期尚早';
+    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト') return '関係維持';
+    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了') return '終了';
+    return '直近フォロー';
+  }
+
+  function getFollowTypeInfo(raw) {
+    const key = normalizeFollowType(raw);
+    return FOLLOW_TYPE_CONFIG[key] || FOLLOW_TYPE_CONFIG['直近フォロー'];
+  }
+
+  function renderFollowTypeOptionsHtml(selectedVal) {
+    const current = normalizeFollowType(selectedVal);
+    return FOLLOW_TYPE_ORDER.map(key => {
+      const info = FOLLOW_TYPE_CONFIG[key];
+      const isSel = current === key ? ' selected' : '';
+      return `<option value="${info.value}"${isSel}>${info.label}</option>`;
+    }).join('\n');
+  }
 
   const ATTEND_STATUS_CONFIG = {
     '未': { value: '未', label: '出欠: 未', shortLabel: '未', cls: '' },
@@ -8156,7 +8195,6 @@ const ApiService = {
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
     if (raw === '見送り' || raw === 'フォロー終了') return 'フォロー終了';
-    if (raw === '保留' || raw === '時期尚早' || raw === '保留（時期尚早）') return '保留（時期尚早）';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }
@@ -9659,6 +9697,10 @@ window.CelebrationEffect = (function() {
           existing.lastActionReporter = r.lastActionReporter || '';
         }
 
+        if (r.followType && r.followType !== '直近フォロー') {
+          existing.followType = r.followType;
+        }
+
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
           if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
             existing[k] = r[k];
@@ -9670,6 +9712,7 @@ window.CelebrationEffect = (function() {
         item.eventDates = [item.eventDate].filter(Boolean);
         item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
+        item.followType = item.followType || '直近フォロー';
         item.pendingActionCount = Number(item.pendingActionCount) || 0;
         item.overdueActionCount = Number(item.overdueActionCount) || 0;
         item.completedActionCount = Number(item.completedActionCount) || 0;
@@ -11219,11 +11262,14 @@ window.CelebrationEffect = (function() {
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 感触A/Bかつ未入会・未クローズのベースリスト
+    // 感触A/Bかつ未入会・未クローズ・直近フォロー対象のベースリスト
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
-      const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了' || v.isJoined === '保留（時期尚早）' || v.isJoined === '保留');
-      if (isJoinedBool || isClosed) return false;
+      const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || '直近フォロー');
+      const isFollowActive = (followType === '直近フォロー');
+
+      if (isJoinedBool || isClosed || !isFollowActive) return false;
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||
@@ -14060,6 +14106,13 @@ window.CelebrationEffect = (function() {
           selectJoin.className = 'vd-status-select ' + info.cls;
         }
 
+        const selectFollowType = document.getElementById('vd-select-follow-type');
+        if (selectFollowType) {
+          const info = getFollowTypeInfo(st.followType || v.followType);
+          selectFollowType.value = info.value;
+          selectFollowType.className = 'vd-status-select ' + info.cls;
+        }
+
         // 複数回ヒアリングシートの描画＆切り替え初期化
         renderHearingSheetsMultiVisit(currentVdVisits, currentVdHearings, id);
 
@@ -15624,19 +15677,52 @@ window.CelebrationEffect = (function() {
 </script>
 
 <script>
-  /* --- Modal: Follow Pending (時期尚早/保留) Reminder Controller --- */
+  /* --- Modal: Follow Pending (時期尚早/保留 & 関係維持/アライアンス) Reminder Controller --- */
 
-  function openFollowPendingReminderModal(visitorId) {
+  function openFollowPendingReminderModal(visitorId, followType = '時期尚早') {
     const modal = document.getElementById('modal-follow-pending-reminder');
     if (!modal) return;
 
     const idInput = document.getElementById('fpr-visitor-id');
+    const typeInput = document.getElementById('fpr-follow-type');
     const subnameEl = document.getElementById('fpr-visitor-subname');
+    const titleEl = document.getElementById('fpr-title');
+    const iconEl = document.getElementById('fpr-icon');
+    const iconWrapEl = document.getElementById('fpr-icon-wrap');
+    const dateLabelEl = document.getElementById('fpr-date-label');
+    const dateHintEl = document.getElementById('fpr-date-hint');
     const dateInput = document.getElementById('fpr-due-date');
     const memoInput = document.getElementById('fpr-memo');
     const assigneeSelect = document.getElementById('fpr-assignee');
 
     if (idInput) idInput.value = visitorId;
+    if (typeInput) typeInput.value = followType;
+
+    // タイプ別のラベル＆配色切り替え
+    const isAlliance = (followType === '関係維持');
+    if (titleEl) {
+      titleEl.innerText = isAlliance ? '次回定期連絡・アライアンス設定' : '再アプローチ・リマインド設定';
+    }
+    if (iconEl) {
+      iconEl.className = isAlliance ? 'fa-solid fa-handshake' : 'fa-regular fa-clock';
+    }
+    if (iconWrapEl) {
+      iconWrapEl.className = isAlliance
+        ? 'w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold'
+        : 'w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold';
+    }
+    if (dateLabelEl) {
+      dateLabelEl.innerText = isAlliance ? '次回コンタクト予定日' : '再アプローチ予定日';
+    }
+    if (dateHintEl) {
+      dateHintEl.innerText = isAlliance ? '例: 3ヶ月後の定例会・イベント案内など' : '例: 半年後、独立予定時期など';
+    }
+    if (memoInput) {
+      memoInput.placeholder = isAlliance
+        ? '例: 次回のビジターズデイで再案内、3ヶ月後に近況確認の連絡 等'
+        : '例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等';
+      memoInput.value = '';
+    }
 
     // ビジター名の表示
     let visitorName = 'ビジター No.' + visitorId;
@@ -15663,10 +15749,6 @@ window.CelebrationEffect = (function() {
       const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
       const dd = String(defaultDate.getDate()).padStart(2, '0');
       dateInput.value = `${yyyy}-${mm}-${dd}`;
-    }
-
-    if (memoInput) {
-      memoInput.value = '';
     }
 
     // 担当者プルダウンの生成
@@ -15705,6 +15787,7 @@ window.CelebrationEffect = (function() {
     if (e) e.preventDefault();
 
     const vid = document.getElementById('fpr-visitor-id')?.value;
+    const followType = document.getElementById('fpr-follow-type')?.value || '時期尚早';
     const dueDate = document.getElementById('fpr-due-date')?.value;
     const assignee = document.getElementById('fpr-assignee')?.value || '';
     const memo = document.getElementById('fpr-memo')?.value.trim();
@@ -15715,22 +15798,24 @@ window.CelebrationEffect = (function() {
     }
 
     if (!dueDate) {
-      showToast('再アプローチ予定日を入力してください');
+      showToast('予定日を入力してください');
       return;
     }
 
     if (!memo) {
-      showToast('保留の理由・メモを入力してください');
+      showToast('理由・メモを入力してください');
       return;
     }
 
-    const actionText = `【保留/再アプローチ】${memo}`;
+    const isAlliance = (followType === '関係維持');
+    const actionPrefix = isAlliance ? '【定期連絡/関係維持】' : '【保留/再アプローチ】';
+    const actionText = `${actionPrefix}${memo}`;
 
     const payload = {
       visitor_id: vid,
       due_date: dueDate,
       assignee_name: assignee,
-      action_type: 'その他',
+      action_type: isAlliance ? 'その他' : 'その他',
       action_text: actionText
     };
 
@@ -15739,7 +15824,7 @@ window.CelebrationEffect = (function() {
     ApiService.call('createActionPlanApi', payload)
       .then(res => {
         if (res && res.success) {
-          showToast(`⏰ ${dueDate} の再アプローチ予定を登録しました！`);
+          showToast(`⏰ ${dueDate} の予定を登録しました！`);
           closeFollowPendingReminderModal();
           refreshAllActiveViews();
         } else {

@@ -180,7 +180,8 @@ class VisitorController extends Controller {
             'isAttended' => 'is_attended',
             'isJoined' => 'is_joined',
             'is1to1' => 'is_1to1',
-            'matching' => 'is_matched'
+            'matching' => 'is_matched',
+            'followType' => 'follow_type'
         ];
 
         if (!isset($colMap[$field])) {

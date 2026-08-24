@@ -120,6 +120,10 @@
           existing.lastActionReporter = r.lastActionReporter || '';
         }
 
+        if (r.followType && r.followType !== '直近フォロー') {
+          existing.followType = r.followType;
+        }
+
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
           if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
             existing[k] = r[k];
@@ -131,6 +135,7 @@
         item.eventDates = [item.eventDate].filter(Boolean);
         item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
+        item.followType = item.followType || '直近フォロー';
         item.pendingActionCount = Number(item.pendingActionCount) || 0;
         item.overdueActionCount = Number(item.overdueActionCount) || 0;
         item.completedActionCount = Number(item.completedActionCount) || 0;

@@ -1,17 +1,50 @@
 <script>
-  /* --- Modal: Follow Pending (時期尚早/保留) Reminder Controller --- */
+  /* --- Modal: Follow Pending (時期尚早/保留 & 関係維持/アライアンス) Reminder Controller --- */
 
-  function openFollowPendingReminderModal(visitorId) {
+  function openFollowPendingReminderModal(visitorId, followType = '時期尚早') {
     const modal = document.getElementById('modal-follow-pending-reminder');
     if (!modal) return;
 
     const idInput = document.getElementById('fpr-visitor-id');
+    const typeInput = document.getElementById('fpr-follow-type');
     const subnameEl = document.getElementById('fpr-visitor-subname');
+    const titleEl = document.getElementById('fpr-title');
+    const iconEl = document.getElementById('fpr-icon');
+    const iconWrapEl = document.getElementById('fpr-icon-wrap');
+    const dateLabelEl = document.getElementById('fpr-date-label');
+    const dateHintEl = document.getElementById('fpr-date-hint');
     const dateInput = document.getElementById('fpr-due-date');
     const memoInput = document.getElementById('fpr-memo');
     const assigneeSelect = document.getElementById('fpr-assignee');
 
     if (idInput) idInput.value = visitorId;
+    if (typeInput) typeInput.value = followType;
+
+    // タイプ別のラベル＆配色切り替え
+    const isAlliance = (followType === '関係維持');
+    if (titleEl) {
+      titleEl.innerText = isAlliance ? '次回定期連絡・アライアンス設定' : '再アプローチ・リマインド設定';
+    }
+    if (iconEl) {
+      iconEl.className = isAlliance ? 'fa-solid fa-handshake' : 'fa-regular fa-clock';
+    }
+    if (iconWrapEl) {
+      iconWrapEl.className = isAlliance
+        ? 'w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold'
+        : 'w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold';
+    }
+    if (dateLabelEl) {
+      dateLabelEl.innerText = isAlliance ? '次回コンタクト予定日' : '再アプローチ予定日';
+    }
+    if (dateHintEl) {
+      dateHintEl.innerText = isAlliance ? '例: 3ヶ月後の定例会・イベント案内など' : '例: 半年後、独立予定時期など';
+    }
+    if (memoInput) {
+      memoInput.placeholder = isAlliance
+        ? '例: 次回のビジターズデイで再案内、3ヶ月後に近況確認の連絡 等'
+        : '例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等';
+      memoInput.value = '';
+    }
 
     // ビジター名の表示
     let visitorName = 'ビジター No.' + visitorId;
@@ -38,10 +71,6 @@
       const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
       const dd = String(defaultDate.getDate()).padStart(2, '0');
       dateInput.value = `${yyyy}-${mm}-${dd}`;
-    }
-
-    if (memoInput) {
-      memoInput.value = '';
     }
 
     // 担当者プルダウンの生成
@@ -80,6 +109,7 @@
     if (e) e.preventDefault();
 
     const vid = document.getElementById('fpr-visitor-id')?.value;
+    const followType = document.getElementById('fpr-follow-type')?.value || '時期尚早';
     const dueDate = document.getElementById('fpr-due-date')?.value;
     const assignee = document.getElementById('fpr-assignee')?.value || '';
     const memo = document.getElementById('fpr-memo')?.value.trim();
@@ -90,22 +120,24 @@
     }
 
     if (!dueDate) {
-      showToast('再アプローチ予定日を入力してください');
+      showToast('予定日を入力してください');
       return;
     }
 
     if (!memo) {
-      showToast('保留の理由・メモを入力してください');
+      showToast('理由・メモを入力してください');
       return;
     }
 
-    const actionText = `【保留/再アプローチ】${memo}`;
+    const isAlliance = (followType === '関係維持');
+    const actionPrefix = isAlliance ? '【定期連絡/関係維持】' : '【保留/再アプローチ】';
+    const actionText = `${actionPrefix}${memo}`;
 
     const payload = {
       visitor_id: vid,
       due_date: dueDate,
       assignee_name: assignee,
-      action_type: 'その他',
+      action_type: isAlliance ? 'その他' : 'その他',
       action_text: actionText
     };
 
@@ -114,7 +146,7 @@
     ApiService.call('createActionPlanApi', payload)
       .then(res => {
         if (res && res.success) {
-          showToast(`⏰ ${dueDate} の再アプローチ予定を登録しました！`);
+          showToast(`⏰ ${dueDate} の予定を登録しました！`);
           closeFollowPendingReminderModal();
           refreshAllActiveViews();
         } else {

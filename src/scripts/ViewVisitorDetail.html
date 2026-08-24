@@ -426,6 +426,13 @@
           selectJoin.className = 'vd-status-select ' + info.cls;
         }
 
+        const selectFollowType = document.getElementById('vd-select-follow-type');
+        if (selectFollowType) {
+          const info = getFollowTypeInfo(st.followType || v.followType);
+          selectFollowType.value = info.value;
+          selectFollowType.className = 'vd-status-select ' + info.cls;
+        }
+
         // 複数回ヒアリングシートの描画＆切り替え初期化
         renderHearingSheetsMultiVisit(currentVdVisits, currentVdHearings, id);
 

@@ -64,7 +64,8 @@
     const fieldLabels = {
       'isAttended': '出欠',
       'is1to1': '1to1',
-      'isJoined': '入会'
+      'isJoined': '入会',
+      'followType': 'フォロー方針'
     };
     const fieldName = fieldLabels[field] || field;
     showToast(`${fieldName}を【${value}】に変更中...`);
@@ -96,8 +97,8 @@
         showToast(`✅ ${fieldName}を【${value}】に変更しました`);
         refreshAllActiveViews();
 
-        if (field === 'isJoined' && value === '保留（時期尚早）' && typeof openFollowPendingReminderModal === 'function') {
-          openFollowPendingReminderModal(id);
+        if (field === 'followType' && (value === '時期尚早' || value === '関係維持') && typeof openFollowPendingReminderModal === 'function') {
+          openFollowPendingReminderModal(id, value);
         }
       })
       .catch(handleError);
@@ -113,10 +114,40 @@
     '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 4 },
     'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 5 },
     '入会済': { value: '入会済', label: '入会: 済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
-    '保留（時期尚早）': { value: '保留（時期尚早）', label: '入会: 保留（時期尚早）', shortLabel: '保留', cls: 'state-pending-later', priority: 1.5 },
     'フォロー終了': { value: 'フォロー終了', label: '入会: フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 1 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', '保留（時期尚早）', 'フォロー終了'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', 'フォロー終了'];
+
+  const FOLLOW_TYPE_CONFIG = {
+    '直近フォロー': { value: '直近フォロー', label: '🔥 直近入会フォロー', shortLabel: '直近', cls: 'follow-type-active', icon: 'fa-fire', color: '#0284c7' },
+    '時期尚早': { value: '時期尚早', label: '⏰ 時期尚早・保留', shortLabel: '時期尚早', cls: 'follow-type-pending', icon: 'fa-clock', color: '#6366f1' },
+    '関係維持': { value: '関係維持', label: '🤝 関係維持・アライアンス', shortLabel: '関係維持', cls: 'follow-type-alliance', icon: 'fa-handshake', color: '#059669' },
+    '終了': { value: '終了', label: '⚪ 終了', shortLabel: '終了', cls: 'follow-type-closed', icon: 'fa-circle-xmark', color: '#64748b' }
+  };
+  const FOLLOW_TYPE_ORDER = ['直近フォロー', '時期尚早', '関係維持', '終了'];
+
+  function normalizeFollowType(raw) {
+    if (!raw) return '直近フォロー';
+    if (FOLLOW_TYPE_CONFIG[raw]) return raw;
+    if (raw === '保留' || raw === '保留（時期尚早）') return '時期尚早';
+    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト') return '関係維持';
+    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了') return '終了';
+    return '直近フォロー';
+  }
+
+  function getFollowTypeInfo(raw) {
+    const key = normalizeFollowType(raw);
+    return FOLLOW_TYPE_CONFIG[key] || FOLLOW_TYPE_CONFIG['直近フォロー'];
+  }
+
+  function renderFollowTypeOptionsHtml(selectedVal) {
+    const current = normalizeFollowType(selectedVal);
+    return FOLLOW_TYPE_ORDER.map(key => {
+      const info = FOLLOW_TYPE_CONFIG[key];
+      const isSel = current === key ? ' selected' : '';
+      return `<option value="${info.value}"${isSel}>${info.label}</option>`;
+    }).join('\n');
+  }
 
   const ATTEND_STATUS_CONFIG = {
     '未': { value: '未', label: '出欠: 未', shortLabel: '未', cls: '' },
@@ -135,7 +166,6 @@
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
     if (raw === '見送り' || raw === 'フォロー終了') return 'フォロー終了';
-    if (raw === '保留' || raw === '時期尚早' || raw === '保留（時期尚早）') return '保留（時期尚早）';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }

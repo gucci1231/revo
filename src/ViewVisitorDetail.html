@@ -91,8 +91,15 @@
                 <option value="入金待ち">入会: 入金待ち</option>
                 <option value="メンバーシップ審査">入会: メンバーシップ審査</option>
                 <option value="入会済">入会: 済</option>
-                <option value="保留（時期尚早）">入会: 保留（時期尚早）</option>
                 <option value="フォロー終了">入会: フォロー終了</option>
+              </select>
+            </div>
+            <div class="vd-status-select-wrap">
+              <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
+                <option value="直近フォロー">🔥 直近入会フォロー</option>
+                <option value="時期尚早">⏰ 時期尚早・保留</option>
+                <option value="関係維持">🤝 関係維持・アライアンス</option>
+                <option value="終了">⚪ 終了</option>
               </select>
             </div>
           </div>

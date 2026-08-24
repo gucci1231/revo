@@ -63,6 +63,7 @@ class Database {
                 is_1to1 TEXT DEFAULT '未',
                 is_matched TEXT DEFAULT '未',
                 matching_note TEXT DEFAULT '',
+                follow_type TEXT DEFAULT '直近フォロー',
                 updated_at TEXT
             );
 
@@ -137,6 +138,9 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN reporter_name TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN follow_type TEXT DEFAULT '直近フォロー'");
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN completed_by TEXT DEFAULT ''");
