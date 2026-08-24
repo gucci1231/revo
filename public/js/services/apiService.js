@@ -186,6 +186,32 @@ const ApiService = {
         return { url: '/api/visitors.php?action=list', method: 'GET' };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
+      case 'getReportTemplatesApi':
+        return { url: '/api/reports.php?action=list', method: 'GET' };
+      case 'updateReportTemplateApi':
+        return {
+          url: '/api/reports.php?action=update',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
+      case 'toggleReportTemplateApi':
+        return {
+          url: '/api/reports.php?action=toggle',
+          method: 'POST',
+          body: { id: args[0], is_enabled: args[1] }
+        };
+      case 'resetReportTemplateApi':
+        return {
+          url: '/api/reports.php?action=reset',
+          method: 'POST',
+          body: { id: args[0] }
+        };
+      case 'sendReportMailApi':
+        return {
+          url: '/api/reports.php?action=send_mail',
+          method: 'POST',
+          body: { to: args[0], subject: args[1], body: args[2] }
+        };
       case 'getScheduledEmailsApi':
         return null;
       default:

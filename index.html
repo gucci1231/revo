@@ -18018,13 +18018,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       labelEl.className = checked ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-slate-400';
     }
 
+    // 左ナビのバッジも即座に更新
+    const badgeEl = document.getElementById('rm-badge-' + currentSelectedReportId);
+    if (badgeEl) {
+      badgeEl.className = checked ? 'w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0' : 'w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0';
+      badgeEl.title = checked ? '有効 (配信中)' : '無効 (停止中)';
+    }
+
+    const t = cachedReportTemplates.find(x => x.id === currentSelectedReportId);
+    if (t) t.is_enabled = isEnabled;
+
     if (typeof ApiService !== 'undefined' && ApiService.call) {
       ApiService.call('toggleReportTemplateApi', currentSelectedReportId, isEnabled).then(res => {
         showToast(checked ? 'この通知を「有効」にしました' : 'この通知を「無効」にしました', 'info');
-        const t = cachedReportTemplates.find(x => x.id === currentSelectedReportId);
-        if (t) t.is_enabled = isEnabled;
-        renderReportManagerUI();
-      }).catch(() => {
+      }).catch(err => {
+        console.error('Toggle failed:', err);
         showToast('設定の変更に失敗しました', 'error');
       });
     }
