@@ -3126,6 +3126,22 @@ select.form-input, select.form-select {
   box-sizing: border-box;
 }
 
+/* ダッシュボード最優先フォロー & アクションプラン: PCでも常時カードグリッド表示 */
+#dash-panel-hot .dash-ap-cards-wrap,
+#dash-panel-hot .dash-ap-grid,
+#dash-panel-ap .dash-ap-cards-wrap,
+#dash-panel-ap .dash-ap-grid,
+#cards-hot-visitors,
+#dashboard-action-plans-cards {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px;
+  padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
 /* --- 📌 Actions Kanban Board (PC Layout) --- */
 .actions-kanban-board {
   display: grid;
