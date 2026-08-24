@@ -286,10 +286,10 @@
 
         tr.innerHTML = `
           <td>${idx + 1}</td>
+          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>${renderVisitorNameLinkHtml(r.id, r.name, r)}</td>
           <td>${companyCell}</td>
           <td>${formatTruncatedCell(r.inviter, 10)}</td>
-          <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td class="text-center" style="width: 110px; padding: 6px 4px;">${statusBadgeHtml}</td>
         `;
         tbody.appendChild(tr);
