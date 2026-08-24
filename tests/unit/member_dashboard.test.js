@@ -15,10 +15,13 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('id="all-members-summary-tbody"'), true);
   });
 
-  it('verifies navigation items and icons are added to drawer and router', () => {
-    assert.strictEqual(indexHtml.includes('id="drawer-item-member-dashboard"'), true);
+  it('verifies member dashboard is accessible from settings and not in main navigation drawer', () => {
+    // メインメニューには含めない
+    assert.strictEqual(indexHtml.includes('id="drawer-item-member-dashboard"'), false);
+    // 設定ページのメンバー管理からアクセス可能
+    assert.strictEqual(indexHtml.includes('switchTab(\'member-dashboard\')'), true);
+    assert.strictEqual(indexHtml.includes('メンバー別活動ダッシュボード＆招待To-Do'), true);
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
-    assert.strictEqual(indexHtml.includes('member-dashboard'), true);
   });
 
   it('verifies member dashboard functions are defined in scripts', () => {
@@ -29,5 +32,6 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('function copyMemberDashLineText'), true);
     assert.strictEqual(indexHtml.includes('function toggleAllMembersView'), true);
     assert.strictEqual(indexHtml.includes('function renderAllMembersSummaryTable'), true);
+    assert.strictEqual(indexHtml.includes('function openMemberPersonalDashboard'), true);
   });
 });

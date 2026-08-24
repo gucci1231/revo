@@ -33,12 +33,22 @@
         <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
         <td>
+          <button class="btn-icon-action text-blue-600 hover:text-blue-800" onclick="openMemberPersonalDashboard('${escapeJsParam(m.name)}')" title="活動ダッシュボードを開く"><i class="fa-solid fa-id-badge"></i></button>
           <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
           <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${escapeJsParam(m.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
         </td>
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function openMemberPersonalDashboard(memberName) {
+    switchTab('member-dashboard');
+    setTimeout(() => {
+      if (typeof selectMemberDashboard === 'function') {
+        selectMemberDashboard(memberName, true);
+      }
+    }, 50);
   }
 
   function openAddMemberModal() {

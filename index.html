@@ -5799,9 +5799,6 @@ select.form-input, select.form-select {
       <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
         <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-member-dashboard" onclick="switchTab('member-dashboard')" title="メンバー別ダッシュボード" data-tooltip="メンバー別ダッシュボード">
-        <i class="fa-solid fa-id-badge"></i> <span class="nav-label">メンバー別ダッシュボード</span>
-      </button>
       <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
         <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
       </button>
@@ -5855,9 +5852,6 @@ select.form-input, select.form-select {
       </button>
       <button class="tab-btn" id="tab-btn-actions" onclick="switchTab('actions')">
         <i class="fa-solid fa-bullseye"></i> アクション管理
-      </button>
-      <button class="tab-btn" id="tab-btn-member-dashboard" onclick="switchTab('member-dashboard')">
-        <i class="fa-solid fa-id-badge"></i> メンバー別
       </button>
       <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire"></i> 最優先フォロー
@@ -7565,6 +7559,24 @@ select.form-input, select.form-select {
 
   <!-- SubTab 3: メンバーマスター管理 -->
   <div id="settings-pane-members" class="settings-subtab-pane">
+
+    <!-- メンバー別ダッシュボードへの導線カード -->
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100/90 rounded-2xl p-5 mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0 shadow-sm">
+          <i class="fa-solid fa-id-badge"></i>
+        </div>
+        <div>
+          <h3 class="text-sm sm:text-base font-black text-slate-900 mb-0.5">メンバー別活動ダッシュボード＆招待To-Do</h3>
+          <p class="text-xs text-slate-600 m-0">メンバーごとのビジター招待進捗・入会成約率の確認や、LINE共有メッセージの生成ができます。</p>
+        </div>
+      </div>
+      <button type="button" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer" onclick="switchTab('member-dashboard')">
+        <span>メンバーダッシュボードを開く</span>
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </button>
+    </div>
+
     <div class="section-card">
       <div class="section-header">
         <div>
@@ -16926,12 +16938,22 @@ window.CelebrationEffect = (function() {
         <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
         <td>
+          <button class="btn-icon-action text-blue-600 hover:text-blue-800" onclick="openMemberPersonalDashboard('${escapeJsParam(m.name)}')" title="活動ダッシュボードを開く"><i class="fa-solid fa-id-badge"></i></button>
           <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
           <button class="btn-icon-action btn-icon-danger" onclick="deleteMemberMaster('${m.id}', '${escapeJsParam(m.name)}')" title="削除"><i class="fa-solid fa-trash"></i></button>
         </td>
       `;
       tbody.appendChild(tr);
     });
+  }
+
+  function openMemberPersonalDashboard(memberName) {
+    switchTab('member-dashboard');
+    setTimeout(() => {
+      if (typeof selectMemberDashboard === 'function') {
+        selectMemberDashboard(memberName, true);
+      }
+    }, 50);
   }
 
   function openAddMemberModal() {
