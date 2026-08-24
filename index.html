@@ -957,7 +957,7 @@ tr:last-child td { border-bottom: none; }
   border-radius: 10px;
 }
 
-/* Detail Profile Status Selects */
+/* Detail Profile Status Selects (Clean Minimalist Monotone) */
 .vd-status-select-wrap {
   display: inline-flex;
   align-items: center;
@@ -966,83 +966,49 @@ tr:last-child td { border-bottom: none; }
 .vd-status-select {
   appearance: none;
   -webkit-appearance: none;
-  background-color: #f8fafc;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 11px 11px;
-  padding: 5px 24px 5px 10px;
+  padding: 6px 24px 6px 10px;
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
-  border: 1.5px solid #cbd5e1;
-  color: #334155;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
   outline: none;
   transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .vd-status-select:hover {
+  background-color: #f8fafc;
   border-color: #94a3b8;
 }
 .vd-status-select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+  border-color: #0071e3;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
 }
 .vd-status-select.state-attended,
 .vd-status-select.state-done,
-.vd-status-select.state-joined {
-  background-color: #dcfce7;
-  color: #15803d;
-  border-color: #86efac;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.vd-status-select.state-joined,
 .vd-status-select.state-absent,
-.vd-status-select.state-rejected {
-  background-color: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.vd-status-select.state-rejected,
 .vd-status-select.state-progress,
-.vd-status-select.state-considering {
-  background-color: #fef3c7;
-  color: #d97706;
-  border-color: #fde68a;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.vd-status-select.state-considering,
 .vd-status-select.state-applying,
 .vd-status-select.state-review,
-.vd-status-select.state-payment {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.vd-status-select.state-payment,
 .vd-status-select.state-pending-later,
-.vd-status-select.follow-type-pending {
-  background-color: #eef2ff;
-  color: #4338ca;
-  border-color: #c7d2fe;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-.vd-status-select.follow-type-active {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-.vd-status-select.follow-type-alliance {
-  background-color: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23047857' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.vd-status-select.follow-type-pending,
+.vd-status-select.follow-type-active,
+.vd-status-select.follow-type-alliance,
 .vd-status-select.state-closed,
 .vd-status-select.follow-type-closed {
-  background-color: #f8fafc;
-  color: #64748b;
+  background-color: #ffffff;
+  color: #1e293b;
   border-color: #cbd5e1;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 .btn-attend, .select-attend { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); white-space: nowrap; outline: none; transition: all 0.15s ease; }
@@ -2016,9 +1982,10 @@ select.form-input, select.form-select {
 
 .vd-badges-wrap {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+  width: 100%;
 }
 .vd-badge-static {
   padding: 4px 10px;
@@ -2027,6 +1994,32 @@ select.form-input, select.form-select {
   font-size: 11px;
   background: #f1f5f9;
   color: #64748b;
+}
+
+@media (max-width: 640px) {
+  .vd-badges-wrap {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+  }
+  .vd-status-select-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+  }
+  .vd-status-select {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 6px 16px 6px 6px !important;
+    font-size: 11px !important;
+    background-position: right 4px center !important;
+    background-size: 9px 9px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-align: center !important;
+  }
 }
 
 .vd-profile-submeta {
@@ -6602,7 +6595,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
-          <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
+          <div class="vd-badges-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠">
                 <option value="未">未</option>
