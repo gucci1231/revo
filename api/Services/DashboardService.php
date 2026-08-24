@@ -100,6 +100,7 @@ class DashboardService {
 
             $isJoinedBool = VisitorStatus::isJoined($r['isJoined'] ?? '');
             $isAttendedBool = VisitorStatus::isAttended($r['isAttended'] ?? '');
+            $feel = VisitorStatus::normalizeFeelRank($r['feelAbc'] ?? '');
 
             $totalApplyCount++;
             if ($isJoinedBool) $totalJoinedCount++;
