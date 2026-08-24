@@ -301,7 +301,7 @@
         // 1. 次回アクション（未完了・進行中/超過）
         let nextActionBlockHtml = '';
         if (v.nextActionText) {
-          const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(v.nextActionDueDate)}</span>` : '';
+          const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(formatShortDate(v.nextActionDueDate))}</span>` : '';
           const assigneeText = v.nextActionAssignee ? `<span class="text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(v.nextActionAssignee)}</span>` : '';
 
           nextActionBlockHtml = `
@@ -416,8 +416,7 @@
 
   function formatActionDateSimple(raw) {
     if (!raw) return '';
-    const clean = String(raw).split(' ')[0].replace(/-/g, '/');
-    return clean;
+    return formatShortDate(raw);
   }
 
   function formatPfElapsed(eventDate) {
@@ -639,7 +638,7 @@
         borderAccentClass = 'border-l-4 border-l-rose-500';
         actionStatusBadge = `
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200" title="期限超過">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>${escapeHtml(v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '超過')}
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>${escapeHtml(v.nextActionDueDate ? formatShortDate(v.nextActionDueDate) : '超過')}
           </span>
         `;
       } else if (pCount === 0) {
@@ -650,7 +649,7 @@
           </span>
         `;
       } else {
-        const nextDate = v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '進行中';
+        const nextDate = v.nextActionDueDate ? formatShortDate(v.nextActionDueDate) : '進行中';
         actionStatusBadge = `
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200 max-w-[120px] truncate" title="${escapeHtml(v.nextActionText || '')}">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>${escapeHtml(nextDate)}
@@ -816,7 +815,7 @@
                       <div class="flex items-center gap-1.5 flex-wrap">
                         ${renderActionTypeBadgeHtml(p.action_type)}
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOverdue ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-800 border border-slate-200'}">
-                          <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date || '期日未定')} ${isOverdue ? '(期限超過)' : ''}
+                          <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date ? formatShortDate(p.due_date) : '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                           <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(p.assignee_name || '担当未定')}
@@ -899,7 +898,7 @@
                   ${escapeHtml(v.company || '-')} <span class="text-slate-300">/</span> ${escapeHtml(v.profession || '-')}
                 </div>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
-                  <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(v.eventDate || '-')}</b></span>
+                  <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(formatShortDate(v.eventDate) || '-')}</b></span>
                   <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></span>
                   ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
                 </div>

@@ -219,14 +219,15 @@
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
       let scheduleBadgeHtml = '';
+      const formattedDue = formatShortDate(p.due_date);
       if (isCompleted) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${formattedDue || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${p.due_date})</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${formattedDue})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       }
 
       const reportBoxHtml = p.report_text
@@ -315,14 +316,15 @@
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
       let scheduleBadgeHtml = '';
+      const formattedDue = formatShortDate(p.due_date);
       if (isCompleted) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${formattedDue || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>${p.due_date}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>本日 (${formattedDue})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       }
 
       const reportBoxHtml = p.report_text

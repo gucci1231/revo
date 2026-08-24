@@ -23,10 +23,15 @@ describe('Dashboard Periodic Stats & Feel Rates Tests', () => {
       isVisitorActionCompleted: () => false
     };
 
+    const utilsScriptPath = path.join(__dirname, '../../src/scripts/Utils.html');
+    let utilsCode = fs.readFileSync(utilsScriptPath, 'utf8');
+    utilsCode = utilsCode.replace(/<\/?script>/g, '');
+
     const viewDashboardScriptPath = path.join(__dirname, '../../src/scripts/ViewDashboard.html');
     let code = fs.readFileSync(viewDashboardScriptPath, 'utf8');
     code = code.replace(/<\/?script>/g, '');
     vm.createContext(sandbox);
+    vm.runInContext(utilsCode, sandbox);
     vm.runInContext(code, sandbox);
     return sandbox;
   }

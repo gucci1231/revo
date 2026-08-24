@@ -322,11 +322,35 @@
     return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${repeatBadge}</span>`;
   }
 
+  function formatShortDate(val) {
+    if (!val) return '';
+    const str = String(val).trim();
+    if (!str || str === '-' || str === '未定' || str === '期日未定') return str;
+
+    // YYYY/MM/DD, YYYY-MM-DD, YYYY/M/D, YYYY-M-D, MM/DD, M/D など
+    const match = str.match(/(?:(\d{4})[\/\-])?(\d{1,2})[\/\-](\d{1,2})/);
+    if (match) {
+      const m = match[2].padStart(2, '0');
+      const d = match[3].padStart(2, '0');
+      return `${m}/${d}`;
+    }
+
+    // Date パース fallback
+    const dt = new Date(str);
+    if (!isNaN(dt.getTime())) {
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const d = String(dt.getDate()).padStart(2, '0');
+      return `${m}/${d}`;
+    }
+    return str;
+  }
+  window.formatShortDate = formatShortDate;
+
   function formatEventDateWithElapsed(eventDate) {
     if (!eventDate) return '-';
     const clean = String(eventDate).replace(/\//g, '-').trim();
     const d = new Date(clean);
-    if (isNaN(d.getTime())) return escapeHtml(eventDate);
+    if (isNaN(d.getTime())) return escapeHtml(formatShortDate(eventDate));
 
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -343,7 +367,7 @@
       elapsedBadge = `<span style="font-size:10px; font-weight:800; color:${color}; background:${bg}; padding:1px 5px; border-radius:4px; margin-left:4px;">${diffDays}日前</span>`;
     }
 
-    const shortDate = eventDate.length >= 10 ? eventDate.substring(5) : eventDate;
+    const shortDate = formatShortDate(eventDate);
     return `<span style="font-weight:600; color: #0f172a;">${escapeHtml(shortDate)}</span>`;
   }
 
@@ -368,7 +392,8 @@
       
       const metaInfo = [];
       if (ap.due_date) {
-        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
+        const formattedDue = formatShortDate(ap.due_date);
+        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(formattedDue)}</span>` : `期日: ${escapeHtml(formattedDue)}`);
       }
       if (ap.assignee_name) {
         metaInfo.push(`担当: ${escapeHtml(ap.assignee_name)}`);

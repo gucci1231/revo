@@ -35,7 +35,7 @@
 
     const dueBadge = document.getElementById('report-ap-due-badge');
     if (dueBadge) {
-      dueBadge.innerText = plan.due_date ? `期日: ${plan.due_date}` : '期日未設定';
+      dueBadge.innerText = plan.due_date ? `期日: ${formatShortDate(plan.due_date)}` : '期日未設定';
       const todayStr = new Date().toISOString().slice(0, 10);
       if (plan.due_date && plan.due_date < todayStr && Number(plan.is_completed) === 0) {
         dueBadge.classList.add('overdue');

@@ -8572,11 +8572,35 @@ const ApiService = {
     return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${repeatBadge}</span>`;
   }
 
+  function formatShortDate(val) {
+    if (!val) return '';
+    const str = String(val).trim();
+    if (!str || str === '-' || str === '未定' || str === '期日未定') return str;
+
+    // YYYY/MM/DD, YYYY-MM-DD, YYYY/M/D, YYYY-M-D, MM/DD, M/D など
+    const match = str.match(/(?:(\d{4})[\/\-])?(\d{1,2})[\/\-](\d{1,2})/);
+    if (match) {
+      const m = match[2].padStart(2, '0');
+      const d = match[3].padStart(2, '0');
+      return `${m}/${d}`;
+    }
+
+    // Date パース fallback
+    const dt = new Date(str);
+    if (!isNaN(dt.getTime())) {
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const d = String(dt.getDate()).padStart(2, '0');
+      return `${m}/${d}`;
+    }
+    return str;
+  }
+  window.formatShortDate = formatShortDate;
+
   function formatEventDateWithElapsed(eventDate) {
     if (!eventDate) return '-';
     const clean = String(eventDate).replace(/\//g, '-').trim();
     const d = new Date(clean);
-    if (isNaN(d.getTime())) return escapeHtml(eventDate);
+    if (isNaN(d.getTime())) return escapeHtml(formatShortDate(eventDate));
 
     const now = new Date();
     now.setHours(0, 0, 0, 0);
@@ -8593,7 +8617,7 @@ const ApiService = {
       elapsedBadge = `<span style="font-size:10px; font-weight:800; color:${color}; background:${bg}; padding:1px 5px; border-radius:4px; margin-left:4px;">${diffDays}日前</span>`;
     }
 
-    const shortDate = eventDate.length >= 10 ? eventDate.substring(5) : eventDate;
+    const shortDate = formatShortDate(eventDate);
     return `<span style="font-weight:600; color: #0f172a;">${escapeHtml(shortDate)}</span>`;
   }
 
@@ -8618,7 +8642,8 @@ const ApiService = {
       
       const metaInfo = [];
       if (ap.due_date) {
-        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(ap.due_date)}</span>` : `期日: ${escapeHtml(ap.due_date)}`);
+        const formattedDue = formatShortDate(ap.due_date);
+        metaInfo.push(isOverdue ? `<span style="color:#ef4444; font-weight:800;">期日: ${escapeHtml(formattedDue)}</span>` : `期日: ${escapeHtml(formattedDue)}`);
       }
       if (ap.assignee_name) {
         metaInfo.push(`担当: ${escapeHtml(ap.assignee_name)}`);
@@ -10255,14 +10280,14 @@ window.CelebrationEffect = (function() {
     // Dates
     const nextThuDateEl = document.getElementById('date-next-thu');
     const afterNextThuDateEl = document.getElementById('date-after-next-thu');
-    if (nextThuDateEl) nextThuDateEl.innerText = data.nextThuStr || '--/--';
-    if (afterNextThuDateEl) afterNextThuDateEl.innerText = data.afterNextThuStr || '--/--';
+    if (nextThuDateEl) nextThuDateEl.innerText = formatShortDate(data.nextThuStr) || '--/--';
+    if (afterNextThuDateEl) afterNextThuDateEl.innerText = formatShortDate(data.afterNextThuStr) || '--/--';
     
     // Meeting table titles
     const nextMeetingTitleEl = document.getElementById('title-next-meeting-date');
     const lastMeetingTitleEl = document.getElementById('title-last-meeting-date');
-    if (nextMeetingTitleEl) nextMeetingTitleEl.innerText = data.nextThuStr || '次回';
-    if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = data.lastThuStr || '今週';
+    if (nextMeetingTitleEl) nextMeetingTitleEl.innerText = formatShortDate(data.nextThuStr) || '次回';
+    if (lastMeetingTitleEl) lastMeetingTitleEl.innerText = formatShortDate(data.lastThuStr) || '今週';
 
     // Counts
     const nextMeetingList = t.nextMeeting || t.nextMeetingVisitors || [];
@@ -10482,14 +10507,15 @@ window.CelebrationEffect = (function() {
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
       let scheduleBadgeHtml = '';
+      const formattedDue = formatShortDate(p.due_date);
       if (isCompleted) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${formattedDue || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>${p.due_date}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>本日 (${formattedDue})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       }
 
       const scheduleAndAssigneeHtml = `
@@ -10939,11 +10965,12 @@ window.CelebrationEffect = (function() {
       const todayStr = new Date().toISOString().slice(0, 10);
       const isOverdue = !isCompleted && ap.due_date && ap.due_date < todayStr;
 
+      const formattedDue = formatShortDate(ap.due_date);
       const badgeHtml = isCompleted
         ? `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#d3f9d8; color:#2b8a3e; border-radius:6px;"><i class="fa-solid fa-check mr-1"></i>完了</span>`
         : (isOverdue
-            ? `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#ffe3e3; color:#e03131; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>期限超過 (${escapeHtml(ap.due_date)})</span>`
-            : `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#e7f5ff; color:#1864ab; border-radius:6px;"><i class="fa-regular fa-calendar mr-1"></i>期日: ${escapeHtml(ap.due_date || '未定')}</span>`
+            ? `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#ffe3e3; color:#e03131; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>期限超過 (${escapeHtml(formattedDue)})</span>`
+            : `<span class="badge" style="font-size:10px; padding:2px 8px; font-weight:800; background:#e7f5ff; color:#1864ab; border-radius:6px;"><i class="fa-regular fa-calendar mr-1"></i>期日: ${escapeHtml(formattedDue || '未定')}</span>`
           );
 
       const reportSnippet = ap.report_text ? `
@@ -11079,8 +11106,9 @@ window.CelebrationEffect = (function() {
         const isWeeklyGoalAchieved = applyVal >= targetVisitorsWeekly;
         const applyColor = isWeeklyGoalAchieved && applyVal > 0 ? '#15803d' : '#0f172a';
 
+        const displayLabel = !isMonthly ? formatShortDate(labelVal) : labelVal;
         tr.innerHTML = `
-          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${labelVal}</td>
+          <td style="font-weight: 700; white-space: nowrap; padding: 8px 6px; color: #1e293b;">${displayLabel}</td>
           <td style="text-align: center; padding: 8px 4px; white-space: nowrap;">
             <span style="font-weight: 700; font-size: 13px; color: ${applyColor};">${applyVal}</span>
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">/${targetVisitorsWeekly}名</span>
@@ -11481,14 +11509,15 @@ window.CelebrationEffect = (function() {
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
       let scheduleBadgeHtml = '';
+      const formattedDue = formatShortDate(p.due_date);
       if (isCompleted) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[7px] text-emerald-500"></i><span>${formattedDue || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-rose-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${p.due_date})</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-amber-500"></i><span>本日 (${formattedDue})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[7px] text-blue-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       }
 
       const reportBoxHtml = p.report_text
@@ -11577,14 +11606,15 @@ window.CelebrationEffect = (function() {
       const isDueToday = !isCompleted && p.due_date && p.due_date === todayStr;
 
       let scheduleBadgeHtml = '';
+      const formattedDue = formatShortDate(p.due_date);
       if (isCompleted) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${p.due_date || '完了'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-500"><i class="fa-solid fa-circle text-[8px] text-emerald-500"></i><span>${formattedDue || '完了'}</span></span>`;
       } else if (isOverdue) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-red-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       } else if (isDueToday) {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>${p.due_date}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-amber-500"></i><span>本日 (${formattedDue})</span></span>`;
       } else {
-        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${p.due_date || '期日未定'}</span></span>`;
+        scheduleBadgeHtml = `<span class="inline-flex items-center gap-1.5 text-[12px] font-bold text-slate-800"><i class="fa-solid fa-circle text-[8px] text-blue-500"></i><span>${formattedDue || '期日未定'}</span></span>`;
       }
 
       const reportBoxHtml = p.report_text
@@ -11951,7 +11981,7 @@ window.CelebrationEffect = (function() {
         // 1. 次回アクション（未完了・進行中/超過）
         let nextActionBlockHtml = '';
         if (v.nextActionText) {
-          const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(v.nextActionDueDate)}</span>` : '';
+          const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(formatShortDate(v.nextActionDueDate))}</span>` : '';
           const assigneeText = v.nextActionAssignee ? `<span class="text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(v.nextActionAssignee)}</span>` : '';
 
           nextActionBlockHtml = `
@@ -12066,8 +12096,7 @@ window.CelebrationEffect = (function() {
 
   function formatActionDateSimple(raw) {
     if (!raw) return '';
-    const clean = String(raw).split(' ')[0].replace(/-/g, '/');
-    return clean;
+    return formatShortDate(raw);
   }
 
   function formatPfElapsed(eventDate) {
@@ -12289,7 +12318,7 @@ window.CelebrationEffect = (function() {
         borderAccentClass = 'border-l-4 border-l-rose-500';
         actionStatusBadge = `
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200" title="期限超過">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>${escapeHtml(v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '超過')}
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>${escapeHtml(v.nextActionDueDate ? formatShortDate(v.nextActionDueDate) : '超過')}
           </span>
         `;
       } else if (pCount === 0) {
@@ -12300,7 +12329,7 @@ window.CelebrationEffect = (function() {
           </span>
         `;
       } else {
-        const nextDate = v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '進行中';
+        const nextDate = v.nextActionDueDate ? formatShortDate(v.nextActionDueDate) : '進行中';
         actionStatusBadge = `
           <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-50 text-slate-600 border border-slate-200 max-w-[120px] truncate" title="${escapeHtml(v.nextActionText || '')}">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>${escapeHtml(nextDate)}
@@ -12466,7 +12495,7 @@ window.CelebrationEffect = (function() {
                       <div class="flex items-center gap-1.5 flex-wrap">
                         ${renderActionTypeBadgeHtml(p.action_type)}
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isOverdue ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-800 border border-slate-200'}">
-                          <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date || '期日未定')} ${isOverdue ? '(期限超過)' : ''}
+                          <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date ? formatShortDate(p.due_date) : '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                           <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(p.assignee_name || '担当未定')}
@@ -12549,7 +12578,7 @@ window.CelebrationEffect = (function() {
                   ${escapeHtml(v.company || '-')} <span class="text-slate-300">/</span> ${escapeHtml(v.profession || '-')}
                 </div>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
-                  <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(v.eventDate || '-')}</b></span>
+                  <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(formatShortDate(v.eventDate) || '-')}</b></span>
                   <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></span>
                   ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
                 </div>
@@ -12893,7 +12922,7 @@ window.CelebrationEffect = (function() {
             </div>
 
             <div class="dash-card-right">
-              <span class="dash-card-date-badge">${escapeHtml(v.eventDate || '-')}</span>
+              <span class="dash-card-date-badge">${escapeHtml(formatShortDate(v.eventDate) || '-')}</span>
               <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
@@ -13297,7 +13326,7 @@ window.CelebrationEffect = (function() {
 
         tr.innerHTML = `
           <td>${idx + 1}</td>
-          <td><strong style="color: #0f172a;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
+          <td><strong style="color: #0f172a;">${escapeHtml(formatShortDate(h.eventDate) || '-')}</strong></td>
           <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
           <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
           <td>${formatTruncatedCell(h.inviter, 10)}</td>
@@ -13337,7 +13366,7 @@ window.CelebrationEffect = (function() {
             </div>
 
             <div class="dash-card-right">
-              <span class="dash-card-date-badge">${escapeHtml(h.eventDate || '-')}</span>
+              <span class="dash-card-date-badge">${escapeHtml(formatShortDate(h.eventDate) || '-')}</span>
               <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
@@ -14400,7 +14429,7 @@ window.CelebrationEffect = (function() {
           <div class="vd-sidebar-item-info">
             <div class="vd-sidebar-item-top">
               <span class="vd-sidebar-item-name">${escapeHtml(v.name || 'ビジター No.' + v.id)}${repeatTag}</span>
-              <span class="vd-sidebar-item-date">${escapeHtml(v.eventDate || '')}</span>
+              <span class="vd-sidebar-item-date">${escapeHtml(formatShortDate(v.eventDate) || '')}</span>
             </div>
             <div class="vd-sidebar-item-sub">
               ${escapeHtml(subInfo)}
@@ -14581,7 +14610,7 @@ window.CelebrationEffect = (function() {
         document.getElementById('vd-company').innerText = v.company || '-';
         document.getElementById('vd-profession').innerText = v.profession || '-';
         document.getElementById('vd-inviter').innerText = v.inviter || '-';
-        document.getElementById('vd-event-date').innerText = v.eventDate || '-';
+        document.getElementById('vd-event-date').innerText = formatShortDate(v.eventDate) || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
         const count = v.visitCount || currentVdVisits.length || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
@@ -14765,7 +14794,7 @@ window.CelebrationEffect = (function() {
       const hearingForVisit = hearings.find(h => String(h.visitorId) === visId);
       const hasData = isHearingDataFilled(hearingForVisit);
       const countLabel = vis.attendanceCount && vis.attendanceCount !== '初めて' ? vis.attendanceCount : `${idx + 1}回目`;
-      const dateLabel = vis.eventDate ? (vis.eventDate.slice(5) || vis.eventDate) : `No.${vis.id}`;
+      const dateLabel = vis.eventDate ? (formatShortDate(vis.eventDate) || vis.eventDate) : `No.${vis.id}`;
 
       html += `
         <button type="button" class="vd-hearing-visit-tab ${isSelected ? 'active' : ''}" onclick="selectHearingVisit('${visId}')" title="${escapeHtml(vis.eventDate || '')} (${countLabel})">
@@ -15144,7 +15173,7 @@ window.CelebrationEffect = (function() {
           const matchedVisit = currentVdVisits.find(v => String(v.id) === String(item.visitor_id));
           const idx = currentVdVisits.findIndex(v => String(v.id) === String(item.visitor_id));
           const countLabel = matchedVisit && matchedVisit.attendanceCount && matchedVisit.attendanceCount !== '初めて' ? matchedVisit.attendanceCount : (idx >= 0 ? `${idx + 1}回目` : '');
-          const dateLabel = (matchedVisit && matchedVisit.eventDate) ? matchedVisit.eventDate.slice(5) : (item.visitor_event_date ? item.visitor_event_date.slice(5) : '');
+          const dateLabel = (matchedVisit && matchedVisit.eventDate) ? formatShortDate(matchedVisit.eventDate) : (item.visitor_event_date ? formatShortDate(item.visitor_event_date) : '');
           const label = [countLabel, dateLabel].filter(Boolean).join(' ');
           if (label) {
             visitBadgeHtml = `<span class="vd-ap-visit-badge" title="参加回: ${escapeHtml(label)}"><i class="fa-solid fa-clock-rotate-left"></i> ${escapeHtml(label)}</span>`;
@@ -15162,7 +15191,7 @@ window.CelebrationEffect = (function() {
             <div class="vd-ap-meta-row">
               ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date ${isOverdue ? 'overdue' : ''}">
-                <i class="fa-regular fa-calendar"></i> ${item.due_date || '期日未定'} ${isOverdue ? '(期限超過)' : ''}
+                <i class="fa-regular fa-calendar"></i> ${item.due_date ? formatShortDate(item.due_date) : '期日未定'} ${isOverdue ? '(期限超過)' : ''}
               </span>
               <span class="vd-ap-badge-user">
                 <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '担当未定')}
@@ -15208,7 +15237,7 @@ window.CelebrationEffect = (function() {
           const matchedVisit = currentVdVisits.find(v => String(v.id) === String(item.visitor_id));
           const idx = currentVdVisits.findIndex(v => String(v.id) === String(item.visitor_id));
           const countLabel = matchedVisit && matchedVisit.attendanceCount && matchedVisit.attendanceCount !== '初めて' ? matchedVisit.attendanceCount : (idx >= 0 ? `${idx + 1}回目` : '');
-          const dateLabel = (matchedVisit && matchedVisit.eventDate) ? matchedVisit.eventDate.slice(5) : (item.visitor_event_date ? item.visitor_event_date.slice(5) : '');
+          const dateLabel = (matchedVisit && matchedVisit.eventDate) ? formatShortDate(matchedVisit.eventDate) : (item.visitor_event_date ? formatShortDate(item.visitor_event_date) : '');
           const label = [countLabel, dateLabel].filter(Boolean).join(' ');
           if (label) {
             visitBadgeHtml = `<span class="vd-ap-visit-badge" title="参加回: ${escapeHtml(label)}"><i class="fa-solid fa-clock-rotate-left"></i> ${escapeHtml(label)}</span>`;
@@ -15230,7 +15259,7 @@ window.CelebrationEffect = (function() {
               </span>
               ${renderActionTypeBadgeHtml(item.action_type)}
               <span class="vd-ap-badge-date">
-                <i class="fa-regular fa-calendar"></i> 期日: ${item.due_date || '-'}
+                <i class="fa-regular fa-calendar"></i> 期日: ${item.due_date ? formatShortDate(item.due_date) : '-'}
               </span>
               <span class="vd-ap-badge-user">
                 <i class="fa-regular fa-user"></i> ${escapeHtml(item.assignee_name || '-')}
@@ -15253,7 +15282,7 @@ window.CelebrationEffect = (function() {
           ${reportBox}
 
           <div class="vd-ap-card-bottom" style="justify-content: space-between; font-size: 11px; color: #64748b;">
-            <span>${item.completed_at ? `完了: ${escapeHtml(item.completed_at)}` : ''}</span>
+            <span>${item.completed_at ? `完了: ${escapeHtml(formatShortDate(item.completed_at))}` : ''}</span>
             <button type="button" class="btn-action-secondary text-xs" style="padding: 4px 10px; font-size: 11px;" onclick="openActionReportModal('${item.id}', '${item.visitor_id || currentVdVisitorId || ''}')" title="報告確認・編集">
               <i class="fa-solid fa-pen-to-square" style="margin-right: 2px;"></i> 報告確認・編集
             </button>
@@ -15981,7 +16010,7 @@ window.CelebrationEffect = (function() {
 
     const dueBadge = document.getElementById('report-ap-due-badge');
     if (dueBadge) {
-      dueBadge.innerText = plan.due_date ? `期日: ${plan.due_date}` : '期日未設定';
+      dueBadge.innerText = plan.due_date ? `期日: ${formatShortDate(plan.due_date)}` : '期日未設定';
       const todayStr = new Date().toISOString().slice(0, 10);
       if (plan.due_date && plan.due_date < todayStr && Number(plan.is_completed) === 0) {
         dueBadge.classList.add('overdue');

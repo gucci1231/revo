@@ -34,7 +34,7 @@
 
         tr.innerHTML = `
           <td>${idx + 1}</td>
-          <td><strong style="color: #0f172a;">${formatTruncatedCell(h.eventDate, 10)}</strong></td>
+          <td><strong style="color: #0f172a;">${escapeHtml(formatShortDate(h.eventDate) || '-')}</strong></td>
           <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
           <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
           <td>${formatTruncatedCell(h.inviter, 10)}</td>
@@ -74,7 +74,7 @@
             </div>
 
             <div class="dash-card-right">
-              <span class="dash-card-date-badge">${escapeHtml(h.eventDate || '-')}</span>
+              <span class="dash-card-date-badge">${escapeHtml(formatShortDate(h.eventDate) || '-')}</span>
               <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </div>
           </div>
