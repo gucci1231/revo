@@ -4,6 +4,7 @@ namespace Api\Services;
 use Api\Repositories\VisitorRepository;
 use Api\Repositories\SettingRepository;
 use Api\Repositories\ActionPlanRepository;
+use Api\Core\VisitorStatus;
 
 class DashboardService {
     private VisitorRepository $visitorRepo;
@@ -97,9 +98,8 @@ class DashboardService {
                 continue;
             }
 
-            $rawJoin = trim($r['isJoined'] ?? '');
-            $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
-            $isAttendedBool = ($r['isAttended'] === '参加' || $r['isAttended'] === '済');
+            $isJoinedBool = VisitorStatus::isJoined($r['isJoined'] ?? '');
+            $isAttendedBool = VisitorStatus::isAttended($r['isAttended'] ?? '');
 
             $totalApplyCount++;
             if ($isJoinedBool) $totalJoinedCount++;
@@ -127,7 +127,7 @@ class DashboardService {
                 $weeklyMap[$eDate]['applyCount']++;
                 if ($isAttendedBool) $weeklyMap[$eDate]['attendedCount']++;
                 if ($isJoinedBool) $weeklyMap[$eDate]['joinedCount']++;
-                $feel = strtoupper(trim($r['feelAbc'] ?? ''));
+                $feel = VisitorStatus::normalizeFeelRank($r['feelAbc'] ?? '');
                 if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
                     $weeklyMap[$eDate]['feelCounts'][$feel]++;
                 } else {
@@ -159,32 +159,30 @@ class DashboardService {
             $periodVisitors[] = $r;
         }
 
-                // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
+        // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
         $uniqueVisitors = $this->deduplicateVisitorsList($periodVisitors, $apMap);
 
         // 3. ユニークビジターに対するパイプライン・最優先フォロー・1ヶ月フォロー集計
         foreach ($uniqueVisitors as $uv) {
-            $rawJoin = trim($uv['isJoined'] ?? '');
-            $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
-            $rawFollow = trim($uv['followType'] ?? '');
-            $isFollowClosed = ($rawFollow === 'フォロー終了' || $rawFollow === '終了');
-            $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了' || $isFollowClosed);
-            $isFollowActive = ($rawFollow === '' || $rawFollow === 'フォロー' || $rawFollow === '直近フォロー');
-            $feel = strtoupper(trim($uv['feelAbc'] ?? ''));
+            $isJoinedBool = VisitorStatus::isJoined($uv['isJoined'] ?? '');
+            $isRejected = VisitorStatus::isClosed($uv['isJoined'] ?? '', $uv['followType'] ?? null);
+            $isFollowActive = VisitorStatus::isFollowActive($uv['followType'] ?? null);
+            $feel = VisitorStatus::normalizeFeelRank($uv['feelAbc'] ?? '');
             $isFeelBOrAbove = ($feel === 'A' || $feel === 'B');
+            $normalizedJoin = VisitorStatus::normalizeJoinStatus($uv['isJoined'] ?? '');
 
             if ($isJoinedBool) {
-                $pipelineCounts['入会済']++;
-            } else if ($rawJoin === '審査' || $rawJoin === 'メンバーシップ審査' || $rawJoin === '審査中') {
-                $pipelineCounts['審査']++;
-            } else if ($rawJoin === '入金待ち') {
-                $pipelineCounts['入金待ち']++;
-            } else if ($rawJoin === '申込書提出') {
-                $pipelineCounts['申込書提出']++;
-            } else if ($rawJoin === '検討中') {
-                $pipelineCounts['検討中']++;
+                $pipelineCounts[VisitorStatus::JOINED_DONE]++;
+            } else if ($normalizedJoin === VisitorStatus::JOINED_REVIEW) {
+                $pipelineCounts[VisitorStatus::JOINED_REVIEW]++;
+            } else if ($normalizedJoin === VisitorStatus::JOINED_PAYMENT) {
+                $pipelineCounts[VisitorStatus::JOINED_PAYMENT]++;
+            } else if ($normalizedJoin === VisitorStatus::JOINED_APPLYING) {
+                $pipelineCounts[VisitorStatus::JOINED_APPLYING]++;
+            } else if ($normalizedJoin === VisitorStatus::JOINED_CONSIDERING) {
+                $pipelineCounts[VisitorStatus::JOINED_CONSIDERING]++;
             } else if (!$isRejected && $isFeelBOrAbove && $isFollowActive) {
-                $pipelineCounts['未']++;
+                $pipelineCounts[VisitorStatus::JOINED_NONE]++;
             }
 
             if ($feel === 'A' && !$isJoinedBool && !$isRejected && $isFollowActive) {
@@ -453,15 +451,15 @@ class DashboardService {
                 }
 
                 // 入会ステータスはより進んでいる方を採用
-                $curPriority = $this->getJoinPriority($existing['isJoined'] ?? '');
-                $newPriority = $this->getJoinPriority($r['isJoined'] ?? '');
+                $curPriority = VisitorStatus::getJoinPriority($existing['isJoined'] ?? '');
+                $newPriority = VisitorStatus::getJoinPriority($r['isJoined'] ?? '');
                 if ($newPriority > $curPriority) {
                     $existing['isJoined'] = $r['isJoined'];
                 }
 
                 // 感触ランクは最高評価（A > B > C）を採用
-                $curFeel = strtoupper(trim($existing['feelAbc'] ?? ''));
-                $newFeel = strtoupper(trim($r['feelAbc'] ?? ''));
+                $curFeel = VisitorStatus::normalizeFeelRank($existing['feelAbc'] ?? '');
+                $newFeel = VisitorStatus::normalizeFeelRank($r['feelAbc'] ?? '');
                 if ($newFeel === 'A' || ($newFeel === 'B' && $curFeel !== 'A') || ($newFeel === 'C' && empty($curFeel))) {
                     $existing['feelAbc'] = $newFeel;
                 }
@@ -474,7 +472,7 @@ class DashboardService {
                 $item = $r;
                 $item['allIds'] = [(string)$item['id']];
                 $item['visitCount'] = 1;
-                $item['feelAbc'] = strtoupper(trim($item['feelAbc'] ?? ''));
+                $item['feelAbc'] = VisitorStatus::normalizeFeelRank($item['feelAbc'] ?? '');
                 if (!empty($apMap[(string)$item['id']])) {
                     $item['latestActionPlan'] = $apMap[(string)$item['id']];
                 }
@@ -496,16 +494,5 @@ class DashboardService {
         $s = mb_convert_kana($s, 'c', 'UTF-8');
         $s = preg_replace('/[・·\.\,\-\_\s\x{3000}\t\r\n]+/u', '', $s);
         return mb_strtolower($s, 'UTF-8');
-    }
-
-    private function getJoinPriority(string $status): int {
-        switch ($status) {
-            case '入会済': case '済': case '入会': return 5;
-            case '審査': case 'メンバーシップ審査': case '審査中': return 4;
-            case '入金待ち': return 3;
-            case '申込書提出': return 2;
-            case '検討中': return 1;
-            default: return 0;
-        }
     }
 }

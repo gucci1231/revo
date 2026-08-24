@@ -51,15 +51,17 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(indexHtml.includes('<option value="フォロー終了"'));
   });
 
-  it('ensures detail API and Repository correctly include and persist followType and closed statuses', () => {
+  it('ensures detail API, Repository, and VisitorStatus correctly include and persist followType and closed statuses', () => {
     const visitorControllerPhp = fs.readFileSync(path.join(__dirname, '../../api/Controllers/VisitorController.php'), 'utf8');
     const visitorRepositoryPhp = fs.readFileSync(path.join(__dirname, '../../api/Repositories/VisitorRepository.php'), 'utf8');
+    const visitorStatusPhp = fs.readFileSync(path.join(__dirname, '../../api/Core/VisitorStatus.php'), 'utf8');
 
     // VisitorController must output followType in detail() response
     assert.ok(visitorControllerPhp.includes("'followType' => $status['follow_type']"), 'VisitorController detail status should include followType');
     // VisitorRepository must query follow_type in getVisitsByVisitorIds and getStatusByVisitorId
     assert.ok(visitorRepositoryPhp.includes("COALESCE(s.follow_type, '直近フォロー') as followType"), 'VisitorRepository getVisitsByVisitorIds should include followType');
-    assert.ok(visitorRepositoryPhp.includes("'フォロー終了' => 1"), 'VisitorRepository joinedPriority should include フォロー終了');
+    assert.ok(visitorStatusPhp.includes("JOINED_CLOSED = 'フォロー終了'"), 'VisitorStatus should include JOINED_CLOSED');
+    assert.ok(visitorStatusPhp.includes("normalizeJoinStatus"), 'VisitorStatus should implement normalizeJoinStatus');
   });
 
   it('verifies ViewVisitors correctly filters closed visitors with followType = フォロー終了', () => {

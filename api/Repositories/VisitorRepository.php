@@ -2,6 +2,7 @@
 namespace Api\Repositories;
 
 use Api\Core\Database;
+use Api\Core\VisitorStatus;
 
 class VisitorRepository {
     private Database $db;
@@ -164,20 +165,19 @@ class VisitorRepository {
         $merged['visitor_id'] = $visitorId;
         $merged['follow_type'] = $merged['follow_type'] ?? '直近フォロー';
 
-        $joinedPriority = ['入会済' => 6, '済' => 6, '入金待ち' => 5, 'メンバーシップ審査' => 4, '申込書提出' => 3, '検討中' => 2, 'フォロー終了' => 1, '見送り' => 1, '未' => 0];
         foreach ($rows as $r) {
-            if (($r['is_attended'] ?? '') === '参加') $merged['is_attended'] = '参加';
+            if (VisitorStatus::isAttended($r['is_attended'] ?? '')) $merged['is_attended'] = '参加';
             $curJ = $merged['is_joined'] ?? '未';
             $newJ = $r['is_joined'] ?? '未';
-            $curP = $joinedPriority[$curJ] ?? 0;
-            $newP = $joinedPriority[$newJ] ?? 0;
+            $curP = VisitorStatus::getJoinPriority($curJ);
+            $newP = VisitorStatus::getJoinPriority($newJ);
             if ($newP > $curP) {
-                $merged['is_joined'] = ($newJ === '済' ? '入会済' : $newJ);
+                $merged['is_joined'] = VisitorStatus::normalizeJoinStatus($newJ);
             }
             if (($r['is_1to1'] ?? '') === '済') $merged['is_1to1'] = '済';
             if (($r['is_matched'] ?? '') === '成功') $merged['is_matched'] = '成功';
             if (!empty($r['follow_type']) && empty($merged['follow_type'])) {
-                $merged['follow_type'] = $r['follow_type'];
+                $merged['follow_type'] = VisitorStatus::normalizeFollowType($r['follow_type']);
             }
         }
 
