@@ -96,6 +96,9 @@
       <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
         <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
+      <button class="drawer-nav-item" id="drawer-item-member-dashboard" onclick="switchTab('member-dashboard')" title="メンバー別ダッシュボード" data-tooltip="メンバー別ダッシュボード">
+        <i class="fa-solid fa-id-badge"></i> <span class="nav-label">メンバー別ダッシュボード</span>
+      </button>
       <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
         <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
       </button>
@@ -150,6 +153,9 @@
       <button class="tab-btn" id="tab-btn-actions" onclick="switchTab('actions')">
         <i class="fa-solid fa-bullseye"></i> アクション管理
       </button>
+      <button class="tab-btn" id="tab-btn-member-dashboard" onclick="switchTab('member-dashboard')">
+        <i class="fa-solid fa-id-badge"></i> メンバー別
+      </button>
       <button class="tab-btn" id="tab-btn-priority-follow" onclick="switchTab('priority-follow')">
         <i class="fa-solid fa-fire"></i> 最優先フォロー
       </button>
@@ -170,6 +176,7 @@
     <!-- Views -->
     <?!= include('ViewDashboard'); ?>
     <?!= include('ViewActions'); ?>
+    <?!= include('ViewMemberDashboard'); ?>
     <?!= include('ViewPriorityFollow'); ?>
     <?!= include('ViewVisitors'); ?>
     <?!= include('ViewHearings'); ?>

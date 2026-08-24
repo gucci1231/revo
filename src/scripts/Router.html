@@ -39,6 +39,18 @@
       if (vid && vid !== currentVdVisitorId) {
         openVisitorDetailView(vid, false);
       }
+    } else if (hash.startsWith('member-dashboard')) {
+      switchTab('member-dashboard', false);
+      let targetMember = null;
+      const match = hash.match(/[?&]name=([^&]+)/);
+      if (match) {
+        targetMember = match[1];
+      }
+      setTimeout(() => {
+        if (typeof initMemberDashboard === 'function') {
+          initMemberDashboard(targetMember);
+        }
+      }, 50);
     } else if (hash.startsWith('visitors')) {
       switchTab('visitors', false);
       if (hash.includes('considering')) {
@@ -133,6 +145,7 @@
   const PAGE_NAV_INFO = {
     'dashboard': { title: 'ダッシュボード', icon: 'fa-solid fa-chart-pie' },
     'actions': { title: 'アクション管理', icon: 'fa-solid fa-bullseye' },
+    'member-dashboard': { title: 'メンバー別ダッシュボード', icon: 'fa-solid fa-id-badge' },
     'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
@@ -165,7 +178,7 @@
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'settings', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -195,6 +208,8 @@
 
     if (tabName === 'actions') {
       if (typeof fetchActionsManagementData === 'function') fetchActionsManagementData(true);
+    } else if (tabName === 'member-dashboard') {
+      if (typeof initMemberDashboard === 'function') initMemberDashboard();
     } else if (tabName === 'priority-follow') {
       fetchPriorityFollowData(true);
     } else if (tabName === 'visitors') {
