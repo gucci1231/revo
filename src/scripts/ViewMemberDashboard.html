@@ -3,6 +3,8 @@
   let currentSelectedMemberName = '';
   let currentMemberRoleView = 'invited'; // 'invited' | 'oriented'
   let currentMemberVisitorsFilter = 'all'; // 'all' | 'active' | 'joined'
+  let currentMemberActionFilter = 'pending'; // 'pending' | 'completed' | 'all'
+  let currentMemberActionData = { pending: [], completed: [] };
   let isAllMembersSummaryView = false;
 
   function initMemberDashboard(targetMemberName = null) {
@@ -224,10 +226,13 @@
     const totalInvited = invitedVisitors.length;
     let invitedJoinedCount = 0;
     let invitedActiveCount = 0;
-    const todoList = [];
+    const pendingTodoList = [];
+    const completedActionList = [];
 
     const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+    const cleanMember = normalizeNameKey(memberName);
 
+    // 招待ビジターベースのアクション抽出
     invitedVisitors.forEach(v => {
       const joinVal = String(v.isJoined || '').trim();
       const isJoined = (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済');
@@ -235,13 +240,23 @@
 
       if (isJoined) {
         invitedJoinedCount++;
+        completedActionList.push({
+          visitorId: v.id,
+          visitorName: v.name,
+          title: `入会決定・オリエンテーション完了`,
+          dueDate: v.eventDate,
+          assignee: memberName,
+          isCompleted: true,
+          actionType: '入会確定',
+          source: 'joined'
+        });
       } else if (!isDeclined) {
         invitedActiveCount++;
       }
 
       if (v.nextActionText && v.nextActionDueDate) {
         const isOverdue = v.nextActionDueDate < todayStr;
-        todoList.push({
+        pendingTodoList.push({
           visitorId: v.id,
           visitorName: v.name,
           title: v.nextActionText,
@@ -254,7 +269,7 @@
       }
 
       if (v.eventDate && v.eventDate >= todayStr && (!v.isAttended || v.isAttended === '未')) {
-        todoList.push({
+        pendingTodoList.push({
           visitorId: v.id,
           visitorName: v.name,
           title: `定例会参加リマインド連絡 (Zoomリンク送付)`,
@@ -266,19 +281,64 @@
         });
       }
 
-      if (v.isAttended === '出席' && (!v.is1to1 || v.is1to1 === '未') && !isJoined && !isDeclined) {
-        todoList.push({
-          visitorId: v.id,
-          visitorName: v.name,
-          title: `お礼連絡 ＆ フォロー1to1日程調整`,
-          dueDate: v.eventDate || todayStr,
-          assignee: memberName,
-          isOverdue: false,
-          actionType: '1to1調整',
-          source: 'follow_1to1'
-        });
+      if (v.isAttended === '出席') {
+        if (!v.is1to1 || v.is1to1 === '未') {
+          if (!isJoined && !isDeclined) {
+            pendingTodoList.push({
+              visitorId: v.id,
+              visitorName: v.name,
+              title: `お礼連絡 ＆ フォロー1to1日程調整`,
+              dueDate: v.eventDate || todayStr,
+              assignee: memberName,
+              isOverdue: false,
+              actionType: '1to1調整',
+              source: 'follow_1to1'
+            });
+          }
+        } else if (v.is1to1 === '済') {
+          completedActionList.push({
+            visitorId: v.id,
+            visitorName: v.name,
+            title: `フォロー1to1 実施済み`,
+            dueDate: v.eventDate || todayStr,
+            assignee: memberName,
+            isCompleted: true,
+            actionType: '1to1実施',
+            source: '1to1_done'
+          });
+        }
       }
     });
+
+    // 完了済みアクションプランの抽出 (ダッシュボードキャッシュまたはアクション管理データから)
+    if (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) {
+      currentDashboardActionPlans.forEach(p => {
+        if (Number(p.is_completed) === 1) {
+          const pAssignee = normalizeNameKey(p.assignee_name || '');
+          const isAssignee = pAssignee === cleanMember;
+          const isInvitedVisitor = invitedVisitors.some(iv => String(iv.id) === String(p.visitor_id));
+          const isOrientedVisitor = orientedVisitors.some(ov => String(ov.id) === String(p.visitor_id));
+
+          if (isAssignee || isInvitedVisitor || isOrientedVisitor) {
+            // 重複チェック
+            if (!completedActionList.some(c => c.actionPlanId === p.id)) {
+              completedActionList.push({
+                actionPlanId: p.id,
+                visitorId: p.visitor_id,
+                visitorName: p.visitor_name,
+                title: p.action_text,
+                reportText: p.report_text,
+                completedBy: p.completed_by,
+                dueDate: p.due_date,
+                isCompleted: true,
+                actionType: p.action_type || '完了',
+                source: 'action_plan_completed'
+              });
+            }
+          }
+        }
+      });
+    }
 
     // 2. オリエンテーション＆クロージング実績
     const totalOriented = orientedVisitors.length;
@@ -294,6 +354,12 @@
     const joinRate = totalInvited > 0 ? Math.round((invitedJoinedCount / totalInvited) * 100) : 0;
     const closingRate = totalOriented > 0 ? Math.round((orientJoinedCount / totalOriented) * 100) : 0;
 
+    // アクションデータ保存
+    currentMemberActionData = {
+      pending: pendingTodoList,
+      completed: completedActionList
+    };
+
     // DOM更新
     const totalEl = document.getElementById('member-kpi-total-visitors');
     const joinedEl = document.getElementById('member-kpi-joined-count');
@@ -307,27 +373,130 @@
     const roleCountInvitedEl = document.getElementById('role-count-invited');
     const roleCountOrientedEl = document.getElementById('role-count-oriented');
 
+    const countPendingEl = document.getElementById('todo-count-pending');
+    const countCompletedEl = document.getElementById('todo-count-completed');
+    const countAllEl = document.getElementById('todo-count-all');
+
     if (totalEl) totalEl.innerText = totalInvited;
     if (joinedEl) joinedEl.innerText = invitedJoinedCount;
     if (orientCountEl) orientCountEl.innerText = totalOriented;
     if (orientJoinedEl) orientJoinedEl.innerText = orientJoinedCount;
     if (activeEl) activeEl.innerText = invitedActiveCount;
-    if (todoEl) todoEl.innerText = todoList.length;
+    if (todoEl) todoEl.innerText = pendingTodoList.length;
     if (joinRateEl) joinRateEl.innerText = `${joinRate}%`;
     if (closingRateEl) closingRateEl.innerText = `${closingRate}%`;
     if (roleCountInvitedEl) roleCountInvitedEl.innerText = totalInvited;
     if (roleCountOrientedEl) roleCountOrientedEl.innerText = totalOriented;
 
+    if (countPendingEl) countPendingEl.innerText = pendingTodoList.length;
+    if (countCompletedEl) countCompletedEl.innerText = completedActionList.length;
+    if (countAllEl) countAllEl.innerText = (pendingTodoList.length + completedActionList.length);
+
     if (todoDot) {
-      const hasOverdue = todoList.some(t => t.isOverdue);
+      const hasOverdue = pendingTodoList.some(t => t.isOverdue);
       todoDot.className = 'kpi-status-dot ' + (hasOverdue ? 'red' : 'blue');
       todoDot.title = hasOverdue ? '期限切れアクションあり' : '正常';
     }
 
-    renderMemberTodoList(todoList, memberName);
+    renderMemberTodoListUI();
 
     const activeList = currentMemberRoleView === 'oriented' ? orientedVisitors : invitedVisitors;
     renderMemberVisitorCards(activeList);
+  }
+
+  function filterMemberActionList(mode) {
+    currentMemberActionFilter = mode;
+    ['pending', 'completed', 'all'].forEach(m => {
+      const btn = document.getElementById('tab-action-' + m);
+      if (btn) {
+        if (m === mode) {
+          btn.className = 'px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer';
+        }
+      }
+    });
+
+    renderMemberTodoListUI();
+  }
+
+  function renderMemberTodoListUI() {
+    const listEl = document.getElementById('member-todo-list');
+    if (!listEl) return;
+
+    let itemsToDisplay = [];
+    if (currentMemberActionFilter === 'pending') {
+      itemsToDisplay = currentMemberActionData.pending || [];
+    } else if (currentMemberActionFilter === 'completed') {
+      itemsToDisplay = currentMemberActionData.completed || [];
+    } else {
+      itemsToDisplay = [...(currentMemberActionData.pending || []), ...(currentMemberActionData.completed || [])];
+    }
+
+    if (itemsToDisplay.length === 0) {
+      const emptyMsg = currentMemberActionFilter === 'completed'
+        ? '完了したアクション履歴はありません'
+        : '現在やるべき未対応アクションはありません';
+
+      listEl.innerHTML = `
+        <div class="py-6 text-center text-xs font-bold text-slate-400">
+          ${emptyMsg}
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    itemsToDisplay.forEach(item => {
+      const isCompleted = item.isCompleted;
+      const isOverdue = !isCompleted && item.isOverdue;
+      const dateText = item.dueDate ? item.dueDate.replace(/^\d{4}\//, '') : '';
+
+      let badgeClass = 'bg-slate-100 text-slate-600 border-slate-200/60';
+      if (isCompleted) {
+        badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      } else if (isOverdue) {
+        badgeClass = 'bg-red-50 text-red-700 border-red-200';
+      }
+
+      const reportHtml = item.reportText ? `
+        <div class="mt-1.5 p-2 bg-slate-50 border border-slate-100 rounded-lg text-[11px] text-slate-600">
+          <span class="font-bold text-emerald-600"><i class="fa-regular fa-comment-dots mr-1"></i>報告:</span> ${escapeHtml(item.reportText)}
+          ${item.completedBy ? `<span class="text-[10px] text-slate-400 ml-1">(${escapeHtml(item.completedBy)})</span>` : ''}
+        </div>
+      ` : '';
+
+      html += `
+        <div class="p-3 rounded-xl border ${isCompleted ? 'border-slate-200/60 bg-slate-50/40' : (isOverdue ? 'border-red-200 bg-red-50/20' : 'border-slate-200/80 bg-white')} flex items-center justify-between gap-3 transition-colors">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded border ${badgeClass}">
+                ${isCompleted ? '<i class="fa-solid fa-check text-[9px] mr-0.5"></i>' : ''}${escapeHtml(item.actionType)}
+              </span>
+              <span class="text-xs font-extrabold text-slate-900 truncate">
+                ${escapeHtml(item.visitorName || 'ビジター')} 様
+              </span>
+            </div>
+            <div class="text-xs ${isCompleted ? 'text-slate-500 font-semibold line-through-offset-2' : 'text-slate-700 font-bold'} truncate">
+              ${escapeHtml(item.title)}
+            </div>
+            ${reportHtml}
+            <div class="text-[10px] font-bold ${isCompleted ? 'text-slate-400' : (isOverdue ? 'text-red-600' : 'text-slate-400')} mt-0.5">
+              ${isCompleted ? '完了' : '期日'}: ${escapeHtml(dateText)} ${isOverdue ? '(期限切れ)' : ''}
+            </div>
+          </div>
+          <div class="shrink-0">
+            ${item.visitorId ? `
+              <button type="button" onclick="openVisitorDetailView('${escapeHtml(item.visitorId)}')" class="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 text-slate-700 flex items-center justify-center text-xs border border-slate-200/80 shadow-2xs transition-colors cursor-pointer" title="カルテ詳細">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
   }
 
   function switchMemberRoleView(role) {
@@ -348,59 +517,6 @@
       : getVisitorsByInviter(currentSelectedMemberName);
 
     renderMemberVisitorCards(visitors);
-  }
-
-  function renderMemberTodoList(todoList, memberName) {
-    const listEl = document.getElementById('member-todo-list');
-    const badgeEl = document.getElementById('member-todo-summary-badge');
-    if (!listEl) return;
-
-    if (badgeEl) badgeEl.innerText = `${todoList.length}`;
-
-    if (todoList.length === 0) {
-      listEl.innerHTML = `
-        <div class="py-6 text-center text-xs font-bold text-slate-400">
-          やり残しアクションはありません
-        </div>
-      `;
-      return;
-    }
-
-    let html = '';
-    todoList.forEach(todo => {
-      const isOverdue = todo.isOverdue;
-      const dateText = todo.dueDate ? todo.dueDate.replace(/^\d{4}\//, '') : '';
-
-      html += `
-        <div class="p-3 rounded-xl border ${isOverdue ? 'border-red-200 bg-red-50/20' : 'border-slate-200/80 bg-white'} flex items-center justify-between gap-3">
-          <div class="min-w-0">
-            <div class="flex items-center gap-2 mb-0.5">
-              <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded border ${isOverdue ? 'bg-red-50 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200/60'}">
-                ${escapeHtml(todo.actionType)}
-              </span>
-              <span class="text-xs font-extrabold text-slate-900 truncate">
-                ${escapeHtml(todo.visitorName || 'ビジター')} 様
-              </span>
-            </div>
-            <div class="text-xs text-slate-700 font-bold truncate">
-              ${escapeHtml(todo.title)}
-            </div>
-            <div class="text-[10px] font-bold ${isOverdue ? 'text-red-600' : 'text-slate-400'} mt-0.5">
-              期日: ${escapeHtml(dateText)} ${isOverdue ? '(期限切れ)' : ''}
-            </div>
-          </div>
-          <div class="shrink-0">
-            ${todo.visitorId ? `
-              <button type="button" onclick="openVisitorDetailView('${escapeHtml(todo.visitorId)}')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-xs border border-slate-200/60 transition-colors cursor-pointer" title="詳細">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    });
-
-    listEl.innerHTML = html;
   }
 
   function filterMemberVisitors(filterType) {

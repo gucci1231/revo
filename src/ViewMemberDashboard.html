@@ -138,16 +138,28 @@
         </div>
       </div>
 
-      <!-- セクション 1: やるべきアクション (To-Do) -->
+      <!-- セクション 1: アクション実績 (To-Do ＆ 完了アクション) -->
       <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
           <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
-            <span>やるべきアクション</span>
+            <span>アクション管理</span>
           </h3>
-          <span class="text-xs font-bold text-slate-400 font-mono" id="member-todo-summary-badge">0</span>
+          
+          <!-- アクション切り替えタブ (未対応 ⇄ 完了済 ⇄ すべて) -->
+          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-action-filter-tabs">
+            <button type="button" id="tab-action-pending" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberActionList('pending')">
+              未対応 (<span id="todo-count-pending">0</span>)
+            </button>
+            <button type="button" id="tab-action-completed" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('completed')">
+              完了済 (<span id="todo-count-completed">0</span>)
+            </button>
+            <button type="button" id="tab-action-all" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('all')">
+              全件 (<span id="todo-count-all">0</span>)
+            </button>
+          </div>
         </div>
 
-        <!-- To-Do リスト -->
+        <!-- アクションリスト -->
         <div id="member-todo-list" class="space-y-2.5">
           <!-- JSで動的描画 -->
         </div>

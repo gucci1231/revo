@@ -16,6 +16,8 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('id="member-dash-closing-rate"'), true);
     assert.strictEqual(indexHtml.includes('id="tab-role-invited"'), true);
     assert.strictEqual(indexHtml.includes('id="tab-role-oriented"'), true);
+    assert.strictEqual(indexHtml.includes('id="tab-action-pending"'), true);
+    assert.strictEqual(indexHtml.includes('id="tab-action-completed"'), true);
     assert.strictEqual(indexHtml.includes('id="member-todo-list"'), true);
     assert.strictEqual(indexHtml.includes('id="member-visitor-cards-grid"'), true);
     assert.strictEqual(indexHtml.includes('id="all-members-summary-tbody"'), true);
@@ -28,12 +30,13 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
   });
 
-  it('verifies member dashboard functions are defined in scripts and supports orientation and closing metrics', () => {
+  it('verifies member dashboard functions are defined in scripts and supports orientation, closing, and completed actions', () => {
     assert.strictEqual(indexHtml.includes('function initMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function selectMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByInviter'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByOrientationUser'), true);
     assert.strictEqual(indexHtml.includes('function switchMemberRoleView'), true);
+    assert.strictEqual(indexHtml.includes('function filterMemberActionList'), true);
     assert.strictEqual(indexHtml.includes('function getMemberNameFromUrl'), true);
     assert.strictEqual(indexHtml.includes('deduplicateVisitorListClient'), true);
     assert.strictEqual(indexHtml.includes('renderStandardVisitorCardHtml'), true);
