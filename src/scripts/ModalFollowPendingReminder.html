@@ -21,28 +21,28 @@
     if (typeInput) typeInput.value = followType;
 
     // タイプ別のラベル＆配色切り替え
-    const isAlliance = (followType === '関係維持');
+    const isMaintenance = (followType === '関係維持');
     if (titleEl) {
-      titleEl.innerText = isAlliance ? '次回定期連絡・アライアンス設定' : '再アプローチ・リマインド設定';
+      titleEl.innerText = isMaintenance ? '定期連絡設定' : '再アプローチ設定';
     }
     if (iconEl) {
-      iconEl.className = isAlliance ? 'fa-solid fa-handshake' : 'fa-regular fa-clock';
+      iconEl.className = isMaintenance ? 'fa-regular fa-calendar-check' : 'fa-regular fa-clock';
     }
     if (iconWrapEl) {
-      iconWrapEl.className = isAlliance
+      iconWrapEl.className = isMaintenance
         ? 'w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold'
         : 'w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold';
     }
     if (dateLabelEl) {
-      dateLabelEl.innerText = isAlliance ? '次回コンタクト予定日' : '再アプローチ予定日';
+      dateLabelEl.innerText = isMaintenance ? '次回連絡予定日' : '再アプローチ予定日';
     }
     if (dateHintEl) {
-      dateHintEl.innerText = isAlliance ? '例: 3ヶ月後の定例会・イベント案内など' : '例: 半年後、独立予定時期など';
+      dateHintEl.innerText = isMaintenance ? '例: 3ヶ月後のイベント・定例会案内など' : '例: 半年後、独立予定時期など';
     }
     if (memoInput) {
-      memoInput.placeholder = isAlliance
-        ? '例: 次回のビジターズデイで再案内、3ヶ月後に近況確認の連絡 等'
-        : '例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等';
+      memoInput.placeholder = isMaintenance
+        ? '例: 次回の定例会案内、3ヶ月後の近況確認 等'
+        : '例: 10月に法人設立予定のため改めて案内、資金準備後に連絡 等';
       memoInput.value = '';
     }
 
@@ -182,15 +182,15 @@
       return;
     }
 
-    const isAlliance = (followType === '関係維持');
-    const actionPrefix = isAlliance ? '【定期連絡/関係維持】' : '【保留/再アプローチ】';
-    const actionText = `${actionPrefix}${memo}`;
+    const isMaintenance = (followType === '関係維持');
+    const actionPrefix = isMaintenance ? '【定期連絡】' : '【再アプローチ】';
+    const actionText = `${actionPrefix} ${memo}`;
 
     const payload = {
       visitor_id: vid,
       due_date: dueDate,
       assignee_name: assignee,
-      action_type: isAlliance ? 'その他' : 'その他',
+      action_type: 'その他',
       action_text: actionText
     };
 

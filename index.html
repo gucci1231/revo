@@ -6542,10 +6542,10 @@ select.form-input, select.form-select {
             </div>
           </div>
 
-          <!-- ステータス概要 (iOS Picker Style with Clear Category Labels) -->
+          <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-user-check text-[9px] mr-0.5"></i>出欠</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">出欠</span>
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
                 <option value="未">出欠: 未</option>
                 <option value="参加">出欠: 参加</option>
@@ -6553,7 +6553,7 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-comments text-[9px] mr-0.5"></i>1to1</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">1to1</span>
               <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1状況">
                 <option value="未">1to1: 未</option>
                 <option value="済">1to1: 済</option>
@@ -6561,7 +6561,7 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-file-signature text-[9px] mr-0.5"></i>入会進捗</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">入会進捗</span>
               <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
                 <option value="未">入会: 未</option>
                 <option value="検討中">入会: 検討中</option>
@@ -6573,12 +6573,12 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-indigo-600 block mb-0.5"><i class="fa-solid fa-compass text-[9px] mr-0.5"></i>フォロー方針</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
-                <option value="直近フォロー">🔥 直近入会フォロー</option>
-                <option value="時期尚早">⏰ 時期尚早・保留</option>
-                <option value="関係維持">🤝 関係維持・アライアンス</option>
-                <option value="終了">⚪ 終了</option>
+                <option value="直近フォロー">直近フォロー</option>
+                <option value="時期尚早">時期尚早</option>
+                <option value="関係維持">関係維持</option>
+                <option value="終了">終了</option>
               </select>
             </div>
           </div>
@@ -8176,19 +8176,19 @@ const ApiService = {
   const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', 'フォロー終了'];
 
   const FOLLOW_TYPE_CONFIG = {
-    '直近フォロー': { value: '直近フォロー', label: '🔥 直近入会フォロー', shortLabel: '直近', cls: 'follow-type-active', icon: 'fa-fire', color: '#0284c7' },
-    '時期尚早': { value: '時期尚早', label: '⏰ 時期尚早・保留', shortLabel: '時期尚早', cls: 'follow-type-pending', icon: 'fa-clock', color: '#6366f1' },
-    '関係維持': { value: '関係維持', label: '🤝 関係維持・アライアンス', shortLabel: '関係維持', cls: 'follow-type-alliance', icon: 'fa-handshake', color: '#059669' },
-    '終了': { value: '終了', label: '⚪ 終了', shortLabel: '終了', cls: 'follow-type-closed', icon: 'fa-circle-xmark', color: '#64748b' }
+    '直近フォロー': { value: '直近フォロー', label: '直近フォロー', shortLabel: '直近', cls: 'follow-type-active', color: '#0284c7' },
+    '時期尚早': { value: '時期尚早', label: '時期尚早', shortLabel: '時期尚早', cls: 'follow-type-pending', color: '#6366f1' },
+    '関係維持': { value: '関係維持', label: '関係維持', shortLabel: '関係維持', cls: 'follow-type-alliance', color: '#059669' },
+    '終了': { value: '終了', label: '終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' }
   };
   const FOLLOW_TYPE_ORDER = ['直近フォロー', '時期尚早', '関係維持', '終了'];
 
   function normalizeFollowType(raw) {
     if (!raw) return '直近フォロー';
     if (FOLLOW_TYPE_CONFIG[raw]) return raw;
-    if (raw === '保留' || raw === '保留（時期尚早）') return '時期尚早';
-    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト') return '関係維持';
-    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了') return '終了';
+    if (raw === '保留' || raw === '保留（時期尚早）' || raw.includes('時期尚早')) return '時期尚早';
+    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト' || raw.includes('関係維持')) return '関係維持';
+    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了' || raw === '終了') return '終了';
     return '直近フォロー';
   }
 
@@ -15727,28 +15727,28 @@ window.CelebrationEffect = (function() {
     if (typeInput) typeInput.value = followType;
 
     // タイプ別のラベル＆配色切り替え
-    const isAlliance = (followType === '関係維持');
+    const isMaintenance = (followType === '関係維持');
     if (titleEl) {
-      titleEl.innerText = isAlliance ? '次回定期連絡・アライアンス設定' : '再アプローチ・リマインド設定';
+      titleEl.innerText = isMaintenance ? '定期連絡設定' : '再アプローチ設定';
     }
     if (iconEl) {
-      iconEl.className = isAlliance ? 'fa-solid fa-handshake' : 'fa-regular fa-clock';
+      iconEl.className = isMaintenance ? 'fa-regular fa-calendar-check' : 'fa-regular fa-clock';
     }
     if (iconWrapEl) {
-      iconWrapEl.className = isAlliance
+      iconWrapEl.className = isMaintenance
         ? 'w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold'
         : 'w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold';
     }
     if (dateLabelEl) {
-      dateLabelEl.innerText = isAlliance ? '次回コンタクト予定日' : '再アプローチ予定日';
+      dateLabelEl.innerText = isMaintenance ? '次回連絡予定日' : '再アプローチ予定日';
     }
     if (dateHintEl) {
-      dateHintEl.innerText = isAlliance ? '例: 3ヶ月後の定例会・イベント案内など' : '例: 半年後、独立予定時期など';
+      dateHintEl.innerText = isMaintenance ? '例: 3ヶ月後のイベント・定例会案内など' : '例: 半年後、独立予定時期など';
     }
     if (memoInput) {
-      memoInput.placeholder = isAlliance
-        ? '例: 次回のビジターズデイで再案内、3ヶ月後に近況確認の連絡 等'
-        : '例: 10月に法人設立予定のため改めて案内、資金準備後に再アプローチ 等';
+      memoInput.placeholder = isMaintenance
+        ? '例: 次回の定例会案内、3ヶ月後の近況確認 等'
+        : '例: 10月に法人設立予定のため改めて案内、資金準備後に連絡 等';
       memoInput.value = '';
     }
 
@@ -15888,15 +15888,15 @@ window.CelebrationEffect = (function() {
       return;
     }
 
-    const isAlliance = (followType === '関係維持');
-    const actionPrefix = isAlliance ? '【定期連絡/関係維持】' : '【保留/再アプローチ】';
-    const actionText = `${actionPrefix}${memo}`;
+    const isMaintenance = (followType === '関係維持');
+    const actionPrefix = isMaintenance ? '【定期連絡】' : '【再アプローチ】';
+    const actionText = `${actionPrefix} ${memo}`;
 
     const payload = {
       visitor_id: vid,
       due_date: dueDate,
       assignee_name: assignee,
-      action_type: isAlliance ? 'その他' : 'その他',
+      action_type: 'その他',
       action_text: actionText
     };
 

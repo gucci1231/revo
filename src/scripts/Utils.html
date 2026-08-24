@@ -119,19 +119,19 @@
   const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', 'フォロー終了'];
 
   const FOLLOW_TYPE_CONFIG = {
-    '直近フォロー': { value: '直近フォロー', label: '🔥 直近入会フォロー', shortLabel: '直近', cls: 'follow-type-active', icon: 'fa-fire', color: '#0284c7' },
-    '時期尚早': { value: '時期尚早', label: '⏰ 時期尚早・保留', shortLabel: '時期尚早', cls: 'follow-type-pending', icon: 'fa-clock', color: '#6366f1' },
-    '関係維持': { value: '関係維持', label: '🤝 関係維持・アライアンス', shortLabel: '関係維持', cls: 'follow-type-alliance', icon: 'fa-handshake', color: '#059669' },
-    '終了': { value: '終了', label: '⚪ 終了', shortLabel: '終了', cls: 'follow-type-closed', icon: 'fa-circle-xmark', color: '#64748b' }
+    '直近フォロー': { value: '直近フォロー', label: '直近フォロー', shortLabel: '直近', cls: 'follow-type-active', color: '#0284c7' },
+    '時期尚早': { value: '時期尚早', label: '時期尚早', shortLabel: '時期尚早', cls: 'follow-type-pending', color: '#6366f1' },
+    '関係維持': { value: '関係維持', label: '関係維持', shortLabel: '関係維持', cls: 'follow-type-alliance', color: '#059669' },
+    '終了': { value: '終了', label: '終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' }
   };
   const FOLLOW_TYPE_ORDER = ['直近フォロー', '時期尚早', '関係維持', '終了'];
 
   function normalizeFollowType(raw) {
     if (!raw) return '直近フォロー';
     if (FOLLOW_TYPE_CONFIG[raw]) return raw;
-    if (raw === '保留' || raw === '保留（時期尚早）') return '時期尚早';
-    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト') return '関係維持';
-    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了') return '終了';
+    if (raw === '保留' || raw === '保留（時期尚早）' || raw.includes('時期尚早')) return '時期尚早';
+    if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト' || raw.includes('関係維持')) return '関係維持';
+    if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了' || raw === '終了') return '終了';
     return '直近フォロー';
   }
 

@@ -67,10 +67,10 @@
             </div>
           </div>
 
-          <!-- ステータス概要 (iOS Picker Style with Clear Category Labels) -->
+          <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-user-check text-[9px] mr-0.5"></i>出欠</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">出欠</span>
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
                 <option value="未">出欠: 未</option>
                 <option value="参加">出欠: 参加</option>
@@ -78,7 +78,7 @@
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-comments text-[9px] mr-0.5"></i>1to1</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">1to1</span>
               <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1状況">
                 <option value="未">1to1: 未</option>
                 <option value="済">1to1: 済</option>
@@ -86,7 +86,7 @@
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-file-signature text-[9px] mr-0.5"></i>入会進捗</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">入会進捗</span>
               <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
                 <option value="未">入会: 未</option>
                 <option value="検討中">入会: 検討中</option>
@@ -98,12 +98,12 @@
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-indigo-600 block mb-0.5"><i class="fa-solid fa-compass text-[9px] mr-0.5"></i>フォロー方針</span>
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
-                <option value="直近フォロー">🔥 直近入会フォロー</option>
-                <option value="時期尚早">⏰ 時期尚早・保留</option>
-                <option value="関係維持">🤝 関係維持・アライアンス</option>
-                <option value="終了">⚪ 終了</option>
+                <option value="直近フォロー">直近フォロー</option>
+                <option value="時期尚早">時期尚早</option>
+                <option value="関係維持">関係維持</option>
+                <option value="終了">終了</option>
               </select>
             </div>
           </div>
