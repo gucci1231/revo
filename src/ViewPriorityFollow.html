@@ -14,37 +14,39 @@
           <span id="pf-total-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-100 text-slate-700">0</span>
         </div>
 
-        <div class="flex items-center gap-2 w-full flex-wrap sm:flex-nowrap">
+        <!-- 1行目: 感触フィルター (ALL/A/B) + 検索ボックス -->
+        <div class="flex items-center gap-2 w-full">
           <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg shrink-0">
             <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold" id="pf-tab-all" onclick="setPriorityFollowGradeFilter('ALL')">ALL</button>
             <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-a" onclick="setPriorityFollowGradeFilter('A')">A</button>
             <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold" id="pf-tab-b" onclick="setPriorityFollowGradeFilter('B')">B</button>
           </div>
+          <div class="relative flex-1">
+            <input type="text" id="search-priority-follow-input" class="search-box w-full text-xs py-1.5 pl-3" placeholder="🔍 検索..." onkeyup="filterPriorityFollowTable()">
+          </div>
+        </div>
 
-          <!-- アクション状況スマートセグメント (ALL / 🔴 超過 / 🟡 未設定 / 🔵 進行中) -->
-          <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg shrink-0" id="pf-action-filter-group">
-            <button type="button" class="tab-btn active px-2.5 py-1 text-xs font-bold" id="pf-action-filter-all" onclick="setPriorityFollowActionFilter('ALL')">
+        <!-- 2行目: アクション状況スマートセグメント (全件 / 🔴 超過 / 🟡 未設定 / 🔵 進行中) -->
+        <div class="w-full overflow-x-auto pb-0.5">
+          <div class="tab-filter-group flex gap-1 bg-slate-100 p-1 rounded-lg w-full" id="pf-action-filter-group">
+            <button type="button" class="tab-btn active flex-1 py-1 text-xs font-bold text-center" id="pf-action-filter-all" onclick="setPriorityFollowActionFilter('ALL')">
               全件
             </button>
-            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold flex items-center gap-1" id="pf-action-filter-overdue" onclick="setPriorityFollowActionFilter('OVERDUE')" title="期限超過">
+            <button type="button" class="tab-btn flex-1 py-1 text-xs font-bold flex items-center justify-center gap-1" id="pf-action-filter-overdue" onclick="setPriorityFollowActionFilter('OVERDUE')" title="期限超過">
               <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
               <span>超過</span>
               <span id="pf-count-overdue" class="text-[10px] tabular-nums font-bold text-slate-500">0</span>
             </button>
-            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold flex items-center gap-1" id="pf-action-filter-stagnant" onclick="setPriorityFollowActionFilter('STAGNANT')" title="アクション未設定">
+            <button type="button" class="tab-btn flex-1 py-1 text-xs font-bold flex items-center justify-center gap-1" id="pf-action-filter-stagnant" onclick="setPriorityFollowActionFilter('STAGNANT')" title="アクション未設定">
               <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
               <span>未設定</span>
               <span id="pf-count-stagnant" class="text-[10px] tabular-nums font-bold text-slate-500">0</span>
             </button>
-            <button type="button" class="tab-btn px-2.5 py-1 text-xs font-bold flex items-center gap-1" id="pf-action-filter-active" onclick="setPriorityFollowActionFilter('ACTIVE')" title="進行中">
+            <button type="button" class="tab-btn flex-1 py-1 text-xs font-bold flex items-center justify-center gap-1" id="pf-action-filter-active" onclick="setPriorityFollowActionFilter('ACTIVE')" title="進行中">
               <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
               <span>進行中</span>
               <span id="pf-count-active" class="text-[10px] tabular-nums font-bold text-slate-500">0</span>
             </button>
-          </div>
-
-          <div class="relative flex-1 min-w-[140px]">
-            <input type="text" id="search-priority-follow-input" class="search-box w-full text-xs py-1.5 pl-3" placeholder="🔍 検索..." onkeyup="filterPriorityFollowTable()">
           </div>
         </div>
       </div>
