@@ -137,7 +137,8 @@ class ReportTemplateRepository {
             $existing = $this->db->fetchOne("SELECT id, email_html_body, line_template_body FROM report_templates WHERE id = ?", [$d['id']]);
             if (!$existing) {
                 $this->db->upsert('report_templates', $d, ['id']);
-            } else if (empty(trim($existing['email_html_body'] ?? '')) || empty(trim($existing['line_template_body'] ?? ''))) {
+            } else if (empty(trim($existing['email_html_body'] ?? '')) || empty(trim($existing['line_template_body'] ?? '')) || strpos($existing['email_html_body'], 'brand-tag') === false) {
+                // 自動的に最新のStripe風モダンデザインに更新
                 $this->db->upsert('report_templates', $d, ['id']);
             }
         }
@@ -193,67 +194,90 @@ class ReportTemplateRepository {
     }
 
     /* =========================================================================
-       1. 今週のビジター申込状況 (毎週日曜 20:00)
+       1. 今週のビジター申込状況 (毎週日曜 20:00) - Stripe Style
        ========================================================================= */
     public function getDefaultWeeklyVisitorStatusEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
-.kpi-grid { display: flex; gap: 10px; margin: 20px 0; }
-.kpi-box { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; }
-.kpi-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #0071e3; }
-.kpi-lbl { font-size: 11px; font-weight: 700; color: #64748b; margin-top: 2px; }
-.mentor-box { background: #eff6ff; border-left: 4px solid #0071e3; padding: 16px; border-radius: 0 12px 12px 0; margin: 16px 0; }
-.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; margin-top: 16px; text-align: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #0071e3; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #8898aa; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #0071e3; margin-bottom: 20px; }
+.callout-box { background: #f0f7ff; border: 1px solid #d0e5ff; border-left: 4px solid #0071e3; border-radius: 10px; padding: 14px 16px; margin: 18px 0; }
+.callout-title { font-size: 12px; font-weight: 700; color: #005bb5; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.callout-text { font-size: 12.5px; color: #1e3a8a; line-height: 1.6; margin: 0; }
+.metrics-row { width: 100%; border-collapse: separate; border-spacing: 8px 0; margin: 20px 0; }
+.metric-card { background: #f8fafc; border: 1px solid #e6ebf1; border-radius: 10px; padding: 14px 8px; text-align: center; vertical-align: middle; }
+.metric-val { font-size: 22px; font-weight: 900; color: #0a2540; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; line-height: 1.1; }
+.metric-lbl { font-size: 10px; font-weight: 700; color: #8898aa; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.3px; }
+.section-title { font-size: 13px; font-weight: 700; color: #0a2540; margin: 22px 0 10px 0; display: flex; align-items: center; justify-content: space-between; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:20px; font-weight:900; letter-spacing:-0.5px;">🔥 今週のビジター申込状況 ＆ 目標必達速報</h1>
-    <div style="font-size:12px; opacity:0.8; margin-top:4px;">次回定例会: {{定例会日付}}</div>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">R</span> REVO VISITOR HOST
+    </div>
+    <div class="brand-tag">Weekly Goal Status</div>
   </div>
-  <div class="content" style="padding: 24px;">
-    
-    <div class="mentor-box">
-      <div style="font-weight:800; font-size:13px; color:#1e40af; margin-bottom:6px;">💡 ビジホスメンターからのメッセージ</div>
-      <div style="font-size:13px; color:#1e3a8a; line-height:1.65;">
-        今週も定例会まであと2日となりました！<br>
-        今週のチャプター目標【{{週間目標数}}名】に対し、現在の確定申込は【{{現在申込数}}名】、目標達成まであと<strong>【{{目標差分}}名】</strong>です。<br><br>
-        日曜夜の今こそ、あなたの大切なビジネスパートナーや「力になりたい」と思うあの人に、もう一度声を届ける最高のタイミングです。「火曜の朝、一緒に新しいビジネスの扉を開きませんか？」の一言が、相手の未来もチャプターの目標も大きく動かします。<br>
-        最後まで妥協せず、全員で必ず目標を達成させましょう！🔥
-      </div>
+  
+  <div class="content">
+    <h1 class="heading">次回定例会 ビジター申込進捗</h1>
+    <div class="subheading">次回開催: {{定例会日付}}</div>
+
+    <div class="callout-box">
+      <div class="callout-title">💡 メンターメッセージ</div>
+      <p class="callout-text">
+        定例会まであと2日となりました！<br>
+        今週の目標【{{週間目標数}}名】に対し、現在の確定申込は【{{現在申込数}}名】、目標達成まであと<strong>【{{目標差分}}名】</strong>です。<br>
+        日曜夜の今こそ、力になりたいビジネスパートナーに「火曜朝、一緒に参加しませんか？」と声を届ける最高のタイミングです。全員で必ず目標を達成させましょう！🔥
+      </p>
     </div>
 
-    <div class="kpi-grid">
-      <div class="kpi-box">
-        <div class="kpi-val">{{週間目標数}}名</div>
-        <div class="kpi-lbl">今週の目標</div>
-      </div>
-      <div class="kpi-box">
-        <div class="kpi-val">{{現在申込数}}名</div>
-        <div class="kpi-lbl">現在申込数</div>
-      </div>
-      <div class="kpi-box">
-        <div class="kpi-val" style="color: {{目標差分カラー}};">あと{{目標差分}}名</div>
-        <div class="kpi-lbl">目標達成まで</div>
-      </div>
-    </div>
+    <!-- 3 Metrics Cards -->
+    <table class="metrics-row">
+      <tr>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val">{{週間目標数}}名</div>
+          <div class="metric-lbl">今週の目標</div>
+        </td>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val" style="color: #0071e3;">{{現在申込数}}名</div>
+          <div class="metric-lbl">確定申込数</div>
+        </td>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val" style="color: {{目標差分カラー}};">あと{{目標差分}}名</div>
+          <div class="metric-lbl">達成まで ({{達成率}}%)</div>
+        </td>
+      </tr>
+    </table>
 
-    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0; color:#0f172a;">👏 先行招待してくれた貢献メンバー</h3>
+    <div class="section-title">
+      <span>👏 先行招待メンバーの貢献</span>
+    </div>
     {{招待貢献メンバー一覧HTML}}
 
-    <div style="text-align: center; margin-top: 24px;">
+    <div class="btn-container">
       <a href="{{ダッシュボードURL}}" class="btn">最新の進捗ダッシュボードを開く →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -265,41 +289,60 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     /* =========================================================================
-       2. 今週参加するビジター紹介 (毎週火曜 12:00)
+       2. 今週参加するビジター紹介 (毎週火曜 12:00) - Stripe Style
        ========================================================================= */
     public function getDefaultTuesdayVisitorIntroEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
-.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #0071e3; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #8898aa; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #0071e3; margin-bottom: 16px; }
+.intro-text { font-size: 13px; line-height: 1.65; color: #425466; margin: 0 0 20px 0; }
+.section-title { font-size: 13px; font-weight: 700; color: #0a2540; margin: 20px 0 10px 0; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:20px; font-weight:900;">🤝 【全員で大歓迎！】今週参加されるビジター様のご紹介</h1>
-    <div style="font-size:12px; opacity:0.9; margin-top:4px;">{{定例会日付}} 開催定例会</div>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">R</span> REVO VISITOR HOST
+    </div>
+    <div class="brand-tag">Guest Introduction</div>
   </div>
-  <div class="content" style="padding: 24px;">
-    <p style="font-size: 13px; color: #334155; line-height: 1.65; margin-top:0;">
+  
+  <div class="content">
+    <h1 class="heading">🤝 今週参加されるビジター様のご紹介</h1>
+    <div class="subheading">{{定例会日付}} 開催定例会 (参加予定: {{参加予定ビジター数}}名)</div>
+
+    <p class="intro-text">
       今週の定例会には <strong>計 {{参加予定ビジター数}}名</strong> の素晴らしいゲストが参加されます！<br>
-      ビジター様にとって定例会は一度きりのファーストインプレッションです。事前に専門分野やお困りごとを把握し、チャプター全員で前のめりに歓迎と最高のビジネスチャンスをお届けしましょう！✨
+      事前に専門分野やお困りごとを把握し、チャプター全員で前のめりに歓迎と最高のビジネスチャンスをお届けしましょう。
     </p>
 
-    <h3 style="font-size:14px; font-weight:800; margin:20px 0 10px 0; color:#0f172a;">参加ビジター一覧 ＆ 見どころ</h3>
+    <div class="section-title">参加ビジター一覧 ＆ 見どころ</div>
     {{参加予定ビジターカード一覧HTML}}
 
-    <div style="text-align:center; margin-top:24px;">
+    <div class="btn-container">
       <a href="{{ダッシュボードURL}}" class="btn">カルテ＆事前情報を確認する →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -311,56 +354,81 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     /* =========================================================================
-       3. 週間活動総合レポート (毎週日曜 21:00)
+       3. 週間活動総合レポート (毎週日曜 21:00) - Stripe Style
        ========================================================================= */
     public function getDefaultWeeklyFullReportEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
-.kpi-row { display: flex; gap: 10px; margin: 16px 0; }
-.kpi-item { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #0071e3; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #8898aa; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #635bff; margin-bottom: 16px; }
+.intro-text { font-size: 13px; line-height: 1.65; color: #425466; margin: 0 0 18px 0; }
+.metrics-row { width: 100%; border-collapse: separate; border-spacing: 8px 0; margin: 18px 0; }
+.metric-card { background: #f8fafc; border: 1px solid #e6ebf1; border-radius: 10px; padding: 14px 8px; text-align: center; vertical-align: middle; }
+.metric-val { font-size: 22px; font-weight: 900; color: #0a2540; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; line-height: 1.1; }
+.metric-lbl { font-size: 10px; font-weight: 700; color: #8898aa; text-transform: uppercase; margin-top: 4px; letter-spacing: 0.3px; }
+.section-title { font-size: 13px; font-weight: 700; color: #0a2540; margin: 22px 0 10px 0; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:20px; font-weight:900;">📊 週間ビジホス総合レポート</h1>
-    <div style="font-size:12px; opacity:0.8; margin-top:4px;">ビジター申込集計・フォロー状況・アクション進捗</div>
-  </div>
-  <div class="content" style="padding: 24px;">
-    <p style="font-size: 13px; color: #475569; margin-top:0; line-height:1.6;">
-      今週のビジター活動サマリーをお届けします。フォロー中のゲストを絶対に見込み落ちさせないよう、スピード感を持ってアクションを完了させましょう！
-    </p>
-    
-    <div class="kpi-row">
-      <div class="kpi-item">
-        <div style="font-size: 20px; font-weight: 900; color: #0071e3;">{{週間申込数}}名</div>
-        <div style="font-size: 10px; color: #64748b; font-weight: bold;">今週の申込数</div>
-      </div>
-      <div class="kpi-item">
-        <div style="font-size: 20px; font-weight: 900; color: #059669;">{{完了アクション数}}件</div>
-        <div style="font-size: 10px; color: #64748b; font-weight: bold;">完了アクション</div>
-      </div>
-      <div class="kpi-item">
-        <div style="font-size: 20px; font-weight: 900; color: #dc2626;">{{残ToDo数}}件</div>
-        <div style="font-size: 10px; color: #64748b; font-weight: bold;">要対応残数</div>
-      </div>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">R</span> REVO VISITOR HOST
     </div>
+    <div class="brand-tag">Weekly Summary Report</div>
+  </div>
+  
+  <div class="content">
+    <h1 class="heading">📊 週間ビジホス総合レポート</h1>
+    <div class="subheading">ビジター申込集計・フォロー状況・アクション進捗</div>
 
-    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0; color:#0f172a;">🔥 フォロー中の重要ビジター</h3>
+    <p class="intro-text">
+      今週のビジター活動サマリーをお届けします。フォロー中のゲストを確実に入会へ導くため、スピード感を持ってアクションを完了させましょう。
+    </p>
+
+    <!-- 3 Metrics Cards -->
+    <table class="metrics-row">
+      <tr>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val" style="color: #0071e3;">{{週間申込数}}名</div>
+          <div class="metric-lbl">今週の申込数</div>
+        </td>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val" style="color: #059669;">{{完了アクション数}}件</div>
+          <div class="metric-lbl">完了アクション</div>
+        </td>
+        <td class="metric-card" style="width: 33.3%;">
+          <div class="metric-val" style="color: #dc2626;">{{残ToDo数}}件</div>
+          <div class="metric-lbl">要対応残数</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="section-title">🔥 フォロー中の重要ビジター</div>
     {{フォロー中ビジターテーブルHTML}}
 
-    <div style="text-align:center; margin-top:20px;">
-      <a href="{{ダッシュボードURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">全体ダッシュボードを開く →</a>
+    <div class="btn-container">
+      <a href="{{ダッシュボードURL}}" class="btn">全体ダッシュボードを開く →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -372,42 +440,88 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     /* =========================================================================
-       4. アクション完了・称賛速報 (都度即時)
+       4. アクション完了・称賛速報 (都度即時) - Stripe Style
        ========================================================================= */
     public function getDefaultActionCompletedEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #059669; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #059669; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #059669; margin-bottom: 16px; }
+.intro-text { font-size: 13px; line-height: 1.65; color: #425466; margin: 0 0 18px 0; }
+.receipt-card { background: #f8fafc; border: 1px solid #e6ebf1; border-radius: 12px; padding: 20px; margin: 18px 0; }
+.receipt-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 12.5px; }
+.receipt-row:last-child { border-bottom: none; }
+.receipt-label { color: #8898aa; font-weight: 600; width: 30%; }
+.receipt-value { color: #0a2540; font-weight: 700; width: 70%; text-align: right; }
+.comment-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 12px; color: #334155; line-height: 1.6; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">🎉 ナイスアクション！フォロー完了・称賛速報</h1>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">✓</span> REVO VISITOR HOST
+    </div>
+    <div class="brand-tag">Action Completed</div>
   </div>
-  <div class="content" style="padding: 24px;">
-    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">
-      素晴らしいスピード対応とチャプター貢献です！👏<br>
-      以下のフォローアクションが完了しました。
+  
+  <div class="content">
+    <h1 class="heading">🎉 ナイスアクション！フォロー完了</h1>
+    <div class="subheading">迅速なフォローとチャプター貢献を称賛します！</div>
+
+    <p class="intro-text">
+      担当メンバーによるフォローアクションが完了しました。迅速な対応が信頼を深め、確実な入会へと繋がります！
     </p>
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #059669; border-radius: 12px; padding: 16px; margin: 16px 0;">
-      <div style="font-size: 14px; font-weight: bold; color: #0f172a;">👏 担当メンバー: {{担当者名}} 様</div>
-      <div style="font-size: 13px; color: #334155; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
-      <div style="font-size: 13px; color: #334155; margin-top: 4px;">完了内容: {{アクション内容}}</div>
-      <div style="font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">報告コメント: {{報告内容}}</div>
+
+    <!-- Receipt Card -->
+    <div class="receipt-card">
+      <table style="width:100%; font-size:12.5px; border-collapse:collapse;">
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">担当メンバー</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:800; text-align:right; border-bottom:1px solid #edf2f7;"><span style="background:#eff6ff; color:#0071e3; padding:2px 8px; border-radius:6px;">{{担当者名}} 様</span></td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">対象ビジター</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:700; text-align:right; border-bottom:1px solid #edf2f7;">{{ビジター名}} 様 <span style="font-size:11px; color:#64748b;">({{ビジター会社}})</span></td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">招待メンバー</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:700; text-align:right; border-bottom:1px solid #edf2f7;">{{招待者名}} 様</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">完了アクション</td>
+          <td style="padding:7px 0; color:#059669; font-weight:800; text-align:right; border-bottom:1px solid #edf2f7;">{{アクション内容}}</td>
+        </tr>
+      </table>
+
+      <div class="comment-box">
+        <strong style="color:#0a2540; font-size:11px; display:block; margin-bottom:4px;">💬 報告コメント:</strong>
+        {{報告内容}}
+      </div>
     </div>
-    <p style="font-size:12px; color:#64748b;">この迅速なフォローが、次なる入会決定とチャプターのリファーラルの輪を大きく広げます！</p>
-    <div style="text-align: center; margin-top: 20px;">
-      <a href="{{カルテURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
+
+    <div class="btn-container">
+      <a href="{{カルテURL}}" class="btn">ビジターカルテを確認する →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -419,39 +533,57 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     /* =========================================================================
-       5. 本日期限のタスクリマインド (毎朝 08:00)
+       5. 本日期限のタスクリマインド (毎朝 08:00) - Stripe Style
        ========================================================================= */
     public function getDefaultTodayDueTasksEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #dc2626; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #dc2626; margin-bottom: 16px; }
+.intro-text { font-size: 13px; line-height: 1.65; color: #425466; margin: 0 0 18px 0; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">⏰ 本日期限のフォロータスク一覧</h1>
-    <div style="font-size:12px; opacity:0.9; margin-top:4px;">本日 ({{本日日付}}) 期限: {{本日期限件数}}件</div>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">!</span> REVO VISITOR HOST
+    </div>
+    <div class="brand-tag">Action Due Today</div>
   </div>
-  <div class="content" style="padding: 24px;">
-    <p style="font-size: 13px; color: #334155; line-height: 1.6; margin-top:0;">
-      ビジターの熱量は定例会直後が最も高いです！<br>
-      本日が期日となっているフォローアクションです。信頼関係を深めるため、本日中のご対応・完了報告をお願いいたします。🔥
+  
+  <div class="content">
+    <h1 class="heading">⏰ 本日期限のフォロータスク</h1>
+    <div class="subheading">本日 ({{本日日付}}) 期限: {{本日期限件数}}件</div>
+
+    <p class="intro-text">
+      ビジターの熱量は定例会直後が最も高いです！信頼関係を深め、入会へ繋げるため、本日中のご対応・完了報告をお願いいたします。🔥
     </p>
 
     {{本日期限タスクテーブルHTML}}
 
-    <div style="text-align: center; margin-top: 24px;">
-      <a href="{{アクション管理URL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
+    <div class="btn-container">
+      <a href="{{アクション管理URL}}" class="btn">アクション管理で報告する →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -463,45 +595,82 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     /* =========================================================================
-       6. ビジター新規申込速報 (都度即時)
+       6. ビジター新規申込速報 (都度即時) - Stripe Style
        ========================================================================= */
     public function getDefaultNewVisitorAppliedEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
-.card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif; background-color: #f6f9fc; margin: 0; padding: 32px 16px; color: #425466; -webkit-font-smoothing: antialiased; }
+.wrapper { max-width: 560px; margin: 0 auto; background: #ffffff; border: 1px solid #e6ebf1; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02); }
+.brand-bar { padding: 20px 28px; border-bottom: 1px solid #f0f4f8; display: flex; align-items: center; justify-content: space-between; }
+.brand-logo { font-size: 13px; font-weight: 800; color: #0a2540; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 8px; }
+.brand-icon { width: 22px; height: 22px; background: #0071e3; color: #ffffff; border-radius: 6px; display: inline-block; text-align: center; line-height: 22px; font-size: 11px; font-weight: 900; }
+.brand-tag { font-size: 10px; font-weight: 700; color: #0071e3; text-transform: uppercase; letter-spacing: 0.5px; }
+.content { padding: 28px; }
+.heading { font-size: 19px; font-weight: 800; color: #0a2540; margin: 0 0 6px 0; letter-spacing: -0.3px; line-height: 1.35; }
+.subheading { font-size: 12px; font-weight: 600; color: #0071e3; margin-bottom: 16px; }
+.intro-text { font-size: 13px; line-height: 1.65; color: #425466; margin: 0 0 18px 0; }
+.profile-card { background: #f8fafc; border: 1px solid #e6ebf1; border-radius: 12px; padding: 20px; margin: 18px 0; }
+.btn-container { text-align: center; margin-top: 26px; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff !important; font-size: 13px; font-weight: 700; text-decoration: none; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 113, 227, 0.2); }
+.footer { background: #fafbfc; border-top: 1px solid #e6ebf1; padding: 18px 28px; text-align: center; font-size: 11px; color: #8898aa; line-height: 1.6; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">🚀 新規ビジター申込速報！ナイス招待！</h1>
+<div class="wrapper">
+  <div class="brand-bar">
+    <div class="brand-logo">
+      <span class="brand-icon">R</span> REVO VISITOR HOST
+    </div>
+    <div class="brand-tag">New Registration</div>
   </div>
-  <div class="content" style="padding: 24px;">
-    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">
-      {{招待者名}} 様の積極的なお声がけにより、新しいビジター申込がありました！👏
+  
+  <div class="content">
+    <h1 class="heading">🚀 新規ビジター申込速報！</h1>
+    <div class="subheading">{{招待者名}} 様より新しいビジター申込がありました！👏</div>
+
+    <p class="intro-text">
+      メンバーの積極的な招待活動により、新しいビジターの参加申込が届きました！当日最高の体験を提供できるよう、全員で事前準備を進めましょう。
     </p>
-    
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0071e3; border-radius: 12px; padding: 16px; margin: 16px 0;">
-      <div style="font-size: 15px; font-weight: 900; color: #0f172a;">{{ビジター名}} 様</div>
-      <div style="font-size: 13px; color: #475569; margin-top: 4px;">会社・役職: {{ビジター会社}}</div>
-      <div style="font-size: 13px; color: #475569; margin-top: 2px;">専門分野: {{ビジターカテゴリー}}</div>
-      <div style="font-size: 13px; color: #0071e3; margin-top: 6px; font-weight: bold;">参加予定日: {{参加予定日}}</div>
-      <div style="font-size: 13px; color: #64748b; margin-top: 4px;">招待メンバー: <strong>{{招待者名}} 様</strong></div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <table style="width:100%; font-size:12.5px; border-collapse:collapse;">
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">ビジター氏名</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:800; font-size:14px; text-align:right; border-bottom:1px solid #edf2f7;">{{ビジター名}} 様</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">会社名・役職</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:700; text-align:right; border-bottom:1px solid #edf2f7;">{{ビジター会社}}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">専門分野</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:700; text-align:right; border-bottom:1px solid #edf2f7;"><span style="background:#f1f5f9; color:#475569; padding:2px 8px; border-radius:6px;">{{ビジターカテゴリー}}</span></td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600; border-bottom:1px solid #edf2f7;">参加予定日</td>
+          <td style="padding:7px 0; color:#0071e3; font-weight:800; text-align:right; border-bottom:1px solid #edf2f7;">{{参加予定日}}</td>
+        </tr>
+        <tr>
+          <td style="padding:7px 0; color:#8898aa; font-weight:600;">招待メンバー</td>
+          <td style="padding:7px 0; color:#0a2540; font-weight:800; text-align:right;"><span style="background:#eff6ff; color:#0071e3; padding:2px 8px; border-radius:6px;">{{招待者名}} 様</span></td>
+        </tr>
+      </table>
     </div>
 
-    <p style="font-size:12px; color:#64748b;">当日最高のビジネス体験を提供できるよう、全員で事前準備を進めましょう！</p>
-
-    <div style="text-align: center; margin-top: 20px;">
-      <a href="{{カルテURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認・準備する →</a>
+    <div class="btn-container">
+      <a href="{{カルテURL}}" class="btn">ビジターカルテを開く・準備する →</a>
     </div>
   </div>
-  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
-    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+
+  <div class="footer">
+    REVO Chapter Visitor Host Revolution<br>
+    送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
