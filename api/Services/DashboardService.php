@@ -193,46 +193,6 @@ class DashboardService {
                 $oneMonthFollowupVisitors[] = $uv;
             }
         }
-                if (!isset($weeklyMap[$eDate])) {
-                    $weeklyMap[$eDate] = [
-                        'date' => $eDate,
-                        'applyCount' => 0,
-                        'attendedCount' => 0,
-                        'joinedCount' => 0,
-                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
-                    ];
-                }
-                $weeklyMap[$eDate]['applyCount']++;
-                if ($isAttendedBool) $weeklyMap[$eDate]['attendedCount']++;
-                if ($isJoinedBool) $weeklyMap[$eDate]['joinedCount']++;
-                if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
-                    $weeklyMap[$eDate]['feelCounts'][$feel]++;
-                } else {
-                    $weeklyMap[$eDate]['feelCounts']['none']++;
-                }
-
-                $monthKey = substr($eDate, 0, 7);
-                if (preg_match('/^\d{4}[\/\-]\d{2}$/', $monthKey)) {
-                    if (!isset($monthlyMap[$monthKey])) {
-                        $monthlyMap[$monthKey] = [
-                            'month' => $monthKey,
-                            'applyCount' => 0,
-                            'attendedCount' => 0,
-                            'joinedCount' => 0,
-                            'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
-                        ];
-                    }
-                    $monthlyMap[$monthKey]['applyCount']++;
-                    if ($isAttendedBool) $monthlyMap[$monthKey]['attendedCount']++;
-                    if ($isJoinedBool) $monthlyMap[$monthKey]['joinedCount']++;
-                    if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
-                        $monthlyMap[$monthKey]['feelCounts'][$feel]++;
-                    } else {
-                        $monthlyMap[$monthKey]['feelCounts']['none']++;
-                    }
-                }
-            }
-        }
 
         // 指定期間（startDate〜today）内の全木曜日（定例会開催日）を weeklyMap に事前登録（0名週の欠落防止）
         $todayTs = time();
