@@ -80,7 +80,7 @@ class ActionPlanController extends Controller {
     }
 
     private function create(): void {
-        $visitorId = $this->getParam('visitorId', '');
+        $visitorId = $this->getParam('visitorId', '') ?: $this->getParam('visitor_id', '');
         $actionText = trim($this->getParam('actionText', '') ?: $this->getParam('action_text', ''));
 
         if (!$visitorId) {
@@ -114,7 +114,7 @@ class ActionPlanController extends Controller {
             Response::error('id is required');
         }
 
-        $visitorId = $this->getParam('visitorId', '');
+        $visitorId = $this->getParam('visitorId', '') ?: $this->getParam('visitor_id', '');
         $data = [];
         if ($this->getParam('dueDate') !== null || $this->getParam('due_date') !== null) {
             $data['due_date'] = $this->getParam('dueDate', '') ?: $this->getParam('due_date', '');

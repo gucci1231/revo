@@ -187,10 +187,15 @@
     const actionText = `${actionPrefix} ${memo}`;
 
     const payload = {
+      visitorId: vid,
       visitor_id: vid,
+      dueDate: dueDate,
       due_date: dueDate,
+      assigneeName: assignee,
       assignee_name: assignee,
+      actionType: 'その他',
       action_type: 'その他',
+      actionText: actionText,
       action_text: actionText
     };
 
