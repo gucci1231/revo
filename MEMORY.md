@@ -6,6 +6,10 @@
 - **主データベース**: Xserver 上の SQLite (`api/data/database.sqlite`)
   - WALモード有効（高並行・超高速レスポンス <10ms）。
   - 主要テーブル: `visitors`, `visitors_status`, `hearing_sheets`, `members`, `settings`, `action_plans`, `email_templates`
+  - **自動日次バックアップ & 7日間ローテーション**:
+    - スクリプト: `api/scripts/backup_db.php`（毎日 04:00 cron実行）
+    - 保存先: `api/data/backups/database_YYYY-MM-DD_His.sqlite`（7日経過分は自動削除）
+    - 復元ツール: `api/scripts/restore_db.php`（CLI対話式/引数指定でワンコマンド安全復元）
 - **Google スプレッドシート**: フォーム入力受付・GASエクスポート専用。
 
 ### 2. データ同期方式
