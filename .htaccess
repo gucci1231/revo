@@ -3,9 +3,11 @@
     Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
 </IfModule>
 
-# Block search engine crawlers, AI scrapers, and automated bots
+# Block search engine crawlers, AI scrapers, and automated bots (Exclude API endpoints and GAS sync)
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/api/
+    RewriteCond %{HTTP_USER_AGENT} !Google-Apps-Script [NC]
     RewriteCond %{HTTP_USER_AGENT} (googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|ia_archiver|mj12bot|ahrefsbot|semrushbot|dotbot|petalbot|bytespider|gptbot|chatgpt-user|claudebot|claude-web|perplexitybot|applebot|ccbot|twitterbot|facebookexternalhit|rogerbot|linkedinbot|embedly|slackbot|scrapy|curl|wget|python|urllib|libwww|httpclient|go-http-client|java) [NC]
     RewriteRule .* - [F,L]
 </IfModule>
