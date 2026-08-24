@@ -1,7 +1,7 @@
 <?php
 namespace Api\Repositories;
 
-use Api\Database;
+use Api\Core\Database;
 
 class ReportTemplateRepository {
     private Database $db;
