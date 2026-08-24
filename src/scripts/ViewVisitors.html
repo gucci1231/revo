@@ -153,12 +153,12 @@
 
     dedupedList.forEach(v => {
       const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
-      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
       const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り' || followType === 'フォロー終了');
 
       if (isJoined) {
         counts.joined++;
-      } else if (isClosed || followType === '終了') {
+      } else if (isClosed) {
         counts.closed++;
       } else if (followType === '時期尚早') {
         counts.pending++;
@@ -213,8 +213,8 @@
 
       let matchStatus = true;
       const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
-      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
       const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り' || followType === 'フォロー終了');
 
       if (currentVisitorsStatusFilter === 'follow') {
         matchStatus = (!isJoined && !isClosed && followType === 'フォロー');
@@ -225,7 +225,7 @@
       } else if (currentVisitorsStatusFilter === 'joined') {
         matchStatus = isJoined;
       } else if (currentVisitorsStatusFilter === 'closed') {
-        matchStatus = (isClosed || followType === '終了');
+        matchStatus = isClosed;
       }
 
       return matchSearch && matchDate && matchStatus;

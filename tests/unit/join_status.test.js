@@ -61,4 +61,9 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(visitorRepositoryPhp.includes("COALESCE(s.follow_type, '直近フォロー') as followType"), 'VisitorRepository getVisitsByVisitorIds should include followType');
     assert.ok(visitorRepositoryPhp.includes("'フォロー終了' => 1"), 'VisitorRepository joinedPriority should include フォロー終了');
   });
+
+  it('verifies ViewVisitors correctly filters closed visitors with followType = フォロー終了', () => {
+    const viewVisitorsHtml = fs.readFileSync(path.join(__dirname, '../../src/scripts/ViewVisitors.html'), 'utf8');
+    assert.ok(viewVisitorsHtml.includes("followType === 'フォロー終了'"), 'ViewVisitors should check followType === フォロー終了');
+  });
 });
