@@ -206,11 +206,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .kpi-box { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; text-align: center; }
 .kpi-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #0071e3; }
 .kpi-lbl { font-size: 11px; font-weight: 700; color: #64748b; margin-top: 2px; }
-.mentor-box { background: #eff6ff; border-left: 4px solid #0071e3; padding: 14px 16px; border-radius: 0 12px 12px 0; margin: 16px 0; }
-.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; margin-top: 16px; }
-.table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
-.table th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 11px; color: #475569; }
-.table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+.mentor-box { background: #eff6ff; border-left: 4px solid #0071e3; padding: 16px; border-radius: 0 12px 12px 0; margin: 16px 0; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; margin-top: 16px; text-align: center; }
 </style>
 </head>
 <body>
@@ -220,10 +217,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <div style="font-size:12px; opacity:0.8; margin-top:4px;">次回定例会: {{定例会日付}}</div>
   </div>
   <div class="content" style="padding: 24px;">
+    
     <div class="mentor-box">
-      <div style="font-weight:800; font-size:13px; color:#1e40af; margin-bottom:4px;">💡 ビジホスメンターからのメッセージ</div>
-      <div style="font-size:13px; color:#1e3a8a; line-height:1.6;">
-        {{メンターメッセージ}}
+      <div style="font-weight:800; font-size:13px; color:#1e40af; margin-bottom:6px;">💡 ビジホスメンターからのメッセージ</div>
+      <div style="font-size:13px; color:#1e3a8a; line-height:1.65;">
+        今週も定例会まであと2日となりました！<br>
+        今週のチャプター目標【{{週間目標数}}名】に対し、現在の確定申込は【{{現在申込数}}名】、目標達成まであと<strong>【{{目標差分}}名】</strong>です。<br><br>
+        日曜夜の今こそ、あなたの大切なビジネスパートナーや「力になりたい」と思うあの人に、もう一度声を届ける最高のタイミングです。「火曜の朝、一緒に新しいビジネスの扉を開きませんか？」の一言が、相手の未来もチャプターの目標も大きく動かします。<br>
+        最後まで妥協せず、全員で必ず目標を達成させましょう！🔥
       </div>
     </div>
 
@@ -237,17 +238,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         <div class="kpi-lbl">現在申込数</div>
       </div>
       <div class="kpi-box">
-        <div class="kpi-val" style="color: {{目標差分カラー}};">{{目標差分}}名</div>
-        <div class="kpi-lbl">目標まであと</div>
+        <div class="kpi-val" style="color: {{目標差分カラー}};">あと{{目標差分}}名</div>
+        <div class="kpi-lbl">目標達成まで</div>
       </div>
     </div>
 
-    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0;">👏 招待貢献メンバー</h3>
+    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0; color:#0f172a;">👏 先行招待してくれた貢献メンバー</h3>
     {{招待貢献メンバー一覧HTML}}
 
     <div style="text-align: center; margin-top: 24px;">
-      <a href="{{ダッシュボードURL}}" class="btn">ダッシュボードで進捗を確認する →</a>
+      <a href="{{ダッシュボードURL}}" class="btn">最新の進捗ダッシュボードを開く →</a>
     </div>
+  </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -255,7 +259,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     public function getDefaultWeeklyVisitorStatusLine(): string {
-        return "🔥【目標必達】今週のビジター申込状況 📢\n\n次回定例会（{{定例会日付}}）に向けた現在の申込進捗です。\n\n■ 目標達成状況\n・今週の目標: {{週間目標数}}名\n・現在申込数: {{現在申込数}}名\n・目標まであと: {{目標差分}}名 (達成率 {{達成率}}%)\n\n■ 💡 メンターメッセージ\n{{メンターメッセージ}}\n\n■ 👏 招待貢献メンバー\n{{招待貢献メンバーLINE一覧}}\n\n全員で声を掛け合い、今週も目標を必ず必達させましょう！🔥\n▼ 進捗詳細\n{{ダッシュボードURL}}";
+        return "🔥【目標必達メンター速報】今週のビジター申込進捗 📢\n\n次回定例会（{{定例会日付}}）に向けた現在の申込状況です！\n\n■ 🎯 目標達成状況\n・今週の目標: {{週間目標数}}名\n・現在申込数: {{現在申込数}}名\n・目標まであと: 【{{目標差分}}名】 (達成率 {{達成率}}%)\n\n■ 💡 メンターメッセージ\n日曜夜の今こそ、あなたの大切なビジネスパートナーに「火曜朝にお茶しませんか？」と声を届ける最高のチャンスです！\n妥協せず全員で声を掛け合い、今週も目標を必ず必達させましょう！🔥\n\n■ 👏 先行招待メンバー\n{{招待貢献メンバーLINE一覧}}\n\n▼ 進捗ダッシュボード\n{{ダッシュボードURL}}";
     }
 
     /* =========================================================================
@@ -270,28 +274,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
 .header { background: #0071e3; color: #ffffff; padding: 24px; text-align: center; }
-.v-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-.btn { display: inline-block; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 10px 20px; border-radius: 10px; }
+.btn { display: inline-block; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
 </style>
 </head>
 <body>
 <div class="card">
   <div class="header">
-    <h1 style="margin:0; font-size:20px; font-weight:900;">🤝 今週参加されるビジター様のご紹介</h1>
+    <h1 style="margin:0; font-size:20px; font-weight:900;">🤝 【全員で大歓迎！】今週参加されるビジター様のご紹介</h1>
     <div style="font-size:12px; opacity:0.9; margin-top:4px;">{{定例会日付}} 開催定例会</div>
   </div>
   <div class="content" style="padding: 24px;">
-    <p style="font-size: 13px; color: #334155; line-height: 1.6; margin-top:0;">
-      今週の定例会には <strong>{{参加予定ビジター数}}名</strong> のゲストが参加予定です！<br>
-      事前に専門分野やお困りごとを把握し、チャプター全員で最高のビジネスチャンスをお届けしましょう。
+    <p style="font-size: 13px; color: #334155; line-height: 1.65; margin-top:0;">
+      今週の定例会には <strong>計 {{参加予定ビジター数}}名</strong> の素晴らしいゲストが参加されます！<br>
+      ビジター様にとって定例会は一度きりのファーストインプレッションです。事前に専門分野やお困りごとを把握し、チャプター全員で前のめりに歓迎と最高のビジネスチャンスをお届けしましょう！✨
     </p>
 
-    <h3 style="font-size:14px; font-weight:800; margin:16px 0 10px 0;">参加ビジター一覧</h3>
+    <h3 style="font-size:14px; font-weight:800; margin:20px 0 10px 0; color:#0f172a;">参加ビジター一覧 ＆ 見どころ</h3>
     {{参加予定ビジターカード一覧HTML}}
 
     <div style="text-align:center; margin-top:24px;">
-      <a href="{{ダッシュボードURL}}" class="btn">カルテ＆事前情報を見る →</a>
+      <a href="{{ダッシュボードURL}}" class="btn">カルテ＆事前情報を確認する →</a>
     </div>
+  </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -299,7 +305,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     public function getDefaultTuesdayVisitorIntroLine(): string {
-        return "🤝【全員で歓迎！】今週参加されるビジター様のご紹介 ✨\n\n{{定例会日付}}の定例会には、計 {{参加予定ビジター数}}名 のビジター様がご参加予定です！\n\n■ 参加ビジター一覧\n{{参加予定ビジターLINE一覧}}\n\n事前にチェックし、積極的な名刺交換とマッチングで最高の体験を提供しましょう！🤝\n▼ ビジター詳細カルテ\n{{ダッシュボードURL}}";
+        return "🤝【全員で大歓迎！】今週参加されるビジター様のご紹介 ✨\n\n{{定例会日付}}の定例会には、計 {{参加予定ビジター数}}名 のビジター様がご参加予定です！\n\n■ 参加ビジター一覧 ＆ 専門分野\n{{参加予定ビジターLINE一覧}}\n\n事前にチェックし、積極的な名刺交換とマッチングで最高の体験を提供しましょう！🤝\n▼ ビジター詳細カルテ\n{{ダッシュボードURL}}";
     }
 
     /* =========================================================================
@@ -322,9 +328,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div class="card">
   <div class="header">
     <h1 style="margin:0; font-size:20px; font-weight:900;">📊 週間ビジホス総合レポート</h1>
+    <div style="font-size:12px; opacity:0.8; margin-top:4px;">ビジター申込集計・フォロー状況・アクション進捗</div>
   </div>
   <div class="content" style="padding: 24px;">
-    <p style="font-size: 13px; color: #475569; margin-top:0;">今週のビジター申込集計、フォロー進捗、アクション完了状況のまとめです。</p>
+    <p style="font-size: 13px; color: #475569; margin-top:0; line-height:1.6;">
+      今週のビジター活動サマリーをお届けします。フォロー中のゲストを絶対に見込み落ちさせないよう、スピード感を持ってアクションを完了させましょう！
+    </p>
     
     <div class="kpi-row">
       <div class="kpi-item">
@@ -341,12 +350,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       </div>
     </div>
 
-    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0;">フォロー中の重要ビジター</h3>
+    <h3 style="font-size:14px; font-weight:800; margin:20px 0 8px 0; color:#0f172a;">🔥 フォロー中の重要ビジター</h3>
     {{フォロー中ビジターテーブルHTML}}
 
     <div style="text-align:center; margin-top:20px;">
       <a href="{{ダッシュボードURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">全体ダッシュボードを開く →</a>
     </div>
+  </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -354,7 +366,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     public function getDefaultWeeklyFullReportLine(): string {
-        return "📊【ビジホス週報】週間活動総合レポート 📋\n\n今週のビジター活動とフォロー進捗のまとめです。\n\n■ 今週の成果サマリー\n・今週のビジター申込: {{週間申込数}}名\n・完了アクション数: {{完了アクション数}}件\n・現在フォロー中: {{フォロー中件数}}名\n・要対応To-Do残: {{残ToDo数}}件\n\n■ フォロー状況・重要トピックス\n{{フォロー中重要ビジターLINE一覧}}\n\n次週に向けてアクションのスピード完了をお願いします！🔥\n▼ ダッシュボード\n{{ダッシュボードURL}}";
+        return "📊【ビジホス週報】週間活動総合レポート 📋\n\n今週のビジター活動とフォロー進捗のまとめです。\n\n■ 成果サマリー\n・今週のビジター申込: {{週間申込数}}名\n・完了アクション数: {{完了アクション数}}件\n・現在フォロー中: {{フォロー中件数}}名\n・要対応To-Do残: 【{{残ToDo数}}件】\n\n■ 🔥 フォロー状況・重要トピックス\n{{フォロー中重要ビジターLINE一覧}}\n\n次週に向けてアクションのスピード完了をお願いします！🔥\n▼ ダッシュボード\n{{ダッシュボードURL}}";
     }
 
     /* =========================================================================
@@ -374,19 +386,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <body>
 <div class="card">
   <div class="header">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">🎉 ナイスアクション！フォロー完了速報</h1>
+    <h1 style="margin:0; font-size:18px; font-weight:900;">🎉 ナイスアクション！フォロー完了・称賛速報</h1>
   </div>
   <div class="content" style="padding: 24px;">
-    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">素晴らしいスピード対応！以下のフォローが完了しました。</p>
+    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">
+      素晴らしいスピード対応とチャプター貢献です！👏<br>
+      以下のフォローアクションが完了しました。
+    </p>
     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0;">
-      <div style="font-size: 14px; font-weight: bold; color: #166534;">👏 担当者: {{担当者名}} 様</div>
-      <div style="font-size: 13px; color: #15803d; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}})</div>
+      <div style="font-size: 14px; font-weight: bold; color: #166534;">👏 担当メンバー: {{担当者名}} 様</div>
+      <div style="font-size: 13px; color: #15803d; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
       <div style="font-size: 13px; color: #15803d; margin-top: 4px;">完了内容: {{アクション内容}}</div>
       <div style="font-size: 12px; color: #4b5563; margin-top: 8px; border-top: 1px dashed #86efac; padding-top: 8px;">報告コメント: {{報告内容}}</div>
     </div>
+    <p style="font-size:12px; color:#64748b;">この迅速なフォローが、次なる入会決定とチャプターのリファーラルの輪を大きく広げます！</p>
     <div style="text-align: center; margin-top: 20px;">
       <a href="{{カルテURL}}" style="background:#0f172a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
     </div>
+  </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -394,7 +413,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     public function getDefaultActionCompletedLine(): string {
-        return "🎉【ナイスアクション！】フォロー完了・称賛速報 ✨\n\n素晴らしいスピード対応です！👏\n\n・担当者: {{担当者名}} 様\n・ビジター: {{ビジター名}} 様 (招待: {{招待者名}})\n・完了内容: {{アクション内容}}\n・報告: {{報告内容}}\n\n積極的なフォローをチャプター全員で称賛しましょう！🙌\n▼ カルテ詳細\n{{カルテURL}}";
+        return "🎉【ナイスアクション！】フォロー完了・称賛速報 ✨\n\n素晴らしいスピード対応です！👏\n\n・担当メンバー: {{担当者名}} 様\n・ビジター: {{ビジター名}} 様 (招待: {{招待者名}} 様)\n・完了内容: {{アクション内容}}\n・報告コメント: {{報告内容}}\n\n積極的なフォローと貢献をチャプター全員で称賛しましょう！🙌\n▼ カルテ詳細\n{{カルテURL}}";
     }
 
     /* =========================================================================
@@ -409,9 +428,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
 .header { background: #dc2626; color: #ffffff; padding: 20px; text-align: center; }
-.table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
-.table th { background: #f1f5f9; padding: 8px 10px; text-align: left; font-size: 11px; color: #475569; }
-.table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 </style>
 </head>
 <body>
@@ -422,8 +438,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>
   <div class="content" style="padding: 24px;">
     <p style="font-size: 13px; color: #334155; line-height: 1.6; margin-top:0;">
-      本日が期日となっているビジターフォローアクションです。<br>
-      ビジターとの信頼関係を築くため、本日中のご対応・完了報告をお願いいたします。
+      ビジターの熱量は定例会直後が最も高いです！<br>
+      本日が期日となっているフォローアクションです。信頼関係を深めるため、本日中のご対応・完了報告をお願いいたします。🔥
     </p>
 
     {{本日期限タスクテーブルHTML}}
@@ -432,13 +448,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <a href="{{アクション管理URL}}" style="background:#dc2626; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
     </div>
   </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
+  </div>
 </div>
 </body>
 </html>';
     }
 
     public function getDefaultTodayDueTasksLine(): string {
-        return "⏰【本日期限】ビジターフォロータスク一覧 📋\n\n本日 ({{本日日付}}) が期日となっているアクションです。\n\n■ 本日期限のタスク ({{本日期限件数}}件)\n{{本日期限タスクLINE一覧}}\n\nフォロー漏れゼロを目指し、完了報告をお願いいたします！🔥\n▼ アクション報告はこちら\n{{アクション管理URL}}";
+        return "⏰【本日期限】ビジターフォロータスク一覧 📋\n\n本日 ({{本日日付}}) が期日となっているアクションです。\n\n■ 本日期限のタスク ({{本日期限件数}}件)\n{{本日期限タスクLINE一覧}}\n\nフォロー漏れゼロを目指し、スピード対応と完了報告をお願いいたします！🔥\n▼ アクション報告はこちら\n{{アクション管理URL}}";
     }
 
     /* =========================================================================
@@ -458,10 +477,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <body>
 <div class="card">
   <div class="header">
-    <h1 style="margin:0; font-size:18px; font-weight:900;">🚀 新規ビジター申込速報！</h1>
+    <h1 style="margin:0; font-size:18px; font-weight:900;">🚀 新規ビジター申込速報！ナイス招待！</h1>
   </div>
   <div class="content" style="padding: 24px;">
-    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">{{招待者名}} 様より新しいビジター申込がありました！👏</p>
+    <p style="font-size: 14px; font-weight: bold; color: #0f172a; margin-top:0;">
+      {{招待者名}} 様の積極的なお声がけにより、新しいビジター申込がありました！👏
+    </p>
     
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
       <div style="font-size: 15px; font-weight: 900; color: #0f172a;">{{ビジター名}} 様</div>
@@ -471,9 +492,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       <div style="font-size: 13px; color: #64748b; margin-top: 4px;">招待メンバー: <strong>{{招待者名}} 様</strong></div>
     </div>
 
+    <p style="font-size:12px; color:#64748b;">当日最高のビジネス体験を提供できるよう、全員で事前準備を進めましょう！</p>
+
     <div style="text-align: center; margin-top: 20px;">
       <a href="{{カルテURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認・準備する →</a>
     </div>
+  </div>
+  <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
+    REvo Chapter Visitor Host Team | 送信元: info@k-d-o.biz
   </div>
 </div>
 </body>
@@ -484,3 +510,4 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         return "🚀【新規ビジター申込速報！】🎉\n\n{{招待者名}} 様より新しいビジター申込がありました！ナイス招待です！👏\n\n・ビジター: {{ビジター名}} 様\n・会社/専門: {{ビジター会社}} / {{ビジターカテゴリー}}\n・参加予定日: {{参加予定日}}\n・招待メンバー: {{招待者名}} 様\n\n当日最高の体験を提供できるよう、全員で事前準備を進めましょう！✨\n▼ ビジターカルテ\n{{カルテURL}}";
     }
 }
+
