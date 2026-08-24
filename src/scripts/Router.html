@@ -5,6 +5,21 @@
   function updateUrlHash(hashStr, stateObj = {}) {
     if (!hashStr) return;
     const cleanHash = String(hashStr).replace(/^#+/, '');
+    
+    // もし現在のpathnameが /member/... 等になっている場合、ルートパスに戻す
+    const currentPath = window.location.pathname || '';
+    if (currentPath.includes('/member/') || (currentPath !== '/' && currentPath !== '/index.html')) {
+      try {
+        if (window.history && window.history.pushState) {
+          isProgrammaticHashChange = true;
+          const targetUrl = (cleanHash === 'dashboard' || !cleanHash) ? '/' : ('/#' + cleanHash);
+          window.history.pushState(stateObj, '', targetUrl);
+          setTimeout(() => { isProgrammaticHashChange = false; }, 100);
+          return;
+        }
+      } catch (e) {}
+    }
+
     if (window.location.hash !== '#' + cleanHash) {
       isProgrammaticHashChange = true;
       window.location.hash = '#' + cleanHash;
