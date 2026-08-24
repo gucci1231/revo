@@ -6567,7 +6567,7 @@ select.form-input, select.form-select {
             <div class="vd-status-select-wrap">
               <span class="text-[10px] font-bold text-slate-400 block mb-0.5">フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
-                <option value="直近フォロー">直近フォロー</option>
+                <option value="フォロー">フォロー</option>
                 <option value="時期尚早">時期尚早</option>
                 <option value="関係維持">関係維持</option>
                 <option value="終了">終了</option>
@@ -8168,20 +8168,21 @@ const ApiService = {
   const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', 'メンバーシップ審査', '入会済', 'フォロー終了'];
 
   const FOLLOW_TYPE_CONFIG = {
-    '直近フォロー': { value: '直近フォロー', label: '直近フォロー', shortLabel: '直近', cls: 'follow-type-active', color: '#0284c7' },
+    'フォロー': { value: 'フォロー', label: 'フォロー', shortLabel: 'フォロー', cls: 'follow-type-active', color: '#0284c7' },
     '時期尚早': { value: '時期尚早', label: '時期尚早', shortLabel: '時期尚早', cls: 'follow-type-pending', color: '#6366f1' },
     '関係維持': { value: '関係維持', label: '関係維持', shortLabel: '関係維持', cls: 'follow-type-alliance', color: '#059669' },
     '終了': { value: '終了', label: '終了', shortLabel: '終了', cls: 'follow-type-closed', color: '#64748b' }
   };
-  const FOLLOW_TYPE_ORDER = ['直近フォロー', '時期尚早', '関係維持', '終了'];
+  const FOLLOW_TYPE_ORDER = ['フォロー', '時期尚早', '関係維持', '終了'];
 
   function normalizeFollowType(raw) {
-    if (!raw) return '直近フォロー';
+    if (!raw) return 'フォロー';
     if (FOLLOW_TYPE_CONFIG[raw]) return raw;
+    if (raw === '直近フォロー' || raw === '直近' || raw === 'フォロー') return 'フォロー';
     if (raw === '保留' || raw === '保留（時期尚早）' || raw.includes('時期尚早')) return '時期尚早';
     if (raw === 'アライアンス' || raw === '繋がり維持' || raw === '定期コンタクト' || raw.includes('関係維持')) return '関係維持';
     if (raw === 'クローズ' || raw === '完了' || raw === 'フォロー終了' || raw === '終了') return '終了';
-    return '直近フォロー';
+    return 'フォロー';
   }
 
   function getFollowTypeInfo(raw) {
@@ -11286,8 +11287,8 @@ window.CelebrationEffect = (function() {
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
-      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || '直近フォロー');
-      const isFollowActive = (followType === '直近フォロー');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
+      const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
 
       if (isJoinedBool || isClosed || !isFollowActive) return false;
 

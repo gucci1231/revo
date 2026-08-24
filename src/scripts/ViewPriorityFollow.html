@@ -116,8 +116,8 @@
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
-      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || '直近フォロー');
-      const isFollowActive = (followType === '直近フォロー');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
+      const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
 
       if (isJoinedBool || isClosed || !isFollowActive) return false;
 

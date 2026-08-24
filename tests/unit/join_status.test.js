@@ -15,7 +15,7 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(utilsHtml.includes('メンバーシップ審査'), 'JOIN_STATUS_CONFIG should contain メンバーシップ審査');
     assert.ok(utilsHtml.includes('入金待ち'), 'JOIN_STATUS_CONFIG should contain 入金待ち');
     assert.ok(utilsHtml.includes('フォロー終了'), 'JOIN_STATUS_CONFIG should contain フォロー終了');
-    assert.ok(utilsHtml.includes('直近フォロー'), 'FOLLOW_TYPE_CONFIG should contain 直近フォロー');
+    assert.ok(utilsHtml.includes('フォロー'), 'FOLLOW_TYPE_CONFIG should contain フォロー');
     assert.ok(utilsHtml.includes('時期尚早'), 'FOLLOW_TYPE_CONFIG should contain 時期尚早');
     assert.ok(utilsHtml.includes('関係維持'), 'FOLLOW_TYPE_CONFIG should contain 関係維持');
     assert.ok(utilsHtml.includes('state-applying'), 'Utils should support state-applying class');
@@ -44,7 +44,7 @@ describe('Join Status Options & UI Unit Tests', () => {
     assert.ok(indexHtml.includes('<option value="メンバーシップ審査"'));
     assert.ok(indexHtml.includes('<option value="入金待ち"'));
     assert.ok(indexHtml.includes('<option value="フォロー終了"'));
-    assert.ok(indexHtml.includes('<option value="直近フォロー"'));
+    assert.ok(indexHtml.includes('<option value="フォロー"'));
     assert.ok(indexHtml.includes('<option value="時期尚早"'));
     assert.ok(indexHtml.includes('<option value="関係維持"'));
   });
