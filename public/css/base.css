@@ -147,11 +147,11 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 210px;
+  width: 260px;
   height: 100vh;
   background: #ffffff;
   z-index: 9995;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
   transform: translateX(-100%);
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
@@ -164,8 +164,8 @@ body {
 }
 
 .drawer-header {
-  height: 48px;
-  padding: 0 12px;
+  height: 64px;
+  padding: 0 16px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -175,17 +175,16 @@ body {
 }
 .drawer-brand {
   font-weight: 800;
-  font-size: 13.5px;
+  font-size: 15px;
   color: #0f172a;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   white-space: nowrap;
   overflow: hidden;
-  letter-spacing: -0.01em;
 }
 .drawer-brand i {
-  font-size: 16px;
+  font-size: 20px;
   flex-shrink: 0;
 }
 .drawer-brand-text {
@@ -196,11 +195,11 @@ body {
 .btn-drawer-close {
   background: transparent;
   border: none;
-  font-size: 15px;
+  font-size: 18px;
   color: #64748b;
   cursor: pointer;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,13 +216,12 @@ body {
   border: 1px solid var(--border-color);
   color: #64748b;
   cursor: pointer;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   display: none;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  font-size: 11px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -236,41 +234,41 @@ body {
 }
 
 .drawer-nav-list {
-  padding: 8px 6px;
+  padding: 12px 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .drawer-action-wrap {
-  padding: 0 2px 8px 2px;
+  padding: 0 2px 10px 2px;
   display: flex;
   justify-content: center;
 }
 .drawer-action-btn {
   width: 100%;
   justify-content: center;
-  padding: 7px 10px;
-  font-size: 12.5px;
+  padding: 10px 14px;
+  font-size: 13.5px;
   white-space: nowrap;
   overflow: hidden;
-  border-radius: 7px;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
 }
 
 .drawer-nav-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 7px;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 8px;
   border: none;
   background: transparent;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -281,8 +279,8 @@ body {
   overflow: hidden;
 }
 .drawer-nav-item i {
-  font-size: 13.5px;
-  width: 18px;
+  font-size: 16px;
+  width: 20px;
   text-align: center;
   flex-shrink: 0;
   color: #64748b;
@@ -305,17 +303,17 @@ body {
 }
 
 .drawer-footer {
-  padding: 6px 12px;
+  padding: 12px 16px;
   border-top: 1px solid var(--border-color);
   background: #f8fafc;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 36px;
+  min-height: 48px;
 }
 .drawer-footer-text {
-  font-size: 10px;
+  font-size: 11px;
   color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
@@ -325,28 +323,28 @@ body {
 /* --- PC Responsive & Collapsed Mode --- */
 @media (min-width: 1024px) {
   body {
-    padding-left: 226px;
+    padding-left: 276px;
     transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .left-drawer {
     transform: translateX(0) !important;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
     border-right: 1px solid var(--border-color);
   }
   .drawer-backdrop, .btn-drawer-close { display: none !important; }
   .btn-sidebar-collapse { display: inline-flex; }
   .btn-drawer-trigger { display: inline-flex; }
-  .container { max-width: 1400px; margin: 0 auto; }
+  .container { max-width: 1380px; margin: 0 auto; }
 
   /* Collapsed Mode (Icons Only) */
   body.sidebar-collapsed {
-    padding-left: 72px;
+    padding-left: 90px;
   }
   body.sidebar-collapsed .left-drawer {
-    width: 58px;
+    width: 74px;
   }
   body.sidebar-collapsed .drawer-header {
-    padding: 0 8px;
+    padding: 0 10px;
     justify-content: center;
     position: relative;
   }
@@ -359,25 +357,25 @@ body {
   }
   body.sidebar-collapsed .btn-sidebar-collapse {
     position: absolute;
-    right: 4px;
+    right: 6px;
     top: 50%;
     transform: translateY(-50%);
-    width: 22px;
-    height: 22px;
-    font-size: 10px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
   }
   body.sidebar-collapsed .btn-sidebar-collapse i {
     transform: rotate(180deg);
   }
   body.sidebar-collapsed .drawer-action-wrap {
-    padding: 0 0 8px 0;
+    padding: 0 0 10px 0;
   }
   body.sidebar-collapsed .drawer-action-btn {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 10px;
+    font-size: 16px;
   }
   body.sidebar-collapsed .drawer-action-btn .nav-label {
     display: none;
@@ -386,24 +384,24 @@ body {
     margin: 0 !important;
   }
   body.sidebar-collapsed .drawer-nav-list {
-    padding: 8px 6px;
-    gap: 4px;
+    padding: 12px 8px;
+    gap: 6px;
   }
   body.sidebar-collapsed .drawer-nav-item {
-    padding: 8px 0;
+    padding: 11px 0;
     justify-content: center;
-    border-radius: 7px;
+    border-radius: 8px;
   }
   body.sidebar-collapsed .drawer-nav-item .nav-label {
     display: none;
   }
   body.sidebar-collapsed .drawer-nav-item i {
-    font-size: 15px;
+    font-size: 18px;
     width: auto;
     margin: 0;
   }
   body.sidebar-collapsed .drawer-footer {
-    padding: 6px;
+    padding: 8px;
     justify-content: center;
   }
   body.sidebar-collapsed .drawer-footer-text {
@@ -415,12 +413,12 @@ body {
   body.sidebar-collapsed .drawer-action-btn:hover::after {
     content: attr(data-tooltip);
     position: fixed;
-    left: 66px;
+    left: 82px;
     background: #0f172a;
     color: #ffffff;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
-    padding: 5px 10px;
+    padding: 6px 12px;
     border-radius: 6px;
     white-space: nowrap;
     z-index: 10000;
@@ -441,7 +439,7 @@ body {
     padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .left-drawer {
-    width: min(260px, 80vw);
+    width: min(320px, 86vw);
     transform: translateX(-100%);
   }
   .left-drawer.open {
