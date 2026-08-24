@@ -390,7 +390,7 @@
             ${v.profession ? `<span class="text-slate-400">/</span><span class="truncate">${escapeHtml(v.profession)}</span>` : ''}
           </div>
 
-          ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(v.inviter)}</span></div>` : ''}
+          ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(resolveMemberName(v.inviter))}</span></div>` : ''}
 
           ${actionAreaHtml}
 
@@ -693,7 +693,7 @@
           </div>
 
           <div class="pf-visitor-item-meta">
-            ${v.inviter ? `<span><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: ${escapeHtml(v.inviter)}</span>` : ''}
+            ${v.inviter ? `<span><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: ${escapeHtml(resolveMemberName(v.inviter))}</span>` : ''}
           </div>
 
           ${lastActionSummaryHtml}
@@ -814,7 +814,7 @@
                           <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date ? formatShortDate(p.due_date) : '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                          <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(p.assignee_name || '担当未定')}
+                          <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(resolveMemberName(p.assignee_name) || '担当未定')}
                         </span>
                       </div>
                       <div class="flex items-center gap-1.5">
@@ -857,6 +857,9 @@
           `;
         }
 
+        const resolvedInviter = resolveMemberName(v.inviter);
+        const resolvedOrientUser = resolveMemberName(h.orientUser || v.orientUser);
+
         container.innerHTML = `
           <div class="section-card p-5 sm:p-6 space-y-6 shadow-sm border border-slate-200">
             
@@ -895,8 +898,8 @@
                 </div>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
                   <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(formatShortDate(v.eventDate) || '-')}</b></span>
-                  <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></span>
-                  ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
+                  <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(resolvedInviter || '-')}</b></span>
+                  ${resolvedOrientUser ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(resolvedOrientUser)}</b></span>` : ''}
                 </div>
               </div>
             </div>

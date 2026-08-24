@@ -362,7 +362,8 @@
         document.getElementById('vd-furigana').innerText = v.furigana || '';
         document.getElementById('vd-company').innerText = v.company || '-';
         document.getElementById('vd-profession').innerText = v.profession || '-';
-        document.getElementById('vd-inviter').innerText = v.inviter || '-';
+        const resolvedInviter = resolveMemberName(v.inviter);
+        document.getElementById('vd-inviter').innerText = resolvedInviter || '-';
         document.getElementById('vd-event-date').innerText = formatShortDate(v.eventDate) || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
         const count = v.visitCount || currentVdVisits.length || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
@@ -586,7 +587,8 @@
     };
 
     // 右カラムヒアリング
-    document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
+    const resolvedOrientUser = h.orientUser ? resolveMemberName(h.orientUser) : '未設定';
+    document.getElementById('vd-orient-user').innerText = resolvedOrientUser;
     setHearingField('vd-q1', h.q1);
     setHearingField('vd-q2', h.q2);
     setHearingField('vd-q3', h.q3);
@@ -598,7 +600,7 @@
     setHearingField('vd-follow-memo', h.followMemo);
 
     // フォールバックヒアリング
-    setHearingField('vd-ap-fb-orient-user', h.orientUser || '未設定');
+    setHearingField('vd-ap-fb-orient-user', resolvedOrientUser);
     setHearingField('vd-ap-fb-q1', h.q1);
     setHearingField('vd-ap-fb-q2', h.q2);
     setHearingField('vd-ap-fb-q3', h.q3);
@@ -696,8 +698,8 @@
     const quickContainer = document.getElementById('vd-ap-quick-assignees');
     if (quickContainer) {
       quickContainer.innerHTML = '';
-      const inviter = visitor.inviter || '';
-      const orientUser = hearing.orientUser || '';
+      const inviter = resolveMemberName(visitor.inviter || '');
+      const orientUser = resolveMemberName(hearing.orientUser || '');
 
       if (inviter && inviter !== '-') {
         const btn = document.createElement('button');

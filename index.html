@@ -8279,6 +8279,114 @@ const ApiService = {
     return `<span class="badge-action-type"><i class="fa-solid ${icon}"></i> ${escapeHtml(t)}</span>`;
   }
 
+  /* --- 👥 Member Name Resolver & Master Linking --- */
+  function getFlatMemberList() {
+    if (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers) && cachedFlatMembers.length > 0) {
+      return cachedFlatMembers;
+    }
+    if (typeof cachedMemberCategories !== 'undefined' && Array.isArray(cachedMemberCategories) && cachedMemberCategories.length > 0) {
+      const list = [];
+      cachedMemberCategories.forEach(cat => {
+        if (cat.members && Array.isArray(cat.members)) {
+          cat.members.forEach(m => list.push(m));
+        }
+      });
+      if (list.length > 0) return list;
+    }
+    if (typeof REVO_MEMBERS !== 'undefined' && Array.isArray(REVO_MEMBERS)) {
+      const list = [];
+      REVO_MEMBERS.forEach(cat => {
+        if (cat.members && Array.isArray(cat.members)) {
+          cat.members.forEach(m => list.push(m));
+        }
+      });
+      if (list.length > 0) return list;
+    }
+    return [];
+  }
+  window.getFlatMemberList = getFlatMemberList;
+
+  function findMemberByName(rawName, membersList = null) {
+    if (!rawName) return null;
+    const members = (membersList && Array.isArray(membersList) && membersList.length > 0) ? membersList : getFlatMemberList();
+    if (!members || members.length === 0) return null;
+
+    let cleaned = String(rawName).trim();
+    // 敬称（さん・様・さま・氏・君・くん・先生・社長・代表など）を除去
+    cleaned = cleaned.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim();
+    if (!cleaned) return null;
+
+    const cleanKey = cleaned.replace(/[\s\u3000]+/g, '').toLowerCase();
+
+    // 1. 完全一致 (スペース無視)
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const mKey = mName.replace(/[\s\u3000]+/g, '').toLowerCase();
+      if (cleanKey === mKey) return m;
+    }
+
+    // 2. 姓一致 (苗字が一致し、該当者が1名の場合)
+    const lastNameMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const parts = mName.split(/[\s\u3000]+/);
+      const lastName = (parts[0] || '').toLowerCase();
+      if (lastName && cleanKey === lastName) {
+        lastNameMatches.push(m);
+      }
+    }
+    if (lastNameMatches.length === 1) {
+      return lastNameMatches[0];
+    }
+
+    // 3. 名一致 (名前が一致し、該当者が1名の場合)
+    const firstNameMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const parts = mName.split(/[\s\u3000]+/);
+      if (parts.length > 1) {
+        const firstName = parts.slice(1).join('').toLowerCase();
+        if (firstName && cleanKey === firstName) {
+          firstNameMatches.push(m);
+        }
+      }
+    }
+    if (firstNameMatches.length === 1) {
+      return firstNameMatches[0];
+    }
+
+    // 4. 部分一致 / 前方一致 (該当者が1名の場合)
+    const partialMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const mKey = mName.replace(/[\s\u3000]+/g, '').toLowerCase();
+      if (mKey.includes(cleanKey) || cleanKey.includes(mKey)) {
+        partialMatches.push(m);
+      }
+    }
+    if (partialMatches.length === 1) {
+      return partialMatches[0];
+    }
+
+    return null;
+  }
+  window.findMemberByName = findMemberByName;
+
+  function resolveMemberName(rawName, membersList = null) {
+    if (!rawName) return '';
+    const rawStr = String(rawName).trim();
+    if (!rawStr || rawStr === '-') return rawStr;
+
+    const found = findMemberByName(rawStr, membersList);
+    if (found && found.name) {
+      return found.name;
+    }
+
+    // 名簿に見つからない外部紹介者等の場合は敬称のみトリムして返す
+    return rawStr.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim() || rawStr;
+  }
+  window.resolveMemberName = resolveMemberName;
+
   function changeVisitorStatus(id, field, value) {
     const fieldLabels = {
       'isAttended': '出欠',
@@ -10524,7 +10632,7 @@ window.CelebrationEffect = (function() {
           ${scheduleBadgeHtml}
           <div class="flex items-center gap-1 text-[11px] text-slate-500 font-semibold mt-0.5 pl-0.5">
             <i class="fa-solid fa-user text-[10px] text-slate-400"></i>
-            <span>${escapeHtml(p.assignee_name || '担当未設定')}</span>
+            <span>${escapeHtml(resolveMemberName(p.assignee_name) || '担当未設定')}</span>
           </div>
         </div>
       `;
@@ -10632,7 +10740,7 @@ window.CelebrationEffect = (function() {
             <div class="dash-ap-card-badges-left flex-wrap">
               ${renderActionTypeBadgeHtml(p.action_type)}
               ${scheduleBadgeHtml}
-              <span class="vd-ap-badge-user" style="font-size:10px;"><i class="fa-regular fa-user"></i> ${escapeHtml(p.assignee_name || '担当未定')}</span>
+              <span class="vd-ap-badge-user" style="font-size:10px;"><i class="fa-regular fa-user"></i> ${escapeHtml(resolveMemberName(p.assignee_name) || '担当未定')}</span>
             </div>
             <div class="dash-ap-card-tools-right" onclick="event.stopPropagation()">
               <button type="button" class="btn-action-secondary vd-quick-chip" style="font-size:11px; padding:3px 8px;" onclick="shareActionPlan('${p.id}', '${p.visitor_id}', event)" title="共有URLをコピー">
@@ -10889,10 +10997,10 @@ window.CelebrationEffect = (function() {
             ${r.company ? `<div class="truncate" style="font-size:10.5px; color:#64748b; margin-top:2px;" title="${escapeHtml(r.company)}">${escapeHtml(r.company)}</div>` : ''}
           </td>
           <td style="max-width: 85px; padding: 8px 6px; vertical-align: top;">
-            <div class="truncate" style="font-weight: 700; color: #334155; font-size: 11.5px; line-height: 1.3;" title="${escapeHtml(r.inviter || '-')}">
-              ${escapeHtml(r.inviter || '-')}
+            <div class="truncate" style="font-weight: 700; color: #334155; font-size: 11.5px; line-height: 1.3;" title="${escapeHtml(resolveMemberName(r.inviter) || '-')}">
+              ${escapeHtml(resolveMemberName(r.inviter) || '-')}
             </div>
-            ${r.orientUser ? `<div class="truncate" style="font-size:10px; color:#64748b; margin-top:2px;" title="担当: ${escapeHtml(r.orientUser)}">担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+            ${r.orientUser ? `<div class="truncate" style="font-size:10px; color:#64748b; margin-top:2px;" title="担当: ${escapeHtml(resolveMemberName(r.orientUser))}">担当: ${escapeHtml(resolveMemberName(r.orientUser))}</div>` : ''}
           </td>
           <td style="white-space: normal !important; word-break: break-word; max-width: none !important; line-height: 1.4; padding: 8px 10px; vertical-align: top;">
             ${renderCurrentStatusColumnHtml(r)}
@@ -10924,6 +11032,9 @@ window.CelebrationEffect = (function() {
         } else if (stage === 'OVERDUE') {
           stageBadgeHtml = '<span class="inline-flex items-center text-[10.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">超過</span>';
         }
+
+        const resolvedInviter = resolveMemberName(r.inviter);
+        const resolvedOrientUser = resolveMemberName(r.orientUser);
 
         card.innerHTML = `
           <div class="dash-card-main-row">
@@ -10959,11 +11070,11 @@ window.CelebrationEffect = (function() {
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-slate-100">
             <div class="dash-card-meta-tags">
               <span class="dash-card-meta-tag">
-                <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(r.inviter || '-')}</strong>
+                <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(resolvedInviter || '-')}</strong>
               </span>
-              ${r.orientUser ? `
+              ${resolvedOrientUser ? `
                 <span class="dash-card-meta-tag ml-2">
-                  <i class="fa-solid fa-user-check text-indigo-500"></i> 担当: <strong class="text-slate-800">${escapeHtml(r.orientUser)}</strong>
+                  <i class="fa-solid fa-user-check text-indigo-500"></i> 担当: <strong class="text-slate-800">${escapeHtml(resolvedOrientUser)}</strong>
                 </span>
               ` : ''}
             </div>
@@ -12085,7 +12196,7 @@ window.CelebrationEffect = (function() {
             ${v.profession ? `<span class="text-slate-400">/</span><span class="truncate">${escapeHtml(v.profession)}</span>` : ''}
           </div>
 
-          ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(v.inviter)}</span></div>` : ''}
+          ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(resolveMemberName(v.inviter))}</span></div>` : ''}
 
           ${actionAreaHtml}
 
@@ -12388,7 +12499,7 @@ window.CelebrationEffect = (function() {
           </div>
 
           <div class="pf-visitor-item-meta">
-            ${v.inviter ? `<span><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: ${escapeHtml(v.inviter)}</span>` : ''}
+            ${v.inviter ? `<span><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: ${escapeHtml(resolveMemberName(v.inviter))}</span>` : ''}
           </div>
 
           ${lastActionSummaryHtml}
@@ -12509,7 +12620,7 @@ window.CelebrationEffect = (function() {
                           <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>${escapeHtml(p.due_date ? formatShortDate(p.due_date) : '期日未定')} ${isOverdue ? '(期限超過)' : ''}
                         </span>
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
-                          <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(p.assignee_name || '担当未定')}
+                          <i class="fa-regular fa-user mr-1 text-slate-500"></i>${escapeHtml(resolveMemberName(p.assignee_name) || '担当未定')}
                         </span>
                       </div>
                       <div class="flex items-center gap-1.5">
@@ -12552,6 +12663,9 @@ window.CelebrationEffect = (function() {
           `;
         }
 
+        const resolvedInviter = resolveMemberName(v.inviter);
+        const resolvedOrientUser = resolveMemberName(h.orientUser || v.orientUser);
+
         container.innerHTML = `
           <div class="section-card p-5 sm:p-6 space-y-6 shadow-sm border border-slate-200">
             
@@ -12590,8 +12704,8 @@ window.CelebrationEffect = (function() {
                 </div>
                 <div class="flex items-center gap-4 text-xs text-slate-500 mt-2 flex-wrap">
                   <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>参加日: <b class="text-slate-800">${escapeHtml(formatShortDate(v.eventDate) || '-')}</b></span>
-                  <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></span>
-                  ${(h.orientUser || v.orientUser) ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(h.orientUser || v.orientUser)}</b></span>` : ''}
+                  <span><i class="fa-solid fa-user-plus text-slate-400 mr-1"></i>紹介: <b class="text-slate-800">${escapeHtml(resolvedInviter || '-')}</b></span>
+                  ${resolvedOrientUser ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: <b class="text-slate-800">${escapeHtml(resolvedOrientUser)}</b></span>` : ''}
                 </div>
               </div>
             </div>
@@ -12899,7 +13013,7 @@ window.CelebrationEffect = (function() {
           </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
-          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
+          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(resolveMemberName(v.inviter), 10)}</span></td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
           <td class="text-center">${renderFollowTypeButtonHtml(v.id, v.followType)}</td>
@@ -12915,6 +13029,9 @@ window.CelebrationEffect = (function() {
           if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
+
+        const resolvedInviter = resolveMemberName(v.inviter);
+        const resolvedOrientUser = resolveMemberName(v.orientUser);
 
         card.innerHTML = `
           <!-- 上段: 左側に大型ランク＋大きめ名前＋会社名、右側に参加日＋シェブロン -->
@@ -12941,8 +13058,8 @@ window.CelebrationEffect = (function() {
           <!-- 中段: 紹介者・担当者 -->
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
-              ${v.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
 
@@ -13113,12 +13230,15 @@ window.CelebrationEffect = (function() {
           openVisitorDetailView(r.id);
         };
 
+        const resolvedInviter = resolveMemberName(r.inviter);
+        const resolvedOrientUser = resolveMemberName(r.orientUser);
+
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>${renderVisitorNameLinkHtml(r.id, r.name, r)}</td>
           <td>${companyCell}</td>
-          <td>${formatTruncatedCell(r.inviter, 10)}</td>
+          <td>${formatTruncatedCell(resolvedInviter, 10)}</td>
           <td class="text-center" style="width: 110px; padding: 6px 4px;">${statusBadgeHtml}</td>
         `;
         tbody.appendChild(tr);
@@ -13132,6 +13252,9 @@ window.CelebrationEffect = (function() {
           if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
+
+        const resolvedInviter = resolveMemberName(r.inviter);
+        const resolvedOrientUser = resolveMemberName(r.orientUser);
 
         card.innerHTML = `
           <div class="dash-card-main-row">
@@ -13156,8 +13279,8 @@ window.CelebrationEffect = (function() {
 
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
         `;
@@ -13220,6 +13343,8 @@ window.CelebrationEffect = (function() {
       const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
         ? renderDashboardVisitorStatusBadgeHtml(r)
         : '';
+      const resolvedInviter = resolveMemberName(r.inviter);
+      const resolvedOrientUser = resolveMemberName(r.orientUser);
 
       // 1. PCテーブル行
       if (tbody) {
@@ -13241,8 +13366,8 @@ window.CelebrationEffect = (function() {
           </td>
           <td>
             <div>
-              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+              <span style="font-weight:600;">${formatTruncatedCell(resolvedInviter, 8)}</span>
+              ${resolvedOrientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(resolvedOrientUser)}</div>` : ''}
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
@@ -13290,8 +13415,8 @@ window.CelebrationEffect = (function() {
 
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
         `;
@@ -13335,13 +13460,16 @@ window.CelebrationEffect = (function() {
           openVisitorDetailView(vid);
         };
 
+        const resolvedInviter = resolveMemberName(h.inviter);
+        const resolvedOrientUser = resolveMemberName(h.orientUser);
+
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td><strong style="color: #0f172a;">${escapeHtml(formatShortDate(h.eventDate) || '-')}</strong></td>
           <td>${renderVisitorNameLinkHtml(vid, h.name)}</td>
           <td>${formatTruncatedCell(h.company, 12)} / ${formatTruncatedCell(h.profession, 12)}</td>
-          <td>${formatTruncatedCell(h.inviter, 10)}</td>
-          <td>${formatTruncatedCell(h.orientUser, 10)}</td>
+          <td>${formatTruncatedCell(resolvedInviter, 10)}</td>
+          <td>${formatTruncatedCell(resolvedOrientUser, 10)}</td>
           <td class="text-center">${renderRankBadgeHtml(h.feelAbc)}</td>
           <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.q1, 30)}</div></td>
           <td><div style="font-size:12px; max-width:180px; white-space:normal;">${formatTruncatedCell(h.orientMemo || h.followMemo, 30)}</div></td>
@@ -13361,6 +13489,8 @@ window.CelebrationEffect = (function() {
         };
 
         const memoSnippet = h.orientMemo || h.followMemo || h.q1 || '';
+        const resolvedInviter = resolveMemberName(h.inviter);
+        const resolvedOrientUser = resolveMemberName(h.orientUser);
 
         card.innerHTML = `
           <div class="dash-card-main-row">
@@ -13384,8 +13514,8 @@ window.CelebrationEffect = (function() {
 
           <div class="dash-card-bottom-row">
             <div class="dash-card-meta-left">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(h.inviter || '-')}</span>
-              ${h.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(h.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
 
@@ -14620,7 +14750,8 @@ window.CelebrationEffect = (function() {
         document.getElementById('vd-furigana').innerText = v.furigana || '';
         document.getElementById('vd-company').innerText = v.company || '-';
         document.getElementById('vd-profession').innerText = v.profession || '-';
-        document.getElementById('vd-inviter').innerText = v.inviter || '-';
+        const resolvedInviter = resolveMemberName(v.inviter);
+        document.getElementById('vd-inviter').innerText = resolvedInviter || '-';
         document.getElementById('vd-event-date').innerText = formatShortDate(v.eventDate) || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
         const count = v.visitCount || currentVdVisits.length || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
@@ -14844,7 +14975,8 @@ window.CelebrationEffect = (function() {
     };
 
     // 右カラムヒアリング
-    document.getElementById('vd-orient-user').innerText = h.orientUser || '未設定';
+    const resolvedOrientUser = h.orientUser ? resolveMemberName(h.orientUser) : '未設定';
+    document.getElementById('vd-orient-user').innerText = resolvedOrientUser;
     setHearingField('vd-q1', h.q1);
     setHearingField('vd-q2', h.q2);
     setHearingField('vd-q3', h.q3);
@@ -14856,7 +14988,7 @@ window.CelebrationEffect = (function() {
     setHearingField('vd-follow-memo', h.followMemo);
 
     // フォールバックヒアリング
-    setHearingField('vd-ap-fb-orient-user', h.orientUser || '未設定');
+    setHearingField('vd-ap-fb-orient-user', resolvedOrientUser);
     setHearingField('vd-ap-fb-q1', h.q1);
     setHearingField('vd-ap-fb-q2', h.q2);
     setHearingField('vd-ap-fb-q3', h.q3);
@@ -14954,8 +15086,8 @@ window.CelebrationEffect = (function() {
     const quickContainer = document.getElementById('vd-ap-quick-assignees');
     if (quickContainer) {
       quickContainer.innerHTML = '';
-      const inviter = visitor.inviter || '';
-      const orientUser = hearing.orientUser || '';
+      const inviter = resolveMemberName(visitor.inviter || '');
+      const orientUser = resolveMemberName(hearing.orientUser || '');
 
       if (inviter && inviter !== '-') {
         const btn = document.createElement('button');
@@ -15734,10 +15866,11 @@ window.CelebrationEffect = (function() {
         document.getElementById('hf-furigana').innerText = info.furigana || '';
         document.getElementById('hf-company').innerText = info.company || '-';
         document.getElementById('hf-profession').innerText = info.profession || '-';
-        document.getElementById('hf-inviter').innerText = info.inviter || '-';
+        document.getElementById('hf-inviter').innerText = resolveMemberName(info.inviter) || '-';
 
-        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
-        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
+        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成（正式名称で選択）
+        const resolvedOrient = resolveMemberName(form.orientUser || '');
+        renderOrientUserOptions(res.memberCategories, resolvedOrient);
 
         document.getElementById('hf-q1').value = form.q1 || '';
         document.getElementById('hf-q2').value = form.q2 || '';
@@ -16016,7 +16149,8 @@ window.CelebrationEffect = (function() {
     document.getElementById('report-ap-id').value = plan.id;
     document.getElementById('report-ap-visitor-id').value = plan.visitor_id || optVisitorId || '';
     document.getElementById('report-ap-visitor-name').innerText = plan.visitor_name ? `${plan.visitor_name} 様` : (plan.visitor_id ? `ビジター No.${plan.visitor_id}` : '対象ビジター');
-    document.getElementById('report-ap-assignee').innerText = plan.assignee_name || '担当者未設定';
+    const resolvedAssignee = resolveMemberName(plan.assignee_name);
+    document.getElementById('report-ap-assignee').innerText = resolvedAssignee || '担当者未設定';
     document.getElementById('report-ap-action-text').innerHTML = plan.action_text ? escapeAndLinkify(plan.action_text, true) : '-';
 
     const dueBadge = document.getElementById('report-ap-due-badge');
@@ -16031,7 +16165,7 @@ window.CelebrationEffect = (function() {
     }
 
     document.getElementById('report-ap-text').value = plan.report_text || '';
-    document.getElementById('report-ap-reporter').value = plan.reporter_name || plan.assignee_name || '';
+    document.getElementById('report-ap-reporter').value = plan.reporter_name || resolvedAssignee || '';
 
     const isCompCheckbox = document.getElementById('report-ap-is-completed');
     if (isCompCheckbox) {
@@ -16305,7 +16439,7 @@ window.CelebrationEffect = (function() {
 
     if (target) {
       visitorName = target.name || target.visitor_name || visitorName;
-      inviter = target.inviter || '';
+      inviter = resolveMemberName(target.inviter || '');
     }
 
     if (subnameEl) {

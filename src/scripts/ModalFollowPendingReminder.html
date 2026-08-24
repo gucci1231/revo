@@ -56,7 +56,7 @@
 
     if (target) {
       visitorName = target.name || target.visitor_name || visitorName;
-      inviter = target.inviter || '';
+      inviter = resolveMemberName(target.inviter || '');
     }
 
     if (subnameEl) {

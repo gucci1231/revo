@@ -70,7 +70,7 @@
           </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
-          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
+          <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(resolveMemberName(v.inviter), 10)}</span></td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
           <td class="text-center">${renderFollowTypeButtonHtml(v.id, v.followType)}</td>
@@ -86,6 +86,9 @@
           if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
+
+        const resolvedInviter = resolveMemberName(v.inviter);
+        const resolvedOrientUser = resolveMemberName(v.orientUser);
 
         card.innerHTML = `
           <!-- 上段: 左側に大型ランク＋大きめ名前＋会社名、右側に参加日＋シェブロン -->
@@ -112,8 +115,8 @@
           <!-- 中段: 紹介者・担当者 -->
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
-              ${v.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
 
@@ -284,12 +287,15 @@
           openVisitorDetailView(r.id);
         };
 
+        const resolvedInviter = resolveMemberName(r.inviter);
+        const resolvedOrientUser = resolveMemberName(r.orientUser);
+
         tr.innerHTML = `
           <td>${idx + 1}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
           <td>${renderVisitorNameLinkHtml(r.id, r.name, r)}</td>
           <td>${companyCell}</td>
-          <td>${formatTruncatedCell(r.inviter, 10)}</td>
+          <td>${formatTruncatedCell(resolvedInviter, 10)}</td>
           <td class="text-center" style="width: 110px; padding: 6px 4px;">${statusBadgeHtml}</td>
         `;
         tbody.appendChild(tr);
@@ -303,6 +309,9 @@
           if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
+
+        const resolvedInviter = resolveMemberName(r.inviter);
+        const resolvedOrientUser = resolveMemberName(r.orientUser);
 
         card.innerHTML = `
           <div class="dash-card-main-row">
@@ -327,8 +336,8 @@
 
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
         `;
@@ -391,6 +400,8 @@
       const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
         ? renderDashboardVisitorStatusBadgeHtml(r)
         : '';
+      const resolvedInviter = resolveMemberName(r.inviter);
+      const resolvedOrientUser = resolveMemberName(r.orientUser);
 
       // 1. PCテーブル行
       if (tbody) {
@@ -412,8 +423,8 @@
           </td>
           <td>
             <div>
-              <span style="font-weight:600;">${formatTruncatedCell(r.inviter, 8)}</span>
-              ${r.orientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(r.orientUser)}</div>` : ''}
+              <span style="font-weight:600;">${formatTruncatedCell(resolvedInviter, 8)}</span>
+              ${resolvedOrientUser ? `<div style="font-size:11px; color:#5f3dc4;"><i class="fa-regular fa-user" style="font-size:10px;"></i> 担当: ${escapeHtml(resolvedOrientUser)}</div>` : ''}
             </div>
           </td>
           <td>${renderCurrentStatusColumnHtml(r)}</td>
@@ -461,8 +472,8 @@
 
           <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
-              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
-              ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
+              <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
+              ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
           </div>
         `;

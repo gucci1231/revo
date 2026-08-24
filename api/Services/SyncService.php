@@ -196,10 +196,11 @@ class SyncService {
             if ($vEmail && $vDate) $existingKeys["{$vEmail}_{$vDate}"] = true;
 
             $st = $statusMap[$vId] ?? [];
+            $inviter = $this->normalizeMemberName((string)($v['inviter'] ?? ''), $membersRaw);
             $visitors[] = [
                 'id' => $vId,
                 'created_at' => $v['created_at'] ?? '',
-                'inviter' => $v['inviter'] ?? '',
+                'inviter' => $inviter,
                 'event_date' => $v['event_date'] ?? '',
                 'visitor_name' => $v['visitor_name'] ?? '',
                 'furigana' => $v['furigana'] ?? '',
@@ -247,7 +248,8 @@ class SyncService {
                 $rawTs = $row['タイムスタンプ'] ?? '';
                 $createdAt = $this->normalizeTimestamp($rawTs);
 
-                $inviter = trim((string)($row['招待者'] ?? $row['ご紹介者'] ?? ''));
+                $rawInviter = trim((string)($row['招待者'] ?? $row['ご紹介者'] ?? ''));
+                $inviter = $this->normalizeMemberName($rawInviter, $membersRaw);
                 $furigana = trim((string)($row['ふりがな'] ?? $row['フリガナ'] ?? ''));
                 $profession = trim((string)($row['お仕事の専門分野'] ?? $row['専門分野'] ?? $row['業種'] ?? ''));
                 $company = trim((string)($row['会社名'] ?? $row['屋号'] ?? ''));
@@ -526,5 +528,62 @@ class SyncService {
         }
         fclose($stream);
         return $rows;
+    }
+
+    private function normalizeMemberName(string $rawName, array $members): string {
+        $raw = trim($rawName);
+        if ($raw === '' || $raw === '-') {
+            return $raw;
+        }
+
+        // 敬称（さん・様・さま・氏・君・くん・先生・社長・代表など）の除去
+        $cleaned = preg_replace('/[\s\x{3000}]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u', '', $raw);
+        $cleaned = trim($cleaned);
+        if ($cleaned === '') {
+            return $raw;
+        }
+
+        $cleanKey = mb_strtolower(preg_replace('/[\s\x{3000}]+/u', '', $cleaned));
+
+        // 1. 完全一致 (スペース無視)
+        foreach ($members as $m) {
+            $mName = trim($m['name'] ?? $m['氏名'] ?? '');
+            $mKey = mb_strtolower(preg_replace('/[\s\x{3000}]+/u', '', $mName));
+            if ($cleanKey === $mKey) {
+                return $mName;
+            }
+        }
+
+        // 2. 姓一致 (苗字が一致し、該当者が1名の場合)
+        $lastNameMatches = [];
+        foreach ($members as $m) {
+            $mName = trim($m['name'] ?? $m['氏名'] ?? '');
+            $parts = preg_split('/[\s\x{3000}]+/u', $mName);
+            $lastName = mb_strtolower($parts[0] ?? '');
+            if ($lastName !== '' && $cleanKey === $lastName) {
+                $lastNameMatches[] = $mName;
+            }
+        }
+        if (count($lastNameMatches) === 1) {
+            return $lastNameMatches[0];
+        }
+
+        // 3. 名一致 (名前が一致し、該当者が1名の場合)
+        $firstNameMatches = [];
+        foreach ($members as $m) {
+            $mName = trim($m['name'] ?? $m['氏名'] ?? '');
+            $parts = preg_split('/[\s\x{3000}]+/u', $mName);
+            if (count($parts) > 1) {
+                $firstName = mb_strtolower(implode('', array_slice($parts, 1)));
+                if ($firstName !== '' && $cleanKey === $firstName) {
+                    $firstNameMatches[] = $mName;
+                }
+            }
+        }
+        if (count($firstNameMatches) === 1) {
+            return $firstNameMatches[0];
+        }
+
+        return $cleaned;
     }
 }

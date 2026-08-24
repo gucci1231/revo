@@ -60,6 +60,114 @@
     return `<span class="badge-action-type"><i class="fa-solid ${icon}"></i> ${escapeHtml(t)}</span>`;
   }
 
+  /* --- 👥 Member Name Resolver & Master Linking --- */
+  function getFlatMemberList() {
+    if (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers) && cachedFlatMembers.length > 0) {
+      return cachedFlatMembers;
+    }
+    if (typeof cachedMemberCategories !== 'undefined' && Array.isArray(cachedMemberCategories) && cachedMemberCategories.length > 0) {
+      const list = [];
+      cachedMemberCategories.forEach(cat => {
+        if (cat.members && Array.isArray(cat.members)) {
+          cat.members.forEach(m => list.push(m));
+        }
+      });
+      if (list.length > 0) return list;
+    }
+    if (typeof REVO_MEMBERS !== 'undefined' && Array.isArray(REVO_MEMBERS)) {
+      const list = [];
+      REVO_MEMBERS.forEach(cat => {
+        if (cat.members && Array.isArray(cat.members)) {
+          cat.members.forEach(m => list.push(m));
+        }
+      });
+      if (list.length > 0) return list;
+    }
+    return [];
+  }
+  window.getFlatMemberList = getFlatMemberList;
+
+  function findMemberByName(rawName, membersList = null) {
+    if (!rawName) return null;
+    const members = (membersList && Array.isArray(membersList) && membersList.length > 0) ? membersList : getFlatMemberList();
+    if (!members || members.length === 0) return null;
+
+    let cleaned = String(rawName).trim();
+    // 敬称（さん・様・さま・氏・君・くん・先生・社長・代表など）を除去
+    cleaned = cleaned.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim();
+    if (!cleaned) return null;
+
+    const cleanKey = cleaned.replace(/[\s\u3000]+/g, '').toLowerCase();
+
+    // 1. 完全一致 (スペース無視)
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const mKey = mName.replace(/[\s\u3000]+/g, '').toLowerCase();
+      if (cleanKey === mKey) return m;
+    }
+
+    // 2. 姓一致 (苗字が一致し、該当者が1名の場合)
+    const lastNameMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const parts = mName.split(/[\s\u3000]+/);
+      const lastName = (parts[0] || '').toLowerCase();
+      if (lastName && cleanKey === lastName) {
+        lastNameMatches.push(m);
+      }
+    }
+    if (lastNameMatches.length === 1) {
+      return lastNameMatches[0];
+    }
+
+    // 3. 名一致 (名前が一致し、該当者が1名の場合)
+    const firstNameMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const parts = mName.split(/[\s\u3000]+/);
+      if (parts.length > 1) {
+        const firstName = parts.slice(1).join('').toLowerCase();
+        if (firstName && cleanKey === firstName) {
+          firstNameMatches.push(m);
+        }
+      }
+    }
+    if (firstNameMatches.length === 1) {
+      return firstNameMatches[0];
+    }
+
+    // 4. 部分一致 / 前方一致 (該当者が1名の場合)
+    const partialMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const mKey = mName.replace(/[\s\u3000]+/g, '').toLowerCase();
+      if (mKey.includes(cleanKey) || cleanKey.includes(mKey)) {
+        partialMatches.push(m);
+      }
+    }
+    if (partialMatches.length === 1) {
+      return partialMatches[0];
+    }
+
+    return null;
+  }
+  window.findMemberByName = findMemberByName;
+
+  function resolveMemberName(rawName, membersList = null) {
+    if (!rawName) return '';
+    const rawStr = String(rawName).trim();
+    if (!rawStr || rawStr === '-') return rawStr;
+
+    const found = findMemberByName(rawStr, membersList);
+    if (found && found.name) {
+      return found.name;
+    }
+
+    // 名簿に見つからない外部紹介者等の場合は敬称のみトリムして返す
+    return rawStr.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim() || rawStr;
+  }
+  window.resolveMemberName = resolveMemberName;
+
   function changeVisitorStatus(id, field, value) {
     const fieldLabels = {
       'isAttended': '出欠',

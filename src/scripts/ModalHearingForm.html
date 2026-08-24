@@ -17,10 +17,11 @@
         document.getElementById('hf-furigana').innerText = info.furigana || '';
         document.getElementById('hf-company').innerText = info.company || '-';
         document.getElementById('hf-profession').innerText = info.profession || '-';
-        document.getElementById('hf-inviter').innerText = info.inviter || '-';
+        document.getElementById('hf-inviter').innerText = resolveMemberName(info.inviter) || '-';
 
-        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成
-        renderOrientUserOptions(res.memberCategories, form.orientUser || '');
+        // DBからリアルタイム取得したメンバーカテゴリでドロップダウンを生成（正式名称で選択）
+        const resolvedOrient = resolveMemberName(form.orientUser || '');
+        renderOrientUserOptions(res.memberCategories, resolvedOrient);
 
         document.getElementById('hf-q1').value = form.q1 || '';
         document.getElementById('hf-q2').value = form.q2 || '';
