@@ -157,58 +157,56 @@
           </div>
         </div>
 
-        <!-- 2. 温度感・感触ランク分布 (1カラム) -->
+        <!-- 2. 温度感・感触ランク分布 (ドーナツチャート) -->
         <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-          <div class="pb-2.5 mb-2.5 border-b border-slate-100">
-            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">ゲスト温度感分布</h3>
+          <div class="pb-2.5 mb-2.5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">ゲスト温度感</h3>
+            <span class="text-[10px] font-bold text-slate-400 font-mono" id="member-feel-total-label">0名</span>
           </div>
 
-          <div class="space-y-2.5 my-auto">
-            <!-- Aランク -->
-            <div>
-              <div class="flex items-center justify-between text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-emerald-700">
-                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-emerald-50 border border-emerald-200 font-extrabold">A</span>
-                  高感触
-                </span>
-                <span class="font-mono text-slate-900" id="member-feel-a-count">0名 (0%)</span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div id="member-feel-a-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
+          <div class="flex items-center gap-4 my-auto">
+            <!-- ドーナツグラフ -->
+            <div class="relative w-28 h-28 shrink-0 flex items-center justify-center">
+              <canvas id="member-feel-donut-chart"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-xs font-black text-slate-900 font-mono tracking-tight" id="member-feel-donut-center">0%</span>
+                <span class="text-[9px] font-bold text-slate-400 uppercase">Aランク</span>
               </div>
             </div>
 
-            <!-- Bランク -->
-            <div>
-              <div class="flex items-center justify-between text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-amber-700">
-                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 border border-amber-200 font-extrabold">B</span>
-                  中感触
+            <!-- 内訳凡例 -->
+            <div class="space-y-2 flex-1 min-w-0">
+              <!-- Aランク -->
+              <div class="flex items-center justify-between text-xs font-bold">
+                <span class="flex items-center gap-1.5 text-slate-700">
+                  <i class="fa-solid fa-circle text-[7px] text-emerald-500"></i>
+                  <span>A (高感触)</span>
                 </span>
-                <span class="font-mono text-slate-900" id="member-feel-b-count">0名 (0%)</span>
+                <span class="font-mono text-slate-900" id="member-feel-a-count">0名</span>
               </div>
-              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div id="member-feel-b-bar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
-              </div>
-            </div>
 
-            <!-- Cランク -->
-            <div>
-              <div class="flex items-center justify-between text-xs font-bold mb-1">
-                <span class="flex items-center gap-1.5 text-slate-600">
-                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 border border-slate-200 font-extrabold">C</span>
-                  その他
+              <!-- Bランク -->
+              <div class="flex items-center justify-between text-xs font-bold">
+                <span class="flex items-center gap-1.5 text-slate-700">
+                  <i class="fa-solid fa-circle text-[7px] text-amber-500"></i>
+                  <span>B (中感触)</span>
                 </span>
-                <span class="font-mono text-slate-900" id="member-feel-c-count">0名 (0%)</span>
+                <span class="font-mono text-slate-900" id="member-feel-b-count">0名</span>
               </div>
-              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div id="member-feel-c-bar" class="bg-slate-400 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
+
+              <!-- Cランク -->
+              <div class="flex items-center justify-between text-xs font-bold">
+                <span class="flex items-center gap-1.5 text-slate-700">
+                  <i class="fa-solid fa-circle text-[7px] text-slate-300"></i>
+                  <span>C (その他)</span>
+                </span>
+                <span class="font-mono text-slate-900" id="member-feel-c-count">0名</span>
               </div>
             </div>
           </div>
 
           <div class="pt-2 text-[10px] text-slate-400 font-semibold text-right">
-            ※ 招待・担当した全ビジター集計
+            ※ 招待・担当ビジター計
           </div>
         </div>
       </div>

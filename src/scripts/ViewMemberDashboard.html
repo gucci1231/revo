@@ -219,6 +219,7 @@
   }
 
   let memberActivityChartInstance = null;
+  let memberFeelDonutChartInstance = null;
 
   function initMemberActivityChart(labels, invitedData, joinedData, orientedData) {
     const canvas = document.getElementById('member-activity-chart');
@@ -282,6 +283,57 @@
             bodyFont: { size: 11, weight: 'bold' },
             padding: 8,
             cornerRadius: 8
+          }
+        }
+      }
+    });
+  }
+
+  function initMemberFeelDonutChart(feelA, feelB, feelC) {
+    const canvas = document.getElementById('member-feel-donut-chart');
+    if (!canvas) return;
+
+    if (memberFeelDonutChartInstance) {
+      try { memberFeelDonutChartInstance.destroy(); } catch(e) {}
+    }
+
+    const total = feelA + feelB + feelC;
+    const dataValues = total > 0 ? [feelA, feelB, feelC] : [0, 0, 1];
+    const bgColors = total > 0 ? ['#10b981', '#f59e0b', '#cbd5e1'] : ['#f1f5f9', '#f1f5f9', '#f1f5f9'];
+
+    const ctx = canvas.getContext('2d');
+    memberFeelDonutChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['A (高感触)', 'B (中感触)', 'C (その他)'],
+        datasets: [{
+          data: dataValues,
+          backgroundColor: bgColors,
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '76%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: total > 0,
+            backgroundColor: '#0f172a',
+            titleFont: { size: 11, weight: 'bold' },
+            bodyFont: { size: 11, weight: 'bold' },
+            padding: 8,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                const val = context.parsed || 0;
+                const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                return ` ${context.label}: ${val}名 (${pct}%)`;
+              }
+            }
           }
         }
       }
@@ -466,7 +518,7 @@
 
     initMemberActivityChart(monthLabels, monthlyInvited, monthlyJoined, monthlyOriented);
 
-    // 4. 感触・温度感ランク分布 (A/B/C)
+    // 4. 感触・温度感ランク分布 (ドーナツチャート集計)
     let feelACount = 0;
     let feelBCount = 0;
     let feelCCount = 0;
@@ -489,20 +541,19 @@
     const feelBPercent = totalFeel > 0 ? Math.round((feelBCount / totalFeel) * 100) : 0;
     const feelCPercent = totalFeel > 0 ? Math.round((feelCCount / totalFeel) * 100) : 0;
 
+    initMemberFeelDonutChart(feelACount, feelBCount, feelCCount);
+
+    const elTotalLabel = document.getElementById('member-feel-total-label');
+    const elDonutCenter = document.getElementById('member-feel-donut-center');
     const elFeelA = document.getElementById('member-feel-a-count');
     const elFeelB = document.getElementById('member-feel-b-count');
     const elFeelC = document.getElementById('member-feel-c-count');
-    const barFeelA = document.getElementById('member-feel-a-bar');
-    const barFeelB = document.getElementById('member-feel-b-bar');
-    const barFeelC = document.getElementById('member-feel-c-bar');
 
+    if (elTotalLabel) elTotalLabel.innerText = `${totalFeel}名`;
+    if (elDonutCenter) elDonutCenter.innerText = `${feelAPercent}%`;
     if (elFeelA) elFeelA.innerText = `${feelACount}名 (${feelAPercent}%)`;
     if (elFeelB) elFeelB.innerText = `${feelBCount}名 (${feelBPercent}%)`;
     if (elFeelC) elFeelC.innerText = `${feelCCount}名 (${feelCPercent}%)`;
-
-    if (barFeelA) barFeelA.style.width = `${feelAPercent}%`;
-    if (barFeelB) barFeelB.style.width = `${feelBPercent}%`;
-    if (barFeelC) barFeelC.style.width = `${feelCPercent}%`;
 
     // アクションデータ保存
     currentMemberActionData = {

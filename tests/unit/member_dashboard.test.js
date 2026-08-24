@@ -15,7 +15,8 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('id="member-kpi-orient-joined-count"'), true);
     assert.strictEqual(indexHtml.includes('id="member-dash-closing-rate"'), true);
     assert.strictEqual(indexHtml.includes('id="member-activity-chart"'), true);
-    assert.strictEqual(indexHtml.includes('id="member-feel-a-bar"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-feel-donut-chart"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-feel-donut-center"'), true);
     assert.strictEqual(indexHtml.includes('id="tab-role-invited"'), true);
     assert.strictEqual(indexHtml.includes('id="tab-role-oriented"'), true);
     assert.strictEqual(indexHtml.includes('id="tab-action-pending"'), true);
@@ -40,6 +41,7 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('function switchMemberRoleView'), true);
     assert.strictEqual(indexHtml.includes('function filterMemberActionList'), true);
     assert.strictEqual(indexHtml.includes('function initMemberActivityChart'), true);
+    assert.strictEqual(indexHtml.includes('function initMemberFeelDonutChart'), true);
     assert.strictEqual(indexHtml.includes('function getMemberNameFromUrl'), true);
     assert.strictEqual(indexHtml.includes('deduplicateVisitorListClient'), true);
     assert.strictEqual(indexHtml.includes('renderStandardVisitorCardHtml'), true);
