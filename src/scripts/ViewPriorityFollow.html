@@ -769,8 +769,8 @@
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
 
         const attInfo = getAttendStatusInfo(st.isAttended);
-        const oneToOneInfo = get1to1StatusInfo(st.is1to1);
         const joinInfo = getJoinStatusInfo(st.isJoined);
+        const followTypeInfo = getFollowTypeInfo(st.followType || v.followType);
 
         const pendingAps = actionPlans.filter(p => Number(p.is_completed) === 0);
         const completedAps = actionPlans.filter(p => Number(p.is_completed) === 1);
@@ -902,21 +902,21 @@
             <!-- Quick Status Pickers -->
             <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 grid grid-cols-3 gap-2.5">
               <div>
-                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">出欠ステータス</label>
+                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">出欠</label>
                 <select class="vd-status-select w-full ${attInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
                   ${renderAttendStatusOptionsHtml(st.isAttended)}
                 </select>
               </div>
               <div>
-                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">1to1ステータス</label>
-                <select class="vd-status-select w-full ${oneToOneInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
-                  ${render1to1StatusOptionsHtml(st.is1to1)}
+                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会進捗</label>
+                <select class="vd-status-select w-full ${joinInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
+                  ${renderJoinStatusOptionsHtml(st.isJoined)}
                 </select>
               </div>
               <div>
-                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会ステータス</label>
-                <select class="vd-status-select w-full ${joinInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
-                  ${renderJoinStatusOptionsHtml(st.isJoined)}
+                <label class="text-[10px] font-extrabold text-slate-400 block mb-1">フォロー方針</label>
+                <select class="vd-status-select w-full ${followTypeInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'followType', this.value); fetchPriorityFollowData(true);">
+                  ${renderFollowTypeOptionsHtml(st.followType || v.followType)}
                 </select>
               </div>
             </div>
