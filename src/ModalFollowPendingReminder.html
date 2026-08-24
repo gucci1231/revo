@@ -27,6 +27,16 @@
           <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i><span id="fpr-date-label">再アプローチ予定日</span> <span class="text-rose-500">*</span></span>
           <span class="text-[10px] text-slate-400 font-normal" id="fpr-date-hint">例: 半年後、独立予定時期など</span>
         </label>
+
+        <!-- クイック期日プリセットボタン -->
+        <div class="flex items-center gap-1.5 mb-2 overflow-x-auto pb-0.5">
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(1, this)">1ヶ月後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(2, this)">2ヶ月後</button>
+          <button type="button" class="btn-date-preset active px-2 py-1 text-[11px] font-bold rounded bg-indigo-50 text-indigo-600 border border-indigo-200" onclick="setFprQuickDate(3, this)">3ヶ月後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(6, this)">半年後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(12, this)">1年後</button>
+        </div>
+
         <input type="date" id="fpr-due-date" class="form-input w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none" required>
       </div>
 

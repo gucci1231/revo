@@ -964,13 +964,27 @@ tr:last-child td { border-bottom: none; }
   border-color: #bfdbfe;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
-.vd-status-select.state-pending-later {
+.vd-status-select.state-pending-later,
+.vd-status-select.follow-type-pending {
   background-color: #eef2ff;
   color: #4338ca;
   border-color: #c7d2fe;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
-.vd-status-select.state-closed {
+.vd-status-select.follow-type-active {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.follow-type-alliance {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23047857' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-closed,
+.vd-status-select.follow-type-closed {
   background-color: #f8fafc;
   color: #64748b;
   border-color: #cbd5e1;
@@ -6528,9 +6542,10 @@ select.form-input, select.form-select {
             </div>
           </div>
 
-          <!-- ステータス概要 (iOS Picker Style) -->
-          <div class="vd-badges-wrap">
+          <!-- ステータス概要 (iOS Picker Style with Clear Category Labels) -->
+          <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-user-check text-[9px] mr-0.5"></i>出欠</span>
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
                 <option value="未">出欠: 未</option>
                 <option value="参加">出欠: 参加</option>
@@ -6538,6 +6553,7 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-comments text-[9px] mr-0.5"></i>1to1</span>
               <select id="vd-select-1to1" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'is1to1', this.value)" title="1to1状況">
                 <option value="未">1to1: 未</option>
                 <option value="済">1to1: 済</option>
@@ -6545,6 +6561,7 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
+              <span class="text-[10px] font-bold text-slate-400 block mb-0.5"><i class="fa-solid fa-file-signature text-[9px] mr-0.5"></i>入会進捗</span>
               <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
                 <option value="未">入会: 未</option>
                 <option value="検討中">入会: 検討中</option>
@@ -6556,6 +6573,7 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
+              <span class="text-[10px] font-bold text-indigo-600 block mb-0.5"><i class="fa-solid fa-compass text-[9px] mr-0.5"></i>フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
                 <option value="直近フォロー">🔥 直近入会フォロー</option>
                 <option value="時期尚早">⏰ 時期尚早・保留</option>
@@ -7733,6 +7751,16 @@ select.form-input, select.form-select {
           <span><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i><span id="fpr-date-label">再アプローチ予定日</span> <span class="text-rose-500">*</span></span>
           <span class="text-[10px] text-slate-400 font-normal" id="fpr-date-hint">例: 半年後、独立予定時期など</span>
         </label>
+
+        <!-- クイック期日プリセットボタン -->
+        <div class="flex items-center gap-1.5 mb-2 overflow-x-auto pb-0.5">
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(1, this)">1ヶ月後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(2, this)">2ヶ月後</button>
+          <button type="button" class="btn-date-preset active px-2 py-1 text-[11px] font-bold rounded bg-indigo-50 text-indigo-600 border border-indigo-200" onclick="setFprQuickDate(3, this)">3ヶ月後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(6, this)">半年後</button>
+          <button type="button" class="btn-date-preset px-2 py-1 text-[11px] font-bold rounded bg-slate-100 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 border border-slate-200" onclick="setFprQuickDate(12, this)">1年後</button>
+        </div>
+
         <input type="date" id="fpr-due-date" class="form-input w-full text-xs py-2 px-3 border border-slate-200 rounded-lg bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none" required>
       </div>
 
@@ -15741,39 +15769,92 @@ window.CelebrationEffect = (function() {
       subnameEl.innerText = `ビジター: ${visitorName}${inviter ? ` (紹介: ${inviter})` : ''}`;
     }
 
-    // デフォルト期日（3ヶ月後の1日）
+    // デフォルト期日（3ヶ月後）
     if (dateInput) {
-      const defaultDate = new Date();
-      defaultDate.setMonth(defaultDate.getMonth() + 3);
-      const yyyy = defaultDate.getFullYear();
-      const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
-      const dd = String(defaultDate.getDate()).padStart(2, '0');
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      setFprQuickDate(3);
     }
 
-    // 担当者プルダウンの生成
-    if (assigneeSelect) {
-      assigneeSelect.innerHTML = '<option value="">担当者を選択...</option>';
-      const memberList = (typeof cachedMemberList !== 'undefined' && cachedMemberList && cachedMemberList.length > 0)
-        ? cachedMemberList
-        : (typeof rawInitialData !== 'undefined' && rawInitialData && rawInitialData.members ? rawInitialData.members : []);
+    // 担当者プルダウンの非同期確実生成
+    loadFprAssigneeOptions(inviter);
 
-      if (memberList && memberList.length > 0) {
-        memberList.forEach(m => {
-          const mName = m.name || m.member_name || '';
-          if (!mName) return;
-          const opt = document.createElement('option');
-          opt.value = mName;
-          opt.innerText = `${mName}${m.profession ? ` (${m.profession})` : ''}`;
-          if (inviter && mName === inviter) {
-            opt.selected = true; // 招待者を初期選択
+    modal.style.display = 'flex';
+  }
+
+  function setFprQuickDate(months, btnEl) {
+    const dateInput = document.getElementById('fpr-due-date');
+    if (!dateInput) return;
+
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() + months);
+    const yyyy = targetDate.getFullYear();
+    const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(targetDate.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+    // ボタンのアクティブ状態更新
+    if (btnEl) {
+      document.querySelectorAll('.btn-date-preset').forEach(b => {
+        b.classList.remove('active', 'bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+        b.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
+      });
+      btnEl.classList.add('active', 'bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+      btnEl.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
+    }
+  }
+
+  function loadFprAssigneeOptions(inviter = '') {
+    const select = document.getElementById('fpr-assignee');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">担当者を選択...</option>';
+
+    function renderOptions(cats) {
+      select.innerHTML = '<option value="">担当者を選択...</option>';
+      if (Array.isArray(cats) && cats.length > 0) {
+        cats.forEach(catObj => {
+          const grp = document.createElement('optgroup');
+          grp.label = catObj.category || 'その他';
+          if (catObj.members && catObj.members.length > 0) {
+            catObj.members.forEach(m => {
+              const opt = document.createElement('option');
+              opt.value = m.name;
+              opt.textContent = `${m.name}${m.profession ? ` (${m.profession})` : ''}`;
+              if (inviter && m.name === inviter) {
+                opt.selected = true;
+              }
+              grp.appendChild(opt);
+            });
           }
-          assigneeSelect.appendChild(opt);
+          select.appendChild(grp);
+        });
+      }
+      if (inviter) {
+        // もし招待者がoptgroup外で未選択なら直接選択
+        Array.from(select.options).forEach(opt => {
+          if (opt.value === inviter) opt.selected = true;
         });
       }
     }
 
-    modal.style.display = 'flex';
+    if (typeof cachedMemberCategories !== 'undefined' && Array.isArray(cachedMemberCategories) && cachedMemberCategories.length > 0) {
+      renderOptions(cachedMemberCategories);
+      return;
+    }
+
+    // サーバーからメンバー一覧を取得
+    ApiService.call('getMemberListApi')
+      .then(res => {
+        const cats = (res && (res.memberCategories || (res.data && res.data.memberCategories))) || [];
+        if (cats && cats.length > 0) {
+          cachedMemberCategories = cats;
+          renderOptions(cats);
+        } else if (res && res.flatMembers) {
+          const defaultCat = [{ category: 'メンバー', members: res.flatMembers }];
+          cachedMemberCategories = defaultCat;
+          renderOptions(defaultCat);
+        }
+      })
+      .catch(() => {});
   }
 
   function closeFollowPendingReminderModal() {

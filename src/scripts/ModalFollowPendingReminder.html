@@ -63,39 +63,92 @@
       subnameEl.innerText = `ビジター: ${visitorName}${inviter ? ` (紹介: ${inviter})` : ''}`;
     }
 
-    // デフォルト期日（3ヶ月後の1日）
+    // デフォルト期日（3ヶ月後）
     if (dateInput) {
-      const defaultDate = new Date();
-      defaultDate.setMonth(defaultDate.getMonth() + 3);
-      const yyyy = defaultDate.getFullYear();
-      const mm = String(defaultDate.getMonth() + 1).padStart(2, '0');
-      const dd = String(defaultDate.getDate()).padStart(2, '0');
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      setFprQuickDate(3);
     }
 
-    // 担当者プルダウンの生成
-    if (assigneeSelect) {
-      assigneeSelect.innerHTML = '<option value="">担当者を選択...</option>';
-      const memberList = (typeof cachedMemberList !== 'undefined' && cachedMemberList && cachedMemberList.length > 0)
-        ? cachedMemberList
-        : (typeof rawInitialData !== 'undefined' && rawInitialData && rawInitialData.members ? rawInitialData.members : []);
+    // 担当者プルダウンの非同期確実生成
+    loadFprAssigneeOptions(inviter);
 
-      if (memberList && memberList.length > 0) {
-        memberList.forEach(m => {
-          const mName = m.name || m.member_name || '';
-          if (!mName) return;
-          const opt = document.createElement('option');
-          opt.value = mName;
-          opt.innerText = `${mName}${m.profession ? ` (${m.profession})` : ''}`;
-          if (inviter && mName === inviter) {
-            opt.selected = true; // 招待者を初期選択
+    modal.style.display = 'flex';
+  }
+
+  function setFprQuickDate(months, btnEl) {
+    const dateInput = document.getElementById('fpr-due-date');
+    if (!dateInput) return;
+
+    const targetDate = new Date();
+    targetDate.setMonth(targetDate.getMonth() + months);
+    const yyyy = targetDate.getFullYear();
+    const mm = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(targetDate.getDate()).padStart(2, '0');
+    dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+    // ボタンのアクティブ状態更新
+    if (btnEl) {
+      document.querySelectorAll('.btn-date-preset').forEach(b => {
+        b.classList.remove('active', 'bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+        b.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
+      });
+      btnEl.classList.add('active', 'bg-indigo-50', 'text-indigo-600', 'border-indigo-200');
+      btnEl.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
+    }
+  }
+
+  function loadFprAssigneeOptions(inviter = '') {
+    const select = document.getElementById('fpr-assignee');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">担当者を選択...</option>';
+
+    function renderOptions(cats) {
+      select.innerHTML = '<option value="">担当者を選択...</option>';
+      if (Array.isArray(cats) && cats.length > 0) {
+        cats.forEach(catObj => {
+          const grp = document.createElement('optgroup');
+          grp.label = catObj.category || 'その他';
+          if (catObj.members && catObj.members.length > 0) {
+            catObj.members.forEach(m => {
+              const opt = document.createElement('option');
+              opt.value = m.name;
+              opt.textContent = `${m.name}${m.profession ? ` (${m.profession})` : ''}`;
+              if (inviter && m.name === inviter) {
+                opt.selected = true;
+              }
+              grp.appendChild(opt);
+            });
           }
-          assigneeSelect.appendChild(opt);
+          select.appendChild(grp);
+        });
+      }
+      if (inviter) {
+        // もし招待者がoptgroup外で未選択なら直接選択
+        Array.from(select.options).forEach(opt => {
+          if (opt.value === inviter) opt.selected = true;
         });
       }
     }
 
-    modal.style.display = 'flex';
+    if (typeof cachedMemberCategories !== 'undefined' && Array.isArray(cachedMemberCategories) && cachedMemberCategories.length > 0) {
+      renderOptions(cachedMemberCategories);
+      return;
+    }
+
+    // サーバーからメンバー一覧を取得
+    ApiService.call('getMemberListApi')
+      .then(res => {
+        const cats = (res && (res.memberCategories || (res.data && res.data.memberCategories))) || [];
+        if (cats && cats.length > 0) {
+          cachedMemberCategories = cats;
+          renderOptions(cats);
+        } else if (res && res.flatMembers) {
+          const defaultCat = [{ category: 'メンバー', members: res.flatMembers }];
+          cachedMemberCategories = defaultCat;
+          renderOptions(defaultCat);
+        }
+      })
+      .catch(() => {});
   }
 
   function closeFollowPendingReminderModal() {
