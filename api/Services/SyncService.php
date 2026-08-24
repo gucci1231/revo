@@ -48,28 +48,37 @@ class SyncService {
                     $vId = (string)($v['id'] ?? $v['no'] ?? '');
                     if (!$vId) continue;
 
-                    $this->db->upsert('visitors', [
-                        'id' => $vId,
-                        'created_at' => $v['createdDate'] ?? $v['created_at'] ?? $now,
-                        'inviter' => $v['inviter'] ?? '',
-                        'event_date' => $v['eventDate'] ?? $v['event_date'] ?? '',
-                        'visitor_name' => $v['name'] ?? $v['visitor_name'] ?? '',
-                        'furigana' => $v['furigana'] ?? '',
-                        'profession' => $v['profession'] ?? '',
-                        'company' => $v['company'] ?? '',
-                        'email' => $v['email'] ?? '',
-                        'attendance_count' => $v['attendanceCount'] ?? $v['attendance_count'] ?? '初めて',
-                        'remarks' => $v['remarks'] ?? ''
-                    ], ['id']);
+                    // 1. visitors テーブル: 既存レコードがあれば空項目で上書きしない
+                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks FROM visitors WHERE id = ?", [$vId]);
+                    if (!$existingVisitor) {
+                        $this->db->upsert('visitors', [
+                            'id' => $vId,
+                            'created_at' => $v['createdDate'] ?? $v['created_at'] ?? $now,
+                            'inviter' => $v['inviter'] ?? '',
+                            'event_date' => $v['eventDate'] ?? $v['event_date'] ?? '',
+                            'visitor_name' => $v['name'] ?? $v['visitor_name'] ?? '',
+                            'furigana' => $v['furigana'] ?? '',
+                            'profession' => $v['profession'] ?? '',
+                            'company' => $v['company'] ?? '',
+                            'email' => $v['email'] ?? '',
+                            'attendance_count' => $v['attendanceCount'] ?? $v['attendance_count'] ?? '初めて',
+                            'remarks' => $v['remarks'] ?? ''
+                        ], ['id']);
+                    }
 
-                    $this->db->upsert('visitors_status', [
-                        'visitor_id' => $vId,
-                        'is_attended' => $v['isAttended'] ?? $v['is_attended'] ?? '未',
-                        'is_joined' => $v['isJoined'] ?? $v['is_joined'] ?? '未',
-                        'is_1to1' => $v['is1to1'] ?? $v['is_1to1'] ?? '未',
-                        'is_matched' => $v['matching'] ?? $v['is_matched'] ?? '未',
-                        'updated_at' => $now
-                    ], ['visitor_id']);
+                    // 2. visitors_status テーブル: SQLiteが正 (Master)。既存ステータスは絶対に上書きしない！
+                    $existingStatus = $this->db->fetchOne("SELECT visitor_id FROM visitors_status WHERE visitor_id = ?", [$vId]);
+                    if (!$existingStatus) {
+                        $this->db->upsert('visitors_status', [
+                            'visitor_id' => $vId,
+                            'is_attended' => $v['isAttended'] ?? $v['is_attended'] ?? '未',
+                            'is_joined' => $v['isJoined'] ?? $v['is_joined'] ?? '未',
+                            'is_1to1' => $v['is1to1'] ?? $v['is_1to1'] ?? '未',
+                            'is_matched' => $v['matching'] ?? $v['is_matched'] ?? '未',
+                            'matching_note' => $v['matching_note'] ?? '',
+                            'updated_at' => $now
+                        ], ['visitor_id']);
+                    }
 
                     $addedCount++;
                 }
@@ -80,27 +89,34 @@ class SyncService {
                     $vId = (string)($h['visitorId'] ?? $h['visitor_id'] ?? '');
                     if (!$vId) continue;
 
-                    $existing = $this->db->fetchOne("SELECT follow_memo, orient_memo FROM hearing_sheets WHERE visitor_id = ?", [$vId]);
-                    $incomingFollowMemo = $h['followMemo'] ?? $h['follow_memo'] ?? '';
-                    if ($incomingFollowMemo === '' && !empty($existing['follow_memo'])) {
-                        $incomingFollowMemo = $existing['follow_memo'];
+                    $existing = $this->db->fetchOne("SELECT orient_user, q1, q2, q3, q4, q5, q6, q7, feel_abc, orient_memo, follow_memo, sheet_url FROM hearing_sheets WHERE visitor_id = ?", [$vId]);
+                    if (!$existing) {
+                        $this->db->upsert('hearing_sheets', [
+                            'visitor_id' => $vId,
+                            'orient_user' => $h['orientUser'] ?? $h['orient_user'] ?? '',
+                            'q1' => $h['q1'] ?? '', 'q2' => $h['q2'] ?? '', 'q3' => $h['q3'] ?? '',
+                            'q4' => $h['q4'] ?? '', 'q5' => $h['q5'] ?? '', 'q6' => $h['q6'] ?? '', 'q7' => $h['q7'] ?? '',
+                            'feel_abc' => $h['feelAbc'] ?? $h['feel_abc'] ?? '',
+                            'orient_memo' => $h['orientMemo'] ?? $h['orient_memo'] ?? '',
+                            'follow_memo' => $h['followMemo'] ?? $h['follow_memo'] ?? '',
+                            'sheet_url' => $h['sheetUrl'] ?? $h['sheet_url'] ?? '',
+                            'updated_at' => $h['updatedAt'] ?? $h['updated_at'] ?? $now
+                        ], ['visitor_id']);
+                    } else {
+                        // 既存データがある場合は、スプレッドシート側が空でない項目のみマージ
+                        $updateData = [];
+                        if (empty($existing['feel_abc']) && !empty($h['feelAbc'] ?? $h['feel_abc'])) {
+                            $updateData['feel_abc'] = $h['feelAbc'] ?? $h['feel_abc'];
+                        }
+                        if (empty($existing['orient_user']) && !empty($h['orientUser'] ?? $h['orient_user'])) {
+                            $updateData['orient_user'] = $h['orientUser'] ?? $h['orient_user'];
+                        }
+                        if (!empty($updateData)) {
+                            $updateData['visitor_id'] = $vId;
+                            $updateData['updated_at'] = $now;
+                            $this->db->upsert('hearing_sheets', $updateData, ['visitor_id']);
+                        }
                     }
-                    $incomingOrientMemo = $h['orientMemo'] ?? $h['orient_memo'] ?? '';
-                    if ($incomingOrientMemo === '' && !empty($existing['orient_memo'])) {
-                        $incomingOrientMemo = $existing['orient_memo'];
-                    }
-
-                    $this->db->upsert('hearing_sheets', [
-                        'visitor_id' => $vId,
-                        'orient_user' => $h['orientUser'] ?? $h['orient_user'] ?? '',
-                        'q1' => $h['q1'] ?? '', 'q2' => $h['q2'] ?? '', 'q3' => $h['q3'] ?? '',
-                        'q4' => $h['q4'] ?? '', 'q5' => $h['q5'] ?? '', 'q6' => $h['q6'] ?? '', 'q7' => $h['q7'] ?? '',
-                        'feel_abc' => $h['feelAbc'] ?? $h['feel_abc'] ?? '',
-                        'orient_memo' => $incomingOrientMemo,
-                        'follow_memo' => $incomingFollowMemo,
-                        'sheet_url' => $h['sheetUrl'] ?? $h['sheet_url'] ?? '',
-                        'updated_at' => $h['updatedAt'] ?? $h['updated_at'] ?? $now
-                    ], ['visitor_id']);
                 }
             }
 
