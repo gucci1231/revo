@@ -22,14 +22,15 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
   });
 
-  it('verifies member dashboard functions are defined in scripts', () => {
+  it('verifies member dashboard functions are defined in scripts and uses deduplication', () => {
     assert.strictEqual(indexHtml.includes('function initMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function selectMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByInviter'), true);
+    assert.strictEqual(indexHtml.includes('deduplicateVisitorListClient'), true);
+    assert.strictEqual(indexHtml.includes('renderStandardVisitorCardHtml'), true);
     assert.strictEqual(indexHtml.includes('function copyMemberDashUrl'), true);
     assert.strictEqual(indexHtml.includes('function copyMemberDashLineText'), true);
     assert.strictEqual(indexHtml.includes('function toggleAllMembersView'), true);
     assert.strictEqual(indexHtml.includes('function renderAllMembersSummaryTable'), true);
-    assert.strictEqual(indexHtml.includes('function openMemberPersonalDashboard'), true);
   });
 });

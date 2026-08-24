@@ -125,7 +125,7 @@
     if (!inviterName || !cachedAllVisitors) return [];
     const cleanInviter = normalizeNameKey(inviterName);
 
-    return cachedAllVisitors.filter(v => {
+    const rawMatched = cachedAllVisitors.filter(v => {
       const vInviter = (v.inviter || '').trim();
       if (!vInviter) return false;
       if (normalizeNameKey(vInviter) === cleanInviter) return true;
@@ -137,6 +137,12 @@
       }
       return false;
     });
+
+    // 同一人物（複数回申込・リピート参加）を1人として名寄せ統合
+    if (typeof deduplicateVisitorListClient === 'function') {
+      return deduplicateVisitorListClient(rawMatched);
+    }
+    return rawMatched;
   }
 
   function renderMemberDashboardData(memberName) {
