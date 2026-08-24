@@ -6013,9 +6013,9 @@ select.form-input, select.form-select {
           </div>
           <div class="seg-pill-group w-full sm:w-auto">
             <button type="button" class="seg-pill-btn active" id="dash-hot-filter-all" onclick="filterDashboardHotVisitors('ALL')">すべて</button>
-            <button type="button" class="seg-pill-btn text-rose-600" id="dash-hot-filter-stagnant" onclick="filterDashboardHotVisitors('STAGNANT')">🚨 放置</button>
-            <button type="button" class="seg-pill-btn text-red-600" id="dash-hot-filter-overdue" onclick="filterDashboardHotVisitors('OVERDUE')">⏰ 超過</button>
-            <button type="button" class="seg-pill-btn text-blue-600" id="dash-hot-filter-active" onclick="filterDashboardHotVisitors('ACTIVE')">🏃 進行中</button>
+            <button type="button" class="seg-pill-btn" id="dash-hot-filter-stagnant" onclick="filterDashboardHotVisitors('STAGNANT')">放置</button>
+            <button type="button" class="seg-pill-btn" id="dash-hot-filter-overdue" onclick="filterDashboardHotVisitors('OVERDUE')">超過</button>
+            <button type="button" class="seg-pill-btn" id="dash-hot-filter-active" onclick="filterDashboardHotVisitors('ACTIVE')">進行中</button>
           </div>
         </div>
 
@@ -10878,9 +10878,9 @@ window.CelebrationEffect = (function() {
 
         let stageBadgeHtml = '';
         if (stage === 'STAGNANT') {
-          stageBadgeHtml = '<span class="badge" style="font-size:10px; font-weight:800; background:#ffe4e6; color:#e11d48; padding:2px 6px; border-radius:6px;"><i class="fa-solid fa-triangle-exclamation mr-1"></i>放置</span>';
+          stageBadgeHtml = '<span class="inline-flex items-center text-[10.5px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">放置</span>';
         } else if (stage === 'OVERDUE') {
-          stageBadgeHtml = '<span class="badge" style="font-size:10px; font-weight:800; background:#ffe3e3; color:#e03131; padding:2px 6px; border-radius:6px;"><i class="fa-solid fa-clock mr-1"></i>超過</span>';
+          stageBadgeHtml = '<span class="inline-flex items-center text-[10.5px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">超過</span>';
         }
 
         card.innerHTML = `
