@@ -26,6 +26,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+  <!-- Quill.js (Visual WYSIWYG Editor) -->
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <!-- Global Client Error Reporter -->
   <script>
     window.onerror = function(msg, url, line, col, error) {
@@ -1461,6 +1464,101 @@ select.form-input, select.form-select {
 .cm-s-default .cm-keyword { color: #e11d48 !important; font-weight: 700; }
 .cm-s-default .cm-variable { color: #0f172a !important; }
 .cm-s-default .cm-property { color: #0284c7 !important; }
+
+/* ========================================================
+   Quill Visual (WYSIWYG) Editor Custom Styling
+   ======================================================== */
+.ql-toolbar.ql-snow {
+  background: #f8fafc !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 8px 10px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+  font-family: inherit !important;
+}
+
+.ql-container.ql-snow {
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", sans-serif !important;
+  font-size: 14px !important;
+  min-height: 280px !important;
+  max-height: 480px !important;
+  overflow-y: auto !important;
+}
+
+.ql-editor {
+  padding: 16px !important;
+  line-height: 1.75 !important;
+  color: #0f172a !important;
+  min-height: 280px !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #94a3b8 !important;
+  font-style: normal !important;
+  left: 16px !important;
+  right: 16px !important;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #475569 !important;
+}
+.ql-snow .ql-fill {
+  fill: #475569 !important;
+}
+.ql-snow .ql-picker {
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+.ql-snow.ql-toolbar button:hover,
+.ql-snow .ql-toolbar button:hover,
+.ql-snow.ql-toolbar button.ql-active,
+.ql-snow .ql-toolbar button.ql-active {
+  background: #e2e8f0 !important;
+  border-radius: 6px !important;
+}
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #2563eb !important;
+}
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-fill {
+  fill: #2563eb !important;
+}
+
+/* Editor Mode Switch Buttons */
+.editor-mode-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.editor-mode-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.editor-mode-tab-btn:not(.active) {
+  background: transparent;
+  color: #64748b;
+}
+.editor-mode-tab-btn:not(.active):hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
 
 
 
@@ -8265,21 +8363,50 @@ select.form-input, select.form-select {
               </div>
             </div>
 
-            <!-- HTML本文エディタ (Modern Code Editor) -->
+            <!-- HTML本文エディタ (Visual WYSIWYG & Code Editor) -->
             <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-xs font-extrabold text-slate-700 m-0 flex items-center gap-1.5">
-                  <i class="fa-solid fa-code text-blue-600 text-[11px]"></i>
-                  <span>HTMLメール本文 (完成形ひな形)</span>
-                </label>
+              <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-extrabold text-slate-900 m-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    <span>HTMLメール本文</span>
+                  </label>
+
+                  <!-- エディタモード切替 (見たまま簡単 ⇄ HTMLコード) -->
+                  <div class="bg-slate-100 p-0.5 rounded-lg inline-flex items-center border border-slate-200/80">
+                    <button type="button" id="rm-email-tab-wysiwyg" onclick="switchEmailEditorMode('wysiwyg')" class="editor-mode-tab-btn active">
+                      <i class="fa-solid fa-eye text-emerald-600"></i>
+                      <span>見たまま編集 (簡単)</span>
+                    </button>
+                    <button type="button" id="rm-email-tab-code" onclick="switchEmailEditorMode('code')" class="editor-mode-tab-btn">
+                      <i class="fa-solid fa-code text-slate-500"></i>
+                      <span>HTMLコード</span>
+                    </button>
+                  </div>
+                </div>
+
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
                   <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
                   <span>ひな形に戻す</span>
                 </button>
               </div>
 
-              <!-- Modern Editor Wrapper -->
-              <div class="modern-editor-wrapper" id="rm-email-editor-wrapper">
+              <!-- A. 見たままWYSIWYGエディタ (初心者・誰でも簡単) -->
+              <div id="rm-email-wysiwyg-container" class="modern-editor-wrapper">
+                <div id="rm-email-quill-editor"></div>
+                <div class="modern-editor-statusbar">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[9px]">見たまま編集</span>
+                    <span class="text-slate-400">Word感覚で文字入力・装飾が可能です</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span id="rm-email-wysiwyg-stat-chars">0 文字</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- B. HTMLコードエディタ (上級者向け) -->
+              <div id="rm-email-code-container" style="display: none;" class="modern-editor-wrapper">
                 <!-- Toolbar -->
                 <div class="modern-editor-toolbar">
                   <div class="editor-tool-group">
@@ -8315,7 +8442,7 @@ select.form-input, select.form-select {
                       <span>コード整形</span>
                     </button>
                     <div class="editor-tool-divider"></div>
-                    <button type="button" onclick="toggleEditorFullscreen('rm-email-editor-wrapper')" class="editor-tool-btn" title="全画面 / 拡大切替">
+                    <button type="button" onclick="toggleEditorFullscreen('rm-email-code-container')" class="editor-tool-btn" title="全画面 / 拡大切替">
                       <i class="fa-solid fa-expand"></i>
                     </button>
                   </div>
@@ -8328,7 +8455,7 @@ select.form-input, select.form-select {
                 <div class="modern-editor-statusbar">
                   <div class="flex items-center gap-2">
                     <span class="px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 font-bold text-[9px] uppercase">HTML / CSS</span>
-                    <span class="text-slate-400">タグ自動閉じ・シンタックス対応</span>
+                    <span class="text-slate-400">タグ直接編集</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <span id="rm-email-stat-lines">0 行</span>
@@ -16690,7 +16817,10 @@ window.CelebrationEffect = (function() {
   ];
 
   let reportEmailCodeMirror = null;
+  let reportEmailQuill = null;
   let reportLineCodeMirror = null;
+  let currentEmailEditorMode = 'wysiwyg'; // 'wysiwyg' | 'code'
+  let isSyncingEditor = false;
 
   function initReportManager() {
     ensureReportCodeEditors();
@@ -16698,10 +16828,40 @@ window.CelebrationEffect = (function() {
   }
 
   function ensureReportCodeEditors() {
-    if (typeof CodeMirror === 'undefined') return;
+    // 1. Quill WYSIWYG Editor (初心者向け見たまま編集)
+    const quillEl = document.getElementById('rm-email-quill-editor');
+    if (quillEl && !reportEmailQuill && typeof Quill !== 'undefined') {
+      reportEmailQuill = new Quill('#rm-email-quill-editor', {
+        theme: 'snow',
+        placeholder: 'HTMLメール本文をWord感覚でここに入力してください...',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['link', 'clean']
+          ]
+        }
+      });
+      reportEmailQuill.on('text-change', () => {
+        if (isSyncingEditor) return;
+        const html = reportEmailQuill.root.innerHTML;
+        const emailTextarea = document.getElementById('rm-email-body');
+        if (emailTextarea) emailTextarea.value = html;
+        if (reportEmailCodeMirror && reportEmailCodeMirror.getValue() !== html) {
+          isSyncingEditor = true;
+          reportEmailCodeMirror.setValue(html);
+          isSyncingEditor = false;
+        }
+        updateReportEditorStats('email');
+        updateReportPreview();
+      });
+    }
 
+    // 2. CodeMirror Editor (HTMLコード直接編集)
     const emailTextarea = document.getElementById('rm-email-body');
-    if (emailTextarea && !reportEmailCodeMirror) {
+    if (emailTextarea && !reportEmailCodeMirror && typeof CodeMirror !== 'undefined') {
       reportEmailCodeMirror = CodeMirror.fromTextArea(emailTextarea, {
         mode: 'htmlmixed',
         lineNumbers: true,
@@ -16713,14 +16873,22 @@ window.CelebrationEffect = (function() {
         tabSize: 2
       });
       reportEmailCodeMirror.on('change', () => {
-        emailTextarea.value = reportEmailCodeMirror.getValue();
+        if (isSyncingEditor) return;
+        const val = reportEmailCodeMirror.getValue();
+        emailTextarea.value = val;
+        if (reportEmailQuill) {
+          isSyncingEditor = true;
+          reportEmailQuill.root.innerHTML = val;
+          isSyncingEditor = false;
+        }
         updateReportEditorStats('email');
         updateReportPreview();
       });
     }
 
+    // 3. Line CodeMirror
     const lineTextarea = document.getElementById('rm-line-body');
-    if (lineTextarea && !reportLineCodeMirror) {
+    if (lineTextarea && !reportLineCodeMirror && typeof CodeMirror !== 'undefined') {
       reportLineCodeMirror = CodeMirror.fromTextArea(lineTextarea, {
         mode: null,
         lineNumbers: true,
@@ -16735,6 +16903,38 @@ window.CelebrationEffect = (function() {
     }
   }
 
+  function switchEmailEditorMode(mode) {
+    currentEmailEditorMode = mode;
+    const wysiwygContainer = document.getElementById('rm-email-wysiwyg-container');
+    const codeContainer = document.getElementById('rm-email-code-container');
+    const tabWysiwyg = document.getElementById('rm-email-tab-wysiwyg');
+    const tabCode = document.getElementById('rm-email-tab-code');
+
+    if (mode === 'wysiwyg') {
+      if (wysiwygContainer) wysiwygContainer.style.display = 'block';
+      if (codeContainer) codeContainer.style.display = 'none';
+      if (tabWysiwyg) tabWysiwyg.className = 'editor-mode-tab-btn active';
+      if (tabCode) tabCode.className = 'editor-mode-tab-btn';
+      if (reportEmailQuill && reportEmailCodeMirror) {
+        isSyncingEditor = true;
+        reportEmailQuill.root.innerHTML = reportEmailCodeMirror.getValue();
+        isSyncingEditor = false;
+      }
+    } else {
+      if (wysiwygContainer) wysiwygContainer.style.display = 'none';
+      if (codeContainer) codeContainer.style.display = 'block';
+      if (tabWysiwyg) tabWysiwyg.className = 'editor-mode-tab-btn';
+      if (tabCode) tabCode.className = 'editor-mode-tab-btn active';
+      if (reportEmailQuill && reportEmailCodeMirror) {
+        isSyncingEditor = true;
+        reportEmailCodeMirror.setValue(reportEmailQuill.root.innerHTML);
+        isSyncingEditor = false;
+      }
+      refreshReportEditors();
+    }
+    updateReportPreview();
+  }
+
   function updateReportEditorStats(type) {
     if (type === 'email') {
       const val = reportEmailCodeMirror ? reportEmailCodeMirror.getValue() : (document.getElementById('rm-email-body')?.value || '');
@@ -16742,8 +16942,10 @@ window.CelebrationEffect = (function() {
       const chars = val ? val.length : 0;
       const lEl = document.getElementById('rm-email-stat-lines');
       const cEl = document.getElementById('rm-email-stat-chars');
+      const wEl = document.getElementById('rm-email-wysiwyg-stat-chars');
       if (lEl) lEl.innerText = `${lines} 行`;
       if (cEl) cEl.innerText = `${chars.toLocaleString()} 文字`;
+      if (wEl) wEl.innerText = `${chars.toLocaleString()} 文字`;
     } else {
       const val = reportLineCodeMirror ? reportLineCodeMirror.getValue() : (document.getElementById('rm-line-body')?.value || '');
       const lines = val ? val.split('\n').length : 0;
@@ -17334,21 +17536,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     const emailTextarea = document.getElementById('rm-email-body');
     const lineTextarea = document.getElementById('rm-line-body');
 
+    isSyncingEditor = true;
     if (emailTextarea) emailTextarea.value = emailBody;
     if (reportEmailCodeMirror) {
-      if (reportEmailCodeMirror.getValue() !== emailBody) {
-        reportEmailCodeMirror.setValue(emailBody);
-        reportEmailCodeMirror.clearHistory();
-      }
+      reportEmailCodeMirror.setValue(emailBody);
+      reportEmailCodeMirror.clearHistory();
+    }
+    if (reportEmailQuill) {
+      reportEmailQuill.root.innerHTML = emailBody;
     }
 
     if (lineTextarea) lineTextarea.value = lineBody;
     if (reportLineCodeMirror) {
-      if (reportLineCodeMirror.getValue() !== lineBody) {
-        reportLineCodeMirror.setValue(lineBody);
-        reportLineCodeMirror.clearHistory();
-      }
+      reportLineCodeMirror.setValue(lineBody);
+      reportLineCodeMirror.clearHistory();
     }
+    isSyncingEditor = false;
 
     updateReportEditorStats('email');
     updateReportEditorStats('line');
@@ -17356,6 +17559,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function getReportEmailBodyValue() {
+    if (currentEmailEditorMode === 'wysiwyg' && reportEmailQuill) {
+      return reportEmailQuill.root.innerHTML;
+    }
     if (reportEmailCodeMirror) {
       return reportEmailCodeMirror.getValue();
     }
@@ -17387,12 +17593,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function insertTagIntoTextarea(targetId, tag) {
-    if (targetId === 'rm-email-body' && reportEmailCodeMirror) {
-      reportEmailCodeMirror.replaceSelection(tag);
-      reportEmailCodeMirror.focus();
-      updateReportEditorStats('email');
-      updateReportPreview();
-      return;
+    if (targetId === 'rm-email-body') {
+      if (currentEmailEditorMode === 'wysiwyg' && reportEmailQuill) {
+        const range = reportEmailQuill.getSelection(true);
+        const index = range ? range.index : reportEmailQuill.getLength();
+        reportEmailQuill.insertText(index, tag, 'user');
+        reportEmailQuill.setSelection(index + tag.length, 0, 'user');
+        reportEmailQuill.focus();
+        updateReportEditorStats('email');
+        updateReportPreview();
+        return;
+      }
+
+      if (reportEmailCodeMirror) {
+        reportEmailCodeMirror.replaceSelection(tag);
+        reportEmailCodeMirror.focus();
+        updateReportEditorStats('email');
+        updateReportPreview();
+        return;
+      }
     }
 
     if (targetId === 'rm-line-body' && reportLineCodeMirror) {

@@ -73,21 +73,25 @@ describe('Report & Message Manager Feature Tests', () => {
   });
 
   it('verifies Modern Code & Text Editor resources and toolbar features exist', () => {
-    // CodeMirror CDN links & script tags
+    // CodeMirror & Quill CDN links & script tags
     assert.strictEqual(indexHtml.includes('codemirror.min.css'), true);
     assert.strictEqual(indexHtml.includes('codemirror.min.js'), true);
-    assert.strictEqual(indexHtml.includes('mode/htmlmixed/htmlmixed.min.js'), true);
+    assert.strictEqual(indexHtml.includes('quill.snow.css'), true);
+    assert.strictEqual(indexHtml.includes('quill.min.js'), true);
 
     // Modern editor wrappers & status bars
-    assert.strictEqual(indexHtml.includes('id="rm-email-editor-wrapper"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-email-wysiwyg-container"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-email-quill-editor"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-email-code-container"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-line-editor-wrapper"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-email-stat-lines"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-email-stat-chars"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-line-stat-lines"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-line-stat-chars"'), true);
 
-    // Editor toolbar actions
+    // Editor toolbar actions & switcher
     assert.strictEqual(indexHtml.includes('function ensureReportCodeEditors'), true);
+    assert.strictEqual(indexHtml.includes('function switchEmailEditorMode'), true);
     assert.strictEqual(indexHtml.includes('function setReportEditorValues'), true);
     assert.strictEqual(indexHtml.includes('function getReportEmailBodyValue'), true);
     assert.strictEqual(indexHtml.includes('function getReportLineBodyValue'), true);

@@ -1402,6 +1402,101 @@ select.form-input, select.form-select {
 .cm-s-default .cm-variable { color: #0f172a !important; }
 .cm-s-default .cm-property { color: #0284c7 !important; }
 
+/* ========================================================
+   Quill Visual (WYSIWYG) Editor Custom Styling
+   ======================================================== */
+.ql-toolbar.ql-snow {
+  background: #f8fafc !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  padding: 8px 10px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+  font-family: inherit !important;
+}
+
+.ql-container.ql-snow {
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans JP", sans-serif !important;
+  font-size: 14px !important;
+  min-height: 280px !important;
+  max-height: 480px !important;
+  overflow-y: auto !important;
+}
+
+.ql-editor {
+  padding: 16px !important;
+  line-height: 1.75 !important;
+  color: #0f172a !important;
+  min-height: 280px !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #94a3b8 !important;
+  font-style: normal !important;
+  left: 16px !important;
+  right: 16px !important;
+}
+
+.ql-snow .ql-stroke {
+  stroke: #475569 !important;
+}
+.ql-snow .ql-fill {
+  fill: #475569 !important;
+}
+.ql-snow .ql-picker {
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+.ql-snow.ql-toolbar button:hover,
+.ql-snow .ql-toolbar button:hover,
+.ql-snow.ql-toolbar button.ql-active,
+.ql-snow .ql-toolbar button.ql-active {
+  background: #e2e8f0 !important;
+  border-radius: 6px !important;
+}
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #2563eb !important;
+}
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-fill {
+  fill: #2563eb !important;
+}
+
+/* Editor Mode Switch Buttons */
+.editor-mode-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.editor-mode-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.editor-mode-tab-btn:not(.active) {
+  background: transparent;
+  color: #64748b;
+}
+.editor-mode-tab-btn:not(.active):hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
 
 
 

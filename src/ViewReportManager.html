@@ -269,21 +269,50 @@
               </div>
             </div>
 
-            <!-- HTML本文エディタ (Modern Code Editor) -->
+            <!-- HTML本文エディタ (Visual WYSIWYG & Code Editor) -->
             <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-xs font-extrabold text-slate-700 m-0 flex items-center gap-1.5">
-                  <i class="fa-solid fa-code text-blue-600 text-[11px]"></i>
-                  <span>HTMLメール本文 (完成形ひな形)</span>
-                </label>
+              <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-extrabold text-slate-900 m-0 flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                    <span>HTMLメール本文</span>
+                  </label>
+
+                  <!-- エディタモード切替 (見たまま簡単 ⇄ HTMLコード) -->
+                  <div class="bg-slate-100 p-0.5 rounded-lg inline-flex items-center border border-slate-200/80">
+                    <button type="button" id="rm-email-tab-wysiwyg" onclick="switchEmailEditorMode('wysiwyg')" class="editor-mode-tab-btn active">
+                      <i class="fa-solid fa-eye text-emerald-600"></i>
+                      <span>見たまま編集 (簡単)</span>
+                    </button>
+                    <button type="button" id="rm-email-tab-code" onclick="switchEmailEditorMode('code')" class="editor-mode-tab-btn">
+                      <i class="fa-solid fa-code text-slate-500"></i>
+                      <span>HTMLコード</span>
+                    </button>
+                  </div>
+                </div>
+
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
                   <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
                   <span>ひな形に戻す</span>
                 </button>
               </div>
 
-              <!-- Modern Editor Wrapper -->
-              <div class="modern-editor-wrapper" id="rm-email-editor-wrapper">
+              <!-- A. 見たままWYSIWYGエディタ (初心者・誰でも簡単) -->
+              <div id="rm-email-wysiwyg-container" class="modern-editor-wrapper">
+                <div id="rm-email-quill-editor"></div>
+                <div class="modern-editor-statusbar">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[9px]">見たまま編集</span>
+                    <span class="text-slate-400">Word感覚で文字入力・装飾が可能です</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span id="rm-email-wysiwyg-stat-chars">0 文字</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- B. HTMLコードエディタ (上級者向け) -->
+              <div id="rm-email-code-container" style="display: none;" class="modern-editor-wrapper">
                 <!-- Toolbar -->
                 <div class="modern-editor-toolbar">
                   <div class="editor-tool-group">
@@ -319,7 +348,7 @@
                       <span>コード整形</span>
                     </button>
                     <div class="editor-tool-divider"></div>
-                    <button type="button" onclick="toggleEditorFullscreen('rm-email-editor-wrapper')" class="editor-tool-btn" title="全画面 / 拡大切替">
+                    <button type="button" onclick="toggleEditorFullscreen('rm-email-code-container')" class="editor-tool-btn" title="全画面 / 拡大切替">
                       <i class="fa-solid fa-expand"></i>
                     </button>
                   </div>
@@ -332,7 +361,7 @@
                 <div class="modern-editor-statusbar">
                   <div class="flex items-center gap-2">
                     <span class="px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 font-bold text-[9px] uppercase">HTML / CSS</span>
-                    <span class="text-slate-400">タグ自動閉じ・シンタックス対応</span>
+                    <span class="text-slate-400">タグ直接編集</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <span id="rm-email-stat-lines">0 行</span>
