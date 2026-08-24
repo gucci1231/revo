@@ -271,16 +271,16 @@
       const companyPart = formatTruncatedCell(r.company, 12);
       const profPart = formatTruncatedCell(r.profession, 12);
       const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
-      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
-        : renderAttendButtonHtml(r.id, r.isAttended);
+      const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+        ? renderDashboardVisitorStatusBadgeHtml(r)
+        : '';
 
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -290,7 +290,7 @@
           <td>${companyCell}</td>
           <td>${formatTruncatedCell(r.inviter, 10)}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-          <td class="text-center" style="width: 140px; padding: 6px 4px;">${statusGroupHtml}</td>
+          <td class="text-center" style="width: 110px; padding: 6px 4px;">${statusBadgeHtml}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -300,7 +300,7 @@
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -319,9 +319,9 @@
               </div>
             </div>
 
-            <div class="dash-card-right">
+            <div class="dash-card-right flex flex-col items-end gap-1">
               <span class="dash-card-date-badge">No.${idx + 1}</span>
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -330,10 +330,6 @@
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
               ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-          </div>
-
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -387,8 +383,8 @@
     }
 
     filtered.forEach(r => {
-      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+      const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+        ? renderDashboardVisitorStatusBadgeHtml(r)
         : '';
 
       // 1. PCテーブル行
@@ -396,7 +392,7 @@
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -425,7 +421,7 @@
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -444,9 +440,12 @@
               </div>
             </div>
 
-            <div class="dash-card-right">
-              ${formatEventDateWithElapsed(r.eventDate)}
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            <div class="dash-card-right flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1">
+                ${formatEventDateWithElapsed(r.eventDate)}
+                <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              </div>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -460,10 +459,6 @@
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
               ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-          </div>
-
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);

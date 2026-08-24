@@ -613,8 +613,8 @@
           openVisitorDetailView(r.id);
         };
 
-        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+          ? renderDashboardVisitorStatusBadgeHtml(r)
           : '';
 
         tr.innerHTML = `
@@ -636,8 +636,8 @@
           <td style="white-space: normal !important; word-break: break-word; max-width: none !important; line-height: 1.4; padding: 8px 10px; vertical-align: top;">
             ${renderCurrentStatusColumnHtml(r)}
           </td>
-          <td style="padding: 6px 4px; vertical-align: top; width: 140px;" class="text-center">
-            ${statusGroupHtml}
+          <td style="padding: 8px 6px; vertical-align: middle; width: 110px;" class="text-center">
+            ${statusBadgeHtml}
           </td>
         `;
         tbody.appendChild(tr);
@@ -648,13 +648,13 @@
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
         const actionBlockHtml = renderHotVisitorActionFullWidthHtml(r);
-        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+          ? renderDashboardVisitorStatusBadgeHtml(r)
           : '';
 
         let stageBadgeHtml = '';
@@ -680,9 +680,12 @@
               </div>
             </div>
 
-            <div class="dash-card-right">
-              ${formatEventDateWithElapsed(r.eventDate)}
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            <div class="dash-card-right flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1">
+                ${formatEventDateWithElapsed(r.eventDate)}
+                <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              </div>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -692,7 +695,7 @@
           </div>
 
           <!-- 担当と紹介者を下の列に -->
-          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-slate-100">
             <div class="dash-card-meta-tags">
               <span class="dash-card-meta-tag">
                 <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(r.inviter || '-')}</strong>
@@ -703,11 +706,6 @@
                 </span>
               ` : ''}
             </div>
-          </div>
-
-          <!-- ステータスセレクター群 -->
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);

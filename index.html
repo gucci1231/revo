@@ -8548,6 +8548,44 @@ const ApiService = {
     `;
   }
 
+  // 🌟 ダッシュボード用の閲覧専用・洗練テキストステータスバッジ
+  function renderDashboardVisitorStatusBadgeHtml(r) {
+    if (!r) return '';
+    const joinInfo = getJoinStatusInfo(r.isJoined);
+    const followInfo = getFollowTypeInfo(r.followType);
+
+    let joinBadge = '';
+    if (joinInfo.value === '入会済') {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">入会済</span>`;
+    } else if (joinInfo.value === '審査') {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">審査中</span>`;
+    } else if (joinInfo.value === '入金待ち') {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">入金待ち</span>`;
+    } else if (joinInfo.value === '申込書提出') {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">申込書提出</span>`;
+    } else if (joinInfo.value === '検討中') {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">検討中</span>`;
+    } else {
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">未対応</span>`;
+    }
+
+    let followBadge = '';
+    if (followInfo.value === '時期尚早') {
+      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">時期尚早</span>`;
+    } else if (followInfo.value === '関係維持') {
+      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">関係維持</span>`;
+    } else if (followInfo.value === '終了') {
+      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-400">終了</span>`;
+    }
+
+    return `
+      <div class="inline-flex flex-col items-center justify-center gap-1">
+        ${joinBadge}
+        ${followBadge}
+      </div>
+    `;
+  }
+
   function renderRepeatBadgeHtml(v) {
     if (!v) return '';
     const count = v.visitCount || (v.allIds && v.allIds.length) || 1;
@@ -10788,8 +10826,8 @@ window.CelebrationEffect = (function() {
           openVisitorDetailView(r.id);
         };
 
-        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+          ? renderDashboardVisitorStatusBadgeHtml(r)
           : '';
 
         tr.innerHTML = `
@@ -10811,8 +10849,8 @@ window.CelebrationEffect = (function() {
           <td style="white-space: normal !important; word-break: break-word; max-width: none !important; line-height: 1.4; padding: 8px 10px; vertical-align: top;">
             ${renderCurrentStatusColumnHtml(r)}
           </td>
-          <td style="padding: 6px 4px; vertical-align: top; width: 140px;" class="text-center">
-            ${statusGroupHtml}
+          <td style="padding: 8px 6px; vertical-align: middle; width: 110px;" class="text-center">
+            ${statusBadgeHtml}
           </td>
         `;
         tbody.appendChild(tr);
@@ -10823,13 +10861,13 @@ window.CelebrationEffect = (function() {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
         const actionBlockHtml = renderHotVisitorActionFullWidthHtml(r);
-        const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-          ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+        const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+          ? renderDashboardVisitorStatusBadgeHtml(r)
           : '';
 
         let stageBadgeHtml = '';
@@ -10855,9 +10893,12 @@ window.CelebrationEffect = (function() {
               </div>
             </div>
 
-            <div class="dash-card-right">
-              ${formatEventDateWithElapsed(r.eventDate)}
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            <div class="dash-card-right flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1">
+                ${formatEventDateWithElapsed(r.eventDate)}
+                <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              </div>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -10867,7 +10908,7 @@ window.CelebrationEffect = (function() {
           </div>
 
           <!-- 担当と紹介者を下の列に -->
-          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-slate-100">
             <div class="dash-card-meta-tags">
               <span class="dash-card-meta-tag">
                 <i class="fa-solid fa-user-plus text-rose-500"></i> 紹介: <strong class="text-slate-800">${escapeHtml(r.inviter || '-')}</strong>
@@ -10878,11 +10919,6 @@ window.CelebrationEffect = (function() {
                 </span>
               ` : ''}
             </div>
-          </div>
-
-          <!-- ステータスセレクター群 -->
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -13011,16 +13047,16 @@ window.CelebrationEffect = (function() {
       const companyPart = formatTruncatedCell(r.company, 12);
       const profPart = formatTruncatedCell(r.profession, 12);
       const companyCell = (r.company && r.profession) ? `${companyPart} / ${profPart}` : (r.company ? companyPart : profPart);
-      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
-        : renderAttendButtonHtml(r.id, r.isAttended);
+      const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+        ? renderDashboardVisitorStatusBadgeHtml(r)
+        : '';
 
       // 1. PCテーブル行
       if (tbody) {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -13030,7 +13066,7 @@ window.CelebrationEffect = (function() {
           <td>${companyCell}</td>
           <td>${formatTruncatedCell(r.inviter, 10)}</td>
           <td class="text-center">${renderRankBadgeHtml(r.feelAbc)}</td>
-          <td class="text-center" style="width: 140px; padding: 6px 4px;">${statusGroupHtml}</td>
+          <td class="text-center" style="width: 110px; padding: 6px 4px;">${statusBadgeHtml}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -13040,7 +13076,7 @@ window.CelebrationEffect = (function() {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -13059,9 +13095,9 @@ window.CelebrationEffect = (function() {
               </div>
             </div>
 
-            <div class="dash-card-right">
+            <div class="dash-card-right flex flex-col items-end gap-1">
               <span class="dash-card-date-badge">No.${idx + 1}</span>
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -13070,10 +13106,6 @@ window.CelebrationEffect = (function() {
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
               ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-          </div>
-
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
@@ -13127,8 +13159,8 @@ window.CelebrationEffect = (function() {
     }
 
     filtered.forEach(r => {
-      const statusGroupHtml = typeof renderVisitorStatusGroupHtml === 'function'
-        ? renderVisitorStatusGroupHtml(r.id, r.isAttended, r.isJoined, r.followType)
+      const statusBadgeHtml = typeof renderDashboardVisitorStatusBadgeHtml === 'function'
+        ? renderDashboardVisitorStatusBadgeHtml(r)
         : '';
 
       // 1. PCテーブル行
@@ -13136,7 +13168,7 @@ window.CelebrationEffect = (function() {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -13165,7 +13197,7 @@ window.CelebrationEffect = (function() {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
         card.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
+          if (e.target.closest('button') || e.target.closest('a')) return;
           openVisitorDetailView(r.id);
         };
 
@@ -13184,9 +13216,12 @@ window.CelebrationEffect = (function() {
               </div>
             </div>
 
-            <div class="dash-card-right">
-              ${formatEventDateWithElapsed(r.eventDate)}
-              <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+            <div class="dash-card-right flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1">
+                ${formatEventDateWithElapsed(r.eventDate)}
+                <span class="dash-card-chevron"><i class="fa-solid fa-chevron-right"></i></span>
+              </div>
+              ${statusBadgeHtml}
             </div>
           </div>
 
@@ -13200,10 +13235,6 @@ window.CelebrationEffect = (function() {
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(r.inviter || '-')}</span>
               ${r.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(r.orientUser)}</span>` : ''}
             </div>
-          </div>
-
-          <div class="pt-2">
-            ${statusGroupHtml}
           </div>
         `;
         cardsContainer.appendChild(card);
