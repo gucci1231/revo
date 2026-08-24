@@ -66,12 +66,12 @@
     currentSelectedReportId = reportId;
 
     ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
-      const btn = document.getElementById('rm-tab-btn-' + id);
-      if (btn) {
+      const itemEl = document.getElementById('rm-item-' + id);
+      if (itemEl) {
         if (id === reportId) {
-          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer';
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer';
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
     });
@@ -90,15 +90,15 @@
     const previewLine = document.getElementById('rm-preview-container-line');
 
     if (channel === 'email') {
-      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
-      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 transition';
       if (formEmail) formEmail.style.display = 'block';
       if (formLine) formLine.style.display = 'none';
       if (previewEmail) previewEmail.style.display = 'block';
       if (previewLine) previewLine.style.display = 'none';
     } else {
-      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
-      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 transition';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition';
       if (formEmail) formEmail.style.display = 'none';
       if (formLine) formLine.style.display = 'block';
       if (previewEmail) previewEmail.style.display = 'none';
@@ -122,6 +122,27 @@
 
   function renderReportManagerUI() {
     const t = getCurrentTemplate();
+
+    // 左カラムの全アイテムのアクティブ状態とステータスドットを更新
+    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+      const itemEl = document.getElementById('rm-item-' + id);
+      const badgeEl = document.getElementById('rm-badge-' + id);
+      const tmpl = cachedReportTemplates.find(x => x.id === id);
+
+      if (itemEl) {
+        if (id === currentSelectedReportId) {
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+        } else {
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+        }
+      }
+
+      if (badgeEl) {
+        const enabled = tmpl ? Number(tmpl.is_enabled) === 1 : true;
+        badgeEl.className = enabled ? 'w-2 h-2 rounded-full bg-emerald-500 shrink-0' : 'w-2 h-2 rounded-full bg-slate-300 shrink-0';
+        badgeEl.title = enabled ? '有効 (配信中)' : '無効 (停止中)';
+      }
+    });
 
     const titleEl = document.getElementById('rm-current-title');
     const toggleEl = document.getElementById('rm-enabled-toggle');

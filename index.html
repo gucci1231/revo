@@ -7839,7 +7839,7 @@ select.form-input, select.form-select {
   </div>
 </div>
 
-    <!-- VIEW: 報告・メッセージ管理センター (Radical Minimalism & Pure White Clean Slate) -->
+    <!-- VIEW: 報告・メッセージ管理センター (2カラム マスター・ディテール構成) -->
 <div id="view-report-manager" class="view-content">
 
   <!-- 1. ヘッダー ツールバー -->
@@ -7854,7 +7854,7 @@ select.form-input, select.form-select {
       </div>
     </div>
 
-    <!-- 右側アクション (Apple Minimal Icon Button) -->
+    <!-- 右側アクション -->
     <div class="flex items-center gap-2 shrink-0">
       <button type="button" onclick="fetchReportTemplatesData(true)" class="w-9 h-9 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200/60 transition-colors flex items-center justify-center text-sm cursor-pointer" title="再読込">
         <i class="fa-solid fa-rotate-right"></i>
@@ -7862,38 +7862,96 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- 2. 4大報告タイプ タブセレクター (Apple Minimal Pill Tabs) -->
-  <div class="bg-slate-100 p-1 rounded-2xl mb-5 flex items-center gap-1 overflow-x-auto scrollbar-none">
-    <button type="button" id="rm-tab-btn-meeting_recap" onclick="switchReportTab('meeting_recap')" class="flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-black transition-all bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer">
-      <i class="fa-solid fa-bullhorn text-[#0071e3]"></i>
-      <span>定例会速報</span>
-    </button>
-    <button type="button" id="rm-tab-btn-member_remind" onclick="switchReportTab('member_remind')" class="flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer">
-      <i class="fa-solid fa-user-clock text-[#64748b]"></i>
-      <span>個別リマインド</span>
-    </button>
-    <button type="button" id="rm-tab-btn-weekly_summary" onclick="switchReportTab('weekly_summary')" class="flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer">
-      <i class="fa-solid fa-chart-line text-[#64748b]"></i>
-      <span>成果サマリー</span>
-    </button>
-    <button type="button" id="rm-tab-btn-action_cleared" onclick="switchReportTab('action_cleared')" class="flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer">
-      <i class="fa-solid fa-circle-check text-[#059669]"></i>
-      <span>完了速報</span>
-    </button>
-  </div>
+  <!-- 2. メイン 2カラム レイアウト (左: 報告一覧 / 右: 編集＆プレビュー) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
-  <!-- 3. メイン管理パネル -->
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-    
-    <!-- 左側: テンプレート設定 ＆ 編集エディタ (7カラム) -->
-    <div class="lg:col-span-7 space-y-4">
+    <!-- ==================== 左カラム: 報告一覧リスト (4カラム) ==================== -->
+    <div class="lg:col-span-4 xl:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-2">
       
-      <!-- ステータス ＆ チャンネル切り替えカード -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+      <div class="flex items-center justify-between pb-2 mb-1 border-b border-slate-100 px-1">
+        <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">報告テンプレート一覧</span>
+        <span class="text-[10px] font-bold font-mono text-slate-400" id="rm-templates-count">4件</span>
+      </div>
+
+      <!-- 報告アイテム 1: 定例会速報 -->
+      <div id="rm-item-meeting_recap" onclick="switchReportTab('meeting_recap')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#0071e3] flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-xs font-black text-slate-900 truncate">定例会速報</span>
+              <span id="rm-badge-meeting_recap" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">参加ビジター・感触・次回To-Do</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
+      </div>
+
+      <!-- 報告アイテム 2: メンバー個別リマインド -->
+      <div id="rm-item-member_remind" onclick="switchReportTab('member_remind')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-user-clock"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-xs font-black text-slate-900 truncate">個別リマインド</span>
+              <span id="rm-badge-member_remind" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">担当ゲストのフォロー状況・URL</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
+      </div>
+
+      <!-- 報告アイテム 3: 成果サマリー -->
+      <div id="rm-item-weekly_summary" onclick="switchReportTab('weekly_summary')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-xs font-black text-slate-900 truncate">成果サマリー</span>
+              <span id="rm-badge-weekly_summary" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">招待数・入会数・成約率週報</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
+      </div>
+
+      <!-- 報告アイテム 4: アクション完了速報 -->
+      <div id="rm-item-action_cleared" onclick="switchReportTab('action_cleared')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <span class="text-xs font-black text-slate-900 truncate">完了速報</span>
+              <span id="rm-badge-action_cleared" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">1to1実施・入会確定の祝賀</p>
+          </div>
+        </div>
+        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
+      </div>
+
+    </div>
+
+    <!-- ==================== 右カラム: 編集エディタ ＆ リアルタイムプレビュー (8カラム) ==================== -->
+    <div class="lg:col-span-8 xl:col-span-8 space-y-4">
+      
+      <!-- 1. ステータス ＆ チャンネル切り替えカード -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
           <div>
-            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Report Status</span>
-            <h3 class="text-sm font-extrabold text-slate-900 m-0" id="rm-current-title">定例会ビジター来訪＆フォロー速報</h3>
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Selected Report</span>
+            <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0" id="rm-current-title">定例会ビジター来訪＆フォロー速報</h3>
           </div>
 
           <!-- オン/オフ トグルスイッチ -->
@@ -7908,151 +7966,159 @@ select.form-input, select.form-select {
 
         <!-- チャンネル切り替え (HTMLメール ⇄ LINE報告文) -->
         <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold w-full">
-          <button type="button" id="rm-channel-btn-email" onclick="switchReportChannel('email')" class="flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5">
+          <button type="button" id="rm-channel-btn-email" onclick="switchReportChannel('email')" class="flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition">
             <i class="fa-solid fa-envelope text-blue-600"></i>
             <span>HTMLメール (From: info@k-d-o.biz)</span>
           </button>
-          <button type="button" id="rm-channel-btn-line" onclick="switchReportChannel('line')" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5">
+          <button type="button" id="rm-channel-btn-line" onclick="switchReportChannel('line')" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 transition">
             <i class="fa-brands fa-line text-emerald-600"></i>
             <span>LINEグループ報告文</span>
           </button>
         </div>
       </div>
 
-      <!-- A. HTMLメール編集フォーム -->
-      <div id="rm-form-email" class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4">
+      <!-- 2. エディタ & プレビュー (左右2分割 または 上下) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
         
-        <!-- 送信先設定 -->
-        <div>
-          <label class="block text-xs font-extrabold text-slate-700 mb-1">
-            <span>送信先メールアドレス (カンマ区切りで複数可)</span>
-          </label>
-          <input type="text" id="rm-email-recipients" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="info@k-d-o.biz, chapter-core@k-d-o.biz">
-        </div>
+        <!-- エディタ側 (7カラム) -->
+        <div class="xl:col-span-7 space-y-4">
+          
+          <!-- A. HTMLメール編集フォーム -->
+          <div id="rm-form-email" class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+            
+            <!-- 送信先設定 -->
+            <div>
+              <label class="block text-xs font-extrabold text-slate-700 mb-1">
+                <span>送信先メールアドレス</span>
+              </label>
+              <input type="text" id="rm-email-recipients" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="info@k-d-o.biz">
+            </div>
 
-        <!-- 件名 -->
-        <div>
-          <label class="block text-xs font-extrabold text-slate-700 mb-1">
-            <span>メール件名</span>
-          </label>
-          <input type="text" id="rm-email-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="【ビジホス速報】{{定例会日付}} ビジター来訪報告">
-        </div>
+            <!-- 件名 -->
+            <div>
+              <label class="block text-xs font-extrabold text-slate-700 mb-1">
+                <span>メール件名</span>
+              </label>
+              <input type="text" id="rm-email-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="【ビジホス速報】{{定例会日付}} ビジター来訪報告">
+            </div>
 
-        <!-- プレースホルダー一覧 -->
-        <div>
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">利用可能な自動置換タグ (クリックで挿入)</div>
-          <div class="flex flex-wrap gap-1.5" id="rm-email-placeholder-chips">
-            <!-- JSで動的生成 -->
-          </div>
-        </div>
+            <!-- プレースホルダー一覧 -->
+            <div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">自動置換タグ (クリックで挿入)</div>
+              <div class="flex flex-wrap gap-1" id="rm-email-placeholder-chips">
+                <!-- JSで動的生成 -->
+              </div>
+            </div>
 
-        <!-- HTML本文エディタ -->
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-extrabold text-slate-700 m-0">
-              <span>HTMLメール本文 (完成形ひな形)</span>
-            </label>
-            <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
-              <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
-              <span>ひな形に戻す</span>
-            </button>
-          </div>
-          <textarea id="rm-email-body" rows="12" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
-        </div>
+            <!-- HTML本文エディタ -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-extrabold text-slate-700 m-0">
+                  <span>HTMLメール本文 (ひな形)</span>
+                </label>
+                <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
+                  <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
+                  <span>ひな形に戻す</span>
+                </button>
+              </div>
+              <textarea id="rm-email-body" rows="11" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+            </div>
 
-        <!-- アクションボタン -->
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-3">
-          <button type="button" onclick="sendTestReportEmail()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200/80 transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-paper-plane text-blue-600"></i>
-            <span>テスト送信 (info@k-d-o.bizから)</span>
-          </button>
+            <!-- アクションボタン -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2 flex-wrap">
+              <button type="button" onclick="sendTestReportEmail()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl border border-slate-200/80 transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-paper-plane text-blue-600"></i>
+                <span>テスト送信</span>
+              </button>
 
-          <button type="button" onclick="saveCurrentReportTemplate()" class="px-5 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-floppy-disk"></i>
-            <span>テンプレートを保存</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- B. LINEグループ報告文 編集フォーム -->
-      <div id="rm-form-line" class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs space-y-4" style="display: none;">
-        
-        <!-- プレースホルダー一覧 -->
-        <div>
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">利用可能な自動置換タグ (クリックで挿入)</div>
-          <div class="flex flex-wrap gap-1.5" id="rm-line-placeholder-chips">
-            <!-- JSで動的生成 -->
-          </div>
-        </div>
-
-        <!-- LINE文面エディタ -->
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-extrabold text-slate-700 m-0">
-              <span>LINEグループ報告文 (完成形ひな形)</span>
-            </label>
-            <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
-              <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
-              <span>ひな形に戻す</span>
-            </button>
-          </div>
-          <textarea id="rm-line-body" rows="14" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
-        </div>
-
-        <!-- アクションボタン -->
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-3">
-          <button type="button" onclick="copyReplacedLineReportText()" class="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-regular fa-copy"></i>
-            <span>最新データでLINE文面をコピー</span>
-          </button>
-
-          <button type="button" onclick="saveCurrentReportTemplate()" class="px-5 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-floppy-disk"></i>
-            <span>テンプレートを保存</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- 右側: リアルタイムプレビュー (実データ置換サンプル) (5カラム) -->
-    <div class="lg:col-span-5 space-y-4">
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs sticky top-20">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <h3 class="text-xs font-extrabold text-slate-800 m-0">リアルタイム実データプレビュー</h3>
-          </div>
-          <span class="text-[10px] font-bold text-slate-400 font-mono">Live Output</span>
-        </div>
-
-        <!-- メールプレビューコンテナ -->
-        <div id="rm-preview-container-email">
-          <div class="mb-2 p-2 bg-slate-50 border border-slate-200/60 rounded-xl text-xs font-mono">
-            <div class="text-slate-400 text-[10px]">Subject:</div>
-            <div class="font-bold text-slate-900 truncate" id="rm-preview-email-subject">件名プレビュー</div>
-          </div>
-          <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 max-h-[500px] overflow-y-auto">
-            <iframe id="rm-email-preview-frame" class="w-full min-h-[420px] bg-white border-0"></iframe>
-          </div>
-        </div>
-
-        <!-- LINEプレビューコンテナ -->
-        <div id="rm-preview-container-line" style="display: none;">
-          <div class="bg-[#7494c0] p-4 rounded-2xl min-h-[420px] max-h-[500px] overflow-y-auto font-sans text-xs">
-            <div class="bg-white text-slate-900 rounded-2xl p-3.5 shadow-sm whitespace-pre-wrap leading-relaxed border border-slate-100 select-all" id="rm-preview-line-content">
-              LINEプレビュー
+              <button type="button" onclick="saveCurrentReportTemplate()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>保存</span>
+              </button>
             </div>
           </div>
-          <div class="mt-3 text-center">
-            <button type="button" onclick="copyReplacedLineReportText()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <i class="fa-regular fa-copy"></i>
-              <span>LINE報告文をクリップボードにコピー</span>
-            </button>
+
+          <!-- B. LINEグループ報告文 編集フォーム -->
+          <div id="rm-form-line" class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5" style="display: none;">
+            
+            <!-- プレースホルダー一覧 -->
+            <div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">自動置換タグ (クリックで挿入)</div>
+              <div class="flex flex-wrap gap-1" id="rm-line-placeholder-chips">
+                <!-- JSで動的生成 -->
+              </div>
+            </div>
+
+            <!-- LINE文面エディタ -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-extrabold text-slate-700 m-0">
+                  <span>LINEグループ報告文 (ひな形)</span>
+                </label>
+                <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
+                  <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
+                  <span>ひな形に戻す</span>
+                </button>
+              </div>
+              <textarea id="rm-line-body" rows="13" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+            </div>
+
+            <!-- アクションボタン -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100 gap-2 flex-wrap">
+              <button type="button" onclick="copyReplacedLineReportText()" class="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-regular fa-copy"></i>
+                <span>LINE文面をコピー</span>
+              </button>
+
+              <button type="button" onclick="saveCurrentReportTemplate()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>保存</span>
+              </button>
+            </div>
           </div>
+
+        </div>
+
+        <!-- プレビュー側 (5カラム) -->
+        <div class="xl:col-span-5 bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs sticky top-20">
+          <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <h3 class="text-xs font-extrabold text-slate-800 m-0">実データプレビュー</h3>
+            </div>
+            <span class="text-[10px] font-bold text-slate-400 font-mono">Live Preview</span>
+          </div>
+
+          <!-- メールプレビューコンテナ -->
+          <div id="rm-preview-container-email">
+            <div class="mb-2 p-2 bg-slate-50 border border-slate-200/60 rounded-xl text-[11px] font-mono">
+              <div class="text-slate-400 text-[9px]">Subject:</div>
+              <div class="font-bold text-slate-900 truncate" id="rm-preview-email-subject">件名プレビュー</div>
+            </div>
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 max-h-[460px] overflow-y-auto">
+              <iframe id="rm-email-preview-frame" class="w-full min-h-[380px] bg-white border-0"></iframe>
+            </div>
+          </div>
+
+          <!-- LINEプレビューコンテナ -->
+          <div id="rm-preview-container-line" style="display: none;">
+            <div class="bg-[#7494c0] p-3.5 rounded-2xl min-h-[380px] max-h-[460px] overflow-y-auto font-sans text-xs">
+              <div class="bg-white text-slate-900 rounded-2xl p-3 shadow-sm whitespace-pre-wrap leading-relaxed border border-slate-100 select-all text-[11px]" id="rm-preview-line-content">
+                LINEプレビュー
+              </div>
+            </div>
+            <div class="mt-2.5 text-center">
+              <button type="button" onclick="copyReplacedLineReportText()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <i class="fa-regular fa-copy"></i>
+                <span>LINE報告文をコピー</span>
+              </button>
+            </div>
+          </div>
+
         </div>
 
       </div>
+
     </div>
 
   </div>
@@ -16260,12 +16326,12 @@ window.CelebrationEffect = (function() {
     currentSelectedReportId = reportId;
 
     ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
-      const btn = document.getElementById('rm-tab-btn-' + id);
-      if (btn) {
+      const itemEl = document.getElementById('rm-item-' + id);
+      if (itemEl) {
         if (id === reportId) {
-          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-white text-slate-900 shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer';
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          btn.className = 'flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-bold transition-all text-slate-500 hover:text-slate-900 flex items-center justify-center gap-1.5 cursor-pointer';
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
     });
@@ -16284,15 +16350,15 @@ window.CelebrationEffect = (function() {
     const previewLine = document.getElementById('rm-preview-container-line');
 
     if (channel === 'email') {
-      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
-      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 transition';
       if (formEmail) formEmail.style.display = 'block';
       if (formLine) formLine.style.display = 'none';
       if (previewEmail) previewEmail.style.display = 'block';
       if (previewLine) previewLine.style.display = 'none';
     } else {
-      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5';
-      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5';
+      if (btnEmail) btnEmail.className = 'flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer flex items-center justify-center gap-1.5 transition';
+      if (btnLine) btnLine.className = 'flex-1 py-2 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center justify-center gap-1.5 transition';
       if (formEmail) formEmail.style.display = 'none';
       if (formLine) formLine.style.display = 'block';
       if (previewEmail) previewEmail.style.display = 'none';
@@ -16316,6 +16382,27 @@ window.CelebrationEffect = (function() {
 
   function renderReportManagerUI() {
     const t = getCurrentTemplate();
+
+    // 左カラムの全アイテムのアクティブ状態とステータスドットを更新
+    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+      const itemEl = document.getElementById('rm-item-' + id);
+      const badgeEl = document.getElementById('rm-badge-' + id);
+      const tmpl = cachedReportTemplates.find(x => x.id === id);
+
+      if (itemEl) {
+        if (id === currentSelectedReportId) {
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+        } else {
+          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+        }
+      }
+
+      if (badgeEl) {
+        const enabled = tmpl ? Number(tmpl.is_enabled) === 1 : true;
+        badgeEl.className = enabled ? 'w-2 h-2 rounded-full bg-emerald-500 shrink-0' : 'w-2 h-2 rounded-full bg-slate-300 shrink-0';
+        badgeEl.title = enabled ? '有効 (配信中)' : '無効 (停止中)';
+      }
+    });
 
     const titleEl = document.getElementById('rm-current-title');
     const toggleEl = document.getElementById('rm-enabled-toggle');
