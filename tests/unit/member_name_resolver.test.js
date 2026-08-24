@@ -11,9 +11,67 @@ const REVO_TEST_MEMBERS = [
   { id: '7', name: '永井 創太', category: '〇保険・金融', profession: '生命保険（個人）' },
   { id: '8', name: '森田 由美子', category: '〇飲食・物販', profession: '日本茶販売' },
   { id: '9', name: '川田 湧矢', category: '〇飲食・物販', profession: '和食とワイン' },
-  { id: '10', name: '鈴木 太郎', category: '〇その他', profession: 'コンサル' },
-  { id: '11', name: '鈴木 次郎', category: '〇その他', profession: 'デザイナー' }
+  { id: '10', name: '板谷 栄子', category: '〇美容・健康', profession: 'ながらダイエット機器販売' },
+  { id: '11', name: '桐原 卓也', category: '〇クリエイティブ・マーケティング', profession: 'SNS特化ショート動画制作' },
+  { id: '12', name: '川口 陽平', category: '〇クリエイティブ・マーケティング', profession: 'デザイナー' },
+  { id: '13', name: '江幡 幸典', category: '〇クリエイティブ・マーケティング', profession: '人生の節目フォトグラファー' },
+  { id: '14', name: '居原田 晃司', category: '〇ライフイベント・サービス', profession: '結婚相談所' },
+  { id: '15', name: '熊野 りん', category: 'DNAメンバー', profession: 'DNA' },
+  { id: '16', name: '畑中 実', category: 'DNAメンバー', profession: 'DNA' },
+  { id: '17', name: '野本 暁', category: 'DNAメンバー', profession: 'DNA' },
+  { id: '18', name: '佐内 勖', category: 'DNAメンバー', profession: 'DNA' },
+  { id: '19', name: '松本 俊輔', category: 'DNAメンバー', profession: 'DNA' },
+  { id: '20', name: '鈴木 太郎', category: '〇その他', profession: 'コンサル' },
+  { id: '21', name: '鈴木 次郎', category: '〇その他', profession: 'デザイナー' }
 ];
+
+const KNOWN_MEMBER_ALIASES = [
+  { canonical: '小瀬戸 健一', aliases: ['小瀬戸', 'おぜと', 'おせど', '小瀬', '瀬戸', 'おぜとさん', 'おせどさん', 'こせど'] },
+  { canonical: '前井 宏之', aliases: ['前井', 'まえい', '前居', '前居宏之', '前居さん'] },
+  { canonical: '平田 貴嗣', aliases: ['平田', 'ひらた', '平田さん', '平田たかつぐ', 'たかつぐ'] },
+  { canonical: '上田 優也', aliases: ['上田', 'うえだ', '植田', '上田さん', 'ゆうや'] },
+  { canonical: '阿部 真二', aliases: ['阿部', 'あべ', '安倍', '安部', '阿部さん', '安倍さん', '真二', 'しんじ'] },
+  { canonical: '三島 文美', aliases: ['三島', 'みしま', '三島さん', '文美', 'あやみ'] },
+  { canonical: '永井 創太', aliases: ['永井', 'ながい', '長井', '長井さん', '永井さん', '創太', 'そうた'] },
+  { canonical: '森田 由美子', aliases: ['森田', 'もりた', '盛田', '森田さん', '盛田さん', '由美子', 'ゆみこ'] },
+  { canonical: '川田 湧矢', aliases: ['川田', 'かわた', 'かわだ', '河田', '川田さん', '湧矢'] },
+  { canonical: '板谷 栄子', aliases: ['板谷', 'いたや', '板屋', '板谷さん', '板屋さん', '栄子', 'えいこ'] },
+  { canonical: '桐原 卓也', aliases: ['桐原', 'きりはら', '桐山', '桐原さん', '卓也', 'たくや'] },
+  { canonical: '川口 陽平', aliases: ['川口', 'かわぐち', '河口', '川口さん', '陽平', 'ようへい', 'ぐっち'] },
+  { canonical: '江幡 幸典', aliases: ['江幡', '江端', 'えばた', 'えばたさん', '江端さん', '江端幸典', '江端ゆきのり', '幸典', 'ゆきのり', 'エバタ'] },
+  { canonical: '居原田 晃司', aliases: ['居原田', 'いはらだ', '井原田', '猪原田', '居原田さん', '井原田さん', '晃司', 'こうじ'] },
+  { canonical: '熊野 りん', aliases: ['熊野', 'くまの', '熊野さん', 'りん', 'りんさん'] },
+  { canonical: '畑中 実', aliases: ['畑中', 'はたなか', '畑中さん', '実', 'みのる'] },
+  { canonical: '野本 暁', aliases: ['野本', 'のもと', '野本さん', '暁', 'あきら'] },
+  { canonical: '佐内 勖', aliases: ['佐内', 'さない', '佐内さん', '左内'] },
+  { canonical: '松本 俊輔', aliases: ['松本', 'まつもと', '松本さん', '俊輔', 'しゅんすけ'] }
+];
+
+function toHiragana(str) {
+  if (!str) return '';
+  return str.replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+
+function getLevenshteinDistance(a, b) {
+  if (!a || !b) return (a || b).length;
+  const m = a.length;
+  const n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+  return dp[m][n];
+}
 
 function findMemberByName(rawName, membersList = null) {
   if (!rawName) return null;
@@ -25,6 +83,7 @@ function findMemberByName(rawName, membersList = null) {
   if (!cleaned) return null;
 
   const cleanKey = cleaned.replace(/[\s\u3000]+/g, '').toLowerCase();
+  const cleanHiragana = toHiragana(cleanKey);
 
   // 1. 完全一致 (スペース無視)
   for (const m of members) {
@@ -33,7 +92,19 @@ function findMemberByName(rawName, membersList = null) {
     if (cleanKey === mKey) return m;
   }
 
-  // 2. 姓一致 (苗字一致)
+  // 2. 既知の同音・漢字エイリアス / ひらがな辞書一致
+  for (const item of KNOWN_MEMBER_ALIASES) {
+    for (const alias of item.aliases) {
+      const aKey = alias.replace(/[\s\u3000]+/g, '').toLowerCase();
+      const aHira = toHiragana(aKey);
+      if (cleanKey === aKey || cleanHiragana === aHira) {
+        const found = members.find(m => (m.name || '').trim() === item.canonical);
+        if (found) return found;
+      }
+    }
+  }
+
+  // 3. 姓一致 (苗字一致)
   const lastNameMatches = [];
   for (const m of members) {
     const mName = (m.name || '').trim();
@@ -47,7 +118,7 @@ function findMemberByName(rawName, membersList = null) {
     return lastNameMatches[0];
   }
 
-  // 3. 名一致 (名前一致)
+  // 4. 名一致 (名前一致)
   const firstNameMatches = [];
   for (const m of members) {
     const mName = (m.name || '').trim();
@@ -63,7 +134,7 @@ function findMemberByName(rawName, membersList = null) {
     return firstNameMatches[0];
   }
 
-  // 4. 部分一致 / 前方一致
+  // 5. 部分一致 / 前方一致
   const partialMatches = [];
   for (const m of members) {
     const mName = (m.name || '').trim();
@@ -74,6 +145,28 @@ function findMemberByName(rawName, membersList = null) {
   }
   if (partialMatches.length === 1) {
     return partialMatches[0];
+  }
+
+  // 6. 編集距離マッチング (1文字違いの漢字間違い・タイポ)
+  if (cleanKey.length >= 2) {
+    const typoMatches = [];
+    for (const m of members) {
+      const mName = (m.name || '').trim();
+      const mKey = mName.replace(/[\s\u3000]+/g, '').toLowerCase();
+      const parts = mName.split(/[\s\u3000]+/);
+      const lastName = (parts[0] || '').toLowerCase();
+
+      const distFull = getLevenshteinDistance(cleanKey, mKey);
+      const distLast = getLevenshteinDistance(cleanKey, lastName);
+
+      if (distFull <= 1 || (distLast <= 1 && cleanKey.length >= 2)) {
+        typoMatches.push({ member: m, dist: Math.min(distFull, distLast) });
+      }
+    }
+
+    if (typoMatches.length === 1) {
+      return typoMatches[0].member;
+    }
   }
 
   return null;
@@ -110,10 +203,26 @@ describe('Member Name Resolution & Normalization Tests', () => {
     assert.strictEqual(resolveMemberName('森田　由美子様', REVO_TEST_MEMBERS), '森田 由美子');
   });
 
-  it('correctly resolves other members (阿部, 前井, 平田)', () => {
-    assert.strictEqual(resolveMemberName('阿部', REVO_TEST_MEMBERS), '阿部 真二');
-    assert.strictEqual(resolveMemberName('前井さん', REVO_TEST_MEMBERS), '前井 宏之');
-    assert.strictEqual(resolveMemberName('平田貴嗣', REVO_TEST_MEMBERS), '平田 貴嗣');
+  it('correctly resolves Kanji typos and phonetic variants (江端, えばた -> 江幡 幸典)', () => {
+    assert.strictEqual(resolveMemberName('江端', REVO_TEST_MEMBERS), '江幡 幸典');
+    assert.strictEqual(resolveMemberName('江端さん', REVO_TEST_MEMBERS), '江幡 幸典');
+    assert.strictEqual(resolveMemberName('江端幸典', REVO_TEST_MEMBERS), '江幡 幸典');
+    assert.strictEqual(resolveMemberName('えばた', REVO_TEST_MEMBERS), '江幡 幸典');
+    assert.strictEqual(resolveMemberName('えばたさん', REVO_TEST_MEMBERS), '江幡 幸典');
+    assert.strictEqual(resolveMemberName('エバタ', REVO_TEST_MEMBERS), '江幡 幸典');
+  });
+
+  it('correctly resolves other member Kanji and Hiragana typos (井原田, いたや, ながい, 安倍)', () => {
+    assert.strictEqual(resolveMemberName('井原田', REVO_TEST_MEMBERS), '居原田 晃司');
+    assert.strictEqual(resolveMemberName('いはらだ', REVO_TEST_MEMBERS), '居原田 晃司');
+    assert.strictEqual(resolveMemberName('板屋', REVO_TEST_MEMBERS), '板谷 栄子');
+    assert.strictEqual(resolveMemberName('いたや', REVO_TEST_MEMBERS), '板谷 栄子');
+    assert.strictEqual(resolveMemberName('長井', REVO_TEST_MEMBERS), '永井 創太');
+    assert.strictEqual(resolveMemberName('ながい', REVO_TEST_MEMBERS), '永井 創太');
+    assert.strictEqual(resolveMemberName('安倍', REVO_TEST_MEMBERS), '阿部 真二');
+    assert.strictEqual(resolveMemberName('あべさん', REVO_TEST_MEMBERS), '阿部 真二');
+    assert.strictEqual(resolveMemberName('おぜと', REVO_TEST_MEMBERS), '小瀬戸 健一');
+    assert.strictEqual(resolveMemberName('ぐっち', REVO_TEST_MEMBERS), '川口 陽平');
   });
 
   it('handles ambiguous duplicated last names safely (鈴木 -> does not wrongly force single one if ambiguous)', () => {
@@ -132,10 +241,10 @@ describe('Member Name Resolution & Normalization Tests', () => {
   });
 
   it('findMemberByName returns full member details when found', () => {
-    const m = findMemberByName('森田さん', REVO_TEST_MEMBERS);
+    const m = findMemberByName('江端さん', REVO_TEST_MEMBERS);
     assert.ok(m);
-    assert.strictEqual(m.name, '森田 由美子');
-    assert.strictEqual(m.profession, '日本茶販売');
-    assert.strictEqual(m.category, '〇飲食・物販');
+    assert.strictEqual(m.name, '江幡 幸典');
+    assert.strictEqual(m.profession, '人生の節目フォトグラファー');
+    assert.strictEqual(m.category, '〇クリエイティブ・マーケティング');
   });
 });
