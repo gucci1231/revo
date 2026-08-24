@@ -1,5 +1,6 @@
 const assert = require('assert');
 
+describe('Priority Follow Feature Unit Tests', () => {
 // Import or copy deduplicateVisitorListClient for unit testing
 function normalizeNameKey(str) {
   if (!str) return '';
@@ -107,3 +108,53 @@ function deduplicateVisitorListClient(list) {
     assert.strictEqual(bOnly.length, 1);
     assert.strictEqual(bOnly[0].name, 'Visitor B');
   });
+
+  it('correctly filters and prioritizes stagnant, overdue, and active priority follow visitors', () => {
+    const list = [
+      { id: '1', name: 'Active Visitor', feelAbc: 'A', isJoined: '未', pendingActionCount: 1, overdueActionCount: 0, eventDate: '2026-08-20' },
+      { id: '2', name: 'Overdue Visitor', feelAbc: 'A', isJoined: '未', pendingActionCount: 2, overdueActionCount: 1, eventDate: '2026-08-15' },
+      { id: '3', name: 'Stagnant Visitor 1', feelAbc: 'B', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0, eventDate: '2026-08-10' },
+      { id: '4', name: 'Stagnant Visitor 2', feelAbc: 'A', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0, eventDate: '2026-08-22' },
+      { id: '5', name: 'Joined Visitor', feelAbc: 'A', isJoined: '入会済', pendingActionCount: 0, overdueActionCount: 0, eventDate: '2026-08-18' }
+    ];
+
+    // Filter base list (feel A or B, not joined, not rejected)
+    const baseList = list.filter(v => v.isJoined !== '入会済' && v.isJoined !== '見送り' && (v.feelAbc === 'A' || v.feelAbc === 'B'));
+    assert.strictEqual(baseList.length, 4);
+
+    // Stagnant filter (pendingActionCount === 0)
+    const stagnant = baseList.filter(v => (Number(v.pendingActionCount) || 0) === 0);
+    assert.strictEqual(stagnant.length, 2);
+    assert.deepStrictEqual(stagnant.map(v => v.name), ['Stagnant Visitor 1', 'Stagnant Visitor 2']);
+
+    // Overdue filter (overdueActionCount > 0)
+    const overdue = baseList.filter(v => (Number(v.overdueActionCount) || 0) > 0);
+    assert.strictEqual(overdue.length, 1);
+    assert.strictEqual(overdue[0].name, 'Overdue Visitor');
+
+    // Active filter (pendingActionCount > 0 && overdueActionCount === 0)
+    const active = baseList.filter(v => (Number(v.pendingActionCount) || 0) > 0 && (Number(v.overdueActionCount) || 0) === 0);
+    assert.strictEqual(active.length, 1);
+    assert.strictEqual(active[0].name, 'Active Visitor');
+
+    // Sort order test: Overdue (1) -> Stagnant (2) -> Active (3), then eventDate DESC
+    const sorted = [...baseList].sort((a, b) => {
+      const getRank = (v) => {
+        if ((Number(v.overdueActionCount) || 0) > 0) return 1;
+        if ((Number(v.pendingActionCount) || 0) === 0) return 2;
+        return 3;
+      };
+      const rankA = getRank(a);
+      const rankB = getRank(b);
+      if (rankA !== rankB) return rankA - rankB;
+      return (b.eventDate || '').localeCompare(a.eventDate || '');
+    });
+
+    assert.deepStrictEqual(sorted.map(v => v.name), [
+      'Overdue Visitor',    // Rank 1: Overdue
+      'Stagnant Visitor 2', // Rank 2: Stagnant (eventDate: 2026-08-22 newer)
+      'Stagnant Visitor 1', // Rank 2: Stagnant (eventDate: 2026-08-10)
+      'Active Visitor'      // Rank 3: Active
+    ]);
+  });
+});

@@ -84,6 +84,24 @@
           existing.feelAbc = newFeel;
         }
 
+        // アクション集計情報の合算・引き継ぎ
+        existing.pendingActionCount = (Number(existing.pendingActionCount) || 0) + (Number(r.pendingActionCount) || 0);
+        existing.overdueActionCount = (Number(existing.overdueActionCount) || 0) + (Number(r.overdueActionCount) || 0);
+        existing.completedActionCount = (Number(existing.completedActionCount) || 0) + (Number(r.completedActionCount) || 0);
+
+        const rDueDate = r.nextActionDueDate || '';
+        const exDueDate = existing.nextActionDueDate || '';
+        if (rDueDate && (!exDueDate || rDueDate < exDueDate)) {
+          existing.nextActionDueDate = rDueDate;
+          existing.nextActionText = r.nextActionText || '';
+          existing.nextActionAssignee = r.nextActionAssignee || '';
+          existing.nextActionType = r.nextActionType || '';
+        } else if (!existing.nextActionText && r.nextActionText) {
+          existing.nextActionText = r.nextActionText;
+          existing.nextActionAssignee = r.nextActionAssignee || '';
+          existing.nextActionType = r.nextActionType || '';
+        }
+
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
           if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
             existing[k] = r[k];
@@ -95,6 +113,13 @@
         item.eventDates = [item.eventDate].filter(Boolean);
         item.visitCount = 1;
         item.feelAbc = parseFeelAbc(item.feelAbc);
+        item.pendingActionCount = Number(item.pendingActionCount) || 0;
+        item.overdueActionCount = Number(item.overdueActionCount) || 0;
+        item.completedActionCount = Number(item.completedActionCount) || 0;
+        item.nextActionDueDate = item.nextActionDueDate || '';
+        item.nextActionText = item.nextActionText || '';
+        item.nextActionAssignee = item.nextActionAssignee || '';
+        item.nextActionType = item.nextActionType || '';
         result.push(item);
         if (emailKey) emailMap.set(emailKey, item);
         if (nameKey) nameMap.set(nameKey, item);

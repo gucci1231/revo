@@ -29,10 +29,30 @@ class VisitorRepository {
                 COALESCE(h.feel_abc, '') as feelAbc,
                 COALESCE(h.q7, '') as q7,
                 COALESCE(h.orient_user, '') as orientUser,
-                COALESCE(h.orient_memo, '') as orientMemo
+                COALESCE(h.orient_memo, '') as orientMemo,
+                COALESCE(ap_stat.pending_count, 0) as pendingActionCount,
+                COALESCE(ap_stat.overdue_count, 0) as overdueActionCount,
+                COALESCE(ap_stat.completed_count, 0) as completedActionCount,
+                COALESCE(ap_stat.next_due_date, '') as nextActionDueDate,
+                COALESCE(ap_stat.next_action_text, '') as nextActionText,
+                COALESCE(ap_stat.next_assignee, '') as nextActionAssignee,
+                COALESCE(ap_stat.next_action_type, '') as nextActionType
             FROM visitors v
             LEFT JOIN visitors_status s ON v.id = s.visitor_id
             LEFT JOIN hearing_sheets h ON v.id = h.visitor_id
+            LEFT JOIN (
+                SELECT 
+                    visitor_id,
+                    SUM(CASE WHEN is_completed = 0 THEN 1 ELSE 0 END) as pending_count,
+                    SUM(CASE WHEN is_completed = 0 AND due_date IS NOT NULL AND due_date != '' AND due_date < date('now', 'localtime') THEN 1 ELSE 0 END) as overdue_count,
+                    SUM(CASE WHEN is_completed = 1 THEN 1 ELSE 0 END) as completed_count,
+                    MIN(CASE WHEN is_completed = 0 AND due_date IS NOT NULL AND due_date != '' THEN due_date END) as next_due_date,
+                    (SELECT action_text FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_action_text,
+                    (SELECT assignee_name FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_assignee,
+                    (SELECT action_type FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_action_type
+                FROM action_plans ap
+                GROUP BY visitor_id
+            ) ap_stat ON v.id = ap_stat.visitor_id
             ORDER BY v.event_date DESC
         ";
         return $this->db->fetchAll($sql);

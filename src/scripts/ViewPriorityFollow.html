@@ -1,6 +1,7 @@
 <script>
   /* --- VIEW 2: Priority Follow 2-Column Master-Detail View Controller --- */
   let currentPfGradeFilter = 'ALL';
+  let currentPfActionFilter = 'ALL'; // 'ALL' | 'STAGNANT' | 'OVERDUE' | 'ACTIVE'
   let filteredPfVisitors = [];
   let pfCurrentPage = 1;
   const PF_PAGE_SIZE = 50;
@@ -28,12 +29,40 @@
     filterPriorityFollowTable();
   }
 
+  function setPriorityFollowActionFilter(actionStatus) {
+    currentPfActionFilter = actionStatus;
+
+    const btnAll = document.getElementById('pf-action-filter-all');
+    const btnStagnant = document.getElementById('pf-action-filter-stagnant');
+    const btnOverdue = document.getElementById('pf-action-filter-overdue');
+    const btnActive = document.getElementById('pf-action-filter-active');
+
+    const map = { 'ALL': btnAll, 'STAGNANT': btnStagnant, 'OVERDUE': btnOverdue, 'ACTIVE': btnActive };
+    Object.keys(map).forEach(s => {
+      const btn = map[s];
+      if (btn) {
+        if (s === actionStatus) {
+          btn.classList.add('active', 'ring-2', 'ring-offset-1');
+          if (s === 'STAGNANT') btn.classList.add('ring-amber-400');
+          else if (s === 'OVERDUE') btn.classList.add('ring-rose-400');
+          else if (s === 'ACTIVE') btn.classList.add('ring-blue-400');
+          else btn.classList.add('ring-slate-400');
+        } else {
+          btn.classList.remove('active', 'ring-2', 'ring-offset-1', 'ring-amber-400', 'ring-rose-400', 'ring-blue-400', 'ring-slate-400');
+        }
+      }
+    });
+
+    filterPriorityFollowTable();
+  }
+
   function filterPriorityFollowTable() {
     const search = (document.getElementById('search-priority-follow-input')?.value || '').toLowerCase().trim();
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    filteredPfVisitors = dedupedList.filter(v => {
+    // 感触A/Bかつ未入会・未見送りのベースリスト
+    const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isRejected = (v.isJoined === '見送り');
       if (isJoinedBool || isRejected) return false;
@@ -43,14 +72,76 @@
                          (currentPfGradeFilter === 'B' && feel === 'B') ||
                          (currentPfGradeFilter === 'ALL' && (feel === 'A' || feel === 'B'));
 
-      if (!matchGrade) return false;
+      return matchGrade;
+    });
+
+    // カウンター集計 (ベースリストから算出)
+    let stagnantCount = 0;
+    let overdueCount = 0;
+    let activeCount = 0;
+
+    basePfList.forEach(v => {
+      const pCount = Number(v.pendingActionCount) || 0;
+      const oCount = Number(v.overdueActionCount) || 0;
+      if (oCount > 0) {
+        overdueCount++;
+      } else if (pCount === 0) {
+        stagnantCount++;
+      } else {
+        activeCount++;
+      }
+    });
+
+    const elStagnant = document.getElementById('pf-count-stagnant');
+    const elOverdue = document.getElementById('pf-count-overdue');
+    const elActive = document.getElementById('pf-count-active');
+    if (elStagnant) elStagnant.innerText = stagnantCount;
+    if (elOverdue) elOverdue.innerText = overdueCount;
+    if (elActive) elActive.innerText = activeCount;
+
+    // アクション状況・キーワード検索で絞り込み
+    filteredPfVisitors = basePfList.filter(v => {
+      const pCount = Number(v.pendingActionCount) || 0;
+      const oCount = Number(v.overdueActionCount) || 0;
+
+      if (currentPfActionFilter === 'STAGNANT') {
+        if (pCount > 0) return false; // 未完了タスクがない＝停滞
+      } else if (currentPfActionFilter === 'OVERDUE') {
+        if (oCount === 0) return false; // 期限超過タスクあり
+      } else if (currentPfActionFilter === 'ACTIVE') {
+        if (pCount === 0 || oCount > 0) return false; // 期限内の未完了タスクあり
+      }
+
+      if (!search) return true;
 
       const name = (v.name || '').toLowerCase();
       const company = (v.company || '').toLowerCase();
       const profession = (v.profession || '').toLowerCase();
       const inviter = (v.inviter || '').toLowerCase();
+      const actionText = (v.nextActionText || '').toLowerCase();
+      const assignee = (v.nextActionAssignee || '').toLowerCase();
 
-      return !search || name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search);
+      return name.includes(search) || company.includes(search) || profession.includes(search) || inviter.includes(search) || actionText.includes(search) || assignee.includes(search);
+    });
+
+    // ソート: 期限超過 (1) → 停滞・未設定 (2) → 進行中 (3)、同一グループ内は参加日降順
+    filteredPfVisitors.sort((a, b) => {
+      const getPriorityRank = (v) => {
+        const p = Number(v.pendingActionCount) || 0;
+        const o = Number(v.overdueActionCount) || 0;
+        if (o > 0) return 1; // 最優先: 期限超過
+        if (p === 0) return 2; // 第2優先: 停滞（アクションなし）
+        return 3; // 第3優先: 進行中
+      };
+
+      const rankA = getPriorityRank(a);
+      const rankB = getPriorityRank(b);
+      if (rankA !== rankB) return rankA - rankB;
+
+      // 同一優先度内は最新の参加日順
+      const dateA = a.eventDate || '';
+      const dateB = b.eventDate || '';
+      return dateB.localeCompare(dateA);
     });
 
     pfCurrentPage = 1;
@@ -120,8 +211,8 @@
       if (listContainer) {
         listContainer.innerHTML = `
           <div style="text-align: center; color: #868e96; padding: 48px 16px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; margin: 12px;">
-            <i class="fa-solid fa-fire text-3xl text-slate-300 mb-2"></i>
-            <div class="font-bold text-sm text-slate-600">該当する最優先フォロー対象はいません</div>
+            <i class="fa-solid fa-filter-circle-xmark text-3xl text-slate-300 mb-2"></i>
+            <div class="font-bold text-sm text-slate-600">条件に合致する最優先フォロー対象はいません</div>
           </div>
         `;
       }
@@ -152,8 +243,37 @@
       const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
       const repeatTag = (typeof count === 'number' && count > 1) ? `<span style="font-size:10px; color:#d97706; background:#fef3c7; font-weight:800; padding:1px 5px; border-radius:4px; margin-left:4px;">${count}回</span>` : '';
 
+      const pCount = Number(v.pendingActionCount) || 0;
+      const oCount = Number(v.overdueActionCount) || 0;
+
+      let actionStatusBadge = '';
+      let borderAccentClass = '';
+
+      if (oCount > 0) {
+        borderAccentClass = 'border-l-4 border-l-rose-500';
+        actionStatusBadge = `
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200" title="期限超過タスクあり">
+            <i class="fa-solid fa-clock-rotate-left text-rose-500"></i>超過 (${escapeHtml(v.nextActionDueDate || '期限切')})
+          </span>
+        `;
+      } else if (pCount === 0) {
+        borderAccentClass = 'border-l-4 border-l-amber-400 bg-amber-50/15';
+        actionStatusBadge = `
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200" title="アクション未設定・停滞中">
+            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>アクション未設定
+          </span>
+        `;
+      } else {
+        const nextDate = v.nextActionDueDate ? v.nextActionDueDate.slice(5) : '進行中';
+        actionStatusBadge = `
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 max-w-[140px] truncate" title="${escapeHtml(v.nextActionText || '')}">
+            <i class="fa-regular fa-clock text-blue-500 shrink-0"></i>${escapeHtml(nextDate)}: ${escapeHtml(v.nextActionText || '予定あり')}
+          </span>
+        `;
+      }
+
       const itemEl = document.createElement('div');
-      itemEl.className = `pf-visitor-item ${isSelected ? 'is-selected' : ''}`;
+      itemEl.className = `pf-visitor-item ${isSelected ? 'is-selected' : ''} ${borderAccentClass}`;
       itemEl.setAttribute('data-visitor-id', vid);
       itemEl.onclick = function() {
         selectPriorityFollowVisitor(vid);
@@ -165,12 +285,15 @@
         <div class="pf-visitor-item-rank ${rankClass}">
           ${rankChar}
         </div>
-        <div class="pf-visitor-item-info">
-          <div class="flex items-center justify-between gap-1">
+        <div class="pf-visitor-item-info flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-1 flex-wrap">
             <span class="pf-visitor-item-name">${escapeHtml(v.name || 'ビジター No.' + vid)}${repeatTag}</span>
-            <span class="text-[10px] font-bold text-slate-400 shrink-0">${formatEventDateWithElapsed(v.eventDate)}</span>
+            <div class="flex items-center gap-1 shrink-0">
+              ${actionStatusBadge}
+              <span class="text-[10px] font-bold text-slate-400 shrink-0">${formatEventDateWithElapsed(v.eventDate)}</span>
+            </div>
           </div>
-          <div class="pf-visitor-item-company">
+          <div class="pf-visitor-item-company truncate">
             ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
           </div>
           <div class="pf-visitor-item-meta">
@@ -264,9 +387,18 @@
         let actionPlansHtml = '';
         if (actionPlans.length === 0) {
           actionPlansHtml = `
-            <div class="p-4 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-200/60">
-              <i class="fa-regular fa-clipboard-check text-2xl text-slate-300 mb-1 block"></i>
-              <span class="text-xs font-bold text-slate-500">現在登録されているアクションプランはありません</span>
+            <div class="p-5 text-center bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-2.5">
+              <div class="flex items-center justify-center gap-2 text-amber-800 font-bold text-xs">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 text-sm"></i>
+                <span>アクションプランがまだ登録されていません（停滞中）</span>
+              </div>
+              <p class="text-[11px] text-amber-700 leading-relaxed">フォローの停滞を防ぐため、1to1日程調整や個別フォロー等の計画を登録しましょう。</p>
+              <div class="pt-1">
+                <button type="button" class="btn-action-primary text-xs px-3.5 py-1.5 rounded-lg font-bold shadow-sm inline-flex items-center gap-1.5" onclick="openActionPlanModal('${escapeHtml(vid)}')">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>新規アクションを登録する</span>
+                </button>
+              </div>
             </div>
           `;
         } else {
