@@ -275,8 +275,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0071e3; color: #ffffff; padding: 24px; text-align: center; }
-.btn { display: inline-block; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
+.header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -382,7 +382,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #059669; color: #ffffff; padding: 20px; text-align: center; }
+.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -395,15 +395,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       素晴らしいスピード対応とチャプター貢献です！👏<br>
       以下のフォローアクションが完了しました。
     </p>
-    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0;">
-      <div style="font-size: 14px; font-weight: bold; color: #166534;">👏 担当メンバー: {{担当者名}} 様</div>
-      <div style="font-size: 13px; color: #15803d; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
-      <div style="font-size: 13px; color: #15803d; margin-top: 4px;">完了内容: {{アクション内容}}</div>
-      <div style="font-size: 12px; color: #4b5563; margin-top: 8px; border-top: 1px dashed #86efac; padding-top: 8px;">報告コメント: {{報告内容}}</div>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #059669; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <div style="font-size: 14px; font-weight: bold; color: #0f172a;">👏 担当メンバー: {{担当者名}} 様</div>
+      <div style="font-size: 13px; color: #334155; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
+      <div style="font-size: 13px; color: #334155; margin-top: 4px;">完了内容: {{アクション内容}}</div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">報告コメント: {{報告内容}}</div>
     </div>
     <p style="font-size:12px; color:#64748b;">この迅速なフォローが、次なる入会決定とチャプターのリファーラルの輪を大きく広げます！</p>
     <div style="text-align: center; margin-top: 20px;">
-      <a href="{{カルテURL}}" style="background:#0f172a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
+      <a href="{{カルテURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
     </div>
   </div>
   <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
@@ -429,7 +429,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #dc2626; color: #ffffff; padding: 20px; text-align: center; }
+.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -447,7 +447,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     {{本日期限タスクテーブルHTML}}
 
     <div style="text-align: center; margin-top: 24px;">
-      <a href="{{アクション管理URL}}" style="background:#dc2626; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
+      <a href="{{アクション管理URL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
     </div>
   </div>
   <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
@@ -473,7 +473,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0071e3; color: #ffffff; padding: 20px; text-align: center; }
+.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -486,7 +486,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       {{招待者名}} 様の積極的なお声がけにより、新しいビジター申込がありました！👏
     </p>
     
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 16px 0;">
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0071e3; border-radius: 12px; padding: 16px; margin: 16px 0;">
       <div style="font-size: 15px; font-weight: 900; color: #0f172a;">{{ビジター名}} 様</div>
       <div style="font-size: 13px; color: #475569; margin-top: 4px;">会社・役職: {{ビジター会社}}</div>
       <div style="font-size: 13px; color: #475569; margin-top: 2px;">専門分野: {{ビジターカテゴリー}}</div>

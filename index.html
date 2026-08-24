@@ -16,6 +16,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- CodeMirror 5 (Modern Code & Text Editor) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
   <!-- Global Client Error Reporter -->
   <script>
     window.onerror = function(msg, url, line, col, error) {
@@ -1304,6 +1314,152 @@ select.form-input, select.form-select {
     font-weight: 800;
   }
 }
+
+/* ========================================================
+   Modern Code & Text Editor (CodeMirror Custom Theme)
+   ======================================================== */
+.modern-editor-wrapper {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.modern-editor-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.modern-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.editor-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.editor-tool-btn:hover {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.editor-tool-btn:active {
+  transform: scale(0.95);
+}
+
+.editor-tool-divider {
+  width: 1px;
+  height: 16px;
+  background: #cbd5e1;
+  margin: 0 2px;
+}
+
+.modern-editor-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 10.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #64748b;
+  user-select: none;
+}
+
+/* CodeMirror Custom Pure White Theme */
+.CodeMirror {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.65 !important;
+  height: 320px !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+}
+
+.modern-editor-wrapper.fullscreen {
+  position: fixed !important;
+  top: 16px !important;
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  z-index: 9999 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.modern-editor-wrapper.fullscreen .CodeMirror {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+}
+
+.CodeMirror-gutters {
+  background-color: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding: 0 4px 0 0 !important;
+}
+.CodeMirror-linenumber {
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  padding: 0 8px 0 4px !important;
+}
+
+.CodeMirror-activeline-background {
+  background: #f1f5f9 !important;
+}
+
+.CodeMirror-selected,
+.CodeMirror-focused .CodeMirror-selected {
+  background: #dbeafe !important;
+}
+
+.CodeMirror-cursor {
+  border-left: 2px solid #2563eb !important;
+}
+
+/* Modern Syntax Highlighting */
+.cm-s-default .cm-tag { color: #2563eb !important; font-weight: 700; }
+.cm-s-default .cm-attribute { color: #7c3aed !important; }
+.cm-s-default .cm-string { color: #059669 !important; }
+.cm-s-default .cm-atom { color: #d97706 !important; }
+.cm-s-default .cm-number { color: #0284c7 !important; }
+.cm-s-default .cm-comment { color: #94a3b8 !important; font-style: italic; }
+.cm-s-default .cm-bracket { color: #64748b !important; }
+.cm-s-default .cm-keyword { color: #e11d48 !important; font-weight: 700; }
+.cm-s-default .cm-variable { color: #0f172a !important; }
+.cm-s-default .cm-property { color: #0284c7 !important; }
+
 
 
 
@@ -7872,11 +8028,11 @@ select.form-input, select.form-select {
           <span class="text-[10px] font-bold font-mono text-slate-400">3</span>
         </div>
 
-        <div class="space-y-2">
+        <div class="space-y-1.5">
           <!-- 1. 今週のビジター申込状況 -->
           <div id="rm-item-weekly_visitor_status" onclick="switchReportTab('weekly_visitor_status')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-fire"></i>
               </div>
               <div class="min-w-0">
@@ -7896,7 +8052,7 @@ select.form-input, select.form-select {
           <!-- 2. 今週参加するビジター紹介 -->
           <div id="rm-item-tuesday_visitor_intro" onclick="switchReportTab('tuesday_visitor_intro')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-handshake"></i>
               </div>
               <div class="min-w-0">
@@ -7916,7 +8072,7 @@ select.form-input, select.form-select {
           <!-- 3. 週間活動総合レポート -->
           <div id="rm-item-weekly_full_report" onclick="switchReportTab('weekly_full_report')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-chart-pie"></i>
               </div>
               <div class="min-w-0">
@@ -7942,11 +8098,11 @@ select.form-input, select.form-select {
           <span class="text-[10px] font-bold font-mono text-slate-400">3</span>
         </div>
 
-        <div class="space-y-2">
+        <div class="space-y-1.5">
           <!-- 4. アクション完了報告 -->
           <div id="rm-item-action_completed" onclick="switchReportTab('action_completed')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-award"></i>
               </div>
               <div class="min-w-0">
@@ -7955,7 +8111,7 @@ select.form-input, select.form-select {
                   <span id="rm-badge-action_completed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
                 <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 font-mono">都度即時</span>
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
                   <span>称賛・共有</span>
                 </div>
               </div>
@@ -7966,7 +8122,7 @@ select.form-input, select.form-select {
           <!-- 5. 本日期限のタスク -->
           <div id="rm-item-today_due_tasks" onclick="switchReportTab('today_due_tasks')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-clock-rotate-left"></i>
               </div>
               <div class="min-w-0">
@@ -7986,7 +8142,7 @@ select.form-input, select.form-select {
           <!-- 6. ビジター新規申込速報 -->
           <div id="rm-item-new_visitor_applied" onclick="switchReportTab('new_visitor_applied')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                 <i class="fa-solid fa-rocket"></i>
               </div>
               <div class="min-w-0">
@@ -7995,7 +8151,7 @@ select.form-input, select.form-select {
                   <span id="rm-badge-new_visitor_applied" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
                 </div>
                 <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
-                  <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 font-mono">都度即時</span>
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">都度即時</span>
                   <span>速報・準備</span>
                 </div>
               </div>
@@ -16599,8 +16755,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #0071e3; color: #ffffff; padding: 24px; text-align: center; }
-.btn { display: inline-block; background: #0f172a; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
+.header { background: #0f172a; color: #ffffff; padding: 24px; text-align: center; }
+.btn { display: inline-block; background: #0071e3; color: #ffffff; font-size: 13px; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 10px; }
 </style>
 </head>
 <body>
@@ -16732,7 +16888,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #059669; color: #ffffff; padding: 20px; text-align: center; }
+.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -16745,15 +16901,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
       素晴らしいスピード対応とチャプター貢献です！👏<br>
       以下のフォローアクションが完了しました。
     </p>
-    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin: 16px 0;">
-      <div style="font-size: 14px; font-weight: bold; color: #166534;">👏 担当メンバー: {{担当者名}} 様</div>
-      <div style="font-size: 13px; color: #15803d; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
-      <div style="font-size: 13px; color: #15803d; margin-top: 4px;">完了内容: {{アクション内容}}</div>
-      <div style="font-size: 12px; color: #4b5563; margin-top: 8px; border-top: 1px dashed #86efac; padding-top: 8px;">報告コメント: {{報告内容}}</div>
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #059669; border-radius: 12px; padding: 16px; margin: 16px 0;">
+      <div style="font-size: 14px; font-weight: bold; color: #0f172a;">👏 担当メンバー: {{担当者名}} 様</div>
+      <div style="font-size: 13px; color: #334155; margin-top: 6px;">ビジター: <strong>{{ビジター名}} 様</strong> ({{ビジター会社}} / 招待: {{招待者名}} 様)</div>
+      <div style="font-size: 13px; color: #334155; margin-top: 4px;">完了内容: {{アクション内容}}</div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">報告コメント: {{報告内容}}</div>
     </div>
     <p style="font-size:12px; color:#64748b;">この迅速なフォローが、次なる入会決定とチャプターのリファーラルの輪を大きく広げます！</p>
     <div style="text-align: center; margin-top: 20px;">
-      <a href="{{カルテURL}}" style="background:#0f172a; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
+      <a href="{{カルテURL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">カルテを確認する →</a>
     </div>
   </div>
   <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">
@@ -16791,7 +16947,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 24px; color: #0f172a; }
 .card { max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-.header { background: #dc2626; color: #ffffff; padding: 20px; text-align: center; }
+.header { background: #0f172a; color: #ffffff; padding: 20px; text-align: center; }
 </style>
 </head>
 <body>
@@ -16809,7 +16965,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     {{本日期限タスクテーブルHTML}}
 
     <div style="text-align: center; margin-top: 24px;">
-      <a href="{{アクション管理URL}}" style="background:#dc2626; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
+      <a href="{{アクション管理URL}}" style="background:#0071e3; color:#fff; padding:10px 20px; text-decoration:none; border-radius:10px; font-weight:bold; font-size:13px;">アクション管理で報告する →</a>
     </div>
   </div>
   <div style="background:#f8fafc; padding:14px; text-align:center; font-size:11px; color:#94a3b8; border-top:1px solid #e2e8f0;">

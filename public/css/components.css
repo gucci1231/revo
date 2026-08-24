@@ -730,4 +730,150 @@ select.form-input, select.form-select {
   }
 }
 
+/* ========================================================
+   Modern Code & Text Editor (CodeMirror Custom Theme)
+   ======================================================== */
+.modern-editor-wrapper {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.modern-editor-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.modern-editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+.editor-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.editor-tool-btn:hover {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.editor-tool-btn:active {
+  transform: scale(0.95);
+}
+
+.editor-tool-divider {
+  width: 1px;
+  height: 16px;
+  background: #cbd5e1;
+  margin: 0 2px;
+}
+
+.modern-editor-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 10.5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #64748b;
+  user-select: none;
+}
+
+/* CodeMirror Custom Pure White Theme */
+.CodeMirror {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.65 !important;
+  height: 320px !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+}
+
+.modern-editor-wrapper.fullscreen {
+  position: fixed !important;
+  top: 16px !important;
+  left: 16px !important;
+  right: 16px !important;
+  bottom: 16px !important;
+  z-index: 9999 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.modern-editor-wrapper.fullscreen .CodeMirror {
+  flex: 1 1 auto !important;
+  height: 100% !important;
+}
+
+.CodeMirror-gutters {
+  background-color: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding: 0 4px 0 0 !important;
+}
+.CodeMirror-linenumber {
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  padding: 0 8px 0 4px !important;
+}
+
+.CodeMirror-activeline-background {
+  background: #f1f5f9 !important;
+}
+
+.CodeMirror-selected,
+.CodeMirror-focused .CodeMirror-selected {
+  background: #dbeafe !important;
+}
+
+.CodeMirror-cursor {
+  border-left: 2px solid #2563eb !important;
+}
+
+/* Modern Syntax Highlighting */
+.cm-s-default .cm-tag { color: #2563eb !important; font-weight: 700; }
+.cm-s-default .cm-attribute { color: #7c3aed !important; }
+.cm-s-default .cm-string { color: #059669 !important; }
+.cm-s-default .cm-atom { color: #d97706 !important; }
+.cm-s-default .cm-number { color: #0284c7 !important; }
+.cm-s-default .cm-comment { color: #94a3b8 !important; font-style: italic; }
+.cm-s-default .cm-bracket { color: #64748b !important; }
+.cm-s-default .cm-keyword { color: #e11d48 !important; font-weight: 700; }
+.cm-s-default .cm-variable { color: #0f172a !important; }
+.cm-s-default .cm-property { color: #0284c7 !important; }
+
+
 
