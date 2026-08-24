@@ -6550,16 +6550,14 @@ select.form-input, select.form-select {
           <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">出欠</span>
-              <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
+              <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠">
                 <option value="未">未</option>
                 <option value="参加">参加</option>
                 <option value="不参加">不参加</option>
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">入会進捗</span>
-              <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
+              <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会進捗">
                 <option value="未">未</option>
                 <option value="検討中">検討中</option>
                 <option value="申込書提出">申込書提出</option>
@@ -6570,7 +6568,6 @@ select.form-input, select.form-select {
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
                 <option value="フォロー">フォロー</option>
                 <option value="時期尚早">時期尚早</option>
@@ -12439,15 +12436,12 @@ window.CelebrationEffect = (function() {
           <!-- 下段: ステータスセレクター群 -->
           <div class="grid grid-cols-3 gap-1.5 pt-2">
             <div class="text-center">
-              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">出欠</span>
               ${renderAttendButtonHtml(v.id, v.isAttended)}
             </div>
             <div class="text-center">
-              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">入会</span>
               ${renderJoinedButtonHtml(v.id, v.isJoined)}
             </div>
             <div class="text-center">
-              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">方針</span>
               ${renderFollowTypeButtonHtml(v.id, v.followType)}
             </div>
           </div>

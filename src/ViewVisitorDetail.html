@@ -70,16 +70,14 @@
           <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap flex items-center gap-2 flex-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">出欠</span>
-              <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠状況">
+              <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠">
                 <option value="未">未</option>
                 <option value="参加">参加</option>
                 <option value="不参加">不参加</option>
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">入会進捗</span>
-              <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
+              <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会進捗">
                 <option value="未">未</option>
                 <option value="検討中">検討中</option>
                 <option value="申込書提出">申込書提出</option>
@@ -90,7 +88,6 @@
               </select>
             </div>
             <div class="vd-status-select-wrap">
-              <span class="text-[10px] font-bold text-slate-400 block mb-0.5">フォロー方針</span>
               <select id="vd-select-follow-type" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'followType', this.value)" title="フォロー方針">
                 <option value="フォロー">フォロー</option>
                 <option value="時期尚早">時期尚早</option>
