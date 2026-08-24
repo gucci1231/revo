@@ -30,11 +30,29 @@ class ReportController extends Controller {
             case 'toggle':
                 $this->toggleTemplate();
                 break;
+            case 'reset':
+                $this->resetTemplate();
+                break;
             case 'send_mail':
                 $this->sendMail();
                 break;
             default:
                 $this->error("Invalid action: {$action}", 400);
+        }
+    }
+
+    private function resetTemplate(): void {
+        $id = $this->getParam('id');
+        if (empty($id)) {
+            $this->error('Template ID is required', 400);
+            return;
+        }
+
+        $template = $this->templateRepo->resetToDefault($id);
+        if ($template) {
+            $this->json(['success' => true, 'template' => $template]);
+        } else {
+            $this->error('Template not found or cannot be reset', 404);
         }
     }
 

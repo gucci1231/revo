@@ -120,9 +120,60 @@ class ReportTemplateRepository {
         return $this->db->query("UPDATE report_templates SET is_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [$isEnabled, $id]) !== false;
     }
 
+    public function resetToDefault(string $id): ?array {
+        $defaults = [
+            'meeting_recap' => [
+                'id' => 'meeting_recap',
+                'title' => '定例会ビジター来訪＆フォロー速報',
+                'category' => 'recap',
+                'is_enabled' => 1,
+                'email_subject' => '【ビジホス速報】{{定例会日付}} ビジター来訪報告＆フォローTo-Do',
+                'email_html_body' => $this->getDefaultMeetingRecapEmail(),
+                'line_template_body' => $this->getDefaultMeetingRecapLine(),
+                'default_recipients' => 'info@k-d-o.biz'
+            ],
+            'member_remind' => [
+                'id' => 'member_remind',
+                'title' => 'メンバー個別活動＆フォローリマインド',
+                'category' => 'member',
+                'is_enabled' => 1,
+                'email_subject' => '【要対応】{{メンバー名}} 様のビジターフォロー状況と次回To-Do',
+                'email_html_body' => $this->getDefaultMemberRemindEmail(),
+                'line_template_body' => $this->getDefaultMemberRemindLine(),
+                'default_recipients' => ''
+            ],
+            'weekly_summary' => [
+                'id' => 'weekly_summary',
+                'title' => 'チャプター週間・月間成果サマリー',
+                'category' => 'summary',
+                'is_enabled' => 1,
+                'email_subject' => '【ビジホス週報】今週のビジター成果・入会進捗・成約率レポート',
+                'email_html_body' => $this->getDefaultWeeklySummaryEmail(),
+                'line_template_body' => $this->getDefaultWeeklySummaryLine(),
+                'default_recipients' => 'info@k-d-o.biz'
+            ],
+            'action_cleared' => [
+                'id' => 'action_cleared',
+                'title' => 'アクション完了・クエストクリア祝賀速報',
+                'category' => 'celebration',
+                'is_enabled' => 1,
+                'email_subject' => '🎉【ナイスアクション！】{{ビジター名}} 様のフォローが完了しました',
+                'email_html_body' => $this->getDefaultActionClearedEmail(),
+                'line_template_body' => $this->getDefaultActionClearedLine(),
+                'default_recipients' => 'info@k-d-o.biz'
+            ]
+        ];
+
+        if (!isset($defaults[$id])) return null;
+
+        $target = $defaults[$id];
+        $this->db->upsert('report_templates', $target, 'id');
+        return $this->getById($id);
+    }
+
     /* --- Default HTML Email Templates (Apple-Style Clean Responsive) --- */
 
-    private function getDefaultMeetingRecapEmail(): string {
+    public function getDefaultMeetingRecapEmail(): string {
         return '<!DOCTYPE html>
 <html>
 <head>

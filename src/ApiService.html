@@ -190,6 +190,12 @@ const ApiService = {
           method: 'POST',
           body: { id: args[0], is_enabled: args[1] }
         };
+      case 'resetReportTemplateApi':
+        return {
+          url: '/api/reports.php?action=reset',
+          method: 'POST',
+          body: { id: args[0] }
+        };
       case 'sendReportMailApi':
         return {
           url: '/api/reports.php?action=send_mail',

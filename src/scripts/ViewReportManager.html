@@ -337,6 +337,29 @@
     }
   }
 
+  function resetCurrentReportTemplateToDefault() {
+    if (!confirm('このテンプレートを初期の完成形ひな形に戻しますか？\n（現在の編集内容は上書きされます）')) {
+      return;
+    }
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('resetReportTemplateApi', currentSelectedReportId).then(res => {
+        if (res && res.success && res.template) {
+          showToast('完成形ひな形を読み込みました', 'success');
+          const idx = cachedReportTemplates.findIndex(x => x.id === currentSelectedReportId);
+          if (idx !== -1) {
+            cachedReportTemplates[idx] = res.template;
+          } else {
+            cachedReportTemplates.push(res.template);
+          }
+          renderReportManagerUI();
+        }
+      }).catch(err => {
+        showToast('ひな形の読み込みに失敗しました', 'error');
+      });
+    }
+  }
+
   function onReportToggleChange(checked) {
     const isEnabled = checked ? 1 : 0;
     const labelEl = document.getElementById('rm-enabled-label');

@@ -23,6 +23,7 @@ describe('Report & Message Manager Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('id="rm-preview-container-email"'), true);
     assert.strictEqual(indexHtml.includes('id="rm-preview-container-line"'), true);
     assert.strictEqual(indexHtml.includes('info@k-d-o.biz'), true);
+    assert.strictEqual(indexHtml.includes('resetCurrentReportTemplateToDefault'), true);
   });
 
   it('verifies Report Manager JS functions are defined', () => {
@@ -32,6 +33,7 @@ describe('Report & Message Manager Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('function fetchReportTemplatesData'), true);
     assert.strictEqual(indexHtml.includes('function updateReportPreview'), true);
     assert.strictEqual(indexHtml.includes('function saveCurrentReportTemplate'), true);
+    assert.strictEqual(indexHtml.includes('function resetCurrentReportTemplateToDefault'), true);
     assert.strictEqual(indexHtml.includes('function onReportToggleChange'), true);
     assert.strictEqual(indexHtml.includes('function sendTestReportEmail'), true);
     assert.strictEqual(indexHtml.includes('function copyReplacedLineReportText'), true);
@@ -42,6 +44,7 @@ describe('Report & Message Manager Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=list'), true);
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=update'), true);
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=toggle'), true);
+    assert.strictEqual(indexHtml.includes('/api/reports.php?action=reset'), true);
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=send_mail'), true);
   });
 });
