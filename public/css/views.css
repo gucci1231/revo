@@ -1522,6 +1522,165 @@
   }
 }
 
+/* 🌟 DASHBOARD TODAY'S ALERTS SUMMARY BANNER (Clean Apple Style) */
+.dash-alerts-banner {
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f97316;
+  border-radius: 14px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px -2px rgba(249, 115, 22, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  transition: all 0.2s ease;
+}
+.dash-alerts-banner.has-overdue {
+  border-color: #fecaca;
+  border-left-color: #ef4444;
+  box-shadow: 0 2px 10px -2px rgba(239, 68, 68, 0.08);
+}
+.dash-alerts-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: #334155;
+}
+.dash-alert-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.dash-alert-chip:hover {
+  transform: translateY(-1px);
+}
+.dash-alert-chip.chip-red {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.dash-alert-chip.chip-orange {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+}
+.dash-alert-chip.chip-indigo {
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #e0e7ff;
+}
+
+/* 🌟 DASHBOARD MINI PIPELINE STEP BAR (Pure White & Minimalist Progress) */
+.dash-pipeline-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.dash-pipeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dash-pipeline-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+.dash-pipeline-step {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 8px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.dash-pipeline-step:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+.dash-pipeline-step.active-step {
+  background: #ffffff;
+  border-color: #0071e3;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+.dash-pipeline-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+}
+.dash-pipeline-step-count {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  font-family: 'Barlow Semi Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.1;
+}
+.dash-pipeline-step.step-joined .dash-pipeline-step-count {
+  color: #059669;
+}
+.dash-pipeline-step.step-review .dash-pipeline-step-count {
+  color: #6366f1;
+}
+.dash-pipeline-step.step-stagnant .dash-pipeline-step-count {
+  color: #e11d48;
+}
+
+@media (max-width: 768px) {
+  .dash-pipeline-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .dash-pipeline-step {
+    padding: 6px 8px;
+  }
+  .dash-pipeline-step-count {
+    font-size: 15px;
+  }
+}
+@media (max-width: 480px) {
+  .dash-pipeline-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+  .dash-pipeline-step-label {
+    font-size: 10px;
+  }
+}
+
 /* Modern Slate Segmented Navigation */
 .dash-nav-wrap {
   display: flex;
@@ -1578,20 +1737,26 @@
 /* Segmented Control Pill Group for Filters */
 .seg-pill-group {
   display: inline-flex;
+  align-items: center;
   background: #f1f5f9;
   padding: 3px;
   border-radius: 10px;
   gap: 2px;
+  flex-wrap: nowrap;
 }
 .seg-pill-btn {
-  padding: 4px 12px;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #64748b;
   background: transparent;
   border: none;
   border-radius: 7px;
   cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   transition: all 0.15s ease;
 }
 .seg-pill-btn:hover {
