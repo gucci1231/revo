@@ -43,6 +43,7 @@ class SyncService {
         if ($json) {
             $now = date('Y/m/d H:i');
 
+            $newlyAddedVisitors = [];
             if (!empty($json['visitors'])) {
                 foreach ($json['visitors'] as $v) {
                     $vId = (string)($v['id'] ?? $v['no'] ?? '');
@@ -64,6 +65,15 @@ class SyncService {
                             'attendance_count' => $v['attendanceCount'] ?? $v['attendance_count'] ?? '初めて',
                             'remarks' => $v['remarks'] ?? ''
                         ], ['id']);
+
+                        $newlyAddedVisitors[] = [
+                            'id' => $vId,
+                            'visitor_name' => $v['name'] ?? $v['visitor_name'] ?? '',
+                            'company' => $v['company'] ?? '',
+                            'business_category' => $v['profession'] ?? '',
+                            'event_date' => $v['eventDate'] ?? $v['event_date'] ?? '',
+                            'inviter' => $v['inviter'] ?? ''
+                        ];
                     }
 
                     // 2. visitors_status テーブル: SQLiteが正 (Master)。既存ステータスは絶対に上書きしない！
@@ -82,6 +92,11 @@ class SyncService {
 
                     $addedCount++;
                 }
+            }
+
+            // 新規ビジター申込の即時通知
+            if (!empty($newlyAddedVisitors)) {
+                $this->notifyNewVisitorsApplied($newlyAddedVisitors);
             }
 
             if (!empty($json['hearings'])) {
@@ -533,4 +548,45 @@ class SyncService {
     private function normalizeMemberName(string $rawName, array $members): string {
         return \Api\Services\MemberNameResolver::resolve($rawName, $members);
     }
+
+    private function notifyNewVisitorsApplied(array $newVisitors): void {
+        try {
+            $templateRepo = new \Api\Repositories\ReportTemplateRepository();
+            $tpl = $templateRepo->getById('new_visitor_applied');
+            if (!$tpl || intval($tpl['is_enabled'] ?? 1) !== 1) {
+                return;
+            }
+
+            $recipients = trim($tpl['default_recipients'] ?? 'info@k-d-o.biz');
+            if (empty($recipients)) return;
+
+            $contextService = new \Api\Services\ReportContextService();
+            $mailService = new \Api\Services\MailService();
+            $recipientList = array_map('trim', explode(',', $recipients));
+
+            foreach ($newVisitors as $v) {
+                $extra = [
+                    'visitor_name' => $v['visitor_name'] ?? 'ビジター',
+                    'visitor_company' => $v['company'] ?? '',
+                    'business_category' => $v['business_category'] ?? '専門分野',
+                    'inviter_name' => $v['inviter'] ?? 'チャプターメンバー',
+                    'event_date' => $v['event_date'] ?? '',
+                    'visitor_id' => $v['id'] ?? ''
+                ];
+
+                $context = $contextService->buildContext($extra);
+                $subject = $contextService->replacePlaceholders($tpl['email_subject'] ?? '', $context);
+                $body = $contextService->replacePlaceholders($tpl['email_html_body'] ?? '', $context);
+
+                foreach ($recipientList as $toEmail) {
+                    if (filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+                        $mailService->sendHtmlEmail($toEmail, $subject, $body);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log("Failed to send new visitor application notification: " . $e->getMessage());
+        }
+    }
 }
+

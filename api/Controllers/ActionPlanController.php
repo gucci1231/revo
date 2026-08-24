@@ -187,12 +187,60 @@ class ActionPlanController extends Controller {
             Response::error('Action plan not found');
         }
 
+        // アクション完了時のメール通知トリガー
+        if ((int)$isCompleted === 1) {
+            $this->sendActionCompletedNotification($item, $reportText, $reporterName);
+        }
+
         $vId = $item['visitor_id'];
         Response::success([
             'id' => $id,
             'item' => $item,
             'list' => $this->actionPlanRepo->getByVisitorId($vId)
         ]);
+    }
+
+    private function sendActionCompletedNotification(array $actionPlan, string $reportText, string $reporterName): void {
+        try {
+            $templateRepo = new \Api\Repositories\ReportTemplateRepository();
+            $tpl = $templateRepo->getById('action_completed');
+            if (!$tpl || intval($tpl['is_enabled'] ?? 1) !== 1) {
+                return;
+            }
+
+            $recipients = trim($tpl['default_recipients'] ?? 'info@k-d-o.biz');
+            if (empty($recipients)) return;
+
+            $vRepo = new \Api\Repositories\VisitorRepository();
+            $visitor = $vRepo->getById($actionPlan['visitor_id'] ?? '');
+
+            $extra = [
+                'assignee_name' => !empty($reporterName) ? $reporterName : ($actionPlan['assignee_name'] ?? '担当メンバー'),
+                'visitor_name' => $visitor['name'] ?? $actionPlan['visitor_name'] ?? 'ビジター',
+                'visitor_company' => $visitor['company'] ?? '',
+                'business_category' => $visitor['business_category'] ?? $visitor['category'] ?? '',
+                'inviter_name' => $visitor['inviter'] ?? 'チャプター',
+                'action_title' => $actionPlan['action'] ?? $actionPlan['content'] ?? 'フォローアクション',
+                'action_report' => !empty($reportText) ? $reportText : '無事完了しました。',
+                'visitor_id' => $actionPlan['visitor_id'] ?? ''
+            ];
+
+            $contextService = new \Api\Services\ReportContextService();
+            $context = $contextService->buildContext($extra);
+            $subject = $contextService->replacePlaceholders($tpl['email_subject'] ?? '', $context);
+            $body = $contextService->replacePlaceholders($tpl['email_html_body'] ?? '', $context);
+
+            $mailService = new \Api\Services\MailService();
+            $recipientList = array_map('trim', explode(',', $recipients));
+            foreach ($recipientList as $toEmail) {
+                if (filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
+                    $mailService->sendHtmlEmail($toEmail, $subject, $body);
+                }
+            }
+        } catch (\Throwable $e) {
+            // 通知エラーで本体のレスポンスをブロックしない
+            error_log("Failed to send action completed notification: " . $e->getMessage());
+        }
     }
 
     private function delete(): void {
@@ -214,3 +262,4 @@ class ActionPlanController extends Controller {
         ]);
     }
 }
+
