@@ -79,7 +79,10 @@ function findMemberByName(rawName, membersList = null) {
   if (!members || members.length === 0) return null;
 
   let cleaned = String(rawName).trim();
-  cleaned = cleaned.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim();
+  // 括弧内の補足（例: （書記）、(プレジ) 等）の除去
+  cleaned = cleaned.replace(/[（\(][^）\)]*[）\)]/g, '').trim();
+  // 敬称・役職サフィックスの除去
+  cleaned = cleaned.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|ちゃん|先生|社長|代表|プレジ|プレジデント|書記|書記兼会計|エデュ|エデュケーター|メンター|VP|顧問|リーダー|委員長|担当|役員|プレジさん|プレジ様)$/ui, '').trim();
   if (!cleaned) return null;
 
   const cleanKey = cleaned.replace(/[\s\u3000]+/g, '').toLowerCase();
@@ -182,7 +185,7 @@ function resolveMemberName(rawName, membersList = null) {
     return found.name;
   }
 
-  return rawStr.replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u, '').trim() || rawStr;
+  return rawStr.replace(/[（\(][^）\)]*[）\)]/g, '').replace(/[\s\u3000]*(?:さん|様|さま|氏|君|くん|ちゃん|先生|社長|代表|プレジ|プレジデント|書記|書記兼会計|エデュ|エデュケーター|メンター|VP|顧問|リーダー|委員長|担当|役員|プレジさん|プレジ様)$/ui, '').trim() || rawStr;
 }
 
 describe('Member Name Resolution & Normalization Tests', () => {
@@ -195,6 +198,14 @@ describe('Member Name Resolution & Normalization Tests', () => {
     assert.strictEqual(resolveMemberName('森田様', REVO_TEST_MEMBERS), '森田 由美子');
     assert.strictEqual(resolveMemberName('森田さま', REVO_TEST_MEMBERS), '森田 由美子');
     assert.strictEqual(resolveMemberName('森田　さん', REVO_TEST_MEMBERS), '森田 由美子');
+  });
+
+  it('correctly resolves role titles & suffixes (桐原プレジ, 永井書記 -> 桐原 卓也, 永井 創太)', () => {
+    assert.strictEqual(resolveMemberName('桐原プレジ', REVO_TEST_MEMBERS), '桐原 卓也');
+    assert.strictEqual(resolveMemberName('桐原 プレジ', REVO_TEST_MEMBERS), '桐原 卓也');
+    assert.strictEqual(resolveMemberName('桐原プレジデント', REVO_TEST_MEMBERS), '桐原 卓也');
+    assert.strictEqual(resolveMemberName('永井創太（書記）', REVO_TEST_MEMBERS), '永井 創太');
+    assert.strictEqual(resolveMemberName('永井書記', REVO_TEST_MEMBERS), '永井 創太');
   });
 
   it('correctly resolves full name without space (森田由美子 -> 森田 由美子)', () => {
@@ -241,10 +252,10 @@ describe('Member Name Resolution & Normalization Tests', () => {
   });
 
   it('findMemberByName returns full member details when found', () => {
-    const m = findMemberByName('江端さん', REVO_TEST_MEMBERS);
+    const m = findMemberByName('桐原プレジ', REVO_TEST_MEMBERS);
     assert.ok(m);
-    assert.strictEqual(m.name, '江幡 幸典');
-    assert.strictEqual(m.profession, '人生の節目フォトグラファー');
+    assert.strictEqual(m.name, '桐原 卓也');
+    assert.strictEqual(m.profession, 'SNS特化ショート動画制作');
     assert.strictEqual(m.category, '〇クリエイティブ・マーケティング');
   });
 });

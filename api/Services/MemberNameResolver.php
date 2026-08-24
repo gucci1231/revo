@@ -35,8 +35,10 @@ class MemberNameResolver {
             return $raw;
         }
 
-        // 敬称（さん・様・さま・氏・君・くん・先生・社長・代表など）の除去
-        $cleaned = preg_replace('/[\s\x{3000}]*(?:さん|様|さま|氏|君|くん|先生|社長|代表)$/u', '', $raw);
+        // 括弧内の補足（例: （書記）、(プレジ) 等）の除去
+        $cleaned = preg_replace('/[（\(][^）\)]*[）\)]/u', '', $raw);
+        // 敬称・役職サフィックスの除去
+        $cleaned = preg_replace('/[\s\x{3000}]*(?:さん|様|さま|氏|君|くん|ちゃん|先生|社長|代表|プレジ|プレジデント|書記|書記兼会計|エデュ|エデュケーター|メンター|VP|顧問|リーダー|委員長|担当|役員|プレジさん|プレジ様)$/ui', '', $cleaned);
         $cleaned = trim($cleaned);
         if ($cleaned === '') {
             return $raw;
