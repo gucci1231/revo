@@ -44,16 +44,51 @@
     let html = '<option value="">メンバーを選択...</option>';
     members.forEach(m => {
       const mName = (m.name || '').trim();
+      const mId = m.id !== undefined && m.id !== null ? String(m.id) : mName;
       const cat = m.category ? ` (${m.category})` : '';
-      html += `<option value="${escapeHtml(mName)}">${escapeHtml(mName)}${escapeHtml(cat)}</option>`;
+      html += `<option value="${escapeHtml(mId)}">${escapeHtml(mName)}${escapeHtml(cat)}</option>`;
     });
 
     select.innerHTML = html;
-    if (prevVal) select.value = prevVal;
+    if (prevVal) {
+      // IDまたは名前で選択状態を復元
+      const resolved = resolveMemberFromParam(prevVal);
+      if (resolved && resolved.id) {
+        select.value = String(resolved.id);
+      } else {
+        select.value = prevVal;
+      }
+    }
+  }
+
+  function resolveMemberFromParam(param) {
+    if (!param) return null;
+    const cleanParam = String(param).trim();
+    const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
+
+    // 1. ID完全一致
+    let found = members.find(m => String(m.id) === cleanParam);
+    if (found) return found;
+
+    // 2. 氏名完全一致または正規化一致
+    const cleanKey = normalizeNameKey(cleanParam);
+    found = members.find(m => (m.name || '').trim() === cleanParam || normalizeNameKey(m.name || '') === cleanKey);
+    if (found) return found;
+
+    // 3. findMemberByName (苗字のみ・表記揺れ一致)
+    if (typeof findMemberByName === 'function') {
+      const fuzzy = findMemberByName(cleanParam);
+      if (fuzzy) {
+        const exact = members.find(m => (m.name || '').trim() === fuzzy.name);
+        return exact || fuzzy;
+      }
+    }
+
+    return { id: null, name: cleanParam, category: 'メンバー', profession: '' };
   }
 
   function getMemberNameFromUrl() {
-    // 1. Pathname (/member/川口陽平)
+    // 1. Pathname (/member/12 or /member/居原田晃司)
     try {
       const pathname = decodeURIComponent(window.location.pathname || '');
       const pathMatch = pathname.match(/\/member\/([^\/\?#]+)/);
@@ -62,20 +97,20 @@
       }
     } catch(e) {}
 
-    // 2. Query Params (?member=... or ?m=...)
+    // 2. Query Params (?member=... or ?m=... or ?id=...)
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const qMember = searchParams.get('member') || searchParams.get('m') || searchParams.get('name');
+      const qMember = searchParams.get('id') || searchParams.get('member') || searchParams.get('m') || searchParams.get('name');
       if (qMember) return decodeURIComponent(qMember).trim();
     } catch(e) {}
 
-    // 3. Hash (#member/川口陽平 or #member-dashboard?name=...)
+    // 3. Hash (#member/12 or #member-dashboard?id=...)
     try {
       const hash = decodeURIComponent(window.location.hash || '').replace(/^#+/, '');
       if (hash.startsWith('member/')) {
         return hash.replace('member/', '').split('?')[0].trim();
       }
-      const match = hash.match(/[?&]name=([^&]+)/);
+      const match = hash.match(/[?&](?:name|id|m)=([^&]+)/);
       if (match && match[1]) {
         return match[1].trim();
       }
@@ -84,15 +119,13 @@
     return null;
   }
 
-  function setupMemberDashboardView(targetMemberName = null) {
+  function setupMemberDashboardView(targetMemberIdentifier = null) {
     populateMemberDashDropdown();
 
-    let nameToSelect = targetMemberName || getMemberNameFromUrl();
+    let identifierToSelect = targetMemberIdentifier || getMemberNameFromUrl();
 
-    if (nameToSelect) {
-      const found = typeof findMemberByName === 'function' ? findMemberByName(nameToSelect) : null;
-      const finalName = found ? found.name : nameToSelect;
-      selectMemberDashboard(finalName, false);
+    if (identifierToSelect) {
+      selectMemberDashboard(identifierToSelect, false);
     } else if (currentSelectedMemberName) {
       selectMemberDashboard(currentSelectedMemberName, false);
     } else {
@@ -111,8 +144,13 @@
     selectMemberDashboard(val, true);
   }
 
-  function selectMemberDashboard(memberName, updateHistory = true) {
-    if (!memberName) return;
+  function selectMemberDashboard(memberIdentifier, updateHistory = true) {
+    if (!memberIdentifier) return;
+
+    const memberObj = resolveMemberFromParam(memberIdentifier);
+    const memberName = memberObj ? memberObj.name : memberIdentifier;
+    const memberId = memberObj && memberObj.id !== undefined && memberObj.id !== null ? memberObj.id : null;
+
     currentSelectedMemberName = memberName;
 
     if (isAllMembersSummaryView) {
@@ -120,27 +158,29 @@
     }
 
     const select = document.getElementById('member-dash-select');
-    if (select && select.value !== memberName) {
-      select.value = memberName;
-    }
-
-    if (updateHistory) {
-      const cleanPath = '/member/' + encodeURIComponent(memberName);
-      try {
-        if (window.history && window.history.pushState) {
-          window.history.pushState({ member: memberName }, '', cleanPath);
-        } else {
-          updateUrlHash(`member/${encodeURIComponent(memberName)}`);
-        }
-      } catch(e) {
-        updateUrlHash(`member/${encodeURIComponent(memberName)}`);
+    if (select) {
+      if (memberId !== null) {
+        select.value = String(memberId);
+      } else {
+        select.value = memberName;
       }
     }
 
-    const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
-    const memberObj = members.find(m => (m.name || '').trim() === memberName) || { name: memberName, category: 'メンバー', profession: '' };
+    if (updateHistory) {
+      const urlParam = memberId !== null ? String(memberId) : encodeURIComponent(memberName);
+      const cleanPath = '/member/' + urlParam;
+      try {
+        if (window.history && window.history.pushState) {
+          window.history.pushState({ memberId: memberId, memberName: memberName }, '', cleanPath);
+        } else {
+          updateUrlHash(`member/${urlParam}`);
+        }
+      } catch(e) {
+        updateUrlHash(`member/${urlParam}`);
+      }
+    }
 
-    renderMemberProfileHeader(memberObj);
+    renderMemberProfileHeader(memberObj || { name: memberName, category: 'メンバー', profession: '' });
     renderMemberDashboardData(memberName);
   }
 
@@ -872,6 +912,7 @@
       const closingRate = totalOriented > 0 ? Math.round((orientJoinedCount / totalOriented) * 100) : 0;
 
       return {
+        id: m.id !== undefined && m.id !== null ? m.id : null,
         name: mName,
         category: m.category || 'その他',
         profession: m.profession || '',
@@ -894,8 +935,9 @@
 
     let html = '';
     filtered.forEach(s => {
+      const clickArg = s.id !== null ? String(s.id) : s.name;
       html += `
-        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(s.name)}')">
+        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(clickArg)}')">
           <td class="py-2.5 px-3 font-extrabold text-slate-900 text-xs">
             ${escapeHtml(s.name)}
           </td>
@@ -921,14 +963,19 @@
     tbody.innerHTML = html;
   }
 
-  function selectMemberFromSummaryTable(memberName) {
+  function selectMemberFromSummaryTable(memberIdentifier) {
     toggleAllMembersView(false);
-    selectMemberDashboard(memberName, true);
+    selectMemberDashboard(memberIdentifier, true);
   }
 
-  function getMemberShareUrl(memberName) {
+  function getMemberShareUrl(memberNameOrIdentifier) {
     const origin = window.location.origin;
-    return `${origin}/member/${encodeURIComponent(memberName)}`;
+    const memberObj = resolveMemberFromParam(memberNameOrIdentifier);
+    if (memberObj && memberObj.id !== undefined && memberObj.id !== null) {
+      return `${origin}/member/${memberObj.id}`;
+    }
+    const name = memberObj ? memberObj.name : memberNameOrIdentifier;
+    return `${origin}/member/${encodeURIComponent(name)}`;
   }
 
   function copyMemberDashUrl() {

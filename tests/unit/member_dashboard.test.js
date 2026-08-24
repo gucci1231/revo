@@ -33,9 +33,10 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
   });
 
-  it('verifies member dashboard functions are defined in scripts and supports orientation, closing, charts, and completed actions', () => {
+  it('verifies member dashboard functions are defined in scripts and supports ID-based clean routing, orientation, closing, charts, and completed actions', () => {
     assert.strictEqual(indexHtml.includes('function initMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function selectMemberDashboard'), true);
+    assert.strictEqual(indexHtml.includes('function resolveMemberFromParam'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByInviter'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByOrientationUser'), true);
     assert.strictEqual(indexHtml.includes('function switchMemberRoleView'), true);
@@ -49,7 +50,7 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('function copyMemberDashLineText'), true);
     assert.strictEqual(indexHtml.includes('function toggleAllMembersView'), true);
     assert.strictEqual(indexHtml.includes('function renderAllMembersSummaryTable'), true);
-    // .htaccess rewrite rule for /member/{name}
+    // .htaccess rewrite rule for /member/{name} or /member/{id}
     assert.strictEqual(htaccess.includes('RewriteRule ^member/(.+)$ index.html [L,QSA]'), true);
   });
 });

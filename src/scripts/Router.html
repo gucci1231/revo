@@ -97,6 +97,21 @@
     }
   }
 
+  window.addEventListener('popstate', (e) => {
+    const currentPath = decodeURIComponent(window.location.pathname || '');
+    const pathMatch = currentPath.match(/\/member\/([^\/\?#]+)/);
+    if (pathMatch && pathMatch[1]) {
+      switchTab('member-dashboard', false);
+      setTimeout(() => {
+        if (typeof selectMemberDashboard === 'function') {
+          selectMemberDashboard(pathMatch[1].trim(), false);
+        }
+      }, 50);
+    } else {
+      handleHashRouting();
+    }
+  });
+
   /* --- ☰ Left Drawer & Sidebar Controller --- */
   function toggleLeftDrawer() {
     const drawer = document.getElementById('left-drawer');
