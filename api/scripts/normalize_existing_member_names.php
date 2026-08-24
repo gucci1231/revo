@@ -10,7 +10,7 @@ use Api\Services\MemberNameResolver;
 
 echo "=== メンバー名 一括正規化スクリプト 開始 ===\n";
 
-$db = Database::getConnection();
+$db = Database::getInstance()->getPdo();
 $memberRepo = new MemberRepository();
 $members = $memberRepo->getAll();
 
