@@ -64,9 +64,9 @@
           <span id="pf-mobile-count-active" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
 
-        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[120px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying-review" onclick="setPriorityFollowMobileStage('applying-review')">
+        <button type="button" class="pf-mobile-tab-btn flex-1 min-w-[76px] py-2 px-1.5 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-0.5" id="pf-mobile-tab-applying-review" onclick="setPriorityFollowMobileStage('applying-review')">
           <span class="flex items-center gap-1 text-[11px] text-emerald-700 whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>申込提出・入金待ち・審査
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>申込済み
           </span>
           <span id="pf-mobile-count-applying-review" class="text-xs font-black tabular-nums text-slate-800">0</span>
         </button>
@@ -100,12 +100,12 @@
         <div class="pf-kanban-card-list" id="pf-kanban-list-active"></div>
       </div>
 
-      <!-- カラム 3: 🟢 申込提出・入金待ち・審査 (グリーン) -->
+      <!-- カラム 3: 🟢 申込済み (グリーン) -->
       <div class="pf-kanban-column pf-kanban-col-applying-review" id="pf-col-applying-review" ondragover="onPfColumnDragOver(event)" ondragleave="onPfColumnDragLeave(event)" ondrop="onPfColumnDrop(event, 'applying-review')">
         <div class="pf-kanban-column-header">
           <div class="pf-kanban-col-title text-emerald-700">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-            <span>申込提出・入金待ち・審査</span>
+            <span>申込済み</span>
           </div>
           <span class="pf-kanban-col-count bg-emerald-100 text-emerald-800" id="pf-kanban-count-applying-review">0</span>
         </div>
