@@ -27,20 +27,20 @@ class ReportTemplateRepository {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )";
-        $this->db->query($sql);
+        $this->db->getPdo()->exec($sql);
 
         // カラム追加（既存テーブルがある場合）
         try {
             $cols = $this->db->fetchAll("PRAGMA table_info(report_templates)");
             $colNames = array_column($cols, 'name');
             if (!in_array('schedule_type', $colNames)) {
-                $this->db->query("ALTER TABLE report_templates ADD COLUMN schedule_type VARCHAR(32) DEFAULT 'weekly'");
+                $this->db->getPdo()->exec("ALTER TABLE report_templates ADD COLUMN schedule_type VARCHAR(32) DEFAULT 'weekly'");
             }
             if (!in_array('schedule_day', $colNames)) {
-                $this->db->query("ALTER TABLE report_templates ADD COLUMN schedule_day VARCHAR(32) DEFAULT 'Sun'");
+                $this->db->getPdo()->exec("ALTER TABLE report_templates ADD COLUMN schedule_day VARCHAR(32) DEFAULT 'Sun'");
             }
             if (!in_array('schedule_time', $colNames)) {
-                $this->db->query("ALTER TABLE report_templates ADD COLUMN schedule_time VARCHAR(32) DEFAULT '20:00'");
+                $this->db->getPdo()->exec("ALTER TABLE report_templates ADD COLUMN schedule_time VARCHAR(32) DEFAULT '20:00'");
             }
         } catch (\Exception $e) {}
 
@@ -58,7 +58,7 @@ class ReportTemplateRepository {
                 'schedule_day' => 'Sun',
                 'schedule_time' => '20:00',
                 'is_enabled' => 1,
-                'email_subject' => '🔥【目標必達】今週のビジター申込状況 ＆ 次回定例会への進捗',
+                'email_subject' => '🔥【今週の目標必達】次回定例会({{定例会日付}})ビジター申込進捗 ＆ メンターメッセージ',
                 'email_html_body' => $this->getDefaultWeeklyVisitorStatusEmail(),
                 'line_template_body' => $this->getDefaultWeeklyVisitorStatusLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -71,7 +71,7 @@ class ReportTemplateRepository {
                 'schedule_day' => 'Tue',
                 'schedule_time' => '12:00',
                 'is_enabled' => 1,
-                'email_subject' => '🤝【全員で歓迎！】今週の定例会に参加されるビジター様のご紹介',
+                'email_subject' => '🤝【全員で大歓迎！】今週参加されるビジター様のご紹介',
                 'email_html_body' => $this->getDefaultTuesdayVisitorIntroEmail(),
                 'line_template_body' => $this->getDefaultTuesdayVisitorIntroLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -84,7 +84,7 @@ class ReportTemplateRepository {
                 'schedule_day' => 'Sun',
                 'schedule_time' => '21:00',
                 'is_enabled' => 1,
-                'email_subject' => '📊【ビジホス週報】ビジター申込集計・フォロー状況・アクション進捗',
+                'email_subject' => '📊【ビジホス週報】今週のビジター成果・フォロー状況・次週アクション方針',
                 'email_html_body' => $this->getDefaultWeeklyFullReportEmail(),
                 'line_template_body' => $this->getDefaultWeeklyFullReportLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -97,7 +97,7 @@ class ReportTemplateRepository {
                 'schedule_day' => '',
                 'schedule_time' => '',
                 'is_enabled' => 1,
-                'email_subject' => '🎉【ナイスアクション！】{{ビジター名}} 様のフォロー完了・称賛速報',
+                'email_subject' => '🎉【ナイスアクション！】{{担当者名}} 様によるビジターフォロー完了・称賛速報！',
                 'email_html_body' => $this->getDefaultActionCompletedEmail(),
                 'line_template_body' => $this->getDefaultActionCompletedLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -110,7 +110,7 @@ class ReportTemplateRepository {
                 'schedule_day' => '',
                 'schedule_time' => '08:00',
                 'is_enabled' => 1,
-                'email_subject' => '⏰【本日対応】ビジターフォロー期限タスク一覧 ({{本日期限件数}}件)',
+                'email_subject' => '⏰【本日期限】ビジターフォロータスク一覧 ({{本日期限件数}}件)',
                 'email_html_body' => $this->getDefaultTodayDueTasksEmail(),
                 'line_template_body' => $this->getDefaultTodayDueTasksLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -123,7 +123,7 @@ class ReportTemplateRepository {
                 'schedule_day' => '',
                 'schedule_time' => '',
                 'is_enabled' => 1,
-                'email_subject' => '🚀【新規申込速報】{{招待者名}} 様よりビジター申込がありました！',
+                'email_subject' => '🚀【新規ビジター申込速報！】{{招待者名}} 様より申込がありました！ナイス招待！👏',
                 'email_html_body' => $this->getDefaultNewVisitorAppliedEmail(),
                 'line_template_body' => $this->getDefaultNewVisitorAppliedLine(),
                 'default_recipients' => 'info@k-d-o.biz'
@@ -136,9 +136,9 @@ class ReportTemplateRepository {
         foreach ($defaults as $d) {
             $existing = $this->db->fetchOne("SELECT id, email_html_body, line_template_body FROM report_templates WHERE id = ?", [$d['id']]);
             if (!$existing) {
-                $this->db->upsert('report_templates', $d, 'id');
+                $this->db->upsert('report_templates', $d, ['id']);
             } else if (empty(trim($existing['email_html_body'] ?? '')) || empty(trim($existing['line_template_body'] ?? ''))) {
-                $this->db->upsert('report_templates', $d, 'id');
+                $this->db->upsert('report_templates', $d, ['id']);
             }
         }
     }
@@ -176,11 +176,11 @@ class ReportTemplateRepository {
         $params[] = $id;
 
         $sql = "UPDATE report_templates SET " . implode(', ', $fields) . " WHERE id = ?";
-        return $this->db->query($sql, $params) !== false;
+        return $this->db->execute($sql, $params) >= 0;
     }
 
     public function toggleEnabled(string $id, int $isEnabled): bool {
-        return $this->db->query("UPDATE report_templates SET is_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [$isEnabled, $id]) !== false;
+        return $this->db->execute("UPDATE report_templates SET is_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [$isEnabled, $id]) >= 0;
     }
 
     public function resetToDefault(string $id): ?array {
@@ -188,7 +188,7 @@ class ReportTemplateRepository {
         if (!isset($defaults[$id])) return null;
 
         $target = $defaults[$id];
-        $this->db->upsert('report_templates', $target, 'id');
+        $this->db->upsert('report_templates', $target, ['id']);
         return $this->getById($id);
     }
 
