@@ -294,14 +294,12 @@
         if (v.nextActionText) {
           const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(v.nextActionDueDate)}</span>` : '';
           const assigneeText = v.nextActionAssignee ? `<span class="text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(v.nextActionAssignee)}</span>` : '';
-          const overdueBadge = isOverdue ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200"><i class="fa-solid fa-circle-exclamation"></i> 超過</span>` : '';
 
           nextActionBlockHtml = `
             <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 mt-1">
               <div class="flex items-center justify-between gap-1 mb-1">
                 <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 truncate">
                   ${renderActionTypeBadgeHtml(v.nextActionType)}
-                  ${overdueBadge}
                 </div>
                 ${actionDateText}
               </div>
