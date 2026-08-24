@@ -32,14 +32,14 @@ describe('Dashboard Enhancements & Intuitive UX Unit Tests', () => {
         }
       },
       cachedAllVisitors: [
-        { id: 1, isJoined: '未' },
-        { id: 2, isJoined: '未対応' },
-        { id: 3, isJoined: '検討中' },
-        { id: 4, isJoined: '申込書提出' },
-        { id: 5, isJoined: '入金待ち' },
-        { id: 6, isJoined: '審査' },
-        { id: 7, isJoined: '入会済' },
-        { id: 8, isJoined: '入会' }
+        { id: 1, isJoined: '未', feelAbc: 'A' },
+        { id: 2, isJoined: '未対応', feelAbc: 'B' },
+        { id: 3, isJoined: '検討中', feelAbc: 'A' },
+        { id: 4, isJoined: '申込書提出', feelAbc: 'A' },
+        { id: 5, isJoined: '入金待ち', feelAbc: 'A' },
+        { id: 6, isJoined: '審査', feelAbc: 'A' },
+        { id: 7, isJoined: '入会済', feelAbc: 'A' },
+        { id: 8, isJoined: '入会', feelAbc: 'A' }
       ],
       switchTab: () => {},
       console

@@ -163,10 +163,8 @@ class DashboardService {
         $uniqueVisitors = $this->deduplicateVisitorsList($periodVisitors, $apMap);
 
         // 3. ユニークビジターに対するパイプライン・最優先フォロー・1ヶ月フォロー集計
-        foreach ($uniqueVisitors as $uv) {
-            $rawJoin = trim($uv['isJoined'] ?? '');
-            $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
-            $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了');
+            $feel = strtoupper(trim($uv['feelAbc'] ?? ''));
+            $isFeelBOrAbove = ($feel === 'A' || $feel === 'B');
 
             if ($isJoinedBool) {
                 $pipelineCounts['入会済']++;
@@ -178,7 +176,7 @@ class DashboardService {
                 $pipelineCounts['申込書提出']++;
             } else if ($rawJoin === '検討中') {
                 $pipelineCounts['検討中']++;
-            } else if (!$isRejected) {
+            } else if (!$isRejected && $isFeelBOrAbove) {
                 $pipelineCounts['未']++;
             }
 

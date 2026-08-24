@@ -514,10 +514,15 @@
 
       dedupedList.forEach(v => {
         const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
-        if (counts[status] !== undefined) {
+        const feel = typeof parseFeelAbc === 'function' ? parseFeelAbc(v.feelAbc) : (v.feelAbc || '');
+        const isFeelBOrAbove = (feel === 'A' || feel === 'B');
+
+        if (status === '未') {
+          if (isFeelBOrAbove && v.isJoined !== '見送り' && v.isJoined !== 'フォロー終了') {
+            counts['未']++;
+          }
+        } else if (counts[status] !== undefined) {
           counts[status]++;
-        } else {
-          counts['未']++;
         }
       });
     }
