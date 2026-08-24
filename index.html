@@ -2833,64 +2833,52 @@ select.form-input, select.form-select {
   }
 }
 
-/* 🌟 DASHBOARD TODAY'S ALERTS SUMMARY BANNER (Clean Apple Style) */
+/* 🌟 DASHBOARD TODAY'S ALERTS SUMMARY BANNER (Radical Minimalism & Slate Monotone) */
 .dash-alerts-banner {
   background: #ffffff;
-  border: 1px solid #fed7aa;
-  border-left: 4px solid #f97316;
-  border-radius: 14px;
-  padding: 10px 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px -2px rgba(249, 115, 22, 0.08);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  transition: all 0.2s ease;
-}
-.dash-alerts-banner.has-overdue {
-  border-color: #fecaca;
-  border-left-color: #ef4444;
-  box-shadow: 0 2px 10px -2px rgba(239, 68, 68, 0.08);
+  transition: all 0.15s ease;
 }
 .dash-alerts-content {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
-  font-size: 12.5px;
-  color: #334155;
+  font-size: 12px;
+  color: #475569;
 }
 .dash-alert-chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 8px;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 11.5px;
-  font-weight: 700;
+  font-weight: 600;
+  color: #334155;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
 }
 .dash-alert-chip:hover {
-  transform: translateY(-1px);
+  background: #e2e8f0;
+  color: #0f172a;
 }
-.dash-alert-chip.chip-red {
+.dash-alert-chip.chip-overdue {
+  color: #991b1b;
   background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-.dash-alert-chip.chip-orange {
-  background: #fff7ed;
-  color: #c2410c;
-  border: 1px solid #ffedd5;
-}
-.dash-alert-chip.chip-indigo {
-  background: #eef2ff;
-  color: #4338ca;
-  border: 1px solid #e0e7ff;
+  border-color: #fee2e2;
 }
 
 /* 🌟 DASHBOARD MINI PIPELINE STEP BAR (Pure White & Minimalist Progress) */
@@ -10671,33 +10659,33 @@ window.CelebrationEffect = (function() {
       return;
     }
 
-    const hasOverdue = overdueActions.length > 0 || stagnantHot.length > 0;
-    bannerEl.className = `dash-alerts-banner ${hasOverdue ? 'has-overdue' : ''}`;
+    bannerEl.className = 'dash-alerts-banner';
     bannerEl.style.display = 'flex';
 
     bannerEl.innerHTML = `
       <div class="dash-alerts-content">
-        <span class="font-bold text-slate-800 flex items-center gap-1.5">
-          <i class="fa-solid fa-triangle-exclamation ${hasOverdue ? 'text-red-500' : 'text-amber-500'}"></i>
-          <span>今日・直近の要対応:</span>
+        <span class="font-bold text-slate-700 flex items-center gap-1.5 mr-1">
+          <i class="fa-solid fa-circle-exclamation text-slate-400 text-xs"></i>
+          <span>要対応:</span>
         </span>
         ${overdueActions.length > 0 ? `
-          <span class="dash-alert-chip chip-red" onclick="switchTab('actions')" title="期限超過のアクションプランを確認">
-            <i class="fa-solid fa-clock text-[10px]"></i> 期限超過アクション <strong>${overdueActions.length}件</strong>
+          <span class="dash-alert-chip chip-overdue" onclick="switchTab('actions')" title="期限超過のアクションプランを確認">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 mr-0.5"></span>
+            期限超過 <strong>${overdueActions.length}件</strong>
           </span>
         ` : ''}
         ${stagnantHot.length > 0 ? `
-          <span class="dash-alert-chip chip-orange" onclick="switchDashboardPanel('hot'); filterDashboardHotVisitors('STAGNANT');" title="未対応・放置の感触Aビジターを確認">
-            <i class="fa-solid fa-fire text-[10px]"></i> アクション未設定(感触A) <strong>${stagnantHot.length}名</strong>
+          <span class="dash-alert-chip" onclick="switchDashboardPanel('hot'); filterDashboardHotVisitors('STAGNANT');" title="未対応・放置の感触Aビジターを確認">
+            アクション未設定 <strong>${stagnantHot.length}名</strong>
           </span>
         ` : ''}
         ${pendingReminders.length > 0 ? `
-          <span class="dash-alert-chip chip-indigo" onclick="switchTab('visitors')" title="再アプローチ期日到来のビジターを確認">
-            <i class="fa-solid fa-calendar-check text-[10px]"></i> 再アプローチ到来 <strong>${pendingReminders.length}名</strong>
+          <span class="dash-alert-chip" onclick="switchTab('visitors')" title="再アプローチ期日到来のビジターを確認">
+            再アプローチ <strong>${pendingReminders.length}名</strong>
           </span>
         ` : ''}
       </div>
-      <div class="text-xs text-slate-400 font-semibold cursor-pointer hover:text-slate-600 transition" onclick="document.getElementById('dash-today-alerts').style.display='none'">
+      <div class="text-xs text-slate-400 font-semibold cursor-pointer hover:text-slate-600 transition px-1" onclick="document.getElementById('dash-today-alerts').style.display='none'">
         <i class="fa-solid fa-xmark"></i>
       </div>
     `;

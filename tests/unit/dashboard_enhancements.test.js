@@ -94,8 +94,8 @@ describe('Dashboard Enhancements & Intuitive UX Unit Tests', () => {
 
     context.renderDashboardAlerts(mockData);
     assert.strictEqual(bannerEl.style.display, 'flex');
-    assert.ok(bannerEl.innerHTML.includes('期限超過アクション'));
-    assert.ok(bannerEl.innerHTML.includes('アクション未設定(感触A)'));
-    assert.ok(bannerEl.innerHTML.includes('再アプローチ到来'));
+    assert.ok(bannerEl.innerHTML.includes('期限超過'));
+    assert.ok(bannerEl.innerHTML.includes('アクション未設定'));
+    assert.ok(bannerEl.innerHTML.includes('再アプローチ'));
   });
 });
