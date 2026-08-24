@@ -280,7 +280,7 @@
     `;
   }
 
-  // 🌟 ダッシュボード用の閲覧専用・洗練テキストステータスバッジ
+  // 🌟 ダッシュボード用の閲覧専用・洗練テキストステータスバッジ（ミニマル・モノトーン基調）
   function renderDashboardVisitorStatusBadgeHtml(r) {
     if (!r) return '';
     const joinInfo = getJoinStatusInfo(r.isJoined);
@@ -288,30 +288,21 @@
 
     let joinBadge = '';
     if (joinInfo.value === '入会済') {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">入会済</span>`;
-    } else if (joinInfo.value === '審査') {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">審査中</span>`;
-    } else if (joinInfo.value === '入金待ち') {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">入金待ち</span>`;
-    } else if (joinInfo.value === '申込書提出') {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">申込書提出</span>`;
-    } else if (joinInfo.value === '検討中') {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">検討中</span>`;
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">入会済</span>`;
+    } else if (joinInfo.value === '未') {
+      joinBadge = `<span class="inline-flex items-center px-1.5 py-0.5 text-[11px] font-medium text-slate-400">未対応</span>`;
     } else {
-      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">未対応</span>`;
+      // 検討中、申込書提出、入金待ち、審査中など：上品で落ち着いたモノトーンスレート
+      joinBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${joinInfo.label}</span>`;
     }
 
     let followBadge = '';
-    if (followInfo.value === '時期尚早') {
-      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">時期尚早</span>`;
-    } else if (followInfo.value === '関係維持') {
-      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-teal-50 text-teal-700 border border-teal-200">関係維持</span>`;
-    } else if (followInfo.value === '終了') {
-      followBadge = `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-400">終了</span>`;
+    if (followInfo.value && followInfo.value !== 'フォロー') {
+      followBadge = `<span class="text-[10px] text-slate-400 font-medium">${followInfo.label}</span>`;
     }
 
     return `
-      <div class="inline-flex flex-col items-center justify-center gap-1">
+      <div class="inline-flex flex-col items-center justify-center gap-0.5">
         ${joinBadge}
         ${followBadge}
       </div>

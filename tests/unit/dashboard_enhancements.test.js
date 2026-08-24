@@ -49,11 +49,12 @@ describe('Dashboard Enhancements & Intuitive UX Unit Tests', () => {
     vm.runInContext(rawScript, context);
 
     context.renderDashboardPipelineBar(context.cachedAllVisitors);
-    assert.ok(gridElements.innerHTML.includes('step-stagnant'));
-    assert.ok(gridElements.innerHTML.includes('step-considering'));
-    assert.ok(gridElements.innerHTML.includes('step-applying'));
-    assert.ok(gridElements.innerHTML.includes('step-payment'));
-    assert.ok(gridElements.innerHTML.includes('step-review'));
+    assert.ok(gridElements.innerHTML.includes('未対応'));
+    assert.ok(gridElements.innerHTML.includes('検討中'));
+    assert.ok(gridElements.innerHTML.includes('申込書提出'));
+    assert.ok(gridElements.innerHTML.includes('入金待ち'));
+    assert.ok(gridElements.innerHTML.includes('審査中'));
+    assert.ok(gridElements.innerHTML.includes('入会済'));
     assert.ok(gridElements.innerHTML.includes('step-joined'));
   });
 
