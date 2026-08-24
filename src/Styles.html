@@ -3766,6 +3766,14 @@ select.form-input, select.form-select {
   line-height: 1;
 }
 
+.pf-mobile-stage-tabs {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.pf-mobile-stage-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .pf-kanban-card-list {
   padding: 16px;
   overflow-y: auto;
@@ -3773,14 +3781,14 @@ select.form-input, select.form-select {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .pf-kanban-card-list::-webkit-scrollbar {
-  width: 5px;
-}
-.pf-kanban-card-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* カンバンカード本体 */
