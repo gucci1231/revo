@@ -2130,6 +2130,167 @@ select.form-input, select.form-select {
   }
 }
 
+/* --- 🚀 Visual Horizontal Progress Pipeline Stepper (Apple Style) --- */
+.vd-pipeline-timeline-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 18px 12px;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vd-pipeline-track {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+.vd-pipeline-track::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  z-index: 1;
+}
+.vd-pipeline-track-fill {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  height: 3px;
+  width: 0%;
+  background: #0071e3;
+  border-radius: 2px;
+  z-index: 2;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+}
+.vd-pipeline-track-fill.is-joined {
+  background: #10b981;
+}
+.vd-pipeline-node {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: transparent;
+  flex: 1;
+  text-align: center;
+  transition: transform 0.15s ease;
+  user-select: none;
+}
+.vd-pipeline-node:hover {
+  transform: translateY(-2px);
+}
+.vd-node-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #cbd5e1;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.vd-node-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
+}
+
+/* 過去ステップ (Passed Step) */
+.vd-pipeline-node.is-passed .vd-node-indicator {
+  background: #0071e3;
+  border-color: #0071e3;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+}
+.vd-pipeline-node.is-passed .vd-node-label {
+  color: #0f172a;
+}
+
+/* 現在地アクティブステップ (Current Active Step) */
+.vd-pipeline-node.is-current .vd-node-indicator {
+  background: #ffffff;
+  border-color: #0071e3;
+  color: #0071e3;
+  border-width: 3px;
+  transform: scale(1.18);
+  box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.18), 0 3px 10px rgba(0, 113, 227, 0.2);
+}
+.vd-pipeline-node.is-current .vd-node-label {
+  color: #0071e3;
+  font-weight: 800;
+}
+
+/* 入会済 (Joined Success Step) */
+.vd-pipeline-node[data-stage-val="入会済"].is-passed .vd-node-indicator,
+.vd-pipeline-node[data-stage-val="入会済"].is-current .vd-node-indicator {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2), 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+.vd-pipeline-node[data-stage-val="入会済"].is-current .vd-node-label {
+  color: #059669;
+}
+
+/* クローズド（見送り/フォロー終了）バナー */
+.vd-pipeline-closed-badge {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .vd-pipeline-timeline-card {
+    padding: 10px 10px 8px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vd-pipeline-track {
+    min-width: 320px;
+  }
+  .vd-node-indicator {
+    width: 26px;
+    height: 26px;
+    font-size: 10px;
+  }
+  .vd-pipeline-track::before,
+  .vd-pipeline-track-fill {
+    top: 13px;
+    left: 14px;
+    right: 14px;
+  }
+  .vd-node-label {
+    font-size: 9.5px;
+  }
+}
+
 .vd-profile-header {
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 18px;
@@ -7311,6 +7472,68 @@ select.form-input, select.form-select {
       </div>
 
       <div class="vd-profile-card">
+        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (Interactive Pipeline Steps) -->
+        <div class="vd-pipeline-timeline-card mb-4" id="vd-pipeline-timeline-container">
+          <div class="vd-pipeline-track">
+            <!-- プログレスフィルバー (JSで横幅・色制御) -->
+            <div class="vd-pipeline-track-fill" id="vd-pipeline-track-fill"></div>
+
+            <!-- ステップ 1: 放置 / 未 -->
+            <div class="vd-pipeline-node" data-stage-val="未" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '未')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-hourglass-start"></i>
+              </div>
+              <span class="vd-node-label">未 / 放置</span>
+            </div>
+
+            <!-- ステップ 2: 検討中 -->
+            <div class="vd-pipeline-node" data-stage-val="検討中" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '検討中')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <span class="vd-node-label">検討中</span>
+            </div>
+
+            <!-- ステップ 3: 申込書提出 -->
+            <div class="vd-pipeline-node" data-stage-val="申込書提出" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '申込書提出')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-file-signature"></i>
+              </div>
+              <span class="vd-node-label">申込書提出</span>
+            </div>
+
+            <!-- ステップ 4: 入金待ち -->
+            <div class="vd-pipeline-node" data-stage-val="入金待ち" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入金待ち')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-credit-card"></i>
+              </div>
+              <span class="vd-node-label">入金待ち</span>
+            </div>
+
+            <!-- ステップ 5: 審査 -->
+            <div class="vd-pipeline-node" data-stage-val="審査" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '審査')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-user-check"></i>
+              </div>
+              <span class="vd-node-label">審査</span>
+            </div>
+
+            <!-- ステップ 6: 入会済 -->
+            <div class="vd-pipeline-node" data-stage-val="入会済" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入会済')">
+              <div class="vd-node-indicator">
+                <i class="fa-solid fa-crown"></i>
+              </div>
+              <span class="vd-node-label">入会済</span>
+            </div>
+          </div>
+
+          <!-- クローズド（見送り/フォロー終了）時のスマートアラートバナー -->
+          <div id="vd-pipeline-closed-badge" class="vd-pipeline-closed-badge" style="display: none;">
+            <i class="fa-solid fa-ban mr-1.5"></i>
+            <span id="vd-pipeline-closed-text">フォロー終了 / 見送り</span>
+          </div>
+        </div>
+
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">
             <!-- どでかいランクエンブレム -->
@@ -9763,6 +9986,9 @@ const ApiService = {
         selectJoin.value = info.value;
         selectJoin.className = 'vd-status-select ' + info.cls;
       }
+      if (typeof updateVisitorProgressTimeline === 'function') {
+        updateVisitorProgressTimeline(value);
+      }
     } else if (field === 'isAttended') {
       const selectAtt = document.getElementById('vd-select-attended');
       if (selectAtt) {
@@ -9859,6 +10085,68 @@ const ApiService = {
     const key = normalizeJoinStatus(raw);
     return JOIN_STATUS_CONFIG[key] || JOIN_STATUS_CONFIG['未'];
   }
+
+  /* --- 🚀 Visual Progress Pipeline Stepper Logic --- */
+  const VD_PIPELINE_STAGES = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済'];
+
+  function updateVisitorProgressTimeline(rawStatus) {
+    const norm = normalizeJoinStatus(rawStatus);
+    const container = document.getElementById('vd-pipeline-timeline-container');
+    if (!container) return;
+
+    const fillBar = document.getElementById('vd-pipeline-track-fill');
+    const closedBadge = document.getElementById('vd-pipeline-closed-badge');
+    const closedText = document.getElementById('vd-pipeline-closed-text');
+
+    const isClosed = (norm === 'フォロー終了' || norm === '見送り');
+
+    if (isClosed) {
+      if (closedBadge) {
+        closedBadge.style.display = 'flex';
+        if (closedText) closedText.innerText = norm === '見送り' ? '見送り' : 'フォロー終了';
+      }
+      if (fillBar) {
+        fillBar.style.width = '0%';
+        fillBar.classList.remove('is-joined');
+      }
+      container.querySelectorAll('.vd-pipeline-node').forEach(node => {
+        node.classList.remove('is-passed', 'is-current');
+      });
+      return;
+    }
+
+    if (closedBadge) closedBadge.style.display = 'none';
+
+    let curIdx = VD_PIPELINE_STAGES.indexOf(norm);
+    if (curIdx === -1) curIdx = 0; // 未 / 放置
+
+    // ノードのステータスクラス反映
+    container.querySelectorAll('.vd-pipeline-node').forEach(node => {
+      const stageVal = node.getAttribute('data-stage-val');
+      const idx = VD_PIPELINE_STAGES.indexOf(stageVal);
+      node.classList.remove('is-passed', 'is-current');
+
+      if (idx < curIdx) {
+        node.classList.add('is-passed');
+      } else if (idx === curIdx) {
+        node.classList.add('is-current');
+      }
+    });
+
+    // 進行バーのパーセンテージ計算 (0% 〜 100%)
+    if (fillBar) {
+      const totalSteps = VD_PIPELINE_STAGES.length - 1; // 5 intervals
+      const percent = (curIdx / totalSteps) * 100;
+      fillBar.style.width = `${percent}%`;
+
+      if (norm === '入会済') {
+        fillBar.classList.add('is-joined');
+      } else {
+        fillBar.classList.remove('is-joined');
+      }
+    }
+  }
+  window.updateVisitorProgressTimeline = updateVisitorProgressTimeline;
 
   function renderJoinStatusOptionsHtml(selectedVal) {
     const current = normalizeJoinStatus(selectedVal);
@@ -18800,6 +19088,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
           const info = getJoinStatusInfo(st.isJoined);
           selectJoin.value = info.value;
           selectJoin.className = 'vd-status-select ' + info.cls;
+        }
+        if (typeof updateVisitorProgressTimeline === 'function') {
+          updateVisitorProgressTimeline(st.isJoined);
         }
 
         const selectFollowType = document.getElementById('vd-select-follow-type');

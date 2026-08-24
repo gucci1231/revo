@@ -301,6 +301,9 @@
         selectJoin.value = info.value;
         selectJoin.className = 'vd-status-select ' + info.cls;
       }
+      if (typeof updateVisitorProgressTimeline === 'function') {
+        updateVisitorProgressTimeline(value);
+      }
     } else if (field === 'isAttended') {
       const selectAtt = document.getElementById('vd-select-attended');
       if (selectAtt) {
@@ -397,6 +400,68 @@
     const key = normalizeJoinStatus(raw);
     return JOIN_STATUS_CONFIG[key] || JOIN_STATUS_CONFIG['未'];
   }
+
+  /* --- 🚀 Visual Progress Pipeline Stepper Logic --- */
+  const VD_PIPELINE_STAGES = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済'];
+
+  function updateVisitorProgressTimeline(rawStatus) {
+    const norm = normalizeJoinStatus(rawStatus);
+    const container = document.getElementById('vd-pipeline-timeline-container');
+    if (!container) return;
+
+    const fillBar = document.getElementById('vd-pipeline-track-fill');
+    const closedBadge = document.getElementById('vd-pipeline-closed-badge');
+    const closedText = document.getElementById('vd-pipeline-closed-text');
+
+    const isClosed = (norm === 'フォロー終了' || norm === '見送り');
+
+    if (isClosed) {
+      if (closedBadge) {
+        closedBadge.style.display = 'flex';
+        if (closedText) closedText.innerText = norm === '見送り' ? '見送り' : 'フォロー終了';
+      }
+      if (fillBar) {
+        fillBar.style.width = '0%';
+        fillBar.classList.remove('is-joined');
+      }
+      container.querySelectorAll('.vd-pipeline-node').forEach(node => {
+        node.classList.remove('is-passed', 'is-current');
+      });
+      return;
+    }
+
+    if (closedBadge) closedBadge.style.display = 'none';
+
+    let curIdx = VD_PIPELINE_STAGES.indexOf(norm);
+    if (curIdx === -1) curIdx = 0; // 未 / 放置
+
+    // ノードのステータスクラス反映
+    container.querySelectorAll('.vd-pipeline-node').forEach(node => {
+      const stageVal = node.getAttribute('data-stage-val');
+      const idx = VD_PIPELINE_STAGES.indexOf(stageVal);
+      node.classList.remove('is-passed', 'is-current');
+
+      if (idx < curIdx) {
+        node.classList.add('is-passed');
+      } else if (idx === curIdx) {
+        node.classList.add('is-current');
+      }
+    });
+
+    // 進行バーのパーセンテージ計算 (0% 〜 100%)
+    if (fillBar) {
+      const totalSteps = VD_PIPELINE_STAGES.length - 1; // 5 intervals
+      const percent = (curIdx / totalSteps) * 100;
+      fillBar.style.width = `${percent}%`;
+
+      if (norm === '入会済') {
+        fillBar.classList.add('is-joined');
+      } else {
+        fillBar.classList.remove('is-joined');
+      }
+    }
+  }
+  window.updateVisitorProgressTimeline = updateVisitorProgressTimeline;
 
   function renderJoinStatusOptionsHtml(selectedVal) {
     const current = normalizeJoinStatus(selectedVal);

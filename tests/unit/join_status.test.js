@@ -68,4 +68,11 @@ describe('Join Status Options & UI Unit Tests', () => {
     const viewVisitorsHtml = fs.readFileSync(path.join(__dirname, '../../src/scripts/ViewVisitors.html'), 'utf8');
     assert.ok(viewVisitorsHtml.includes("followType === 'フォロー終了'"), 'ViewVisitors should check followType === フォロー終了');
   });
+
+  it('verifies horizontal graphical progress pipeline timeline stepper in ViewVisitorDetail and Utils', () => {
+    assert.ok(visitorDetailHtml.includes('vd-pipeline-timeline-container'), 'ViewVisitorDetail should include timeline stepper container');
+    assert.ok(visitorDetailHtml.includes('vd-pipeline-track-fill'), 'ViewVisitorDetail should include timeline track fill');
+    assert.ok(utilsHtml.includes('updateVisitorProgressTimeline'), 'Utils should implement updateVisitorProgressTimeline');
+    assert.ok(utilsHtml.includes('VD_PIPELINE_STAGES'), 'Utils should define VD_PIPELINE_STAGES');
+  });
 });

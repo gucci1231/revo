@@ -419,6 +419,9 @@
           selectJoin.value = info.value;
           selectJoin.className = 'vd-status-select ' + info.cls;
         }
+        if (typeof updateVisitorProgressTimeline === 'function') {
+          updateVisitorProgressTimeline(st.isJoined);
+        }
 
         const selectFollowType = document.getElementById('vd-select-follow-type');
         if (selectFollowType) {
