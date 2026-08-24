@@ -19,15 +19,15 @@ describe('Priority Follow Kanban Feature Unit Tests', () => {
     if (isJoined === '検討中') {
       return 'stage-active'; // ② 検討中
     }
-    return 'stage-stagnant'; // ① 未対応
+    return 'stage-stagnant'; // ① 放置
   }
 
   it('correctly categorizes visitors into 4 Kanban stages', () => {
-    // 1. 未対応: ステータス未
+    // 1. 放置: ステータス未
     const visitor1 = { id: '1', name: '山田', feelAbc: 'A', isJoined: '未', pendingActionCount: 0, overdueActionCount: 0 };
     assert.strictEqual(categorizeVisitorToStage(visitor1), 'stage-stagnant');
 
-    // 1. 未対応: ステータス未（アクションありでも未対応ステージ）
+    // 1. 放置: ステータス未（アクションありでも放置/未着手ステージ）
     const visitor2 = { id: '2', name: '田中', feelAbc: 'A', isJoined: '未', pendingActionCount: 1, overdueActionCount: 0 };
     assert.strictEqual(categorizeVisitorToStage(visitor2), 'stage-stagnant');
 

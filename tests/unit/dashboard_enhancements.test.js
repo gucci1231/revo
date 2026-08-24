@@ -49,7 +49,7 @@ describe('Dashboard Enhancements & Intuitive UX Unit Tests', () => {
     vm.runInContext(rawScript, context);
 
     context.renderDashboardPipelineBar(context.cachedAllVisitors);
-    assert.ok(gridElements.innerHTML.includes('未対応'));
+    assert.ok(gridElements.innerHTML.includes('放置'));
     assert.ok(gridElements.innerHTML.includes('検討中'));
     assert.ok(gridElements.innerHTML.includes('申込書提出'));
     assert.ok(gridElements.innerHTML.includes('入金待ち'));
