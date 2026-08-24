@@ -129,15 +129,42 @@
 
   function renderJoinedButtonHtml(id, rawStatus) {
     const isJoined = (rawStatus === '入会済' || rawStatus === '済' || rawStatus === '入会' || rawStatus === true);
+    const isApplying = (rawStatus === '申込書提出');
+    const isReview = (rawStatus === 'メンバーシップ審査');
+    const isPayment = (rawStatus === '入金待ち');
     const isConsidering = (rawStatus === '検討中');
     const isRejected = (rawStatus === '見送り');
-    const val = isJoined ? '入会済' : (isConsidering ? '検討中' : (isRejected ? '見送り' : '未'));
-    const stateClass = isJoined ? 'state-joined' : (isConsidering ? 'state-considering' : (isRejected ? 'state-rejected' : ''));
+
+    let val = '未';
+    let stateClass = '';
+    if (isJoined) {
+      val = '入会済';
+      stateClass = 'state-joined';
+    } else if (isApplying) {
+      val = '申込書提出';
+      stateClass = 'state-applying';
+    } else if (isReview) {
+      val = 'メンバーシップ審査';
+      stateClass = 'state-review';
+    } else if (isPayment) {
+      val = '入金待ち';
+      stateClass = 'state-payment';
+    } else if (isConsidering) {
+      val = '検討中';
+      stateClass = 'state-considering';
+    } else if (isRejected) {
+      val = '見送り';
+      stateClass = 'state-rejected';
+    }
+
     return `
       <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
         <option value="未" ${val === '未' ? 'selected' : ''}>入会: 未</option>
-        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
         <option value="検討中" ${val === '検討中' ? 'selected' : ''}>入会: 検討中</option>
+        <option value="申込書提出" ${val === '申込書提出' ? 'selected' : ''}>入会: 申込書提出</option>
+        <option value="メンバーシップ審査" ${val === 'メンバーシップ審査' ? 'selected' : ''}>入会: メンバーシップ審査</option>
+        <option value="入金待ち" ${val === '入金待ち' ? 'selected' : ''}>入会: 入金待ち</option>
+        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
         <option value="見送り" ${val === '見送り' ? 'selected' : ''}>入会: 見送り</option>
       </select>
     `;

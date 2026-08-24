@@ -835,6 +835,14 @@ tr:last-child td { border-bottom: none; }
   border-color: #fde68a;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2392400e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
+.status-select.state-applying,
+.status-select.state-review,
+.status-select.state-payment {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
 
 /* Visitors Status Filter Tabs (Modern Slate Pill Segment Control) */
 .visitors-status-tabs {
@@ -935,6 +943,14 @@ tr:last-child td { border-bottom: none; }
   color: #d97706;
   border-color: #fde68a;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+.vd-status-select.state-applying,
+.vd-status-select.state-review,
+.vd-status-select.state-payment {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 .btn-attend, .select-attend { display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); white-space: nowrap; outline: none; transition: all 0.15s ease; }
@@ -6227,8 +6243,11 @@ select.form-input, select.form-select {
             <div class="vd-status-select-wrap">
               <select id="vd-select-joined" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isJoined', this.value)" title="入会状況">
                 <option value="未">入会: 未</option>
-                <option value="入会済">入会: 済</option>
                 <option value="検討中">入会: 検討中</option>
+                <option value="申込書提出">入会: 申込書提出</option>
+                <option value="メンバーシップ審査">入会: メンバーシップ審査</option>
+                <option value="入金待ち">入会: 入金待ち</option>
+                <option value="入会済">入会: 済</option>
                 <option value="見送り">入会: 見送り</option>
               </select>
             </div>
@@ -7765,15 +7784,42 @@ const ApiService = {
 
   function renderJoinedButtonHtml(id, rawStatus) {
     const isJoined = (rawStatus === '入会済' || rawStatus === '済' || rawStatus === '入会' || rawStatus === true);
+    const isApplying = (rawStatus === '申込書提出');
+    const isReview = (rawStatus === 'メンバーシップ審査');
+    const isPayment = (rawStatus === '入金待ち');
     const isConsidering = (rawStatus === '検討中');
     const isRejected = (rawStatus === '見送り');
-    const val = isJoined ? '入会済' : (isConsidering ? '検討中' : (isRejected ? '見送り' : '未'));
-    const stateClass = isJoined ? 'state-joined' : (isConsidering ? 'state-considering' : (isRejected ? 'state-rejected' : ''));
+
+    let val = '未';
+    let stateClass = '';
+    if (isJoined) {
+      val = '入会済';
+      stateClass = 'state-joined';
+    } else if (isApplying) {
+      val = '申込書提出';
+      stateClass = 'state-applying';
+    } else if (isReview) {
+      val = 'メンバーシップ審査';
+      stateClass = 'state-review';
+    } else if (isPayment) {
+      val = '入金待ち';
+      stateClass = 'state-payment';
+    } else if (isConsidering) {
+      val = '検討中';
+      stateClass = 'state-considering';
+    } else if (isRejected) {
+      val = '見送り';
+      stateClass = 'state-rejected';
+    }
+
     return `
       <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
         <option value="未" ${val === '未' ? 'selected' : ''}>入会: 未</option>
-        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
         <option value="検討中" ${val === '検討中' ? 'selected' : ''}>入会: 検討中</option>
+        <option value="申込書提出" ${val === '申込書提出' ? 'selected' : ''}>入会: 申込書提出</option>
+        <option value="メンバーシップ審査" ${val === 'メンバーシップ審査' ? 'selected' : ''}>入会: メンバーシップ審査</option>
+        <option value="入金待ち" ${val === '入金待ち' ? 'selected' : ''}>入会: 入金待ち</option>
+        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
         <option value="見送り" ${val === '見送り' ? 'selected' : ''}>入会: 見送り</option>
       </select>
     `;
@@ -9149,7 +9195,12 @@ window.CelebrationEffect = (function() {
 
         const currentJoined = existing.isJoined || '未';
         const newJoined = r.isJoined || '未';
-        if (newJoined === '入会済' || currentJoined === '入会済') existing.isJoined = '入会済';
+        const joinedPriority = { '入会済': 6, '済': 6, '入金待ち': 5, 'メンバーシップ審査': 4, '申込書提出': 3, '検討中': 2, '見送り': 1, '未': 0 };
+        const curP = joinedPriority[currentJoined] !== undefined ? joinedPriority[currentJoined] : 0;
+        const newP = joinedPriority[newJoined] !== undefined ? joinedPriority[newJoined] : 0;
+        if (newP > curP) {
+          existing.isJoined = (newJoined === '済' ? '入会済' : newJoined);
+        }
 
         const curFeel = parseFeelAbc(existing.feelAbc);
         const newFeel = parseFeelAbc(r.feelAbc);
@@ -10990,8 +11041,19 @@ window.CelebrationEffect = (function() {
         const is11 = (st.is1to1 === '済');
         const isProg = (st.is1to1 === '調整中');
         const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
+        const isApplying = (st.isJoined === '申込書提出');
+        const isReview = (st.isJoined === 'メンバーシップ審査');
+        const isPayment = (st.isJoined === '入金待ち');
         const isCons = (st.isJoined === '検討中');
         const isRej = (st.isJoined === '見送り');
+
+        let joinCls = '';
+        if (isJ) joinCls = 'state-joined';
+        else if (isApplying) joinCls = 'state-applying';
+        else if (isReview) joinCls = 'state-review';
+        else if (isPayment) joinCls = 'state-payment';
+        else if (isCons) joinCls = 'state-considering';
+        else if (isRej) joinCls = 'state-rejected';
 
         const pendingAps = actionPlans.filter(p => Number(p.is_completed) === 0);
         const completedAps = actionPlans.filter(p => Number(p.is_completed) === 1);
@@ -11140,9 +11202,12 @@ window.CelebrationEffect = (function() {
               </div>
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会ステータス</label>
-                <select class="vd-status-select w-full ${isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : ''))}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!isJ && !isCons && !isRej ? 'selected' : ''}>入会: 未</option>
+                <select class="vd-status-select w-full ${joinCls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
+                  <option value="未" ${!isJ && !isCons && !isRej && !isApplying && !isReview && !isPayment ? 'selected' : ''}>入会: 未</option>
                   <option value="検討中" ${isCons ? 'selected' : ''}>入会: 検討中</option>
+                  <option value="申込書提出" ${isApplying ? 'selected' : ''}>入会: 申込書提出</option>
+                  <option value="メンバーシップ審査" ${isReview ? 'selected' : ''}>入会: メンバーシップ審査</option>
+                  <option value="入金待ち" ${isPayment ? 'selected' : ''}>入会: 入金待ち</option>
                   <option value="入会済" ${isJ ? 'selected' : ''}>入会: 済</option>
                   <option value="見送り" ${isRej ? 'selected' : ''}>入会: 見送り</option>
                 </select>
@@ -13172,10 +13237,23 @@ window.CelebrationEffect = (function() {
         const selectJoin = document.getElementById('vd-select-joined');
         if (selectJoin) {
           const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
+          const isApplying = (st.isJoined === '申込書提出');
+          const isReview = (st.isJoined === 'メンバーシップ審査');
+          const isPayment = (st.isJoined === '入金待ち');
           const isCons = (st.isJoined === '検討中');
           const isRej = (st.isJoined === '見送り');
-          selectJoin.value = isJ ? '入会済' : (isCons ? '検討中' : (isRej ? '見送り' : '未'));
-          selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
+
+          let val = '未';
+          let cls = '';
+          if (isJ) { val = '入会済'; cls = 'state-joined'; }
+          else if (isApplying) { val = '申込書提出'; cls = 'state-applying'; }
+          else if (isReview) { val = 'メンバーシップ審査'; cls = 'state-review'; }
+          else if (isPayment) { val = '入金待ち'; cls = 'state-payment'; }
+          else if (isCons) { val = '検討中'; cls = 'state-considering'; }
+          else if (isRej) { val = '見送り'; cls = 'state-rejected'; }
+
+          selectJoin.value = val;
+          selectJoin.className = 'vd-status-select ' + cls;
         }
 
         // 複数回ヒアリングシートの描画＆切り替え初期化

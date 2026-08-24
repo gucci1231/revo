@@ -424,10 +424,23 @@
         const selectJoin = document.getElementById('vd-select-joined');
         if (selectJoin) {
           const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
+          const isApplying = (st.isJoined === '申込書提出');
+          const isReview = (st.isJoined === 'メンバーシップ審査');
+          const isPayment = (st.isJoined === '入金待ち');
           const isCons = (st.isJoined === '検討中');
           const isRej = (st.isJoined === '見送り');
-          selectJoin.value = isJ ? '入会済' : (isCons ? '検討中' : (isRej ? '見送り' : '未'));
-          selectJoin.className = 'vd-status-select ' + (isJ ? 'state-joined' : (isCons ? 'state-considering' : (isRej ? 'state-rejected' : '')));
+
+          let val = '未';
+          let cls = '';
+          if (isJ) { val = '入会済'; cls = 'state-joined'; }
+          else if (isApplying) { val = '申込書提出'; cls = 'state-applying'; }
+          else if (isReview) { val = 'メンバーシップ審査'; cls = 'state-review'; }
+          else if (isPayment) { val = '入金待ち'; cls = 'state-payment'; }
+          else if (isCons) { val = '検討中'; cls = 'state-considering'; }
+          else if (isRej) { val = '見送り'; cls = 'state-rejected'; }
+
+          selectJoin.value = val;
+          selectJoin.className = 'vd-status-select ' + cls;
         }
 
         // 複数回ヒアリングシートの描画＆切り替え初期化

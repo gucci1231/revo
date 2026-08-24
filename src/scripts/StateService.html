@@ -76,7 +76,12 @@
 
         const currentJoined = existing.isJoined || '未';
         const newJoined = r.isJoined || '未';
-        if (newJoined === '入会済' || currentJoined === '入会済') existing.isJoined = '入会済';
+        const joinedPriority = { '入会済': 6, '済': 6, '入金待ち': 5, 'メンバーシップ審査': 4, '申込書提出': 3, '検討中': 2, '見送り': 1, '未': 0 };
+        const curP = joinedPriority[currentJoined] !== undefined ? joinedPriority[currentJoined] : 0;
+        const newP = joinedPriority[newJoined] !== undefined ? joinedPriority[newJoined] : 0;
+        if (newP > curP) {
+          existing.isJoined = (newJoined === '済' ? '入会済' : newJoined);
+        }
 
         const curFeel = parseFeelAbc(existing.feelAbc);
         const newFeel = parseFeelAbc(r.feelAbc);

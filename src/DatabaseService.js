@@ -1010,13 +1010,18 @@ function deduplicateVisitorList(list) {
       const tExisting = new Date(existing.eventDate || 0).getTime();
       const tNew = new Date(r.eventDate || 0).getTime();
 
+      const joinedPriority = { '入会済': 6, '済': 6, '入金待ち': 5, 'メンバーシップ審査': 4, '申込書提出': 3, '検討中': 2, '見送り': 1, '未': 0 };
+      const curP = joinedPriority[existing.isJoined] !== undefined ? joinedPriority[existing.isJoined] : 0;
+      const newP = joinedPriority[r.isJoined] !== undefined ? joinedPriority[r.isJoined] : 0;
+      const mergedJoined = newP > curP ? (r.isJoined === '済' ? '入会済' : r.isJoined) : existing.isJoined;
+
       if (tNew >= tExisting) {
         map.set(key, {
           ...r,
           historyCount: existing.historyCount,
           hasHearingSheet: existing.hasHearingSheet || r.hasHearingSheet,
           is1to1: (existing.is1to1 === '済' || r.is1to1 === '済') ? '済' : (r.is1to1 || existing.is1to1),
-          isJoined: (existing.isJoined === '入会済' || r.isJoined === '入会済') ? '入会済' : (r.isJoined || existing.isJoined),
+          isJoined: mergedJoined,
           q7: r.q7 || existing.q7,
           orientUser: r.orientUser || existing.orientUser,
           orientMemo: r.orientMemo || existing.orientMemo
@@ -1024,7 +1029,7 @@ function deduplicateVisitorList(list) {
       } else {
         existing.hasHearingSheet = existing.hasHearingSheet || r.hasHearingSheet;
         if (r.is1to1 === '済') existing.is1to1 = '済';
-        if (r.isJoined === '入会済') existing.isJoined = '入会済';
+        existing.isJoined = mergedJoined;
         if (!existing.q7 && r.q7) existing.q7 = r.q7;
         if (!existing.orientUser && r.orientUser) existing.orientUser = r.orientUser;
         if (!existing.orientMemo && r.orientMemo) existing.orientMemo = r.orientMemo;

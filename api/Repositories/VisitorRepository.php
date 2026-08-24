@@ -146,9 +146,16 @@ class VisitorRepository {
         $merged = $rows[0];
         $merged['visitor_id'] = $visitorId;
 
+        $joinedPriority = ['入会済' => 6, '済' => 6, '入金待ち' => 5, 'メンバーシップ審査' => 4, '申込書提出' => 3, '検討中' => 2, '見送り' => 1, '未' => 0];
         foreach ($rows as $r) {
             if (($r['is_attended'] ?? '') === '参加') $merged['is_attended'] = '参加';
-            if (($r['is_joined'] ?? '') === '入会済' || ($r['is_joined'] ?? '') === '済') $merged['is_joined'] = '入会済';
+            $curJ = $merged['is_joined'] ?? '未';
+            $newJ = $r['is_joined'] ?? '未';
+            $curP = $joinedPriority[$curJ] ?? 0;
+            $newP = $joinedPriority[$newJ] ?? 0;
+            if ($newP > $curP) {
+                $merged['is_joined'] = ($newJ === '済' ? '入会済' : $newJ);
+            }
             if (($r['is_1to1'] ?? '') === '済') $merged['is_1to1'] = '済';
             if (($r['is_matched'] ?? '') === '成功') $merged['is_matched'] = '成功';
         }
