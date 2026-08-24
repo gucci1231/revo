@@ -299,11 +299,68 @@
 
               <!-- A. 見たままWYSIWYGエディタ (初心者・誰でも簡単) -->
               <div id="rm-email-wysiwyg-container" class="modern-editor-wrapper">
-                <div id="rm-email-quill-editor"></div>
+                <!-- WYSIWYG Toolbar -->
+                <div class="modern-editor-toolbar flex-wrap gap-y-1">
+                  <div class="editor-tool-group">
+                    <button type="button" onclick="execWysiwygCommand('bold')" class="editor-tool-btn" title="太字 (B)">
+                      <i class="fa-solid fa-bold"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygCommand('underline')" class="editor-tool-btn" title="下線 (U)">
+                      <i class="fa-solid fa-underline"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygCommand('italic')" class="editor-tool-btn" title="斜体 (I)">
+                      <i class="fa-solid fa-italic"></i>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <!-- カラークイックボタン -->
+                    <button type="button" onclick="execWysiwygColor('#dc2626')" class="editor-tool-btn" title="赤文字">
+                      <span class="w-3.5 h-3.5 rounded-full bg-red-600 inline-block border border-white shadow-2xs"></span>
+                    </button>
+                    <button type="button" onclick="execWysiwygColor('#2563eb')" class="editor-tool-btn" title="青文字">
+                      <span class="w-3.5 h-3.5 rounded-full bg-blue-600 inline-block border border-white shadow-2xs"></span>
+                    </button>
+                    <button type="button" onclick="execWysiwygColor('#0f172a')" class="editor-tool-btn" title="黒文字 (標準)">
+                      <span class="w-3.5 h-3.5 rounded-full bg-slate-900 inline-block border border-white shadow-2xs"></span>
+                    </button>
+                    <button type="button" onclick="execWysiwygHighlight('#fef08a')" class="editor-tool-btn text-amber-600" title="黄色マーカー">
+                      <i class="fa-solid fa-highlighter"></i>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <button type="button" onclick="execWysiwygFormatBlock('h3')" class="editor-tool-btn" title="大見出し (H3)">
+                      <i class="fa-solid fa-heading"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygFormatBlock('p')" class="editor-tool-btn" title="本文段落 (P)">
+                      <i class="fa-solid fa-paragraph"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygCommand('insertUnorderedList')" class="editor-tool-btn" title="箇条書き (・)">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygLink()" class="editor-tool-btn" title="リンク挿入">
+                      <i class="fa-solid fa-link"></i>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <button type="button" onclick="execWysiwygCommand('undo')" class="editor-tool-btn" title="元に戻す (Ctrl+Z)">
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button type="button" onclick="execWysiwygCommand('redo')" class="editor-tool-btn" title="やり直す (Ctrl+Y)">
+                      <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                  </div>
+                  <div class="editor-tool-group">
+                    <button type="button" onclick="toggleEditorFullscreen('rm-email-wysiwyg-container')" class="editor-tool-btn" title="全画面 / 拡大切替">
+                      <i class="fa-solid fa-expand"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- WYSIWYG Editable Iframe -->
+                <iframe id="rm-email-visual-frame" class="w-full bg-white border-0" style="min-height: 480px; width: 100%; border: none; outline: none; display: block;"></iframe>
+
+                <!-- Status Bar -->
                 <div class="modern-editor-statusbar">
                   <div class="flex items-center gap-2">
                     <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[9px]">見たまま編集</span>
-                    <span class="text-slate-400">Word感覚で文字入力・装飾が可能です</span>
+                    <span class="text-slate-400">メールの文字を直接クリックしてWord感覚で打ち替え・編集できます</span>
                   </div>
                   <div class="flex items-center gap-3">
                     <span id="rm-email-wysiwyg-stat-chars">0 文字</span>
