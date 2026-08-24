@@ -837,77 +837,56 @@ tr:last-child td { border-bottom: none; }
 .badge-toggle.done { background: #dcfce7; color: #15803d; }
 .badge-toggle.none { background: #f1f5f9; color: #64748b; }
 
-/* Status Select Dropdowns (List & Mobile Cards - Modern Slate Pill Style) */
+/* Status Select Dropdowns (List & Mobile Cards - Clean Minimalist Monotone) */
 .status-select {
   appearance: none;
   -webkit-appearance: none;
-  background-color: #f1f5f9;
+  background-color: #ffffff;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 6px center;
   background-size: 9px 9px;
-  padding: 4px 18px 4px 8px;
+  padding: 5px 18px 5px 8px;
   border-radius: 8px;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  border: 1px solid #cbd5e1;
   color: #1e293b;
   outline: none;
   white-space: nowrap;
   transition: all 0.15s ease;
   line-height: 1.3;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .status-select:hover {
-  border-color: #cbd5e1;
-  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  background-color: #f8fafc;
 }
 .status-select:focus {
-  border-color: var(--primary-accent);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+  border-color: #0071e3;
+  box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
 }
 
 .status-select.state-attended,
 .status-select.state-done,
-.status-select.state-joined {
-  background-color: #f0fdf4;
-  color: #166534;
-  border-color: #bbf7d0;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23166534' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.status-select.state-joined,
 .status-select.state-absent,
-.status-select.state-rejected {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23991b1b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.status-select.state-rejected,
 .status-select.state-progress,
-.status-select.state-considering {
-  background-color: #fffbeb;
-  color: #92400e;
-  border-color: #fde68a;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2392400e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
+.status-select.state-considering,
 .status-select.state-applying,
 .status-select.state-review,
-.status-select.state-payment {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d4ed8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-.status-select.state-pending-later {
-  background-color: #eef2ff;
-  color: #4338ca;
-  border-color: #c7d2fe;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-}
-.status-select.state-closed {
-  background-color: #f8fafc;
-  color: #64748b;
+.status-select.state-payment,
+.status-select.state-pending-later,
+.status-select.follow-type-pending,
+.status-select.follow-type-active,
+.status-select.follow-type-alliance,
+.status-select.state-closed,
+.status-select.follow-type-closed {
+  background-color: #ffffff;
+  color: #1e293b;
   border-color: #cbd5e1;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }
 
 /* Visitors Status Filter Tabs (Modern Slate Pill Segment Control) */
@@ -8321,43 +8300,59 @@ const ApiService = {
     }).join('\n');
   }
 
-  function renderAttendButtonHtml(id, rawStatus) {
+  function renderAttendButtonHtml(id, rawStatus, extraClass = '') {
     const info = getAttendStatusInfo(rawStatus);
     const optionsHtml = renderAttendStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function render1to1ButtonHtml(id, rawStatus) {
+  function render1to1ButtonHtml(id, rawStatus, extraClass = '') {
     const info = get1to1StatusInfo(rawStatus);
     const optionsHtml = render1to1StatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function renderJoinedButtonHtml(id, rawStatus) {
+  function renderJoinedButtonHtml(id, rawStatus, extraClass = '') {
     const info = getJoinStatusInfo(rawStatus);
     const optionsHtml = renderJoinStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function renderFollowTypeButtonHtml(id, rawStatus) {
+  function renderFollowTypeButtonHtml(id, rawStatus, extraClass = '') {
     const info = getFollowTypeInfo(rawStatus);
     const optionsHtml = renderFollowTypeOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
         ${optionsHtml}
       </select>
+    `;
+  }
+
+  function renderVisitorStatusGroupHtml(id, isAttended, isJoined, followType) {
+    return `
+      <div class="vd-badges-wrap" onclick="event.stopPropagation();">
+        <div class="vd-status-select-wrap">
+          ${renderAttendButtonHtml(id, isAttended, 'w-full')}
+        </div>
+        <div class="vd-status-select-wrap">
+          ${renderJoinedButtonHtml(id, isJoined, 'w-full')}
+        </div>
+        <div class="vd-status-select-wrap">
+          ${renderFollowTypeButtonHtml(id, followType, 'w-full')}
+        </div>
+      </div>
     `;
   }
 
@@ -12477,17 +12472,9 @@ window.CelebrationEffect = (function() {
             </div>
           </div>
 
-          <!-- 下段: ステータスセレクター群 -->
-          <div class="grid grid-cols-3 gap-1.5 pt-2">
-            <div class="text-center">
-              ${renderAttendButtonHtml(v.id, v.isAttended)}
-            </div>
-            <div class="text-center">
-              ${renderJoinedButtonHtml(v.id, v.isJoined)}
-            </div>
-            <div class="text-center">
-              ${renderFollowTypeButtonHtml(v.id, v.followType)}
-            </div>
+          <!-- 下段: ステータスセレクター群 (共通パーツ) -->
+          <div class="pt-2">
+            ${renderVisitorStatusGroupHtml(v.id, v.isAttended, v.isJoined, v.followType)}
           </div>
         `;
         cardsContainer.appendChild(card);

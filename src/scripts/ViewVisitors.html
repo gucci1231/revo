@@ -117,17 +117,9 @@
             </div>
           </div>
 
-          <!-- 下段: ステータスセレクター群 -->
-          <div class="grid grid-cols-3 gap-1.5 pt-2">
-            <div class="text-center">
-              ${renderAttendButtonHtml(v.id, v.isAttended)}
-            </div>
-            <div class="text-center">
-              ${renderJoinedButtonHtml(v.id, v.isJoined)}
-            </div>
-            <div class="text-center">
-              ${renderFollowTypeButtonHtml(v.id, v.followType)}
-            </div>
+          <!-- 下段: ステータスセレクター群 (共通パーツ) -->
+          <div class="pt-2">
+            ${renderVisitorStatusGroupHtml(v.id, v.isAttended, v.isJoined, v.followType)}
           </div>
         `;
         cardsContainer.appendChild(card);

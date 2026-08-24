@@ -224,43 +224,59 @@
     }).join('\n');
   }
 
-  function renderAttendButtonHtml(id, rawStatus) {
+  function renderAttendButtonHtml(id, rawStatus, extraClass = '') {
     const info = getAttendStatusInfo(rawStatus);
     const optionsHtml = renderAttendStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function render1to1ButtonHtml(id, rawStatus) {
+  function render1to1ButtonHtml(id, rawStatus, extraClass = '') {
     const info = get1to1StatusInfo(rawStatus);
     const optionsHtml = render1to1StatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function renderJoinedButtonHtml(id, rawStatus) {
+  function renderJoinedButtonHtml(id, rawStatus, extraClass = '') {
     const info = getJoinStatusInfo(rawStatus);
     const optionsHtml = renderJoinStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
         ${optionsHtml}
       </select>
     `;
   }
 
-  function renderFollowTypeButtonHtml(id, rawStatus) {
+  function renderFollowTypeButtonHtml(id, rawStatus, extraClass = '') {
     const info = getFollowTypeInfo(rawStatus);
     const optionsHtml = renderFollowTypeOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
+      <select class="status-select ${info.cls} ${extraClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
         ${optionsHtml}
       </select>
+    `;
+  }
+
+  function renderVisitorStatusGroupHtml(id, isAttended, isJoined, followType) {
+    return `
+      <div class="vd-badges-wrap" onclick="event.stopPropagation();">
+        <div class="vd-status-select-wrap">
+          ${renderAttendButtonHtml(id, isAttended, 'w-full')}
+        </div>
+        <div class="vd-status-select-wrap">
+          ${renderJoinedButtonHtml(id, isJoined, 'w-full')}
+        </div>
+        <div class="vd-status-select-wrap">
+          ${renderFollowTypeButtonHtml(id, followType, 'w-full')}
+        </div>
+      </div>
     `;
   }
 
