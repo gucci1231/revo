@@ -186,13 +186,14 @@
     const actionPrefix = isMaintenance ? '【定期連絡】' : '【再アプローチ】';
     const actionText = `${actionPrefix} ${memo}`;
 
+    const resolvedAssignee = resolveMemberName(assignee);
     const payload = {
       visitorId: vid,
       visitor_id: vid,
       dueDate: dueDate,
       due_date: dueDate,
-      assigneeName: assignee,
-      assignee_name: assignee,
+      assigneeName: resolvedAssignee,
+      assignee_name: resolvedAssignee,
       actionType: 'その他',
       action_type: 'その他',
       actionText: actionText,

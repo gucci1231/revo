@@ -12972,7 +12972,7 @@ window.CelebrationEffect = (function() {
     const payload = {
       visitor_id: vid,
       action_text: actionText,
-      assignee_name: assigneeName,
+      assignee_name: resolveMemberName(assigneeName),
       due_date: dueDate
     };
 
@@ -15617,7 +15617,7 @@ window.CelebrationEffect = (function() {
     const payload = {
       visitorId: currentVdVisitorId,
       dueDate: dueDate,
-      assigneeName: assigneeName,
+      assigneeName: resolveMemberName(assigneeName),
       actionType: document.getElementById('vd-ap-type-val') ? document.getElementById('vd-ap-type-val').value : '1to1',
       actionText: actionText
     };
@@ -16038,9 +16038,10 @@ window.CelebrationEffect = (function() {
 
   function submitHearingForm() {
     const id = document.getElementById('hf-visitor-id').value;
+    const rawOrientUser = document.getElementById('hf-orient-user').value.trim();
     const formData = {
       visitorId: id,
-      orientUser: document.getElementById('hf-orient-user').value.trim(),
+      orientUser: resolveMemberName(rawOrientUser),
       q1: document.getElementById('hf-q1').value.trim(),
       q2: document.getElementById('hf-q2').value.trim(),
       q3: document.getElementById('hf-q3').value.trim(),
@@ -16282,8 +16283,8 @@ window.CelebrationEffect = (function() {
   function submitActionReport() {
     const id = document.getElementById('report-ap-id').value;
     const visitorId = document.getElementById('report-ap-visitor-id').value;
-    const reportText = document.getElementById('report-ap-text').value.trim();
-    const reporterName = document.getElementById('report-ap-reporter').value.trim();
+    const rawReporter = document.getElementById('report-ap-reporter').value.trim();
+    const reporterName = resolveMemberName(rawReporter);
     const isCompleted = document.getElementById('report-ap-is-completed').checked ? 1 : 0;
 
     if (!reportText) {
@@ -16653,13 +16654,14 @@ window.CelebrationEffect = (function() {
     const actionPrefix = isMaintenance ? '【定期連絡】' : '【再アプローチ】';
     const actionText = `${actionPrefix} ${memo}`;
 
+    const resolvedAssignee = resolveMemberName(assignee);
     const payload = {
       visitorId: vid,
       visitor_id: vid,
       dueDate: dueDate,
       due_date: dueDate,
-      assigneeName: assignee,
-      assignee_name: assignee,
+      assigneeName: resolvedAssignee,
+      assignee_name: resolvedAssignee,
       actionType: 'その他',
       action_type: 'その他',
       actionText: actionText,

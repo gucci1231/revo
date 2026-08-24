@@ -153,11 +153,13 @@ class VisitorController extends Controller {
     private function add(): void {
         $newId = $this->visitorRepo->getNextId();
         $now = date('Y/m/d H:i');
+        $rawInviter = $this->getParam('inviter', '');
+        $inviter = \Api\Services\MemberNameResolver::resolve($rawInviter);
 
         $this->visitorRepo->createVisitor([
             'id' => $newId,
             'created_at' => $now,
-            'inviter' => $this->getParam('inviter', ''),
+            'inviter' => $inviter,
             'event_date' => $this->getParam('eventDate', ''),
             'visitor_name' => $this->getParam('name', ''),
             'furigana' => $this->getParam('furigana', ''),

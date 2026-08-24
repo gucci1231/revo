@@ -1145,7 +1145,7 @@
     const payload = {
       visitorId: currentVdVisitorId,
       dueDate: dueDate,
-      assigneeName: assigneeName,
+      assigneeName: resolveMemberName(assigneeName),
       actionType: document.getElementById('vd-ap-type-val') ? document.getElementById('vd-ap-type-val').value : '1to1',
       actionText: actionText
     };

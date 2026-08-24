@@ -79,8 +79,8 @@
   function submitActionReport() {
     const id = document.getElementById('report-ap-id').value;
     const visitorId = document.getElementById('report-ap-visitor-id').value;
-    const reportText = document.getElementById('report-ap-text').value.trim();
-    const reporterName = document.getElementById('report-ap-reporter').value.trim();
+    const rawReporter = document.getElementById('report-ap-reporter').value.trim();
+    const reporterName = resolveMemberName(rawReporter);
     const isCompleted = document.getElementById('report-ap-is-completed').checked ? 1 : 0;
 
     if (!reportText) {

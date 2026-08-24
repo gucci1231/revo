@@ -90,10 +90,13 @@ class ActionPlanController extends Controller {
             Response::error('アクション内容は必須です');
         }
 
+        $rawAssignee = $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', '');
+        $assigneeName = \Api\Services\MemberNameResolver::resolve((string)$rawAssignee);
+
         $id = $this->actionPlanRepo->create([
             'visitor_id' => $visitorId,
             'due_date' => $this->getParam('dueDate', '') ?: $this->getParam('due_date', ''),
-            'assignee_name' => $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', ''),
+            'assignee_name' => $assigneeName,
             'assignee_id' => $this->getParam('assigneeId', '') ?: $this->getParam('assignee_id', ''),
             'action_type' => $this->getParam('actionType', '') ?: $this->getParam('action_type', ''),
             'action_text' => $actionText,
@@ -120,7 +123,8 @@ class ActionPlanController extends Controller {
             $data['due_date'] = $this->getParam('dueDate', '') ?: $this->getParam('due_date', '');
         }
         if ($this->getParam('assigneeName') !== null || $this->getParam('assignee_name') !== null) {
-            $data['assignee_name'] = $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', '');
+            $rawAssignee = $this->getParam('assigneeName', '') ?: $this->getParam('assignee_name', '');
+            $data['assignee_name'] = \Api\Services\MemberNameResolver::resolve((string)$rawAssignee);
         }
         if ($this->getParam('actionType') !== null || $this->getParam('action_type') !== null) {
             $data['action_type'] = $this->getParam('actionType', '') ?: $this->getParam('action_type', '');
@@ -174,7 +178,8 @@ class ActionPlanController extends Controller {
         }
 
         $reportText = trim($this->getParam('reportText', '') ?: $this->getParam('report_text', ''));
-        $reporterName = trim($this->getParam('reporterName', '') ?: $this->getParam('reporter_name', ''));
+        $rawReporter = trim($this->getParam('reporterName', '') ?: $this->getParam('reporter_name', ''));
+        $reporterName = \Api\Services\MemberNameResolver::resolve($rawReporter);
         $isCompleted = $this->getParam('isCompleted', null) ?? $this->getParam('is_completed', 1);
 
         $item = $this->actionPlanRepo->saveReport($id, $reportText, $reporterName, (int)$isCompleted === 1);

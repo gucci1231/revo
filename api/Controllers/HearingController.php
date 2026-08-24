@@ -98,9 +98,12 @@ class HearingController extends Controller {
             $sheetUrl = $existing['sheet_url'] ?? '';
         }
 
+        $rawOrientUser = $this->getParam('orientUser') ?? $this->getParam('orient_user', '');
+        $orientUser = \Api\Services\MemberNameResolver::resolve((string)$rawOrientUser);
+
         $this->hearingRepo->saveHearingSheet([
             'visitor_id' => $vId,
-            'orient_user' => $this->getParam('orientUser') ?? $this->getParam('orient_user', ''),
+            'orient_user' => $orientUser,
             'q1' => $this->getParam('q1', ''),
             'q2' => $this->getParam('q2', ''),
             'q3' => $this->getParam('q3', ''),
