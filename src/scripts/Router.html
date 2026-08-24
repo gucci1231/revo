@@ -257,6 +257,7 @@
       fetchEmailTemplatesData(true);
     } else if (tabName === 'report-manager') {
       if (typeof initReportManager === 'function') initReportManager();
+      if (typeof refreshReportEditors === 'function') refreshReportEditors();
     } else if (tabName === 'settings') {
       if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();

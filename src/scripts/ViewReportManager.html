@@ -67,8 +67,77 @@
     'new_visitor_applied'
   ];
 
+  let reportEmailCodeMirror = null;
+  let reportLineCodeMirror = null;
+
   function initReportManager() {
+    ensureReportCodeEditors();
     fetchReportTemplatesData(false);
+  }
+
+  function ensureReportCodeEditors() {
+    if (typeof CodeMirror === 'undefined') return;
+
+    const emailTextarea = document.getElementById('rm-email-body');
+    if (emailTextarea && !reportEmailCodeMirror) {
+      reportEmailCodeMirror = CodeMirror.fromTextArea(emailTextarea, {
+        mode: 'htmlmixed',
+        lineNumbers: true,
+        autoCloseTags: true,
+        matchBrackets: true,
+        styleActiveLine: true,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2
+      });
+      reportEmailCodeMirror.on('change', () => {
+        emailTextarea.value = reportEmailCodeMirror.getValue();
+        updateReportEditorStats('email');
+        updateReportPreview();
+      });
+    }
+
+    const lineTextarea = document.getElementById('rm-line-body');
+    if (lineTextarea && !reportLineCodeMirror) {
+      reportLineCodeMirror = CodeMirror.fromTextArea(lineTextarea, {
+        mode: null,
+        lineNumbers: true,
+        lineWrapping: true,
+        styleActiveLine: true
+      });
+      reportLineCodeMirror.on('change', () => {
+        lineTextarea.value = reportLineCodeMirror.getValue();
+        updateReportEditorStats('line');
+        updateReportPreview();
+      });
+    }
+  }
+
+  function updateReportEditorStats(type) {
+    if (type === 'email') {
+      const val = reportEmailCodeMirror ? reportEmailCodeMirror.getValue() : (document.getElementById('rm-email-body')?.value || '');
+      const lines = val ? val.split('\n').length : 0;
+      const chars = val ? val.length : 0;
+      const lEl = document.getElementById('rm-email-stat-lines');
+      const cEl = document.getElementById('rm-email-stat-chars');
+      if (lEl) lEl.innerText = `${lines} 行`;
+      if (cEl) cEl.innerText = `${chars.toLocaleString()} 文字`;
+    } else {
+      const val = reportLineCodeMirror ? reportLineCodeMirror.getValue() : (document.getElementById('rm-line-body')?.value || '');
+      const lines = val ? val.split('\n').length : 0;
+      const chars = val ? val.length : 0;
+      const lEl = document.getElementById('rm-line-stat-lines');
+      const cEl = document.getElementById('rm-line-stat-chars');
+      if (lEl) lEl.innerText = `${lines} 行`;
+      if (cEl) cEl.innerText = `${chars.toLocaleString()} 文字`;
+    }
+  }
+
+  function refreshReportEditors() {
+    setTimeout(() => {
+      if (reportEmailCodeMirror) reportEmailCodeMirror.refresh();
+      if (reportLineCodeMirror) reportLineCodeMirror.refresh();
+    }, 60);
   }
 
   function fetchReportTemplatesData(force = false) {
@@ -105,6 +174,7 @@
     });
 
     renderReportManagerUI();
+    refreshReportEditors();
   }
 
   function switchReportChannel(channel) {
@@ -133,6 +203,7 @@
       if (previewLine) previewLine.style.display = 'block';
     }
 
+    refreshReportEditors();
     updateReportPreview();
   }
 
@@ -610,8 +681,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     const schedTimeEl = document.getElementById('rm-schedule-time');
     const recipientsEl = document.getElementById('rm-email-recipients');
     const subjectEl = document.getElementById('rm-email-subject');
-    const emailBodyEl = document.getElementById('rm-email-body');
-    const lineBodyEl = document.getElementById('rm-line-body');
 
     if (titleEl) titleEl.innerText = t.title || '通知テンプレート';
     const isEnabled = Number(t.is_enabled) === 1;
@@ -630,11 +699,52 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
     if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
     if (subjectEl) subjectEl.value = t.email_subject || '';
-    if (emailBodyEl) emailBodyEl.value = t.email_html_body || '';
-    if (lineBodyEl) lineBodyEl.value = t.line_template_body || '';
+
+    // Set editor values and update CodeMirror
+    setReportEditorValues(t.email_html_body || '', t.line_template_body || '');
 
     renderPlaceholderChips();
     updateReportPreview();
+  }
+
+  function setReportEditorValues(emailBody, lineBody) {
+    ensureReportCodeEditors();
+    const emailTextarea = document.getElementById('rm-email-body');
+    const lineTextarea = document.getElementById('rm-line-body');
+
+    if (emailTextarea) emailTextarea.value = emailBody;
+    if (reportEmailCodeMirror) {
+      if (reportEmailCodeMirror.getValue() !== emailBody) {
+        reportEmailCodeMirror.setValue(emailBody);
+        reportEmailCodeMirror.clearHistory();
+      }
+    }
+
+    if (lineTextarea) lineTextarea.value = lineBody;
+    if (reportLineCodeMirror) {
+      if (reportLineCodeMirror.getValue() !== lineBody) {
+        reportLineCodeMirror.setValue(lineBody);
+        reportLineCodeMirror.clearHistory();
+      }
+    }
+
+    updateReportEditorStats('email');
+    updateReportEditorStats('line');
+    refreshReportEditors();
+  }
+
+  function getReportEmailBodyValue() {
+    if (reportEmailCodeMirror) {
+      return reportEmailCodeMirror.getValue();
+    }
+    return document.getElementById('rm-email-body')?.value || '';
+  }
+
+  function getReportLineBodyValue() {
+    if (reportLineCodeMirror) {
+      return reportLineCodeMirror.getValue();
+    }
+    return document.getElementById('rm-line-body')?.value || '';
   }
 
   function renderPlaceholderChips() {
@@ -655,6 +765,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function insertTagIntoTextarea(targetId, tag) {
+    if (targetId === 'rm-email-body' && reportEmailCodeMirror) {
+      reportEmailCodeMirror.replaceSelection(tag);
+      reportEmailCodeMirror.focus();
+      updateReportEditorStats('email');
+      updateReportPreview();
+      return;
+    }
+
+    if (targetId === 'rm-line-body' && reportLineCodeMirror) {
+      reportLineCodeMirror.replaceSelection(tag);
+      reportLineCodeMirror.focus();
+      updateReportEditorStats('line');
+      updateReportPreview();
+      return;
+    }
+
     const textarea = document.getElementById(targetId);
     if (!textarea) return;
 
@@ -665,6 +791,101 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     textarea.selectionStart = textarea.selectionEnd = start + tag.length;
     textarea.focus();
     updateReportPreview();
+  }
+
+  function insertEmojiIntoLine(emoji) {
+    insertTagIntoTextarea('rm-line-body', emoji);
+  }
+
+  function execEmailEditorAction(action) {
+    if (!reportEmailCodeMirror) return;
+
+    const cm = reportEmailCodeMirror;
+    const selected = cm.getSelection();
+
+    switch (action) {
+      case 'bold':
+        cm.replaceSelection(selected ? `<strong>${selected}</strong>` : '<strong>太字テキスト</strong>');
+        break;
+      case 'link':
+        cm.replaceSelection(selected ? `<a href="{{ダッシュボードURL}}" style="color:#0071e3; font-weight:bold; text-decoration:underline;">${selected}</a>` : `<a href="{{ダッシュボードURL}}" style="color:#0071e3; font-weight:bold; text-decoration:underline;">詳細はこちら</a>`);
+        break;
+      case 'h3':
+        cm.replaceSelection(selected ? `<h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">${selected}</h3>` : `<h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">見出しタイトル</h3>`);
+        break;
+      case 'p':
+        cm.replaceSelection(selected ? `<p style="font-size:13px; line-height:1.65; color:#334155; margin:0 0 12px 0;">${selected}</p>` : `<p style="font-size:13px; line-height:1.65; color:#334155; margin:0 0 12px 0;">段落テキスト</p>`);
+        break;
+      case 'table':
+        cm.replaceSelection(`<table style="width:100%; font-size:12px; border-collapse:collapse; margin:12px 0;">\n  <tr style="background:#f1f5f9;">\n    <th style="padding:8px 10px; text-align:left;">項目</th>\n    <th style="padding:8px 10px; text-align:left;">内容</th>\n  </tr>\n  <tr>\n    <td style="padding:8px 10px; border-bottom:1px solid #f1f5f9;">項目1</td>\n    <td style="padding:8px 10px; border-bottom:1px solid #f1f5f9;">内容1</td>\n  </tr>\n</table>`);
+        break;
+      case 'list':
+        cm.replaceSelection(`<ul style="margin:8px 0; padding-left:20px; font-size:13px; color:#334155; line-height:1.6;">\n  <li>リスト項目1</li>\n  <li>リスト項目2</li>\n</ul>`);
+        break;
+      case 'undo':
+        cm.undo();
+        break;
+      case 'redo':
+        cm.redo();
+        break;
+    }
+    cm.focus();
+    updateReportPreview();
+  }
+
+  function execLineEditorAction(action) {
+    if (!reportLineCodeMirror) return;
+    if (action === 'undo') reportLineCodeMirror.undo();
+    if (action === 'redo') reportLineCodeMirror.redo();
+    reportLineCodeMirror.focus();
+    updateReportPreview();
+  }
+
+  function formatEmailHtmlCode() {
+    if (!reportEmailCodeMirror) return;
+    const raw = reportEmailCodeMirror.getValue();
+    if (!raw) return;
+
+    // Clean indent formatter for HTML
+    let formatted = '';
+    let pad = 0;
+    const lines = raw.split(/>\s*</);
+    lines.forEach((node, index) => {
+      let indent = 0;
+      if (node.match(/.+<\/\w[^>]*>$/)) {
+        indent = 0;
+      } else if (node.match(/^<\/\w/)) {
+        if (pad !== 0) pad -= 1;
+      } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+        indent = 1;
+      } else {
+        indent = 0;
+      }
+
+      let padding = '';
+      for (let i = 0; i < pad; i++) padding += '  ';
+
+      if (index === 0) {
+        formatted += node + (lines.length > 1 ? '>\n' : '');
+      } else if (index === lines.length - 1) {
+        formatted += padding + '<' + node;
+      } else {
+        formatted += padding + '<' + node + '>\n';
+      }
+      pad += indent;
+    });
+
+    if (formatted.trim()) {
+      reportEmailCodeMirror.setValue(formatted.trim());
+      showToast('HTMLコードを整形しました', 'info');
+    }
+  }
+
+  function toggleEditorFullscreen(wrapperId) {
+    const el = document.getElementById(wrapperId);
+    if (!el) return;
+    el.classList.toggle('fullscreen');
+    refreshReportEditors();
   }
 
   function getReportSampleContext() {
@@ -765,7 +986,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
     // 1. メールプレビュー
     const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
-    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+    const bodyRaw = getReportEmailBodyValue();
     const replacedSubject = replacePlaceholders(subjectRaw, context);
     const replacedBody = replacePlaceholders(bodyRaw, context);
 
@@ -781,7 +1002,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     // 2. LINEプレビュー
-    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const lineRaw = getReportLineBodyValue();
     const replacedLine = replacePlaceholders(lineRaw, context);
     const linePreviewEl = document.getElementById('rm-preview-line-content');
     if (linePreviewEl) linePreviewEl.innerText = replacedLine;
@@ -796,8 +1017,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     const schedTime = document.getElementById('rm-schedule-time')?.value || '20:00';
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subject = document.getElementById('rm-email-subject')?.value || '';
-    const emailBody = document.getElementById('rm-email-body')?.value || '';
-    const lineBody = document.getElementById('rm-line-body')?.value || '';
+    const emailBody = getReportEmailBodyValue();
+    const lineBody = getReportLineBodyValue();
 
     const payload = {
       id: currentSelectedReportId,
@@ -873,7 +1094,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   function sendTestReportEmail() {
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
-    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+    const bodyRaw = getReportEmailBodyValue();
 
     const context = getReportSampleContext();
     const replacedSubject = replacePlaceholders(subjectRaw, context);
@@ -899,7 +1120,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function copyReplacedLineReportText() {
-    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const lineRaw = getReportLineBodyValue();
     const context = getReportSampleContext();
     const replacedLine = replacePlaceholders(lineRaw, context);
 

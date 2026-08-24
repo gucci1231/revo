@@ -72,6 +72,32 @@ describe('Report & Message Manager Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('ALL_REPORT_IDS'), true);
   });
 
+  it('verifies Modern Code & Text Editor resources and toolbar features exist', () => {
+    // CodeMirror CDN links & script tags
+    assert.strictEqual(indexHtml.includes('codemirror.min.css'), true);
+    assert.strictEqual(indexHtml.includes('codemirror.min.js'), true);
+    assert.strictEqual(indexHtml.includes('mode/htmlmixed/htmlmixed.min.js'), true);
+
+    // Modern editor wrappers & status bars
+    assert.strictEqual(indexHtml.includes('id="rm-email-editor-wrapper"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-line-editor-wrapper"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-email-stat-lines"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-email-stat-chars"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-line-stat-lines"'), true);
+    assert.strictEqual(indexHtml.includes('id="rm-line-stat-chars"'), true);
+
+    // Editor toolbar actions
+    assert.strictEqual(indexHtml.includes('function ensureReportCodeEditors'), true);
+    assert.strictEqual(indexHtml.includes('function setReportEditorValues'), true);
+    assert.strictEqual(indexHtml.includes('function getReportEmailBodyValue'), true);
+    assert.strictEqual(indexHtml.includes('function getReportLineBodyValue'), true);
+    assert.strictEqual(indexHtml.includes('function execEmailEditorAction'), true);
+    assert.strictEqual(indexHtml.includes('function execLineEditorAction'), true);
+    assert.strictEqual(indexHtml.includes('function formatEmailHtmlCode'), true);
+    assert.strictEqual(indexHtml.includes('function insertEmojiIntoLine'), true);
+    assert.strictEqual(indexHtml.includes('function toggleEditorFullscreen'), true);
+  });
+
   it('verifies ApiService routes for Reports API', () => {
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=list'), true);
     assert.strictEqual(indexHtml.includes('/api/reports.php?action=update'), true);

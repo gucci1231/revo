@@ -8263,10 +8263,11 @@ select.form-input, select.form-select {
               </div>
             </div>
 
-            <!-- HTML本文エディタ -->
+            <!-- HTML本文エディタ (Modern Code Editor) -->
             <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-xs font-extrabold text-slate-700 m-0">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-extrabold text-slate-700 m-0 flex items-center gap-1.5">
+                  <i class="fa-solid fa-code text-blue-600 text-[11px]"></i>
                   <span>HTMLメール本文 (完成形ひな形)</span>
                 </label>
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
@@ -8274,7 +8275,65 @@ select.form-input, select.form-select {
                   <span>ひな形に戻す</span>
                 </button>
               </div>
-              <textarea id="rm-email-body" rows="12" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+
+              <!-- Modern Editor Wrapper -->
+              <div class="modern-editor-wrapper" id="rm-email-editor-wrapper">
+                <!-- Toolbar -->
+                <div class="modern-editor-toolbar">
+                  <div class="editor-tool-group">
+                    <button type="button" onclick="execEmailEditorAction('bold')" class="editor-tool-btn" title="太字 (<strong>)">
+                      <i class="fa-solid fa-bold"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('link')" class="editor-tool-btn" title="リンク挿入 (<a>)">
+                      <i class="fa-solid fa-link"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('h3')" class="editor-tool-btn" title="見出し (<h3>)">
+                      <i class="fa-solid fa-heading"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('p')" class="editor-tool-btn" title="段落 (<p>)">
+                      <i class="fa-solid fa-paragraph"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('table')" class="editor-tool-btn" title="テーブル表 (<table>)">
+                      <i class="fa-solid fa-table"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('list')" class="editor-tool-btn" title="リスト (<ul><li>)">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <button type="button" onclick="execEmailEditorAction('undo')" class="editor-tool-btn" title="元に戻す (Ctrl+Z)">
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button type="button" onclick="execEmailEditorAction('redo')" class="editor-tool-btn" title="やり直す (Ctrl+Y)">
+                      <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                  </div>
+                  <div class="editor-tool-group">
+                    <button type="button" onclick="formatEmailHtmlCode()" class="editor-tool-btn text-[11px] gap-1 px-2 text-blue-600 bg-blue-50/60 hover:bg-blue-100 hover:text-blue-700" title="HTMLコードを美しく自動インデント整形">
+                      <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+                      <span>コード整形</span>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <button type="button" onclick="toggleEditorFullscreen('rm-email-editor-wrapper')" class="editor-tool-btn" title="全画面 / 拡大切替">
+                      <i class="fa-solid fa-expand"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Textarea for CodeMirror -->
+                <textarea id="rm-email-body" rows="12" class="w-full bg-slate-50 border-0 p-3 text-xs font-mono text-slate-900 focus:outline-none leading-relaxed" oninput="updateReportPreview()"></textarea>
+
+                <!-- Status Bar -->
+                <div class="modern-editor-statusbar">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-700 font-bold text-[9px] uppercase">HTML / CSS</span>
+                    <span class="text-slate-400">タグ自動閉じ・シンタックス対応</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span id="rm-email-stat-lines">0 行</span>
+                    <span id="rm-email-stat-chars">0 文字</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- アクションボタン -->
@@ -8302,10 +8361,11 @@ select.form-input, select.form-select {
               </div>
             </div>
 
-            <!-- LINE文面エディタ -->
+            <!-- LINE文面エディタ (Modern Text Editor) -->
             <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-xs font-extrabold text-slate-700 m-0">
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-extrabold text-slate-700 m-0 flex items-center gap-1.5">
+                  <i class="fa-brands fa-line text-emerald-600 text-sm"></i>
                   <span>LINEグループ報告文 (完成形ひな形)</span>
                 </label>
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
@@ -8313,7 +8373,53 @@ select.form-input, select.form-select {
                   <span>ひな形に戻す</span>
                 </button>
               </div>
-              <textarea id="rm-line-body" rows="14" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+
+              <!-- Modern Editor Wrapper -->
+              <div class="modern-editor-wrapper" id="rm-line-editor-wrapper">
+                <!-- Toolbar -->
+                <div class="modern-editor-toolbar">
+                  <div class="editor-tool-group flex-wrap">
+                    <span class="text-[10px] font-bold text-slate-400 mr-1">絵文字:</span>
+                    <button type="button" onclick="insertEmojiIntoLine('🔥')" class="editor-tool-btn text-xs" title="炎">🔥</button>
+                    <button type="button" onclick="insertEmojiIntoLine('🎯')" class="editor-tool-btn text-xs" title="ターゲット">🎯</button>
+                    <button type="button" onclick="insertEmojiIntoLine('💡')" class="editor-tool-btn text-xs" title="ひらめき">💡</button>
+                    <button type="button" onclick="insertEmojiIntoLine('👏')" class="editor-tool-btn text-xs" title="拍手">👏</button>
+                    <button type="button" onclick="insertEmojiIntoLine('🤝')" class="editor-tool-btn text-xs" title="握手">🤝</button>
+                    <button type="button" onclick="insertEmojiIntoLine('📢')" class="editor-tool-btn text-xs" title="メガホン">📢</button>
+                    <button type="button" onclick="insertEmojiIntoLine('🚀')" class="editor-tool-btn text-xs" title="ロケット">🚀</button>
+                    <button type="button" onclick="insertEmojiIntoLine('⏰')" class="editor-tool-btn text-xs" title="時計">⏰</button>
+                    <button type="button" onclick="insertEmojiIntoLine('📋')" class="editor-tool-btn text-xs" title="クリップボード">📋</button>
+                    <button type="button" onclick="insertEmojiIntoLine('✨')" class="editor-tool-btn text-xs" title="キラキラ">✨</button>
+                  </div>
+                  <div class="editor-tool-group">
+                    <button type="button" onclick="execLineEditorAction('undo')" class="editor-tool-btn" title="元に戻す (Ctrl+Z)">
+                      <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                    <button type="button" onclick="execLineEditorAction('redo')" class="editor-tool-btn" title="やり直す (Ctrl+Y)">
+                      <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <div class="editor-tool-divider"></div>
+                    <button type="button" onclick="toggleEditorFullscreen('rm-line-editor-wrapper')" class="editor-tool-btn" title="全画面 / 拡大切替">
+                      <i class="fa-solid fa-expand"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Textarea for CodeMirror -->
+                <textarea id="rm-line-body" rows="14" class="w-full bg-slate-50 border-0 p-3 text-xs font-mono text-slate-900 focus:outline-none leading-relaxed" oninput="updateReportPreview()"></textarea>
+
+                <!-- Status Bar -->
+                <div class="modern-editor-statusbar">
+                  <div class="flex items-center gap-2">
+                    <span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[9px] uppercase">Plain Text / LINE</span>
+                    <span class="text-slate-400">自動折り返し・リアルタイム反映</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <span id="rm-line-stat-lines">0 行</span>
+                    <span id="rm-line-stat-chars">0 文字</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- アクションボタン -->
@@ -11057,6 +11163,7 @@ window.CelebrationEffect = (function() {
       fetchEmailTemplatesData(true);
     } else if (tabName === 'report-manager') {
       if (typeof initReportManager === 'function') initReportManager();
+      if (typeof refreshReportEditors === 'function') refreshReportEditors();
     } else if (tabName === 'settings') {
       if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();
@@ -16580,8 +16687,77 @@ window.CelebrationEffect = (function() {
     'new_visitor_applied'
   ];
 
+  let reportEmailCodeMirror = null;
+  let reportLineCodeMirror = null;
+
   function initReportManager() {
+    ensureReportCodeEditors();
     fetchReportTemplatesData(false);
+  }
+
+  function ensureReportCodeEditors() {
+    if (typeof CodeMirror === 'undefined') return;
+
+    const emailTextarea = document.getElementById('rm-email-body');
+    if (emailTextarea && !reportEmailCodeMirror) {
+      reportEmailCodeMirror = CodeMirror.fromTextArea(emailTextarea, {
+        mode: 'htmlmixed',
+        lineNumbers: true,
+        autoCloseTags: true,
+        matchBrackets: true,
+        styleActiveLine: true,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2
+      });
+      reportEmailCodeMirror.on('change', () => {
+        emailTextarea.value = reportEmailCodeMirror.getValue();
+        updateReportEditorStats('email');
+        updateReportPreview();
+      });
+    }
+
+    const lineTextarea = document.getElementById('rm-line-body');
+    if (lineTextarea && !reportLineCodeMirror) {
+      reportLineCodeMirror = CodeMirror.fromTextArea(lineTextarea, {
+        mode: null,
+        lineNumbers: true,
+        lineWrapping: true,
+        styleActiveLine: true
+      });
+      reportLineCodeMirror.on('change', () => {
+        lineTextarea.value = reportLineCodeMirror.getValue();
+        updateReportEditorStats('line');
+        updateReportPreview();
+      });
+    }
+  }
+
+  function updateReportEditorStats(type) {
+    if (type === 'email') {
+      const val = reportEmailCodeMirror ? reportEmailCodeMirror.getValue() : (document.getElementById('rm-email-body')?.value || '');
+      const lines = val ? val.split('\n').length : 0;
+      const chars = val ? val.length : 0;
+      const lEl = document.getElementById('rm-email-stat-lines');
+      const cEl = document.getElementById('rm-email-stat-chars');
+      if (lEl) lEl.innerText = `${lines} 行`;
+      if (cEl) cEl.innerText = `${chars.toLocaleString()} 文字`;
+    } else {
+      const val = reportLineCodeMirror ? reportLineCodeMirror.getValue() : (document.getElementById('rm-line-body')?.value || '');
+      const lines = val ? val.split('\n').length : 0;
+      const chars = val ? val.length : 0;
+      const lEl = document.getElementById('rm-line-stat-lines');
+      const cEl = document.getElementById('rm-line-stat-chars');
+      if (lEl) lEl.innerText = `${lines} 行`;
+      if (cEl) cEl.innerText = `${chars.toLocaleString()} 文字`;
+    }
+  }
+
+  function refreshReportEditors() {
+    setTimeout(() => {
+      if (reportEmailCodeMirror) reportEmailCodeMirror.refresh();
+      if (reportLineCodeMirror) reportLineCodeMirror.refresh();
+    }, 60);
   }
 
   function fetchReportTemplatesData(force = false) {
@@ -16618,6 +16794,7 @@ window.CelebrationEffect = (function() {
     });
 
     renderReportManagerUI();
+    refreshReportEditors();
   }
 
   function switchReportChannel(channel) {
@@ -16646,6 +16823,7 @@ window.CelebrationEffect = (function() {
       if (previewLine) previewLine.style.display = 'block';
     }
 
+    refreshReportEditors();
     updateReportPreview();
   }
 
@@ -17123,8 +17301,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     const schedTimeEl = document.getElementById('rm-schedule-time');
     const recipientsEl = document.getElementById('rm-email-recipients');
     const subjectEl = document.getElementById('rm-email-subject');
-    const emailBodyEl = document.getElementById('rm-email-body');
-    const lineBodyEl = document.getElementById('rm-line-body');
 
     if (titleEl) titleEl.innerText = t.title || '通知テンプレート';
     const isEnabled = Number(t.is_enabled) === 1;
@@ -17143,11 +17319,52 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
     if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
     if (subjectEl) subjectEl.value = t.email_subject || '';
-    if (emailBodyEl) emailBodyEl.value = t.email_html_body || '';
-    if (lineBodyEl) lineBodyEl.value = t.line_template_body || '';
+
+    // Set editor values and update CodeMirror
+    setReportEditorValues(t.email_html_body || '', t.line_template_body || '');
 
     renderPlaceholderChips();
     updateReportPreview();
+  }
+
+  function setReportEditorValues(emailBody, lineBody) {
+    ensureReportCodeEditors();
+    const emailTextarea = document.getElementById('rm-email-body');
+    const lineTextarea = document.getElementById('rm-line-body');
+
+    if (emailTextarea) emailTextarea.value = emailBody;
+    if (reportEmailCodeMirror) {
+      if (reportEmailCodeMirror.getValue() !== emailBody) {
+        reportEmailCodeMirror.setValue(emailBody);
+        reportEmailCodeMirror.clearHistory();
+      }
+    }
+
+    if (lineTextarea) lineTextarea.value = lineBody;
+    if (reportLineCodeMirror) {
+      if (reportLineCodeMirror.getValue() !== lineBody) {
+        reportLineCodeMirror.setValue(lineBody);
+        reportLineCodeMirror.clearHistory();
+      }
+    }
+
+    updateReportEditorStats('email');
+    updateReportEditorStats('line');
+    refreshReportEditors();
+  }
+
+  function getReportEmailBodyValue() {
+    if (reportEmailCodeMirror) {
+      return reportEmailCodeMirror.getValue();
+    }
+    return document.getElementById('rm-email-body')?.value || '';
+  }
+
+  function getReportLineBodyValue() {
+    if (reportLineCodeMirror) {
+      return reportLineCodeMirror.getValue();
+    }
+    return document.getElementById('rm-line-body')?.value || '';
   }
 
   function renderPlaceholderChips() {
@@ -17168,6 +17385,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function insertTagIntoTextarea(targetId, tag) {
+    if (targetId === 'rm-email-body' && reportEmailCodeMirror) {
+      reportEmailCodeMirror.replaceSelection(tag);
+      reportEmailCodeMirror.focus();
+      updateReportEditorStats('email');
+      updateReportPreview();
+      return;
+    }
+
+    if (targetId === 'rm-line-body' && reportLineCodeMirror) {
+      reportLineCodeMirror.replaceSelection(tag);
+      reportLineCodeMirror.focus();
+      updateReportEditorStats('line');
+      updateReportPreview();
+      return;
+    }
+
     const textarea = document.getElementById(targetId);
     if (!textarea) return;
 
@@ -17178,6 +17411,101 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     textarea.selectionStart = textarea.selectionEnd = start + tag.length;
     textarea.focus();
     updateReportPreview();
+  }
+
+  function insertEmojiIntoLine(emoji) {
+    insertTagIntoTextarea('rm-line-body', emoji);
+  }
+
+  function execEmailEditorAction(action) {
+    if (!reportEmailCodeMirror) return;
+
+    const cm = reportEmailCodeMirror;
+    const selected = cm.getSelection();
+
+    switch (action) {
+      case 'bold':
+        cm.replaceSelection(selected ? `<strong>${selected}</strong>` : '<strong>太字テキスト</strong>');
+        break;
+      case 'link':
+        cm.replaceSelection(selected ? `<a href="{{ダッシュボードURL}}" style="color:#0071e3; font-weight:bold; text-decoration:underline;">${selected}</a>` : `<a href="{{ダッシュボードURL}}" style="color:#0071e3; font-weight:bold; text-decoration:underline;">詳細はこちら</a>`);
+        break;
+      case 'h3':
+        cm.replaceSelection(selected ? `<h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">${selected}</h3>` : `<h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">見出しタイトル</h3>`);
+        break;
+      case 'p':
+        cm.replaceSelection(selected ? `<p style="font-size:13px; line-height:1.65; color:#334155; margin:0 0 12px 0;">${selected}</p>` : `<p style="font-size:13px; line-height:1.65; color:#334155; margin:0 0 12px 0;">段落テキスト</p>`);
+        break;
+      case 'table':
+        cm.replaceSelection(`<table style="width:100%; font-size:12px; border-collapse:collapse; margin:12px 0;">\n  <tr style="background:#f1f5f9;">\n    <th style="padding:8px 10px; text-align:left;">項目</th>\n    <th style="padding:8px 10px; text-align:left;">内容</th>\n  </tr>\n  <tr>\n    <td style="padding:8px 10px; border-bottom:1px solid #f1f5f9;">項目1</td>\n    <td style="padding:8px 10px; border-bottom:1px solid #f1f5f9;">内容1</td>\n  </tr>\n</table>`);
+        break;
+      case 'list':
+        cm.replaceSelection(`<ul style="margin:8px 0; padding-left:20px; font-size:13px; color:#334155; line-height:1.6;">\n  <li>リスト項目1</li>\n  <li>リスト項目2</li>\n</ul>`);
+        break;
+      case 'undo':
+        cm.undo();
+        break;
+      case 'redo':
+        cm.redo();
+        break;
+    }
+    cm.focus();
+    updateReportPreview();
+  }
+
+  function execLineEditorAction(action) {
+    if (!reportLineCodeMirror) return;
+    if (action === 'undo') reportLineCodeMirror.undo();
+    if (action === 'redo') reportLineCodeMirror.redo();
+    reportLineCodeMirror.focus();
+    updateReportPreview();
+  }
+
+  function formatEmailHtmlCode() {
+    if (!reportEmailCodeMirror) return;
+    const raw = reportEmailCodeMirror.getValue();
+    if (!raw) return;
+
+    // Clean indent formatter for HTML
+    let formatted = '';
+    let pad = 0;
+    const lines = raw.split(/>\s*</);
+    lines.forEach((node, index) => {
+      let indent = 0;
+      if (node.match(/.+<\/\w[^>]*>$/)) {
+        indent = 0;
+      } else if (node.match(/^<\/\w/)) {
+        if (pad !== 0) pad -= 1;
+      } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+        indent = 1;
+      } else {
+        indent = 0;
+      }
+
+      let padding = '';
+      for (let i = 0; i < pad; i++) padding += '  ';
+
+      if (index === 0) {
+        formatted += node + (lines.length > 1 ? '>\n' : '');
+      } else if (index === lines.length - 1) {
+        formatted += padding + '<' + node;
+      } else {
+        formatted += padding + '<' + node + '>\n';
+      }
+      pad += indent;
+    });
+
+    if (formatted.trim()) {
+      reportEmailCodeMirror.setValue(formatted.trim());
+      showToast('HTMLコードを整形しました', 'info');
+    }
+  }
+
+  function toggleEditorFullscreen(wrapperId) {
+    const el = document.getElementById(wrapperId);
+    if (!el) return;
+    el.classList.toggle('fullscreen');
+    refreshReportEditors();
   }
 
   function getReportSampleContext() {
@@ -17278,7 +17606,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
     // 1. メールプレビュー
     const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
-    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+    const bodyRaw = getReportEmailBodyValue();
     const replacedSubject = replacePlaceholders(subjectRaw, context);
     const replacedBody = replacePlaceholders(bodyRaw, context);
 
@@ -17294,7 +17622,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     }
 
     // 2. LINEプレビュー
-    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const lineRaw = getReportLineBodyValue();
     const replacedLine = replacePlaceholders(lineRaw, context);
     const linePreviewEl = document.getElementById('rm-preview-line-content');
     if (linePreviewEl) linePreviewEl.innerText = replacedLine;
@@ -17309,8 +17637,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     const schedTime = document.getElementById('rm-schedule-time')?.value || '20:00';
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subject = document.getElementById('rm-email-subject')?.value || '';
-    const emailBody = document.getElementById('rm-email-body')?.value || '';
-    const lineBody = document.getElementById('rm-line-body')?.value || '';
+    const emailBody = getReportEmailBodyValue();
+    const lineBody = getReportLineBodyValue();
 
     const payload = {
       id: currentSelectedReportId,
@@ -17386,7 +17714,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   function sendTestReportEmail() {
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subjectRaw = document.getElementById('rm-email-subject')?.value || '';
-    const bodyRaw = document.getElementById('rm-email-body')?.value || '';
+    const bodyRaw = getReportEmailBodyValue();
 
     const context = getReportSampleContext();
     const replacedSubject = replacePlaceholders(subjectRaw, context);
@@ -17412,7 +17740,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   }
 
   function copyReplacedLineReportText() {
-    const lineRaw = document.getElementById('rm-line-body')?.value || '';
+    const lineRaw = getReportLineBodyValue();
     const context = getReportSampleContext();
     const replacedLine = replacePlaceholders(lineRaw, context);
 
