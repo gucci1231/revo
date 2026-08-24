@@ -18,10 +18,18 @@
 - **Web ➔ GAS 同期**: ステータス更新・メールテンプレート更新（`GasWebhookService`）
 
 ### 3. メール送信 & テンプレート管理
-- **送信エンジン**: GAS（`GmailApp.sendEmail`）
-- **理由**: Xserver 直送りによる DMARC / SPF 迷惑メール判定リスク回避、および差出人 Gmail の「送信済みトレイ」に履歴を残すため。
-- **テンプレート管理**: Web画面（「メールテンプレート」ページ）から一覧 ➔ 編集 ➔ バリデーション ➔ サンプル確認 ➔ OK（保存＆GASスプレッドシート `FollowMail_template` 同期）の5ステップで更新・管理。
-- **SQLiteテーブル**: `email_templates`（9種類の標準テンプレート）
+- **送信エンジン**:
+  - 個別フォローメール等: GAS（`GmailApp.sendEmail`）
+  - 定期レポート & 即時アクション速報（Report Manager）: Xserver PHP `mail()` / `MailService`（送信元: `info@k-d-o.biz`）
+- **定期レポート自動配信 (Cron)**:
+  - スクリプト: `api/scripts/send_scheduled_reports.php`（Xserver Cron `*/10 * * * *` 実行）
+  - 送信履歴: `api/data/report_sent_log.json` による日次重複送信防止
+  - テンプレート管理: `report_templates`（6種類の定期・即時通知、StripeスタイルHTMLメール）
+- **即時自動送信トリガー**:
+  - `ActionPlanController` (アクション完了・報告時): `action_completed` テンプレートで自動送信
+  - `SyncService` (Google Forms 新規ビジター同期時): `new_visitor_applied` テンプレートで自動送信
+- **テンプレート管理**: Web画面（「メールテンプレート」および「報告・メッセージ管理」）から一覧 ➔ 編集 ➔ バリデーション ➔ リアルタイムプレビュー ➔ 保存・テスト送信が可能。
+- **SQLiteテーブル**: `email_templates`（9種類）, `report_templates`（6種類）
 
 ### 4. サーバー & 開発環境
 - **ドメイン**: `https://revo.k-d-o.biz`
