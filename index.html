@@ -6427,7 +6427,7 @@ select.form-input, select.form-select {
           <div class="w-px h-8 bg-slate-200"></div>
           <div class="text-right">
             <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">クロージング率</div>
-            <div class="text-lg sm:text-xl font-black text-blue-600 font-mono tracking-tight" id="member-dash-closing-rate">0%</div>
+            <div class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-closing-rate">0%</div>
           </div>
         </div>
       </div>
@@ -6465,7 +6465,7 @@ select.form-input, select.form-select {
         <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
           <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン入会</div>
           <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-emerald-600 font-mono tracking-tight" id="member-kpi-orient-joined-count">0</span>
+            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-joined-count">0</span>
             <span class="text-[10px] font-bold text-slate-400">名</span>
           </div>
         </div>
@@ -6502,8 +6502,8 @@ select.form-input, select.form-select {
             </div>
             <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
               <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0071e3]"></i> 招待</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#10b981]"></i> 入会</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#8b5cf6]"></i> オリエン</span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0f172a]"></i> 入会</span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#94a3b8]"></i> オリエン</span>
             </div>
           </div>
           <div class="relative w-full h-[180px]">
@@ -12565,7 +12565,7 @@ window.CelebrationEffect = (function() {
           {
             label: '入会',
             data: joinedData,
-            backgroundColor: '#10b981',
+            backgroundColor: '#0f172a',
             borderRadius: 6,
             barThickness: 10,
             maxBarThickness: 14
@@ -12573,7 +12573,7 @@ window.CelebrationEffect = (function() {
           {
             label: 'オリエン',
             data: orientedData,
-            backgroundColor: '#8b5cf6',
+            backgroundColor: '#94a3b8',
             borderRadius: 6,
             barThickness: 10,
             maxBarThickness: 14
@@ -13175,8 +13175,8 @@ window.CelebrationEffect = (function() {
           <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.invitedJoinedCount}</td>
           <td class="py-2.5 px-3 text-center font-bold text-slate-500 font-mono text-xs">${s.joinRate}%</td>
           <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.totalOriented}</td>
-          <td class="py-2.5 px-3 text-center font-black text-emerald-600 font-mono text-xs">${s.orientJoinedCount}</td>
-          <td class="py-2.5 px-3 text-center font-extrabold text-blue-600 font-mono text-xs">${s.closingRate}%</td>
+          <td class="py-2.5 px-3 text-center font-black text-slate-900 font-mono text-xs">${s.orientJoinedCount}</td>
+          <td class="py-2.5 px-3 text-center font-bold text-slate-500 font-mono text-xs">${s.closingRate}%</td>
           <td class="py-2.5 px-3 text-center font-mono text-xs">
             ${s.todoCount > 0 ? `<span class="font-bold text-red-600">${s.todoCount}</span>` : '<span class="text-slate-300">-</span>'}
           </td>
