@@ -186,6 +186,23 @@
         })
         .catch(() => {});
     }
+
+    // 全ビジターデータをバックグラウンドでプリロード（パイプラインバーや検索の高速化）
+    if (!cachedAllVisitors || cachedAllVisitors.length === 0) {
+      ApiService.call('getAllVisitorsDataApi')
+        .then(res => {
+          if (res && res.success) {
+            cachedAllVisitors = res.visitors || res.list || [];
+            if (typeof renderDashboardPipelineBar === 'function' && (!currentDashboardData || !currentDashboardData.pipelineCounts)) {
+              renderDashboardPipelineBar(cachedAllVisitors);
+            }
+            if (typeof renderDashboardAlerts === 'function' && currentDashboardData) {
+              renderDashboardAlerts(currentDashboardData);
+            }
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   function fetchAllVisitorsData(forceRefresh = false) {

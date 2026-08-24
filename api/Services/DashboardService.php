@@ -51,6 +51,15 @@ class DashboardService {
         $lastMeetingVisitors = [];
         $oneMonthFollowupVisitors = [];
 
+        $pipelineCounts = [
+            '未' => 0,
+            '検討中' => 0,
+            '申込書提出' => 0,
+            '入金待ち' => 0,
+            '審査' => 0,
+            '入会済' => 0
+        ];
+
         $weeklyMap = [];
         $monthlyMap = [];
         $oneMonthAgoTs = strtotime('-30 days');
@@ -86,9 +95,25 @@ class DashboardService {
                 continue;
             }
 
-            $isJoinedBool = ($r['isJoined'] === '入会済' || $r['isJoined'] === '済' || $r['isJoined'] === '入会');
+            $rawJoin = trim($r['isJoined'] ?? '');
+            $isJoinedBool = ($rawJoin === '入会済' || $rawJoin === '済' || $rawJoin === '入会');
             $isAttendedBool = ($r['isAttended'] === '参加' || $r['isAttended'] === '済');
-            $isRejected = ($r['isJoined'] === '見送り');
+            $isRejected = ($rawJoin === '見送り' || $rawJoin === 'フォロー終了');
+
+            // パイプライン集計
+            if ($isJoinedBool) {
+                $pipelineCounts['入会済']++;
+            } else if ($rawJoin === '審査' || $rawJoin === 'メンバーシップ審査' || $rawJoin === '審査中') {
+                $pipelineCounts['審査']++;
+            } else if ($rawJoin === '入金待ち') {
+                $pipelineCounts['入金待ち']++;
+            } else if ($rawJoin === '申込書提出') {
+                $pipelineCounts['申込書提出']++;
+            } else if ($rawJoin === '検討中') {
+                $pipelineCounts['検討中']++;
+            } else if (!$isRejected) {
+                $pipelineCounts['未']++;
+            }
 
             $totalApplyCount++;
             if ($isJoinedBool) $totalJoinedCount++;
@@ -322,6 +347,7 @@ class DashboardService {
                 'currentMonth' => $currentYm,
                 'currentMonthGoal' => $currentMonthGoal
             ],
+            'pipelineCounts' => $pipelineCounts,
             'chart' => [
                 'labels' => $chartLabels,
                 'data' => $chartData

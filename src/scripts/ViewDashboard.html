@@ -185,7 +185,7 @@
     // 🌟 Alerts & Pipeline Bar
     const allVisitorsList = data.allVisitors || t.allVisitors || (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
     renderDashboardAlerts(data);
-    renderDashboardPipelineBar(allVisitorsList);
+    renderDashboardPipelineBar(data.pipelineCounts || (m && m.pipelineCounts) || allVisitorsList);
 
     // Tables
     renderDashboardActionPlansTable(allActionPlans);
@@ -489,12 +489,9 @@
   }
 
   // 🌟 2. 入会進捗ミニ・パイプラインバー (Pipeline Stage Summary)
-  function renderDashboardPipelineBar(visitorsList) {
+  function renderDashboardPipelineBar(dataOrList) {
     const gridEl = document.getElementById('dash-pipeline-grid');
     if (!gridEl) return;
-
-    const list = Array.isArray(visitorsList) ? visitorsList : (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
-    const dedupedList = typeof deduplicateVisitorListClient === 'function' ? deduplicateVisitorListClient(list) : list;
 
     const stages = [
       { key: '未', label: '未対応', cls: 'step-stagnant', filterStatus: 'all' },
@@ -505,16 +502,25 @@
       { key: '入会済', label: '入会済', cls: 'step-joined', filterStatus: 'joined' }
     ];
 
-    const counts = { '未': 0, '検討中': 0, '申込書提出': 0, '入金待ち': 0, '審査': 0, '入会済': 0 };
+    let counts = { '未': 0, '検討中': 0, '申込書提出': 0, '入金待ち': 0, '審査': 0, '入会済': 0 };
 
-    dedupedList.forEach(v => {
-      const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
-      if (counts[status] !== undefined) {
-        counts[status]++;
-      } else {
-        counts['未']++;
-      }
-    });
+    if (dataOrList && typeof dataOrList === 'object' && !Array.isArray(dataOrList) && (dataOrList['入会済'] !== undefined || dataOrList['未'] !== undefined)) {
+      // サーバー集計オブジェクトが渡された場合
+      counts = Object.assign(counts, dataOrList);
+    } else {
+      // ビジター配列が渡された場合
+      const list = Array.isArray(dataOrList) ? dataOrList : (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
+      const dedupedList = typeof deduplicateVisitorListClient === 'function' ? deduplicateVisitorListClient(list) : list;
+
+      dedupedList.forEach(v => {
+        const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
+        if (counts[status] !== undefined) {
+          counts[status]++;
+        } else {
+          counts['未']++;
+        }
+      });
+    }
 
     gridEl.innerHTML = stages.map(s => `
       <div class="dash-pipeline-step ${s.cls}" onclick="switchTab('visitors')" title="全ビジター一覧で確認">
