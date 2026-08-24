@@ -218,6 +218,76 @@
     return rawMatched;
   }
 
+  let memberActivityChartInstance = null;
+
+  function initMemberActivityChart(labels, invitedData, joinedData, orientedData) {
+    const canvas = document.getElementById('member-activity-chart');
+    if (!canvas) return;
+
+    if (memberActivityChartInstance) {
+      try { memberActivityChartInstance.destroy(); } catch(e) {}
+    }
+
+    const ctx = canvas.getContext('2d');
+    memberActivityChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: '招待',
+            data: invitedData,
+            backgroundColor: '#0071e3',
+            borderRadius: 6,
+            barThickness: 10,
+            maxBarThickness: 14
+          },
+          {
+            label: '入会',
+            data: joinedData,
+            backgroundColor: '#10b981',
+            borderRadius: 6,
+            barThickness: 10,
+            maxBarThickness: 14
+          },
+          {
+            label: 'オリエン',
+            data: orientedData,
+            backgroundColor: '#8b5cf6',
+            borderRadius: 6,
+            barThickness: 10,
+            maxBarThickness: 14
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', font: { size: 10.5, weight: '700' } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { stepSize: 1, color: '#94a3b8', font: { size: 10.5, weight: '700' } }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 11, weight: 'bold' },
+            bodyFont: { size: 11, weight: 'bold' },
+            padding: 8,
+            cornerRadius: 8
+          }
+        }
+      }
+    });
+  }
+
   function renderMemberDashboardData(memberName) {
     const invitedVisitors = getVisitorsByInviter(memberName);
     const orientedVisitors = getVisitorsByOrientationUser(memberName);
@@ -353,6 +423,86 @@
 
     const joinRate = totalInvited > 0 ? Math.round((invitedJoinedCount / totalInvited) * 100) : 0;
     const closingRate = totalOriented > 0 ? Math.round((orientJoinedCount / totalOriented) * 100) : 0;
+
+    // 3. 過去6ヶ月の月別推移グラフ集計
+    const monthKeys = [];
+    const monthLabels = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      monthKeys.push(`${yyyy}/${mm}`);
+      monthLabels.push(`${d.getMonth() + 1}月`);
+    }
+
+    const monthlyInvited = Array(6).fill(0);
+    const monthlyJoined = Array(6).fill(0);
+    const monthlyOriented = Array(6).fill(0);
+
+    invitedVisitors.forEach(v => {
+      if (v.eventDate) {
+        const ym = v.eventDate.slice(0, 7);
+        const idx = monthKeys.indexOf(ym);
+        if (idx !== -1) {
+          monthlyInvited[idx]++;
+          const joinVal = String(v.isJoined || '').trim();
+          if (joinVal === '入会' || joinVal === '入会済' || joinVal === '入会申請中' || joinVal === '済') {
+            monthlyJoined[idx]++;
+          }
+        }
+      }
+    });
+
+    orientedVisitors.forEach(v => {
+      if (v.eventDate) {
+        const ym = v.eventDate.slice(0, 7);
+        const idx = monthKeys.indexOf(ym);
+        if (idx !== -1) {
+          monthlyOriented[idx]++;
+        }
+      }
+    });
+
+    initMemberActivityChart(monthLabels, monthlyInvited, monthlyJoined, monthlyOriented);
+
+    // 4. 感触・温度感ランク分布 (A/B/C)
+    let feelACount = 0;
+    let feelBCount = 0;
+    let feelCCount = 0;
+    const allMemberVisitors = [...invitedVisitors];
+    orientedVisitors.forEach(ov => {
+      if (!allMemberVisitors.some(v => String(v.id) === String(ov.id))) {
+        allMemberVisitors.push(ov);
+      }
+    });
+
+    allMemberVisitors.forEach(v => {
+      const f = parseFeelAbc(v.feelAbc);
+      if (f === 'A') feelACount++;
+      else if (f === 'B') feelBCount++;
+      else feelCCount++;
+    });
+
+    const totalFeel = allMemberVisitors.length;
+    const feelAPercent = totalFeel > 0 ? Math.round((feelACount / totalFeel) * 100) : 0;
+    const feelBPercent = totalFeel > 0 ? Math.round((feelBCount / totalFeel) * 100) : 0;
+    const feelCPercent = totalFeel > 0 ? Math.round((feelCCount / totalFeel) * 100) : 0;
+
+    const elFeelA = document.getElementById('member-feel-a-count');
+    const elFeelB = document.getElementById('member-feel-b-count');
+    const elFeelC = document.getElementById('member-feel-c-count');
+    const barFeelA = document.getElementById('member-feel-a-bar');
+    const barFeelB = document.getElementById('member-feel-b-bar');
+    const barFeelC = document.getElementById('member-feel-c-bar');
+
+    if (elFeelA) elFeelA.innerText = `${feelACount}名 (${feelAPercent}%)`;
+    if (elFeelB) elFeelB.innerText = `${feelBCount}名 (${feelBPercent}%)`;
+    if (elFeelC) elFeelC.innerText = `${feelCCount}名 (${feelCPercent}%)`;
+
+    if (barFeelA) barFeelA.style.width = `${feelAPercent}%`;
+    if (barFeelB) barFeelB.style.width = `${feelBPercent}%`;
+    if (barFeelC) barFeelC.style.width = `${feelCPercent}%`;
 
     // アクションデータ保存
     currentMemberActionData = {

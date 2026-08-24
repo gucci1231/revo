@@ -138,6 +138,81 @@
         </div>
       </div>
 
+      <!-- セクション: 活動推移グラフ ＆ 温度感分布 (Pure White & Sleek Chart.js) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5 mb-5">
+        <!-- 1. 月別推移チャート (2カラム) -->
+        <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">活動推移 (招待 ＆ オリエン)</h3>
+            </div>
+            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0071e3]"></i> 招待</span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#10b981]"></i> 入会</span>
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#8b5cf6]"></i> オリエン</span>
+            </div>
+          </div>
+          <div class="relative w-full h-[180px]">
+            <canvas id="member-activity-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 2. 温度感・感触ランク分布 (1カラム) -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+          <div class="pb-2.5 mb-2.5 border-b border-slate-100">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">ゲスト温度感分布</h3>
+          </div>
+
+          <div class="space-y-2.5 my-auto">
+            <!-- Aランク -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span class="flex items-center gap-1.5 text-emerald-700">
+                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-emerald-50 border border-emerald-200 font-extrabold">A</span>
+                  高感触
+                </span>
+                <span class="font-mono text-slate-900" id="member-feel-a-count">0名 (0%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div id="member-feel-a-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Bランク -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span class="flex items-center gap-1.5 text-amber-700">
+                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-50 border border-amber-200 font-extrabold">B</span>
+                  中感触
+                </span>
+                <span class="font-mono text-slate-900" id="member-feel-b-count">0名 (0%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div id="member-feel-b-bar" class="bg-amber-500 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Cランク -->
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span class="flex items-center gap-1.5 text-slate-600">
+                  <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 border border-slate-200 font-extrabold">C</span>
+                  その他
+                </span>
+                <span class="font-mono text-slate-900" id="member-feel-c-count">0名 (0%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                <div id="member-feel-c-bar" class="bg-slate-400 h-2 rounded-full transition-all duration-500" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 text-[10px] text-slate-400 font-semibold text-right">
+            ※ 招待・担当した全ビジター集計
+          </div>
+        </div>
+      </div>
+
       <!-- セクション 1: アクション実績 (To-Do ＆ 完了アクション) -->
       <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
