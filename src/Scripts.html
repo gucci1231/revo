@@ -41,6 +41,28 @@
       });
     }
 
+    // 1. Pathname or Query check (/member/川口陽平 or ?member=...)
+    let initialMember = null;
+    try {
+      const pathname = decodeURIComponent(window.location.pathname || '');
+      const pathMatch = pathname.match(/\/member\/([^\/\?#]+)/);
+      if (pathMatch && pathMatch[1]) {
+        initialMember = pathMatch[1].trim();
+      }
+      if (!initialMember) {
+        const searchParams = new URLSearchParams(window.location.search);
+        initialMember = searchParams.get('member') || searchParams.get('m');
+      }
+    } catch(e) {}
+
+    if (initialMember) {
+      switchTab('member-dashboard', false);
+      setTimeout(() => {
+        if (typeof initMemberDashboard === 'function') initMemberDashboard(initialMember);
+      }, 50);
+      return;
+    }
+
     const hash = (window.location.hash || '').replace(/^#/, '');
     if (hash.startsWith('action/')) {
       const apId = hash.replace('action/', '').trim();

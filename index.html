@@ -12231,21 +12231,42 @@ window.CelebrationEffect = (function() {
     if (prevVal) select.value = prevVal;
   }
 
+  function getMemberNameFromUrl() {
+    // 1. Pathname (/member/川口陽平)
+    try {
+      const pathname = decodeURIComponent(window.location.pathname || '');
+      const pathMatch = pathname.match(/\/member\/([^\/\?#]+)/);
+      if (pathMatch && pathMatch[1]) {
+        return pathMatch[1].trim();
+      }
+    } catch(e) {}
+
+    // 2. Query Params (?member=... or ?m=...)
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const qMember = searchParams.get('member') || searchParams.get('m') || searchParams.get('name');
+      if (qMember) return decodeURIComponent(qMember).trim();
+    } catch(e) {}
+
+    // 3. Hash (#member/川口陽平 or #member-dashboard?name=...)
+    try {
+      const hash = decodeURIComponent(window.location.hash || '').replace(/^#+/, '');
+      if (hash.startsWith('member/')) {
+        return hash.replace('member/', '').split('?')[0].trim();
+      }
+      const match = hash.match(/[?&]name=([^&]+)/);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    } catch(e) {}
+
+    return null;
+  }
+
   function setupMemberDashboardView(targetMemberName = null) {
     populateMemberDashDropdown();
 
-    let nameToSelect = targetMemberName;
-    if (!nameToSelect) {
-      const hash = decodeURIComponent(window.location.hash || '');
-      if (hash.startsWith('member/')) {
-        nameToSelect = hash.replace('member/', '').split('?')[0].trim();
-      } else {
-        const match = hash.match(/[?&]name=([^&]+)/);
-        if (match) {
-          nameToSelect = match[1];
-        }
-      }
-    }
+    let nameToSelect = targetMemberName || getMemberNameFromUrl();
 
     if (nameToSelect) {
       const found = typeof findMemberByName === 'function' ? findMemberByName(nameToSelect) : null;
@@ -12261,13 +12282,15 @@ window.CelebrationEffect = (function() {
   function onMemberDashSelectChange(val) {
     if (!val) {
       showMemberDashEmpty();
-      updateUrlHash('member-dashboard');
+      if (window.history && window.history.pushState) {
+        window.history.pushState(null, '', '/#settings');
+      }
       return;
     }
     selectMemberDashboard(val, true);
   }
 
-  function selectMemberDashboard(memberName, updateHash = true) {
+  function selectMemberDashboard(memberName, updateHistory = true) {
     if (!memberName) return;
     currentSelectedMemberName = memberName;
 
@@ -12280,8 +12303,17 @@ window.CelebrationEffect = (function() {
       select.value = memberName;
     }
 
-    if (updateHash) {
-      updateUrlHash(`member/${encodeURIComponent(memberName)}`);
+    if (updateHistory) {
+      const cleanPath = '/member/' + encodeURIComponent(memberName);
+      try {
+        if (window.history && window.history.pushState) {
+          window.history.pushState({ member: memberName }, '', cleanPath);
+        } else {
+          updateUrlHash(`member/${encodeURIComponent(memberName)}`);
+        }
+      } catch(e) {
+        updateUrlHash(`member/${encodeURIComponent(memberName)}`);
+      }
     }
 
     const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
@@ -12670,8 +12702,8 @@ window.CelebrationEffect = (function() {
   }
 
   function getMemberShareUrl(memberName) {
-    const baseUrl = window.location.origin + window.location.pathname;
-    return `${baseUrl}#member/${encodeURIComponent(memberName)}`;
+    const origin = window.location.origin;
+    return `${origin}/member/${encodeURIComponent(memberName)}`;
   }
 
   function copyMemberDashUrl() {
@@ -17861,6 +17893,28 @@ window.CelebrationEffect = (function() {
       google.script.history.setChangeHandler((e) => {
         handleHashRouting();
       });
+    }
+
+    // 1. Pathname or Query check (/member/川口陽平 or ?member=...)
+    let initialMember = null;
+    try {
+      const pathname = decodeURIComponent(window.location.pathname || '');
+      const pathMatch = pathname.match(/\/member\/([^\/\?#]+)/);
+      if (pathMatch && pathMatch[1]) {
+        initialMember = pathMatch[1].trim();
+      }
+      if (!initialMember) {
+        const searchParams = new URLSearchParams(window.location.search);
+        initialMember = searchParams.get('member') || searchParams.get('m');
+      }
+    } catch(e) {}
+
+    if (initialMember) {
+      switchTab('member-dashboard', false);
+      setTimeout(() => {
+        if (typeof initMemberDashboard === 'function') initMemberDashboard(initialMember);
+      }, 50);
+      return;
     }
 
     const hash = (window.location.hash || '').replace(/^#/, '');

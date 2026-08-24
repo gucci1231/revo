@@ -4,6 +4,7 @@ const path = require('path');
 
 describe('Member Personal Dashboard Feature Tests', () => {
   const indexHtml = fs.readFileSync(path.join(process.cwd(), 'index.html'), 'utf8');
+  const htaccess = fs.readFileSync(path.join(process.cwd(), '.htaccess'), 'utf8');
 
   it('verifies Member Dashboard HTML elements exist in compiled index.html', () => {
     assert.strictEqual(indexHtml.includes('id="view-member-dashboard"'), true);
@@ -22,15 +23,18 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('PAGE_NAV_INFO'), true);
   });
 
-  it('verifies member dashboard functions are defined in scripts and uses deduplication', () => {
+  it('verifies member dashboard functions are defined in scripts and supports clean /member/{name} URL', () => {
     assert.strictEqual(indexHtml.includes('function initMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function selectMemberDashboard'), true);
     assert.strictEqual(indexHtml.includes('function getVisitorsByInviter'), true);
+    assert.strictEqual(indexHtml.includes('function getMemberNameFromUrl'), true);
     assert.strictEqual(indexHtml.includes('deduplicateVisitorListClient'), true);
     assert.strictEqual(indexHtml.includes('renderStandardVisitorCardHtml'), true);
     assert.strictEqual(indexHtml.includes('function copyMemberDashUrl'), true);
     assert.strictEqual(indexHtml.includes('function copyMemberDashLineText'), true);
     assert.strictEqual(indexHtml.includes('function toggleAllMembersView'), true);
     assert.strictEqual(indexHtml.includes('function renderAllMembersSummaryTable'), true);
+    // .htaccess rewrite rule for /member/{name}
+    assert.strictEqual(htaccess.includes('RewriteRule ^member/(.+)$ index.html [L,QSA]'), true);
   });
 });
