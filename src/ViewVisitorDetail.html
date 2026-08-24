@@ -46,13 +46,11 @@
       </div>
 
       <div class="vd-profile-card">
-        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (Interactive Pipeline Steps) -->
+        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (一時コメントアウト)
         <div class="vd-pipeline-timeline-card mb-4" id="vd-pipeline-timeline-container">
           <div class="vd-pipeline-track">
-            <!-- プログレスフィルバー (JSで横幅・色制御) -->
             <div class="vd-pipeline-track-fill" id="vd-pipeline-track-fill"></div>
 
-            <!-- ステップ 1: 放置 / 未 -->
             <div class="vd-pipeline-node" data-stage-val="未" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '未')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-hourglass-start"></i>
@@ -60,7 +58,6 @@
               <span class="vd-node-label">未 / 放置</span>
             </div>
 
-            <!-- ステップ 2: 検討中 -->
             <div class="vd-pipeline-node" data-stage-val="検討中" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '検討中')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-comments"></i>
@@ -68,7 +65,6 @@
               <span class="vd-node-label">検討中</span>
             </div>
 
-            <!-- ステップ 3: 申込書提出 -->
             <div class="vd-pipeline-node" data-stage-val="申込書提出" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '申込書提出')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-file-signature"></i>
@@ -76,7 +72,6 @@
               <span class="vd-node-label">申込書提出</span>
             </div>
 
-            <!-- ステップ 4: 入金待ち -->
             <div class="vd-pipeline-node" data-stage-val="入金待ち" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入金待ち')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-credit-card"></i>
@@ -84,7 +79,6 @@
               <span class="vd-node-label">入金待ち</span>
             </div>
 
-            <!-- ステップ 5: 審査 -->
             <div class="vd-pipeline-node" data-stage-val="審査" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '審査')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-user-check"></i>
@@ -92,7 +86,6 @@
               <span class="vd-node-label">審査</span>
             </div>
 
-            <!-- ステップ 6: 入会済 -->
             <div class="vd-pipeline-node" data-stage-val="入会済" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入会済')">
               <div class="vd-node-indicator">
                 <i class="fa-solid fa-crown"></i>
@@ -101,12 +94,12 @@
             </div>
           </div>
 
-          <!-- クローズド（見送り/フォロー終了）時のスマートアラートバナー -->
           <div id="vd-pipeline-closed-badge" class="vd-pipeline-closed-badge" style="display: none;">
             <i class="fa-solid fa-ban mr-1.5"></i>
             <span id="vd-pipeline-closed-text">フォロー終了 / 見送り</span>
           </div>
         </div>
+        -->
 
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">
