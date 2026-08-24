@@ -55,7 +55,7 @@
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
 
@@ -72,6 +72,8 @@
           <td>${formatTruncatedCell(v.profession, 12)}</td>
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+          <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+          <td class="text-center">${renderFollowTypeButtonHtml(v.id, v.followType)}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -80,7 +82,8 @@
       if (cardsContainer) {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
-        card.onclick = function() {
+        card.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
 
@@ -106,14 +109,27 @@
             </div>
           </div>
 
-          <!-- 下段: 左側に招待者・担当者、右側に出欠ステータス -->
-          <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
+          <!-- 中段: 紹介者・担当者 -->
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+            <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
-              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+              ${v.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
             </div>
-            <div class="dash-card-status-right">
+          </div>
+
+          <!-- 下段: ステータスセレクター群 -->
+          <div class="grid grid-cols-3 gap-1.5 pt-2">
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">出欠</span>
               ${renderAttendButtonHtml(v.id, v.isAttended)}
+            </div>
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">入会</span>
+              ${renderJoinedButtonHtml(v.id, v.isJoined)}
+            </div>
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">方針</span>
+              ${renderFollowTypeButtonHtml(v.id, v.followType)}
             </div>
           </div>
         `;
@@ -139,22 +155,29 @@
   function updateVisitorsFilterCounts(dedupedList) {
     const counts = {
       all: dedupedList.length,
-      considering: 0,
+      follow: 0,
+      pending: 0,
+      maintenance: 0,
       joined: 0,
-      attended: 0,
-      hot: 0
+      closed: 0
     };
 
     dedupedList.forEach(v => {
-      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
-      const isConsidering = (v.isJoined === '検討中');
-      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
-      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
 
-      if (isConsidering) counts.considering++;
-      if (isJoined) counts.joined++;
-      if (isAttended) counts.attended++;
-      if (isHot) counts.hot++;
+      if (isJoined) {
+        counts.joined++;
+      } else if (isClosed || followType === '終了') {
+        counts.closed++;
+      } else if (followType === '時期尚早') {
+        counts.pending++;
+      } else if (followType === '関係維持') {
+        counts.maintenance++;
+      } else if (followType === 'フォロー') {
+        counts.follow++;
+      }
     });
 
     const setBadge = (id, count) => {
@@ -162,10 +185,11 @@
       if (el) el.innerText = count;
     };
     setBadge('count-filter-all', counts.all);
-    setBadge('count-filter-considering', counts.considering);
+    setBadge('count-filter-follow', counts.follow);
+    setBadge('count-filter-pending', counts.pending);
+    setBadge('count-filter-maintenance', counts.maintenance);
     setBadge('count-filter-joined', counts.joined);
-    setBadge('count-filter-attended', counts.attended);
-    setBadge('count-filter-hot', counts.hot);
+    setBadge('count-filter-closed', counts.closed);
   }
 
   function filterAllVisitorsTable() {
@@ -199,19 +223,20 @@
       if (legacyDate && eventDate !== legacyDate) matchDate = false;
 
       let matchStatus = true;
-      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
-      const isConsidering = (v.isJoined === '検討中');
-      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
-      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
 
-      if (currentVisitorsStatusFilter === 'considering') {
-        matchStatus = isConsidering;
+      if (currentVisitorsStatusFilter === 'follow') {
+        matchStatus = (!isJoined && !isClosed && followType === 'フォロー');
+      } else if (currentVisitorsStatusFilter === 'pending') {
+        matchStatus = (!isJoined && !isClosed && followType === '時期尚早');
+      } else if (currentVisitorsStatusFilter === 'maintenance') {
+        matchStatus = (!isJoined && !isClosed && followType === '関係維持');
       } else if (currentVisitorsStatusFilter === 'joined') {
         matchStatus = isJoined;
-      } else if (currentVisitorsStatusFilter === 'attended') {
-        matchStatus = isAttended;
-      } else if (currentVisitorsStatusFilter === 'hot') {
-        matchStatus = isHot;
+      } else if (currentVisitorsStatusFilter === 'closed') {
+        matchStatus = (isClosed || followType === '終了');
       }
 
       return matchSearch && matchDate && matchStatus;

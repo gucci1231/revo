@@ -36,17 +36,20 @@
       <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">
         すべて <span class="badge" id="count-filter-all">0</span>
       </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="considering" onclick="setVisitorsStatusFilter('considering')">
-        検討中 <span class="badge" id="count-filter-considering">0</span>
+      <button type="button" class="visitors-status-tab" data-status-filter="follow" onclick="setVisitorsStatusFilter('follow')">
+        フォロー <span class="badge" id="count-filter-follow">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="pending" onclick="setVisitorsStatusFilter('pending')">
+        時期尚早 <span class="badge" id="count-filter-pending">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="maintenance" onclick="setVisitorsStatusFilter('maintenance')">
+        関係維持 <span class="badge" id="count-filter-maintenance">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="joined" onclick="setVisitorsStatusFilter('joined')">
         入会済 <span class="badge" id="count-filter-joined">0</span>
       </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="attended" onclick="setVisitorsStatusFilter('attended')">
-        出席済 <span class="badge" id="count-filter-attended">0</span>
-      </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="hot" onclick="setVisitorsStatusFilter('hot')">
-        HOT (A/B) <span class="badge" id="count-filter-hot">0</span>
+      <button type="button" class="visitors-status-tab" data-status-filter="closed" onclick="setVisitorsStatusFilter('closed')">
+        終了 <span class="badge" id="count-filter-closed">0</span>
       </button>
     </div>
 
@@ -55,12 +58,14 @@
         <thead>
           <tr>
             <th>参加日</th>
-            <th class="text-center">ランク</th>
+            <th class="text-center">感触</th>
             <th>氏名</th>
             <th>会社名</th>
             <th>専門分野</th>
-            <th>招待者</th>
+            <th>紹介者</th>
             <th class="text-center">出欠</th>
+            <th class="text-center">入会進捗</th>
+            <th class="text-center">フォロー方針</th>
           </tr>
         </thead>
         <tbody id="table-all-visitors"></tbody>

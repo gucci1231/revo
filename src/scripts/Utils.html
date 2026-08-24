@@ -255,6 +255,16 @@
     `;
   }
 
+  function renderFollowTypeButtonHtml(id, rawStatus) {
+    const info = getFollowTypeInfo(rawStatus);
+    const optionsHtml = renderFollowTypeOptionsHtml(rawStatus);
+    return `
+      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
+        ${optionsHtml}
+      </select>
+    `;
+  }
+
   function renderRepeatBadgeHtml(v) {
     if (!v) return '';
     const count = v.visitCount || (v.allIds && v.allIds.length) || 1;

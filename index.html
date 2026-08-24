@@ -6398,17 +6398,20 @@ select.form-input, select.form-select {
       <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">
         すべて <span class="badge" id="count-filter-all">0</span>
       </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="considering" onclick="setVisitorsStatusFilter('considering')">
-        検討中 <span class="badge" id="count-filter-considering">0</span>
+      <button type="button" class="visitors-status-tab" data-status-filter="follow" onclick="setVisitorsStatusFilter('follow')">
+        フォロー <span class="badge" id="count-filter-follow">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="pending" onclick="setVisitorsStatusFilter('pending')">
+        時期尚早 <span class="badge" id="count-filter-pending">0</span>
+      </button>
+      <button type="button" class="visitors-status-tab" data-status-filter="maintenance" onclick="setVisitorsStatusFilter('maintenance')">
+        関係維持 <span class="badge" id="count-filter-maintenance">0</span>
       </button>
       <button type="button" class="visitors-status-tab" data-status-filter="joined" onclick="setVisitorsStatusFilter('joined')">
         入会済 <span class="badge" id="count-filter-joined">0</span>
       </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="attended" onclick="setVisitorsStatusFilter('attended')">
-        出席済 <span class="badge" id="count-filter-attended">0</span>
-      </button>
-      <button type="button" class="visitors-status-tab" data-status-filter="hot" onclick="setVisitorsStatusFilter('hot')">
-        HOT (A/B) <span class="badge" id="count-filter-hot">0</span>
+      <button type="button" class="visitors-status-tab" data-status-filter="closed" onclick="setVisitorsStatusFilter('closed')">
+        終了 <span class="badge" id="count-filter-closed">0</span>
       </button>
     </div>
 
@@ -6417,12 +6420,14 @@ select.form-input, select.form-select {
         <thead>
           <tr>
             <th>参加日</th>
-            <th class="text-center">ランク</th>
+            <th class="text-center">感触</th>
             <th>氏名</th>
             <th>会社名</th>
             <th>専門分野</th>
-            <th>招待者</th>
+            <th>紹介者</th>
             <th class="text-center">出欠</th>
+            <th class="text-center">入会進捗</th>
+            <th class="text-center">フォロー方針</th>
           </tr>
         </thead>
         <tbody id="table-all-visitors"></tbody>
@@ -8299,6 +8304,16 @@ const ApiService = {
     const optionsHtml = renderJoinStatusOptionsHtml(rawStatus);
     return `
       <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+        ${optionsHtml}
+      </select>
+    `;
+  }
+
+  function renderFollowTypeButtonHtml(id, rawStatus) {
+    const info = getFollowTypeInfo(rawStatus);
+    const optionsHtml = renderFollowTypeOptionsHtml(rawStatus);
+    return `
+      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'followType', this.value)" title="フォロー方針を変更">
         ${optionsHtml}
       </select>
     `;
@@ -12358,7 +12373,7 @@ window.CelebrationEffect = (function() {
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         tr.onclick = function(e) {
-          if (e.target.closest('button') || e.target.closest('a')) return;
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
 
@@ -12375,6 +12390,8 @@ window.CelebrationEffect = (function() {
           <td>${formatTruncatedCell(v.profession, 12)}</td>
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(v.inviter, 10)}</span></td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
+          <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
+          <td class="text-center">${renderFollowTypeButtonHtml(v.id, v.followType)}</td>
         `;
         tbody.appendChild(tr);
       }
@@ -12383,7 +12400,8 @@ window.CelebrationEffect = (function() {
       if (cardsContainer) {
         const card = document.createElement('div');
         card.className = 'dash-ap-card';
-        card.onclick = function() {
+        card.onclick = function(e) {
+          if (e.target.closest('button') || e.target.closest('a') || e.target.closest('select')) return;
           openVisitorDetailView(v.id);
         };
 
@@ -12409,14 +12427,27 @@ window.CelebrationEffect = (function() {
             </div>
           </div>
 
-          <!-- 下段: 左側に招待者・担当者、右側に出欠ステータス -->
-          <div class="dash-card-bottom-row">
-            <div class="dash-card-meta-left">
+          <!-- 中段: 紹介者・担当者 -->
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+            <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(v.inviter || '-')}</span>
-              ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+              ${v.orientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(v.orientUser)}</span>` : ''}
             </div>
-            <div class="dash-card-status-right">
+          </div>
+
+          <!-- 下段: ステータスセレクター群 -->
+          <div class="grid grid-cols-3 gap-1.5 pt-2">
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">出欠</span>
               ${renderAttendButtonHtml(v.id, v.isAttended)}
+            </div>
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">入会</span>
+              ${renderJoinedButtonHtml(v.id, v.isJoined)}
+            </div>
+            <div class="text-center">
+              <span class="text-[9px] font-bold text-slate-400 block mb-0.5">方針</span>
+              ${renderFollowTypeButtonHtml(v.id, v.followType)}
             </div>
           </div>
         `;
@@ -12442,22 +12473,29 @@ window.CelebrationEffect = (function() {
   function updateVisitorsFilterCounts(dedupedList) {
     const counts = {
       all: dedupedList.length,
-      considering: 0,
+      follow: 0,
+      pending: 0,
+      maintenance: 0,
       joined: 0,
-      attended: 0,
-      hot: 0
+      closed: 0
     };
 
     dedupedList.forEach(v => {
-      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
-      const isConsidering = (v.isJoined === '検討中');
-      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
-      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
 
-      if (isConsidering) counts.considering++;
-      if (isJoined) counts.joined++;
-      if (isAttended) counts.attended++;
-      if (isHot) counts.hot++;
+      if (isJoined) {
+        counts.joined++;
+      } else if (isClosed || followType === '終了') {
+        counts.closed++;
+      } else if (followType === '時期尚早') {
+        counts.pending++;
+      } else if (followType === '関係維持') {
+        counts.maintenance++;
+      } else if (followType === 'フォロー') {
+        counts.follow++;
+      }
     });
 
     const setBadge = (id, count) => {
@@ -12465,10 +12503,11 @@ window.CelebrationEffect = (function() {
       if (el) el.innerText = count;
     };
     setBadge('count-filter-all', counts.all);
-    setBadge('count-filter-considering', counts.considering);
+    setBadge('count-filter-follow', counts.follow);
+    setBadge('count-filter-pending', counts.pending);
+    setBadge('count-filter-maintenance', counts.maintenance);
     setBadge('count-filter-joined', counts.joined);
-    setBadge('count-filter-attended', counts.attended);
-    setBadge('count-filter-hot', counts.hot);
+    setBadge('count-filter-closed', counts.closed);
   }
 
   function filterAllVisitorsTable() {
@@ -12502,19 +12541,20 @@ window.CelebrationEffect = (function() {
       if (legacyDate && eventDate !== legacyDate) matchDate = false;
 
       let matchStatus = true;
-      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会');
-      const isConsidering = (v.isJoined === '検討中');
-      const isAttended = (v.isAttended === '参加' || v.isAttended === '済' || v.isAttended === true);
-      const isHot = (v.feelAbc === 'A' || v.feelAbc === 'B');
+      const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り');
+      const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
 
-      if (currentVisitorsStatusFilter === 'considering') {
-        matchStatus = isConsidering;
+      if (currentVisitorsStatusFilter === 'follow') {
+        matchStatus = (!isJoined && !isClosed && followType === 'フォロー');
+      } else if (currentVisitorsStatusFilter === 'pending') {
+        matchStatus = (!isJoined && !isClosed && followType === '時期尚早');
+      } else if (currentVisitorsStatusFilter === 'maintenance') {
+        matchStatus = (!isJoined && !isClosed && followType === '関係維持');
       } else if (currentVisitorsStatusFilter === 'joined') {
         matchStatus = isJoined;
-      } else if (currentVisitorsStatusFilter === 'attended') {
-        matchStatus = isAttended;
-      } else if (currentVisitorsStatusFilter === 'hot') {
-        matchStatus = isHot;
+      } else if (currentVisitorsStatusFilter === 'closed') {
+        matchStatus = (isClosed || followType === '終了');
       }
 
       return matchSearch && matchDate && matchStatus;
