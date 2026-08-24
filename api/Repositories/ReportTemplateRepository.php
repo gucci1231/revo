@@ -134,8 +134,10 @@ class ReportTemplateRepository {
     private function seedDefaults(): void {
         $defaults = $this->getDefaults();
         foreach ($defaults as $d) {
-            $existing = $this->db->fetchOne("SELECT id FROM report_templates WHERE id = ?", [$d['id']]);
+            $existing = $this->db->fetchOne("SELECT id, email_html_body, line_template_body FROM report_templates WHERE id = ?", [$d['id']]);
             if (!$existing) {
+                $this->db->upsert('report_templates', $d, 'id');
+            } else if (empty(trim($existing['email_html_body'] ?? '')) || empty(trim($existing['line_template_body'] ?? ''))) {
                 $this->db->upsert('report_templates', $d, 'id');
             }
         }
