@@ -27,6 +27,13 @@ class VisitorStatus {
     public const ATTEND_ATTENDED = '参加';
     public const ATTEND_ABSENT = '不参加';
 
+    // 感触ランク定数
+    public const FEEL_A = 'A';
+    public const FEEL_B = 'B';
+    public const FEEL_C = 'C';
+    public const FEEL_NONE = 'none';
+    public const FEEL_RANKS = [self::FEEL_A, self::FEEL_B, self::FEEL_C];
+
     /**
      * 入会済み判定
      */
@@ -120,9 +127,33 @@ class VisitorStatus {
     public static function normalizeFeelRank(?string $raw): string {
         if (!$raw) return '';
         $s = strtoupper(trim((string)$raw));
-        if (strpos($s, 'A') !== false) return 'A';
-        if (strpos($s, 'B') !== false) return 'B';
-        if (strpos($s, 'C') !== false) return 'C';
+        if (strpos($s, 'A') !== false) return self::FEEL_A;
+        if (strpos($s, 'B') !== false) return self::FEEL_B;
+        if (strpos($s, 'C') !== false) return self::FEEL_C;
         return '';
+    }
+
+    /**
+     * 空の感触カウント集計用配列を取得
+     */
+    public static function createEmptyFeelCounts(): array {
+        return [
+            self::FEEL_A => 0,
+            self::FEEL_B => 0,
+            self::FEEL_C => 0,
+            self::FEEL_NONE => 0,
+        ];
+    }
+
+    /**
+     * 感触カウント配列にビジターの感触を加算
+     */
+    public static function recordFeelCount(array &$feelCounts, ?string $feel): void {
+        $rank = self::normalizeFeelRank($feel);
+        if ($rank === self::FEEL_A || $rank === self::FEEL_B || $rank === self::FEEL_C) {
+            $feelCounts[$rank]++;
+        } else {
+            $feelCounts[self::FEEL_NONE]++;
+        }
     }
 }

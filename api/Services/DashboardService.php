@@ -116,43 +116,16 @@ class DashboardService {
 
             if ($eDate !== '') {
                 if (!isset($weeklyMap[$eDate])) {
-                    $weeklyMap[$eDate] = [
-                        'date' => $eDate,
-                        'applyCount' => 0,
-                        'attendedCount' => 0,
-                        'joinedCount' => 0,
-                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
-                    ];
+                    $weeklyMap[$eDate] = $this->createAggregateBucket('date', $eDate);
                 }
-                $weeklyMap[$eDate]['applyCount']++;
-                if ($isAttendedBool) $weeklyMap[$eDate]['attendedCount']++;
-                if ($isJoinedBool) $weeklyMap[$eDate]['joinedCount']++;
-                $feel = VisitorStatus::normalizeFeelRank($r['feelAbc'] ?? '');
-                if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
-                    $weeklyMap[$eDate]['feelCounts'][$feel]++;
-                } else {
-                    $weeklyMap[$eDate]['feelCounts']['none']++;
-                }
+                $this->recordVisitorToBucket($weeklyMap[$eDate], $isAttendedBool, $isJoinedBool, $feel);
 
                 $monthKey = substr($eDate, 0, 7);
                 if (preg_match('/^\d{4}[\/\-]\d{2}$/', $monthKey)) {
                     if (!isset($monthlyMap[$monthKey])) {
-                        $monthlyMap[$monthKey] = [
-                            'month' => $monthKey,
-                            'applyCount' => 0,
-                            'attendedCount' => 0,
-                            'joinedCount' => 0,
-                            'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
-                        ];
+                        $monthlyMap[$monthKey] = $this->createAggregateBucket('month', $monthKey);
                     }
-                    $monthlyMap[$monthKey]['applyCount']++;
-                    if ($isAttendedBool) $monthlyMap[$monthKey]['attendedCount']++;
-                    if ($isJoinedBool) $monthlyMap[$monthKey]['joinedCount']++;
-                    if ($feel === 'A' || $feel === 'B' || $feel === 'C') {
-                        $monthlyMap[$monthKey]['feelCounts'][$feel]++;
-                    } else {
-                        $monthlyMap[$monthKey]['feelCounts']['none']++;
-                    }
+                    $this->recordVisitorToBucket($monthlyMap[$monthKey], $isAttendedBool, $isJoinedBool, $feel);
                 }
             }
 
@@ -203,13 +176,7 @@ class DashboardService {
             if (date('w', $curThuTs) == 4) {
                 $thuDateStr = date('Y/m/d', $curThuTs);
                 if (!isset($weeklyMap[$thuDateStr])) {
-                    $weeklyMap[$thuDateStr] = [
-                        'date' => $thuDateStr,
-                        'applyCount' => 0,
-                        'attendedCount' => 0,
-                        'joinedCount' => 0,
-                        'feelCounts' => ['A' => 0, 'B' => 0, 'C' => 0, 'none' => 0]
-                    ];
+                    $weeklyMap[$thuDateStr] = $this->createAggregateBucket('date', $thuDateStr);
                 }
             }
             $curThuTs = strtotime('+1 day', $curThuTs);
@@ -494,5 +461,28 @@ class DashboardService {
         $s = mb_convert_kana($s, 'c', 'UTF-8');
         $s = preg_replace('/[・·\.\,\-\_\s\x{3000}\t\r\n]+/u', '', $s);
         return mb_strtolower($s, 'UTF-8');
+    }
+
+    /**
+     * 週別・月別集計バケットの初期化
+     */
+    private function createAggregateBucket(string $keyName, string $keyValue): array {
+        return [
+            $keyName => $keyValue,
+            'applyCount' => 0,
+            'attendedCount' => 0,
+            'joinedCount' => 0,
+            'feelCounts' => VisitorStatus::createEmptyFeelCounts()
+        ];
+    }
+
+    /**
+     * 集計バケットにビジターの実績（参加・入会・感触）を記録
+     */
+    private function recordVisitorToBucket(array &$bucket, bool $isAttended, bool $isJoined, string $feel): void {
+        $bucket['applyCount']++;
+        if ($isAttended) $bucket['attendedCount']++;
+        if ($isJoined) $bucket['joinedCount']++;
+        VisitorStatus::recordFeelCount($bucket['feelCounts'], $feel);
     }
 }
