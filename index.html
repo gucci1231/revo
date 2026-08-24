@@ -6618,7 +6618,7 @@ select.form-input, select.form-select {
                 <option value="入金待ち">入金待ち</option>
                 <option value="審査">審査</option>
                 <option value="入会済">入会済</option>
-                <option value="フォロー終了">フォロー終了</option>
+                <option value="見送り">見送り</option>
               </select>
             </div>
             <div class="vd-status-select-wrap">
@@ -8219,9 +8219,9 @@ const ApiService = {
     '入金待ち': { value: '入金待ち', label: '入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 4 },
     '審査': { value: '審査', label: '審査', shortLabel: '審査', cls: 'state-review', priority: 5 },
     '入会済': { value: '入会済', label: '入会済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
-    'フォロー終了': { value: 'フォロー終了', label: 'フォロー終了', shortLabel: '終了', cls: 'state-closed', priority: 1 }
+    '見送り': { value: '見送り', label: '見送り', shortLabel: '見送り', cls: 'state-rejected', priority: 1 }
   };
-  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済', 'フォロー終了'];
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', '入金待ち', '審査', '入会済', '見送り'];
 
   const FOLLOW_TYPE_CONFIG = {
     'フォロー': { value: 'フォロー', label: 'フォロー', shortLabel: 'フォロー', cls: 'follow-type-active', color: '#0284c7' },
@@ -8272,7 +8272,7 @@ const ApiService = {
   function normalizeJoinStatus(raw) {
     if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
     if (raw === 'メンバーシップ審査' || raw === '審査中' || raw === '審査') return '審査';
-    if (raw === '見送り' || raw === 'フォロー終了') return 'フォロー終了';
+    if (raw === '見送り' || raw === 'フォロー終了') return '見送り';
     if (JOIN_STATUS_CONFIG[raw]) return raw;
     return '未';
   }
