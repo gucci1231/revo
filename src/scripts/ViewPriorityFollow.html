@@ -367,24 +367,9 @@
         const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
 
-        const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
-        const isAbs = (st.isAttended === '不参加');
-        const is11 = (st.is1to1 === '済');
-        const isProg = (st.is1to1 === '調整中');
-        const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
-        const isApplying = (st.isJoined === '申込書提出');
-        const isReview = (st.isJoined === 'メンバーシップ審査');
-        const isPayment = (st.isJoined === '入金待ち');
-        const isCons = (st.isJoined === '検討中');
-        const isRej = (st.isJoined === '見送り');
-
-        let joinCls = '';
-        if (isJ) joinCls = 'state-joined';
-        else if (isApplying) joinCls = 'state-applying';
-        else if (isReview) joinCls = 'state-review';
-        else if (isPayment) joinCls = 'state-payment';
-        else if (isCons) joinCls = 'state-considering';
-        else if (isRej) joinCls = 'state-rejected';
+        const attInfo = getAttendStatusInfo(st.isAttended);
+        const oneToOneInfo = get1to1StatusInfo(st.is1to1);
+        const joinInfo = getJoinStatusInfo(st.isJoined);
 
         const pendingAps = actionPlans.filter(p => Number(p.is_completed) === 0);
         const completedAps = actionPlans.filter(p => Number(p.is_completed) === 1);
@@ -517,30 +502,20 @@
             <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 grid grid-cols-3 gap-2.5">
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">出欠ステータス</label>
-                <select class="vd-status-select w-full ${isAtt ? 'state-attended' : (isAbs ? 'state-absent' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!isAtt && !isAbs ? 'selected' : ''}>出欠: 未</option>
-                  <option value="参加" ${isAtt ? 'selected' : ''}>出欠: 参加</option>
-                  <option value="不参加" ${isAbs ? 'selected' : ''}>出欠: 不参加</option>
+                <select class="vd-status-select w-full ${attInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
+                  ${renderAttendStatusOptionsHtml(st.isAttended)}
                 </select>
               </div>
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">1to1ステータス</label>
-                <select class="vd-status-select w-full ${is11 ? 'state-done' : (isProg ? 'state-progress' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!is11 && !isProg ? 'selected' : ''}>1to1: 未</option>
-                  <option value="済" ${is11 ? 'selected' : ''}>1to1: 済</option>
-                  <option value="調整中" ${isProg ? 'selected' : ''}>1to1: 調整中</option>
+                <select class="vd-status-select w-full ${oneToOneInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
+                  ${render1to1StatusOptionsHtml(st.is1to1)}
                 </select>
               </div>
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会ステータス</label>
-                <select class="vd-status-select w-full ${joinCls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!isJ && !isCons && !isRej && !isApplying && !isReview && !isPayment ? 'selected' : ''}>入会: 未</option>
-                  <option value="検討中" ${isCons ? 'selected' : ''}>入会: 検討中</option>
-                  <option value="申込書提出" ${isApplying ? 'selected' : ''}>入会: 申込書提出</option>
-                  <option value="メンバーシップ審査" ${isReview ? 'selected' : ''}>入会: メンバーシップ審査</option>
-                  <option value="入金待ち" ${isPayment ? 'selected' : ''}>入会: 入金待ち</option>
-                  <option value="入会済" ${isJ ? 'selected' : ''}>入会: 済</option>
-                  <option value="見送り" ${isRej ? 'selected' : ''}>入会: 見送り</option>
+                <select class="vd-status-select w-full ${joinInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
+                  ${renderJoinStatusOptionsHtml(st.isJoined)}
                 </select>
               </div>
             </div>

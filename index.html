@@ -7754,73 +7754,120 @@ const ApiService = {
       .catch(handleError);
   }
 
+  // ==========================================
+  // 🎯 ステータスマスタ定義 (Single Source of Truth)
+  // ==========================================
+  const JOIN_STATUS_CONFIG = {
+    '未': { value: '未', label: '入会: 未', shortLabel: '未', cls: '', priority: 0 },
+    '検討中': { value: '検討中', label: '入会: 検討中', shortLabel: '検討中', cls: 'state-considering', priority: 2 },
+    '申込書提出': { value: '申込書提出', label: '入会: 申込書提出', shortLabel: '申込書提出', cls: 'state-applying', priority: 3 },
+    'メンバーシップ審査': { value: 'メンバーシップ審査', label: '入会: メンバーシップ審査', shortLabel: 'メンバーシップ審査', cls: 'state-review', priority: 4 },
+    '入金待ち': { value: '入金待ち', label: '入会: 入金待ち', shortLabel: '入金待ち', cls: 'state-payment', priority: 5 },
+    '入会済': { value: '入会済', label: '入会: 済', shortLabel: '入会済', cls: 'state-joined', priority: 6 },
+    '見送り': { value: '見送り', label: '入会: 見送り', shortLabel: '見送り', cls: 'state-rejected', priority: 1 }
+  };
+  const JOIN_STATUS_ORDER = ['未', '検討中', '申込書提出', 'メンバーシップ審査', '入金待ち', '入会済', '見送り'];
+
+  const ATTEND_STATUS_CONFIG = {
+    '未': { value: '未', label: '出欠: 未', shortLabel: '未', cls: '' },
+    '参加': { value: '参加', label: '出欠: 参加', shortLabel: '参加', cls: 'state-attended' },
+    '不参加': { value: '不参加', label: '出欠: 不参加', shortLabel: '不参加', cls: 'state-absent' }
+  };
+  const ATTEND_STATUS_ORDER = ['未', '参加', '不参加'];
+
+  const ONE_TO_ONE_STATUS_CONFIG = {
+    '未': { value: '未', label: '1to1: 未', shortLabel: '未', cls: '' },
+    '済': { value: '済', label: '1to1: 済', shortLabel: '済', cls: 'state-done' },
+    '調整中': { value: '調整中', label: '1to1: 調整中', shortLabel: '調整中', cls: 'state-progress' }
+  };
+  const ONE_TO_ONE_STATUS_ORDER = ['未', '済', '調整中'];
+
+  function normalizeJoinStatus(raw) {
+    if (raw === true || raw === '済' || raw === '入会' || raw === '入会済') return '入会済';
+    if (JOIN_STATUS_CONFIG[raw]) return raw;
+    return '未';
+  }
+
+  function getJoinStatusInfo(raw) {
+    const key = normalizeJoinStatus(raw);
+    return JOIN_STATUS_CONFIG[key] || JOIN_STATUS_CONFIG['未'];
+  }
+
+  function renderJoinStatusOptionsHtml(selectedVal) {
+    const current = normalizeJoinStatus(selectedVal);
+    return JOIN_STATUS_ORDER.map(key => {
+      const info = JOIN_STATUS_CONFIG[key];
+      const isSel = current === key ? ' selected' : '';
+      return `<option value="${info.value}"${isSel}>${info.label}</option>`;
+    }).join('\n');
+  }
+
+  function normalizeAttendStatus(raw) {
+    if (raw === true || raw === '済' || raw === '出席' || raw === '参加') return '参加';
+    if (raw === false || raw === '欠席' || raw === '不参加') return '不参加';
+    return '未';
+  }
+
+  function getAttendStatusInfo(raw) {
+    const key = normalizeAttendStatus(raw);
+    return ATTEND_STATUS_CONFIG[key] || ATTEND_STATUS_CONFIG['未'];
+  }
+
+  function renderAttendStatusOptionsHtml(selectedVal) {
+    const current = normalizeAttendStatus(selectedVal);
+    return ATTEND_STATUS_ORDER.map(key => {
+      const info = ATTEND_STATUS_CONFIG[key];
+      const isSel = current === key ? ' selected' : '';
+      return `<option value="${info.value}"${isSel}>${info.label}</option>`;
+    }).join('\n');
+  }
+
+  function normalize1to1Status(raw) {
+    if (raw === true || raw === '済' || raw === '完了') return '済';
+    if (raw === '調整中' || raw === '進行中') return '調整中';
+    return '未';
+  }
+
+  function get1to1StatusInfo(raw) {
+    const key = normalize1to1Status(raw);
+    return ONE_TO_ONE_STATUS_CONFIG[key] || ONE_TO_ONE_STATUS_CONFIG['未'];
+  }
+
+  function render1to1StatusOptionsHtml(selectedVal) {
+    const current = normalize1to1Status(selectedVal);
+    return ONE_TO_ONE_STATUS_ORDER.map(key => {
+      const info = ONE_TO_ONE_STATUS_CONFIG[key];
+      const isSel = current === key ? ' selected' : '';
+      return `<option value="${info.value}"${isSel}>${info.label}</option>`;
+    }).join('\n');
+  }
+
   function renderAttendButtonHtml(id, rawStatus) {
-    const isAttended = (rawStatus === '参加' || rawStatus === '済' || rawStatus === true);
-    const isAbsent = (rawStatus === '不参加');
-    const val = isAttended ? '参加' : (isAbsent ? '不参加' : '未');
-    const stateClass = isAttended ? 'state-attended' : (isAbsent ? 'state-absent' : '');
+    const info = getAttendStatusInfo(rawStatus);
+    const optionsHtml = renderAttendStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
-        <option value="未" ${val === '未' ? 'selected' : ''}>出欠: 未</option>
-        <option value="参加" ${val === '参加' ? 'selected' : ''}>出欠: 参加</option>
-        <option value="不参加" ${val === '不参加' ? 'selected' : ''}>出欠: 不参加</option>
+      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isAttended', this.value)" title="出欠ステータスを変更">
+        ${optionsHtml}
       </select>
     `;
   }
 
   function render1to1ButtonHtml(id, rawStatus) {
-    const isDone = (rawStatus === '済' || rawStatus === true);
-    const isProgress = (rawStatus === '調整中');
-    const val = isDone ? '済' : (isProgress ? '調整中' : '未');
-    const stateClass = isDone ? 'state-done' : (isProgress ? 'state-progress' : '');
+    const info = get1to1StatusInfo(rawStatus);
+    const optionsHtml = render1to1StatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
-        <option value="未" ${val === '未' ? 'selected' : ''}>1to1: 未</option>
-        <option value="済" ${val === '済' ? 'selected' : ''}>1to1: 済</option>
-        <option value="調整中" ${val === '調整中' ? 'selected' : ''}>1to1: 調整中</option>
+      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'is1to1', this.value)" title="1to1ステータスを変更">
+        ${optionsHtml}
       </select>
     `;
   }
 
   function renderJoinedButtonHtml(id, rawStatus) {
-    const isJoined = (rawStatus === '入会済' || rawStatus === '済' || rawStatus === '入会' || rawStatus === true);
-    const isApplying = (rawStatus === '申込書提出');
-    const isReview = (rawStatus === 'メンバーシップ審査');
-    const isPayment = (rawStatus === '入金待ち');
-    const isConsidering = (rawStatus === '検討中');
-    const isRejected = (rawStatus === '見送り');
-
-    let val = '未';
-    let stateClass = '';
-    if (isJoined) {
-      val = '入会済';
-      stateClass = 'state-joined';
-    } else if (isApplying) {
-      val = '申込書提出';
-      stateClass = 'state-applying';
-    } else if (isReview) {
-      val = 'メンバーシップ審査';
-      stateClass = 'state-review';
-    } else if (isPayment) {
-      val = '入金待ち';
-      stateClass = 'state-payment';
-    } else if (isConsidering) {
-      val = '検討中';
-      stateClass = 'state-considering';
-    } else if (isRejected) {
-      val = '見送り';
-      stateClass = 'state-rejected';
-    }
-
+    const info = getJoinStatusInfo(rawStatus);
+    const optionsHtml = renderJoinStatusOptionsHtml(rawStatus);
     return `
-      <select class="status-select ${stateClass}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
-        <option value="未" ${val === '未' ? 'selected' : ''}>入会: 未</option>
-        <option value="検討中" ${val === '検討中' ? 'selected' : ''}>入会: 検討中</option>
-        <option value="申込書提出" ${val === '申込書提出' ? 'selected' : ''}>入会: 申込書提出</option>
-        <option value="メンバーシップ審査" ${val === 'メンバーシップ審査' ? 'selected' : ''}>入会: メンバーシップ審査</option>
-        <option value="入金待ち" ${val === '入金待ち' ? 'selected' : ''}>入会: 入金待ち</option>
-        <option value="入会済" ${val === '入会済' ? 'selected' : ''}>入会: 済</option>
-        <option value="見送り" ${val === '見送り' ? 'selected' : ''}>入会: 見送り</option>
+      <select class="status-select ${info.cls}" onclick="event.stopPropagation();" onchange="event.stopPropagation(); changeVisitorStatus('${id}', 'isJoined', this.value)" title="入会ステータスを変更">
+        ${optionsHtml}
       </select>
     `;
   }
@@ -9193,13 +9240,10 @@ window.CelebrationEffect = (function() {
         const new11 = r.is1to1 || '未';
         if (new11 === '済' || current11 === '済') existing.is1to1 = '済';
 
-        const currentJoined = existing.isJoined || '未';
-        const newJoined = r.isJoined || '未';
-        const joinedPriority = { '入会済': 6, '済': 6, '入金待ち': 5, 'メンバーシップ審査': 4, '申込書提出': 3, '検討中': 2, '見送り': 1, '未': 0 };
-        const curP = joinedPriority[currentJoined] !== undefined ? joinedPriority[currentJoined] : 0;
-        const newP = joinedPriority[newJoined] !== undefined ? joinedPriority[newJoined] : 0;
-        if (newP > curP) {
-          existing.isJoined = (newJoined === '済' ? '入会済' : newJoined);
+        const curJoinInfo = getJoinStatusInfo(existing.isJoined);
+        const newJoinInfo = getJoinStatusInfo(r.isJoined);
+        if (newJoinInfo.priority > curJoinInfo.priority) {
+          existing.isJoined = newJoinInfo.value;
         }
 
         const curFeel = parseFeelAbc(existing.feelAbc);
@@ -11036,24 +11080,9 @@ window.CelebrationEffect = (function() {
         const count = v.visitCount || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
 
-        const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
-        const isAbs = (st.isAttended === '不参加');
-        const is11 = (st.is1to1 === '済');
-        const isProg = (st.is1to1 === '調整中');
-        const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
-        const isApplying = (st.isJoined === '申込書提出');
-        const isReview = (st.isJoined === 'メンバーシップ審査');
-        const isPayment = (st.isJoined === '入金待ち');
-        const isCons = (st.isJoined === '検討中');
-        const isRej = (st.isJoined === '見送り');
-
-        let joinCls = '';
-        if (isJ) joinCls = 'state-joined';
-        else if (isApplying) joinCls = 'state-applying';
-        else if (isReview) joinCls = 'state-review';
-        else if (isPayment) joinCls = 'state-payment';
-        else if (isCons) joinCls = 'state-considering';
-        else if (isRej) joinCls = 'state-rejected';
+        const attInfo = getAttendStatusInfo(st.isAttended);
+        const oneToOneInfo = get1to1StatusInfo(st.is1to1);
+        const joinInfo = getJoinStatusInfo(st.isJoined);
 
         const pendingAps = actionPlans.filter(p => Number(p.is_completed) === 0);
         const completedAps = actionPlans.filter(p => Number(p.is_completed) === 1);
@@ -11186,30 +11215,20 @@ window.CelebrationEffect = (function() {
             <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 grid grid-cols-3 gap-2.5">
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">出欠ステータス</label>
-                <select class="vd-status-select w-full ${isAtt ? 'state-attended' : (isAbs ? 'state-absent' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!isAtt && !isAbs ? 'selected' : ''}>出欠: 未</option>
-                  <option value="参加" ${isAtt ? 'selected' : ''}>出欠: 参加</option>
-                  <option value="不参加" ${isAbs ? 'selected' : ''}>出欠: 不参加</option>
+                <select class="vd-status-select w-full ${attInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isAttended', this.value); fetchPriorityFollowData(true);">
+                  ${renderAttendStatusOptionsHtml(st.isAttended)}
                 </select>
               </div>
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">1to1ステータス</label>
-                <select class="vd-status-select w-full ${is11 ? 'state-done' : (isProg ? 'state-progress' : '')}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!is11 && !isProg ? 'selected' : ''}>1to1: 未</option>
-                  <option value="済" ${is11 ? 'selected' : ''}>1to1: 済</option>
-                  <option value="調整中" ${isProg ? 'selected' : ''}>1to1: 調整中</option>
+                <select class="vd-status-select w-full ${oneToOneInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'is1to1', this.value); fetchPriorityFollowData(true);">
+                  ${render1to1StatusOptionsHtml(st.is1to1)}
                 </select>
               </div>
               <div>
                 <label class="text-[10px] font-extrabold text-slate-400 block mb-1">入会ステータス</label>
-                <select class="vd-status-select w-full ${joinCls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
-                  <option value="未" ${!isJ && !isCons && !isRej && !isApplying && !isReview && !isPayment ? 'selected' : ''}>入会: 未</option>
-                  <option value="検討中" ${isCons ? 'selected' : ''}>入会: 検討中</option>
-                  <option value="申込書提出" ${isApplying ? 'selected' : ''}>入会: 申込書提出</option>
-                  <option value="メンバーシップ審査" ${isReview ? 'selected' : ''}>入会: メンバーシップ審査</option>
-                  <option value="入金待ち" ${isPayment ? 'selected' : ''}>入会: 入金待ち</option>
-                  <option value="入会済" ${isJ ? 'selected' : ''}>入会: 済</option>
-                  <option value="見送り" ${isRej ? 'selected' : ''}>入会: 見送り</option>
+                <select class="vd-status-select w-full ${joinInfo.cls}" onchange="changeVisitorStatus('${escapeHtml(vid)}', 'isJoined', this.value); fetchPriorityFollowData(true);">
+                  ${renderJoinStatusOptionsHtml(st.isJoined)}
                 </select>
               </div>
             </div>
@@ -13220,40 +13239,23 @@ window.CelebrationEffect = (function() {
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {
-          const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
-          const isAbs = (st.isAttended === '不参加');
-          selectAtt.value = isAtt ? '参加' : (isAbs ? '不参加' : '未');
-          selectAtt.className = 'vd-status-select ' + (isAtt ? 'state-attended' : (isAbs ? 'state-absent' : ''));
+          const info = getAttendStatusInfo(st.isAttended);
+          selectAtt.value = info.value;
+          selectAtt.className = 'vd-status-select ' + info.cls;
         }
 
         const select11 = document.getElementById('vd-select-1to1');
         if (select11) {
-          const is11 = (st.is1to1 === '済');
-          const isProg = (st.is1to1 === '調整中');
-          select11.value = is11 ? '済' : (isProg ? '調整中' : '未');
-          select11.className = 'vd-status-select ' + (is11 ? 'state-done' : (isProg ? 'state-progress' : ''));
+          const info = get1to1StatusInfo(st.is1to1);
+          select11.value = info.value;
+          select11.className = 'vd-status-select ' + info.cls;
         }
 
         const selectJoin = document.getElementById('vd-select-joined');
         if (selectJoin) {
-          const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
-          const isApplying = (st.isJoined === '申込書提出');
-          const isReview = (st.isJoined === 'メンバーシップ審査');
-          const isPayment = (st.isJoined === '入金待ち');
-          const isCons = (st.isJoined === '検討中');
-          const isRej = (st.isJoined === '見送り');
-
-          let val = '未';
-          let cls = '';
-          if (isJ) { val = '入会済'; cls = 'state-joined'; }
-          else if (isApplying) { val = '申込書提出'; cls = 'state-applying'; }
-          else if (isReview) { val = 'メンバーシップ審査'; cls = 'state-review'; }
-          else if (isPayment) { val = '入金待ち'; cls = 'state-payment'; }
-          else if (isCons) { val = '検討中'; cls = 'state-considering'; }
-          else if (isRej) { val = '見送り'; cls = 'state-rejected'; }
-
-          selectJoin.value = val;
-          selectJoin.className = 'vd-status-select ' + cls;
+          const info = getJoinStatusInfo(st.isJoined);
+          selectJoin.value = info.value;
+          selectJoin.className = 'vd-status-select ' + info.cls;
         }
 
         // 複数回ヒアリングシートの描画＆切り替え初期化

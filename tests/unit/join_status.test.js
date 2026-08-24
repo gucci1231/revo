@@ -8,23 +8,27 @@ describe('Join Status Options & UI Unit Tests', () => {
   const viewPriorityFollowHtml = fs.readFileSync(path.join(__dirname, '../../src/scripts/ViewPriorityFollow.html'), 'utf8');
   const indexHtml = fs.readFileSync(path.join(__dirname, '../../index.html'), 'utf8');
 
-  it('renders all join statuses (未, 検討中, 申込書提出, メンバーシップ審査, 入金待ち, 入会済, 見送り) in Utils renderJoinedButtonHtml', () => {
-    assert.ok(utilsHtml.includes('<option value="申込書提出"'), 'Utils should contain 申込書提出 option');
-    assert.ok(utilsHtml.includes('<option value="メンバーシップ審査"'), 'Utils should contain メンバーシップ審査 option');
-    assert.ok(utilsHtml.includes('<option value="入金待ち"'), 'Utils should contain 入金待ち option');
+  it('defines centralized status configurations and option generators in Utils.html', () => {
+    assert.ok(utilsHtml.includes('JOIN_STATUS_CONFIG'), 'Utils should define JOIN_STATUS_CONFIG');
+    assert.ok(utilsHtml.includes('申込書提出'), 'JOIN_STATUS_CONFIG should contain 申込書提出');
+    assert.ok(utilsHtml.includes('メンバーシップ審査'), 'JOIN_STATUS_CONFIG should contain メンバーシップ審査');
+    assert.ok(utilsHtml.includes('入金待ち'), 'JOIN_STATUS_CONFIG should contain 入金待ち');
     assert.ok(utilsHtml.includes('state-applying'), 'Utils should support state-applying class');
     assert.ok(utilsHtml.includes('state-review'), 'Utils should support state-review class');
     assert.ok(utilsHtml.includes('state-payment'), 'Utils should support state-payment class');
   });
 
-  it('includes new join statuses in ViewVisitorDetail and ViewPriorityFollow', () => {
-    assert.ok(visitorDetailHtml.includes('<option value="申込書提出">入会: 申込書提出</option>'));
-    assert.ok(visitorDetailHtml.includes('<option value="メンバーシップ審査">入会: メンバーシップ審査</option>'));
-    assert.ok(visitorDetailHtml.includes('<option value="入金待ち">入会: 入金待ち</option>'));
+  it('uses centralized status helper functions across ViewVisitorDetail and ViewPriorityFollow', () => {
+    assert.ok(visitorDetailHtml.includes('vd-select-joined'));
+    assert.ok(viewPriorityFollowHtml.includes('renderJoinStatusOptionsHtml(st.isJoined)'));
+    assert.ok(viewPriorityFollowHtml.includes('joinInfo.cls'));
+  });
 
-    assert.ok(viewPriorityFollowHtml.includes('<option value="申込書提出"'));
-    assert.ok(viewPriorityFollowHtml.includes('<option value="メンバーシップ審査"'));
-    assert.ok(viewPriorityFollowHtml.includes('<option value="入金待ち"'));
+  it('verifies centralized JOIN_STATUS_CONFIG and helper functions in Utils.html', () => {
+    assert.ok(utilsHtml.includes('JOIN_STATUS_CONFIG'), 'Utils should define JOIN_STATUS_CONFIG');
+    assert.ok(utilsHtml.includes('normalizeJoinStatus'), 'Utils should define normalizeJoinStatus');
+    assert.ok(utilsHtml.includes('getJoinStatusInfo'), 'Utils should define getJoinStatusInfo');
+    assert.ok(utilsHtml.includes('renderJoinStatusOptionsHtml'), 'Utils should define renderJoinStatusOptionsHtml');
   });
 
   it('compiles new join status options into index.html', () => {

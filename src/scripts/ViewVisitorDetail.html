@@ -407,40 +407,23 @@
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {
-          const isAtt = (st.isAttended === '参加' || st.isAttended === '済');
-          const isAbs = (st.isAttended === '不参加');
-          selectAtt.value = isAtt ? '参加' : (isAbs ? '不参加' : '未');
-          selectAtt.className = 'vd-status-select ' + (isAtt ? 'state-attended' : (isAbs ? 'state-absent' : ''));
+          const info = getAttendStatusInfo(st.isAttended);
+          selectAtt.value = info.value;
+          selectAtt.className = 'vd-status-select ' + info.cls;
         }
 
         const select11 = document.getElementById('vd-select-1to1');
         if (select11) {
-          const is11 = (st.is1to1 === '済');
-          const isProg = (st.is1to1 === '調整中');
-          select11.value = is11 ? '済' : (isProg ? '調整中' : '未');
-          select11.className = 'vd-status-select ' + (is11 ? 'state-done' : (isProg ? 'state-progress' : ''));
+          const info = get1to1StatusInfo(st.is1to1);
+          select11.value = info.value;
+          select11.className = 'vd-status-select ' + info.cls;
         }
 
         const selectJoin = document.getElementById('vd-select-joined');
         if (selectJoin) {
-          const isJ = (st.isJoined === '入会済' || st.isJoined === '済' || st.isJoined === '入会');
-          const isApplying = (st.isJoined === '申込書提出');
-          const isReview = (st.isJoined === 'メンバーシップ審査');
-          const isPayment = (st.isJoined === '入金待ち');
-          const isCons = (st.isJoined === '検討中');
-          const isRej = (st.isJoined === '見送り');
-
-          let val = '未';
-          let cls = '';
-          if (isJ) { val = '入会済'; cls = 'state-joined'; }
-          else if (isApplying) { val = '申込書提出'; cls = 'state-applying'; }
-          else if (isReview) { val = 'メンバーシップ審査'; cls = 'state-review'; }
-          else if (isPayment) { val = '入金待ち'; cls = 'state-payment'; }
-          else if (isCons) { val = '検討中'; cls = 'state-considering'; }
-          else if (isRej) { val = '見送り'; cls = 'state-rejected'; }
-
-          selectJoin.value = val;
-          selectJoin.className = 'vd-status-select ' + cls;
+          const info = getJoinStatusInfo(st.isJoined);
+          selectJoin.value = info.value;
+          selectJoin.className = 'vd-status-select ' + info.cls;
         }
 
         // 複数回ヒアリングシートの描画＆切り替え初期化
