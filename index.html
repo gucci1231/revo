@@ -5811,9 +5811,6 @@ select.form-input, select.form-select {
       <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
         <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-report-manager" onclick="switchTab('report-manager')" title="報告・メッセージ管理" data-tooltip="報告・メッセージ管理">
-        <i class="fa-solid fa-paper-plane"></i> <span class="nav-label">報告・メッセージ管理</span>
-      </button>
       <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
         <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
       </button>
@@ -5867,9 +5864,6 @@ select.form-input, select.form-select {
       </button>
       <button class="tab-btn" id="tab-btn-email-templates" onclick="switchTab('email-templates')">
         <i class="fa-solid fa-envelope-open-text"></i> メールテンプレート
-      </button>
-      <button class="tab-btn" id="tab-btn-report-manager" onclick="switchTab('report-manager')">
-        <i class="fa-solid fa-paper-plane"></i> 報告・メッセージ
       </button>
       <button class="tab-btn" id="tab-btn-settings" onclick="switchTab('settings')">
         <i class="fa-solid fa-gear"></i> 設定
@@ -7501,6 +7495,9 @@ select.form-input, select.form-select {
       <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-members" onclick="switchSettingsSubTab('members')">
         <i class="fa-solid fa-user-gear"></i> <span>メンバー管理</span>
       </button>
+      <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-reports" onclick="switchTab('report-manager')">
+        <i class="fa-solid fa-paper-plane text-blue-600"></i> <span>報告・通知管理 (メンター)</span>
+      </button>
       <button type="button" class="settings-subtab-btn" id="settings-subtab-btn-maintenance" onclick="switchSettingsSubTab('maintenance')">
         <i class="fa-solid fa-rotate"></i> <span>保守・同期</span>
       </button>
@@ -7839,18 +7836,21 @@ select.form-input, select.form-select {
   </div>
 </div>
 
-    <!-- VIEW: 報告・メッセージ管理センター (2カラム マスター・ディテール構成) -->
+    <!-- VIEW: 報告・メッセージ管理センター (6大メンター通知 ＆ 配信タイミング制御) -->
 <div id="view-report-manager" class="view-content">
 
   <!-- 1. ヘッダー ツールバー -->
   <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 mb-5 shadow-2xs flex items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center text-sm shrink-0">
-        <i class="fa-solid fa-paper-plane"></i>
-      </div>
+      <button type="button" onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors shrink-0 cursor-pointer" title="設定に戻る">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
       <div>
-        <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight m-0">報告・メッセージ管理</h2>
-        <div class="text-[11px] font-bold text-slate-400 font-mono mt-0.5">From: info@k-d-o.biz</div>
+        <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight m-0 flex items-center gap-2">
+          <span>報告・メッセージ管理</span>
+          <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">Mentor & Praise</span>
+        </h2>
+        <div class="text-[11px] font-bold text-slate-400 font-mono mt-0.5">From: info@k-d-o.biz | 目標必達 ＆ 称賛メンター通知</div>
       </div>
     </div>
 
@@ -7862,105 +7862,211 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- 2. メイン 2カラム レイアウト (左: 報告一覧 / 右: 編集＆プレビュー) -->
+  <!-- 2. メイン 2カラム レイアウト (左: 6大報告一覧 / 右: 設定・エディタ・プレビュー) -->
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
     <!-- ==================== 左カラム: 報告一覧リスト (4カラム) ==================== -->
-    <div class="lg:col-span-4 xl:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-2">
+    <div class="lg:col-span-4 xl:col-span-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs space-y-4">
       
-      <div class="flex items-center justify-between pb-2 mb-1 border-b border-slate-100 px-1">
-        <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">報告テンプレート一覧</span>
-        <span class="text-[10px] font-bold font-mono text-slate-400" id="rm-templates-count">4件</span>
-      </div>
+      <!-- セクション 1: 📅 週に一度の報告 (定期配信) -->
+      <div>
+        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100 px-1">
+          <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar-check text-blue-600"></i>
+            <span>週に一度の報告 (定期)</span>
+          </span>
+          <span class="text-[10px] font-bold font-mono text-slate-400">3件</span>
+        </div>
 
-      <!-- 報告アイテム 1: 定例会速報 -->
-      <div id="rm-item-meeting_recap" onclick="switchReportTab('meeting_recap')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#0071e3] flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-bullhorn"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-xs font-black text-slate-900 truncate">定例会速報</span>
-              <span id="rm-badge-meeting_recap" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+        <div class="space-y-2">
+          <!-- 1. 今週のビジター申込状況 -->
+          <div id="rm-item-weekly_visitor_status" onclick="switchReportTab('weekly_visitor_status')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">ビジター申込状況</span>
+                  <span id="rm-badge-weekly_visitor_status" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週日曜 20:00</span>
+                  <span>目標必達</span>
+                </div>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">参加ビジター・感触・次回To-Do</p>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+          </div>
+
+          <!-- 2. 今週参加するビジター紹介 -->
+          <div id="rm-item-tuesday_visitor_intro" onclick="switchReportTab('tuesday_visitor_intro')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-handshake"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">参加ビジター紹介</span>
+                  <span id="rm-badge-tuesday_visitor_intro" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週火曜 12:00</span>
+                  <span>事前歓迎</span>
+                </div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+          </div>
+
+          <!-- 3. 週間活動総合レポート -->
+          <div id="rm-item-weekly_full_report" onclick="switchReportTab('weekly_full_report')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-chart-pie"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">週間総合レポート</span>
+                  <span id="rm-badge-weekly_full_report" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎週日曜 21:00</span>
+                  <span>集計・進捗</span>
+                </div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
       </div>
 
-      <!-- 報告アイテム 2: メンバー個別リマインド -->
-      <div id="rm-item-member_remind" onclick="switchReportTab('member_remind')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-user-clock"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-xs font-black text-slate-900 truncate">個別リマインド</span>
-              <span id="rm-badge-member_remind" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
-            </div>
-            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">担当ゲストのフォロー状況・URL</p>
-          </div>
+      <!-- セクション 2: ⚡ 都度通知 (リアルタイム ＆ 日次) -->
+      <div>
+        <div class="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100 px-1">
+          <span class="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-amber-500"></i>
+            <span>都度通知 (即時・日次)</span>
+          </span>
+          <span class="text-[10px] font-bold font-mono text-slate-400">3件</span>
         </div>
-        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
-      </div>
 
-      <!-- 報告アイテム 3: 成果サマリー -->
-      <div id="rm-item-weekly_summary" onclick="switchReportTab('weekly_summary')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-chart-line"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-xs font-black text-slate-900 truncate">成果サマリー</span>
-              <span id="rm-badge-weekly_summary" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+        <div class="space-y-2">
+          <!-- 4. アクション完了報告 -->
+          <div id="rm-item-action_completed" onclick="switchReportTab('action_completed')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-award"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">アクション完了・称賛</span>
+                  <span id="rm-badge-action_completed" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 font-mono">都度即時</span>
+                  <span>称賛・共有</span>
+                </div>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">招待数・入会数・成約率週報</p>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
-        </div>
-        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
-      </div>
 
-      <!-- 報告アイテム 4: アクション完了速報 -->
-      <div id="rm-item-action_cleared" onclick="switchReportTab('action_cleared')" class="rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0 group-hover:scale-105 transition-transform">
-            <i class="fa-solid fa-circle-check"></i>
-          </div>
-          <div class="min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5">
-              <span class="text-xs font-black text-slate-900 truncate">完了速報</span>
-              <span id="rm-badge-action_cleared" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+          <!-- 5. 本日期限のタスク -->
+          <div id="rm-item-today_due_tasks" onclick="switchReportTab('today_due_tasks')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">本日期限タスク</span>
+                  <span id="rm-badge-today_due_tasks" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 font-mono">毎朝 08:00</span>
+                  <span>漏れゼロ</span>
+                </div>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-400 truncate m-0 font-medium">1to1実施・入会確定の祝賀</p>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
+          </div>
+
+          <!-- 6. ビジター新規申込速報 -->
+          <div id="rm-item-new_visitor_applied" onclick="switchReportTab('new_visitor_applied')" class="rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                <i class="fa-solid fa-rocket"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="text-xs font-black text-slate-900 truncate">新規ビジター申込速報</span>
+                  <span id="rm-badge-new_visitor_applied" class="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="有効"></span>
+                </div>
+                <div class="text-[10px] font-bold text-slate-400 truncate flex items-center gap-1">
+                  <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 font-mono">都度即時</span>
+                  <span>速報・準備</span>
+                </div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-[10px] shrink-0 group-hover:text-slate-600 transition-colors"></i>
           </div>
         </div>
-        <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 group-hover:text-slate-600 transition-colors"></i>
       </div>
 
     </div>
 
-    <!-- ==================== 右カラム: 編集エディタ ＆ リアルタイムプレビュー (8カラム) ==================== -->
+    <!-- ==================== 右カラム: 設定・編集エディタ ＆ プレビュー (8カラム) ==================== -->
     <div class="lg:col-span-8 xl:col-span-8 space-y-4">
       
-      <!-- 1. ステータス ＆ チャンネル切り替えカード -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs">
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+      <!-- 1. 配信タイミング設定 ＆ チャンネル切り替えカード -->
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
+        
+        <!-- タイトル ＆ オンオフスイッチ -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
           <div>
-            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Selected Report</span>
-            <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0" id="rm-current-title">定例会ビジター来訪＆フォロー速報</h3>
+            <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Notification Setting</span>
+            <h3 class="text-sm sm:text-base font-extrabold text-slate-900 m-0" id="rm-current-title">今週のビジター申込状況</h3>
           </div>
 
           <!-- オン/オフ トグルスイッチ -->
           <div class="flex items-center gap-2">
-            <span class="text-xs font-bold text-slate-600" id="rm-enabled-label">有効</span>
+            <span class="text-xs font-bold text-slate-600" id="rm-enabled-label">有効 (配信対象)</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="rm-enabled-toggle" class="sr-only peer" onchange="onReportToggleChange(this.checked)">
               <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
             </label>
+          </div>
+        </div>
+
+        <!-- 配信タイミング制御コントロール (Trigger & Schedule) -->
+        <div class="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex items-center justify-between gap-3 flex-wrap text-xs">
+          <div class="flex items-center gap-2 font-bold text-slate-700">
+            <i class="fa-solid fa-clock text-blue-600"></i>
+            <span>配信タイミング制御:</span>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <!-- タイプ選択 -->
+            <select id="rm-schedule-type" class="bg-white border border-slate-200 text-slate-900 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400" onchange="onScheduleTypeChange(this.value)">
+              <option value="weekly">毎週指定曜日 (定期)</option>
+              <option value="daily">毎日指定時刻 (日次)</option>
+              <option value="instant">イベント発生時 (都度即時)</option>
+            </select>
+
+            <!-- 曜日選択 (weekly時のみ) -->
+            <select id="rm-schedule-day" class="bg-white border border-slate-200 text-slate-900 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-slate-400">
+              <option value="Sun">毎週日曜日</option>
+              <option value="Mon">毎週月曜日</option>
+              <option value="Tue">毎週火曜日</option>
+              <option value="Wed">毎週水曜日</option>
+              <option value="Thu">毎週木曜日</option>
+              <option value="Fri">毎週金曜日</option>
+              <option value="Sat">毎週土曜日</option>
+            </select>
+
+            <!-- 時刻選択 (weekly / daily時) -->
+            <input type="time" id="rm-schedule-time" class="bg-white border border-slate-200 text-slate-900 font-bold font-mono text-xs rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-slate-400" value="20:00">
           </div>
         </div>
 
@@ -7977,7 +8083,7 @@ select.form-input, select.form-select {
         </div>
       </div>
 
-      <!-- 2. エディタ & プレビュー (左右2分割 または 上下) -->
+      <!-- 2. エディタ & プレビュー (左右2分割) -->
       <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
         
         <!-- エディタ側 (7カラム) -->
@@ -7999,7 +8105,7 @@ select.form-input, select.form-select {
               <label class="block text-xs font-extrabold text-slate-700 mb-1">
                 <span>メール件名</span>
               </label>
-              <input type="text" id="rm-email-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="【ビジホス速報】{{定例会日付}} ビジター来訪報告">
+              <input type="text" id="rm-email-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="メール件名">
             </div>
 
             <!-- プレースホルダー一覧 -->
@@ -8014,14 +8120,14 @@ select.form-input, select.form-select {
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="block text-xs font-extrabold text-slate-700 m-0">
-                  <span>HTMLメール本文 (ひな形)</span>
+                  <span>HTMLメール本文 (完成形ひな形)</span>
                 </label>
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
                   <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
                   <span>ひな形に戻す</span>
                 </button>
               </div>
-              <textarea id="rm-email-body" rows="11" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+              <textarea id="rm-email-body" rows="12" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
             </div>
 
             <!-- アクションボタン -->
@@ -8033,7 +8139,7 @@ select.form-input, select.form-select {
 
               <button type="button" onclick="saveCurrentReportTemplate()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-floppy-disk"></i>
-                <span>保存</span>
+                <span>設定を保存</span>
               </button>
             </div>
           </div>
@@ -8053,14 +8159,14 @@ select.form-input, select.form-select {
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="block text-xs font-extrabold text-slate-700 m-0">
-                  <span>LINEグループ報告文 (ひな形)</span>
+                  <span>LINEグループ報告文 (完成形ひな形)</span>
                 </label>
                 <button type="button" onclick="resetCurrentReportTemplateToDefault()" class="text-[11px] font-bold text-slate-500 hover:text-slate-900 transition flex items-center gap-1 cursor-pointer" title="推奨の完成形ひな形に戻す">
                   <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
                   <span>ひな形に戻す</span>
                 </button>
               </div>
-              <textarea id="rm-line-body" rows="13" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
+              <textarea id="rm-line-body" rows="14" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition leading-relaxed" oninput="updateReportPreview()"></textarea>
             </div>
 
             <!-- アクションボタン -->
@@ -8072,7 +8178,7 @@ select.form-input, select.form-select {
 
               <button type="button" onclick="saveCurrentReportTemplate()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
                 <i class="fa-solid fa-floppy-disk"></i>
-                <span>保存</span>
+                <span>設定を保存</span>
               </button>
             </div>
           </div>
@@ -8095,14 +8201,14 @@ select.form-input, select.form-select {
               <div class="text-slate-400 text-[9px]">Subject:</div>
               <div class="font-bold text-slate-900 truncate" id="rm-preview-email-subject">件名プレビュー</div>
             </div>
-            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 max-h-[460px] overflow-y-auto">
-              <iframe id="rm-email-preview-frame" class="w-full min-h-[380px] bg-white border-0"></iframe>
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 max-h-[480px] overflow-y-auto">
+              <iframe id="rm-email-preview-frame" class="w-full min-h-[400px] bg-white border-0"></iframe>
             </div>
           </div>
 
           <!-- LINEプレビューコンテナ -->
           <div id="rm-preview-container-line" style="display: none;">
-            <div class="bg-[#7494c0] p-3.5 rounded-2xl min-h-[380px] max-h-[460px] overflow-y-auto font-sans text-xs">
+            <div class="bg-[#7494c0] p-3.5 rounded-2xl min-h-[400px] max-h-[480px] overflow-y-auto font-sans text-xs">
               <div class="bg-white text-slate-900 rounded-2xl p-3 shadow-sm whitespace-pre-wrap leading-relaxed border border-slate-100 select-all text-[11px]" id="rm-preview-line-content">
                 LINEプレビュー
               </div>
@@ -16259,52 +16365,80 @@ window.CelebrationEffect = (function() {
 </script>
 
 <script>
-  /* --- 📢 Report & Message Manager Logic (HTML Email & LINE Reports Center) --- */
+  /* --- 📢 Report & Message Manager Logic (6 Mentor Reports & Schedule Control) --- */
   let cachedReportTemplates = [];
-  let currentSelectedReportId = 'meeting_recap';
+  let currentSelectedReportId = 'weekly_visitor_status';
   let currentReportChannel = 'email'; // 'email' | 'line'
 
   const REPORT_TAGS = {
-    meeting_recap: [
+    weekly_visitor_status: [
       { tag: '{{定例会日付}}', label: '定例会日付' },
-      { tag: '{{本日来訪数}}', label: '本日来訪数' },
-      { tag: '{{高感触A数}}', label: 'Aランク数' },
-      { tag: '{{要対応ToDo数}}', label: '要対応ToDo数' },
-      { tag: '{{来訪ビジターテーブルHTML}}', label: '来訪者テーブル(HTML)' },
-      { tag: '{{来訪ビジターLINE一覧}}', label: '来訪者一覧(LINE)' },
-      { tag: '{{要対応アクションリストHTML}}', label: 'ToDoリスト(HTML)' },
-      { tag: '{{要対応アクションLINE一覧}}', label: 'ToDo一覧(LINE)' },
+      { tag: '{{週間目標数}}', label: '週間目標数' },
+      { tag: '{{現在申込数}}', label: '現在申込数' },
+      { tag: '{{目標差分}}', label: '目標差分' },
+      { tag: '{{達成率}}', label: '達成率(%)' },
+      { tag: '{{メンターメッセージ}}', label: 'メンターメッセージ' },
+      { tag: '{{招待貢献メンバー一覧HTML}}', label: '招待メンバー(HTML)' },
+      { tag: '{{招待貢献メンバーLINE一覧}}', label: '招待メンバー(LINE)' },
       { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    member_remind: [
-      { tag: '{{メンバー名}}', label: 'メンバー名' },
-      { tag: '{{担当ToDo件数}}', label: '担当ToDo数' },
-      { tag: '{{メンバー担当ToDoHTML}}', label: '担当ToDo(HTML)' },
-      { tag: '{{メンバー担当ToDoLINE}}', label: '担当ToDo(LINE)' },
-      { tag: '{{メンバー個別URL}}', label: '個人ダッシュボードURL' }
+    tuesday_visitor_intro: [
+      { tag: '{{定例会日付}}', label: '定例会日付' },
+      { tag: '{{参加予定ビジター数}}', label: '参加ビジター数' },
+      { tag: '{{参加予定ビジターカード一覧HTML}}', label: 'ビジター紹介(HTML)' },
+      { tag: '{{参加予定ビジターLINE一覧}}', label: 'ビジター紹介(LINE)' },
+      { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    weekly_summary: [
-      { tag: '{{月間招待数}}', label: '今期招待ビジター数' },
-      { tag: '{{月間入会数}}', label: '入会決定数' },
-      { tag: '{{成約率}}', label: '入会成約率' },
+    weekly_full_report: [
+      { tag: '{{週間申込数}}', label: '今週の申込数' },
+      { tag: '{{完了アクション数}}', label: '完了アクション数' },
       { tag: '{{フォロー中件数}}', label: 'フォロー中件数' },
+      { tag: '{{残ToDo数}}', label: '要対応残数' },
+      { tag: '{{フォロー中ビジターテーブルHTML}}', label: 'フォロー中一覧(HTML)' },
+      { tag: '{{フォロー中重要ビジターLINE一覧}}', label: 'フォロー中一覧(LINE)' },
       { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    action_cleared: [
+    action_completed: [
+      { tag: '{{担当者名}}', label: '担当メンバー名' },
       { tag: '{{ビジター名}}', label: 'ビジター名' },
-      { tag: '{{担当者名}}', label: '担当者名' },
+      { tag: '{{ビジター会社}}', label: '会社・専門分野' },
+      { tag: '{{招待者名}}', label: '招待メンバー名' },
       { tag: '{{アクション内容}}', label: 'アクション内容' },
-      { tag: '{{報告内容}}', label: '報告内容' },
+      { tag: '{{報告内容}}', label: '報告コメント' },
+      { tag: '{{カルテURL}}', label: 'カルテURL' }
+    ],
+    today_due_tasks: [
+      { tag: '{{本日日付}}', label: '本日日付' },
+      { tag: '{{本日期限件数}}', label: '本日期限件数' },
+      { tag: '{{本日期限タスクテーブルHTML}}', label: '期限タスク(HTML)' },
+      { tag: '{{本日期限タスクLINE一覧}}', label: '期限タスク(LINE)' },
+      { tag: '{{アクション管理URL}}', label: 'アクション管理URL' }
+    ],
+    new_visitor_applied: [
+      { tag: '{{招待者名}}', label: '招待メンバー名' },
+      { tag: '{{ビジター名}}', label: 'ビジター名' },
+      { tag: '{{ビジター会社}}', label: 'ビジター会社' },
+      { tag: '{{ビジターカテゴリー}}', label: '専門分野' },
+      { tag: '{{参加予定日}}', label: '参加予定日' },
       { tag: '{{カルテURL}}', label: 'カルテURL' }
     ]
   };
+
+  const ALL_REPORT_IDS = [
+    'weekly_visitor_status',
+    'tuesday_visitor_intro',
+    'weekly_full_report',
+    'action_completed',
+    'today_due_tasks',
+    'new_visitor_applied'
+  ];
 
   function initReportManager() {
     fetchReportTemplatesData(false);
   }
 
   function fetchReportTemplatesData(force = false) {
-    if (!force && cachedReportTemplates && cachedReportTemplates.length > 0) {
+    if (!force && cachedReportTemplates && cachedReportTemplates.length >= 6) {
       renderReportManagerUI();
       return;
     }
@@ -16325,13 +16459,13 @@ window.CelebrationEffect = (function() {
   function switchReportTab(reportId) {
     currentSelectedReportId = reportId;
 
-    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+    ALL_REPORT_IDS.forEach(id => {
       const itemEl = document.getElementById('rm-item-' + id);
       if (itemEl) {
         if (id === reportId) {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
     });
@@ -16371,7 +16505,10 @@ window.CelebrationEffect = (function() {
   function getCurrentTemplate() {
     return cachedReportTemplates.find(t => t.id === currentSelectedReportId) || {
       id: currentSelectedReportId,
-      title: 'テンプレート',
+      title: '通知テンプレート',
+      schedule_type: 'weekly',
+      schedule_day: 'Sun',
+      schedule_time: '20:00',
       is_enabled: 1,
       email_subject: '',
       email_html_body: '',
@@ -16380,20 +16517,36 @@ window.CelebrationEffect = (function() {
     };
   }
 
+  function onScheduleTypeChange(val) {
+    const daySelect = document.getElementById('rm-schedule-day');
+    const timeInput = document.getElementById('rm-schedule-time');
+
+    if (val === 'weekly') {
+      if (daySelect) daySelect.style.display = 'inline-block';
+      if (timeInput) timeInput.style.display = 'inline-block';
+    } else if (val === 'daily') {
+      if (daySelect) daySelect.style.display = 'none';
+      if (timeInput) timeInput.style.display = 'inline-block';
+    } else { // instant
+      if (daySelect) daySelect.style.display = 'none';
+      if (timeInput) timeInput.style.display = 'none';
+    }
+  }
+
   function renderReportManagerUI() {
     const t = getCurrentTemplate();
 
     // 左カラムの全アイテムのアクティブ状態とステータスドットを更新
-    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+    ALL_REPORT_IDS.forEach(id => {
       const itemEl = document.getElementById('rm-item-' + id);
       const badgeEl = document.getElementById('rm-badge-' + id);
       const tmpl = cachedReportTemplates.find(x => x.id === id);
 
       if (itemEl) {
         if (id === currentSelectedReportId) {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
 
@@ -16407,18 +16560,28 @@ window.CelebrationEffect = (function() {
     const titleEl = document.getElementById('rm-current-title');
     const toggleEl = document.getElementById('rm-enabled-toggle');
     const labelEl = document.getElementById('rm-enabled-label');
+    const schedTypeEl = document.getElementById('rm-schedule-type');
+    const schedDayEl = document.getElementById('rm-schedule-day');
+    const schedTimeEl = document.getElementById('rm-schedule-time');
     const recipientsEl = document.getElementById('rm-email-recipients');
     const subjectEl = document.getElementById('rm-email-subject');
     const emailBodyEl = document.getElementById('rm-email-body');
     const lineBodyEl = document.getElementById('rm-line-body');
 
-    if (titleEl) titleEl.innerText = t.title || '報告テンプレート';
+    if (titleEl) titleEl.innerText = t.title || '通知テンプレート';
     const isEnabled = Number(t.is_enabled) === 1;
     if (toggleEl) toggleEl.checked = isEnabled;
     if (labelEl) {
       labelEl.innerText = isEnabled ? '有効 (配信対象)' : '無効 (停止中)';
       labelEl.className = isEnabled ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-slate-400';
     }
+
+    if (schedTypeEl) {
+      schedTypeEl.value = t.schedule_type || 'weekly';
+      onScheduleTypeChange(schedTypeEl.value);
+    }
+    if (schedDayEl) schedDayEl.value = t.schedule_day || 'Sun';
+    if (schedTimeEl) schedTimeEl.value = t.schedule_time || '20:00';
 
     if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
     if (subjectEl) subjectEl.value = t.email_subject || '';
@@ -16460,90 +16623,86 @@ window.CelebrationEffect = (function() {
   }
 
   function getReportSampleContext() {
-    const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0].replace(/-/g, '/');
     const origin = window.location.origin;
 
-    // 実データから抽出
     const visitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) ? cachedAllVisitors : [];
     const flatMembers = (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers)) ? cachedFlatMembers : [];
+    const apList = (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) ? currentDashboardActionPlans : [];
     
-    // 最近の定例会ビジター
-    const recentVisitors = visitors.slice(0, 4);
-    const feelACount = recentVisitors.filter(v => parseFeelAbc(v.feelAbc) === 'A').length;
-
-    // 来訪ビジターテーブル (HTML)
-    let visitorTableHtml = '<table class="table"><thead><tr><th>ビジター氏名</th><th>会社・専門分野</th><th>感触</th><th>招待者</th></tr></thead><tbody>';
-    if (recentVisitors.length > 0) {
-      recentVisitors.forEach(v => {
-        const feel = parseFeelAbc(v.feelAbc);
-        const feelBadge = feel === 'A' ? '<span class="badge badge-a">A (高感触)</span>' : (feel === 'B' ? '<span class="badge badge-b">B (中感触)</span>' : '<span class="badge badge-c">C (その他)</span>');
-        visitorTableHtml += `<tr><td style="font-weight:bold;">${escapeHtml(v.name || '')} 様</td><td>${escapeHtml(v.company || '')}</td><td>${feelBadge}</td><td>${escapeHtml(v.inviter || '')}</td></tr>`;
-      });
-    } else {
-      visitorTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">本日のビジターデータはありません</td></tr>';
-    }
-    visitorTableHtml += '</tbody></table>';
-
-    // 来訪ビジターLINE一覧
-    let visitorLineList = '';
-    if (recentVisitors.length > 0) {
-      recentVisitors.forEach((v, i) => {
-        visitorLineList += `${i + 1}. ${v.name || 'ビジター'} 様 (${v.company || ''}) / 招待: ${v.inviter || ''} / 感触: [${parseFeelAbc(v.feelAbc)}]\n`;
-      });
-    } else {
-      visitorLineList = '（本日の来訪者はありません）';
-    }
-
-    // 要対応アクション
-    const apList = (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) ? currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0).slice(0, 3) : [];
-    
-    let actionTableHtml = '<table class="table"><thead><tr><th>期日</th><th>ビジター</th><th>アクション内容</th><th>担当者</th></tr></thead><tbody>';
-    if (apList.length > 0) {
-      apList.forEach(p => {
-        actionTableHtml += `<tr><td style="color:#dc2626; font-weight:bold;">${escapeHtml(p.due_date || '')}</td><td>${escapeHtml(p.visitor_name || '')} 様</td><td>${escapeHtml(p.action_text || '')}</td><td>${escapeHtml(p.assignee_name || '')}</td></tr>`;
-      });
-    } else {
-      actionTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">現在未対応のアクションはありません</td></tr>';
-    }
-    actionTableHtml += '</tbody></table>';
-
-    let actionLineList = '';
-    if (apList.length > 0) {
-      apList.forEach((p, i) => {
-        actionLineList += `・【${p.due_date || '期日未設定'}】${p.visitor_name || ''}様: ${p.action_text || ''} (担当: ${p.assignee_name || ''})\n`;
-      });
-    } else {
-      actionLineList = '（未対応のTo-Doはありません）';
-    }
-
     // サンプルメンバー
-    const sampleMember = flatMembers[0] || { id: '1', name: '居原田 晃司' };
-    const memberShareUrl = `${origin}/member/${sampleMember.id || '1'}`;
+    const m1 = flatMembers[0] || { name: '居原田 晃司', category: '不動産' };
+    const m2 = flatMembers[1] || { name: '川口 陽平', category: 'Web制作' };
+
+    // 招待貢献メンバー一覧
+    const inviterMap = {};
+    visitors.forEach(v => {
+      if (v.inviter) inviterMap[v.inviter] = (inviterMap[v.inviter] || 0) + 1;
+    });
+    let inviterHtml = '<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px;">';
+    let inviterLine = '';
+    const topInviters = Object.entries(inviterMap).slice(0, 3);
+    if (topInviters.length > 0) {
+      topInviters.forEach(([name, count]) => {
+        inviterHtml += `<div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px;"><strong>${escapeHtml(name)} 様</strong><span style="color:#0071e3; font-weight:bold;">${count}名 招待中</span></div>`;
+        inviterLine += `・${name} 様: ${count}名 招待中\n`;
+      });
+    } else {
+      inviterHtml += `<div style="font-size:12px; color:#64748b;">${m1.name} 様: 2名 / ${m2.name} 様: 1名</div>`;
+      inviterLine = `・${m1.name} 様: 2名\n・${m2.name} 様: 1名`;
+    }
+    inviterHtml += '</div>';
+
+    // 参加予定ビジター
+    const upcomingVisitors = visitors.slice(0, 3);
+    let upHtml = '';
+    let upLine = '';
+    upcomingVisitors.forEach((v, i) => {
+      upHtml += `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+        <div style="font-weight:bold; font-size:13px; color:#0f172a;">${escapeHtml(v.name || 'ビジター')} 様 (${escapeHtml(v.company || '会社名')})</div>
+        <div style="font-size:11px; color:#64748b; margin-top:2px;">専門: ${escapeHtml(v.businessCategory || '事業')} / 招待: <strong>${escapeHtml(v.inviter || m1.name)} 様</strong></div>
+      </div>`;
+      upLine += `${i + 1}. ${v.name || 'ビジター'} 様 (${v.company || ''}) / 専門: ${v.businessCategory || ''} (招待: ${v.inviter || m1.name} 様)\n`;
+    });
+
+    // メンターメッセージ
+    const mentorMsg = '次回定例会まであと少しです！現在申込は3名、目標5名まであと【2名】です。日曜夜の今こそ、見込みのお客様やお知り合いに「火曜朝にお茶しましょう」と一声お声がけを！全員で必ず目標を達成させましょう！🔥';
 
     return {
-      '{{定例会日付}}': todayStr,
-      '{{本日来訪数}}': `${recentVisitors.length}`,
-      '{{高感触A数}}': `${feelACount}`,
-      '{{要対応ToDo数}}': `${apList.length}`,
-      '{{来訪ビジターテーブルHTML}}': visitorTableHtml,
-      '{{来訪ビジターLINE一覧}}': visitorLineList.trim(),
-      '{{要対応アクションリストHTML}}': actionTableHtml,
-      '{{要対応アクションLINE一覧}}': actionLineList.trim(),
-      '{{ダッシュボードURL}}': `${origin}/#dashboard`,
-      '{{メンバー名}}': sampleMember.name,
-      '{{担当ToDo件数}}': '2',
-      '{{メンバー担当ToDoHTML}}': '<div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #e2e8f0;"><div style="font-weight:bold;">お礼連絡 ＆ フォロー1to1日程調整</div><div style="font-size:11px; color:#dc2626;">期日: 本日中</div></div>',
-      '{{メンバー担当ToDoLINE}}': '・山田 太郎様: お礼連絡 ＆ 1to1日程調整 (期日: 本日中)\n・鈴木 次郎様: 次回定例会リマインド (期日: 次回開催前)',
-      '{{メンバー個別URL}}': memberShareUrl,
-      '{{月間招待数}}': '18',
-      '{{月間入会数}}': '5',
-      '{{成約率}}': '28',
-      '{{フォロー中件数}}': '8',
-      '{{ビジター名}}': recentVisitors[0] ? recentVisitors[0].name : '山田 太郎',
-      '{{担当者名}}': sampleMember.name,
+      '{{定例会日付}}': '2026/08/25(火)',
+      '{{本日日付}}': todayStr,
+      '{{週間目標数}}': '5',
+      '{{現在申込数}}': '3',
+      '{{目標差分}}': '2',
+      '{{目標差分カラー}}': '#dc2626',
+      '{{達成率}}': '60',
+      '{{メンターメッセージ}}': mentorMsg,
+      '{{招待貢献メンバー一覧HTML}}': inviterHtml,
+      '{{招待貢献メンバーLINE一覧}}': inviterLine.trim(),
+      '{{参加予定ビジター数}}': `${upcomingVisitors.length || 3}`,
+      '{{参加予定ビジターカード一覧HTML}}': upHtml || '<p>参加予定ビジターはいません</p>',
+      '{{参加予定ビジターLINE一覧}}': upLine.trim() || '（参加予定ビジターはいません）',
+      '{{週間申込数}}': '4',
+      '{{完了アクション数}}': '7',
+      '{{フォロー中件数}}': '12',
+      '{{残ToDo数}}': '3',
+      '{{フォロー中ビジターテーブルHTML}}': '<table style="width:100%; font-size:12px; border-collapse:collapse;"><tr style="background:#f1f5f9;"><th style="padding:6px;">ビジター</th><th style="padding:6px;">状況</th><th style="padding:6px;">次回アクション</th></tr><tr><td style="padding:8px; border-bottom:1px solid #f1f5f9; font-weight:bold;">山田 太郎 様</td><td style="padding:8px; border-bottom:1px solid #f1f5f9;"><span style="color:#059669; font-weight:bold;">A (高感触)</span></td><td style="padding:8px; border-bottom:1px solid #f1f5f9;">8/26 1to1実施予定</td></tr></table>',
+      '{{フォロー中重要ビジターLINE一覧}}': '・山田 太郎 様 (Aランク): 8/26 1to1日程調整済\n・佐藤 次郎 様 (Bランク): 次回定例会再参加を提案中',
+      '{{担当者名}}': m1.name,
+      '{{ビジター名}}': '田中 健太',
+      '{{ビジター会社}}': '株式会社イノベーション / 代表取締役',
+      '{{ビジターカテゴリー}}': '不動産コンサルティング',
+      '{{招待者名}}': m2.name,
       '{{アクション内容}}': 'フォロー1to1 実施完了',
-      '{{報告内容}}': '自社サービスとBNIの仕組みについて詳しくご案内。前向きにご検討中とのことです！',
-      '{{カルテURL}}': `${origin}/#visitor/${recentVisitors[0] ? recentVisitors[0].id : '1'}`
+      '{{報告内容}}': 'チャプターの仕組みについて深くご理解いただき、入会申込書をお渡ししました！前向きにご検討中です。',
+      '{{本日期限件数}}': '2',
+      '{{本日期限タスクテーブルHTML}}': '<table style="width:100%; font-size:12px; border-collapse:collapse;"><tr style="background:#fee2e2; color:#991b1b;"><th style="padding:6px;">期日</th><th style="padding:6px;">ビジター</th><th style="padding:6px;">担当</th></tr><tr><td style="padding:8px; border-bottom:1px solid #fecaca; color:#dc2626; font-weight:bold;">本日中</td><td style="padding:8px; border-bottom:1px solid #fecaca;">鈴木 一郎 様 (お礼連絡)</td><td style="padding:8px; border-bottom:1px solid #fecaca;">居原田 様</td></tr></table>',
+      '{{本日期限タスクLINE一覧}}': '・【本日中】鈴木 一郎 様: 定例会参加お礼連絡 ＆ 1to1日程調整 (担当: 居原田 様)\n・【本日中】高橋 花子 様: 入会質問への回答メール (担当: 川口 様)',
+      '{{参加予定日}}': '2026/08/25(火) 06:45〜',
+      '{{ダッシュボードURL}}': `${origin}/#dashboard`,
+      '{{アクション管理URL}}': `${origin}/#actions`,
+      '{{カルテURL}}': `${origin}/#visitor/1`
     };
   }
 
@@ -16587,6 +16746,9 @@ window.CelebrationEffect = (function() {
     const t = getCurrentTemplate();
     const title = document.getElementById('rm-current-title')?.innerText || t.title;
     const isEnabled = document.getElementById('rm-enabled-toggle')?.checked ? 1 : 0;
+    const schedType = document.getElementById('rm-schedule-type')?.value || 'weekly';
+    const schedDay = document.getElementById('rm-schedule-day')?.value || 'Sun';
+    const schedTime = document.getElementById('rm-schedule-time')?.value || '20:00';
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subject = document.getElementById('rm-email-subject')?.value || '';
     const emailBody = document.getElementById('rm-email-body')?.value || '';
@@ -16595,6 +16757,9 @@ window.CelebrationEffect = (function() {
     const payload = {
       id: currentSelectedReportId,
       title: title,
+      schedule_type: schedType,
+      schedule_day: schedDay,
+      schedule_time: schedTime,
       is_enabled: isEnabled,
       default_recipients: recipients,
       email_subject: subject,
@@ -16605,8 +16770,7 @@ window.CelebrationEffect = (function() {
     if (typeof ApiService !== 'undefined' && ApiService.call) {
       ApiService.call('updateReportTemplateApi', payload).then(res => {
         if (res && res.success) {
-          showToast('テンプレートを保存しました', 'success');
-          // キャッシュ更新
+          showToast('通知設定・テンプレートを保存しました', 'success');
           const idx = cachedReportTemplates.findIndex(x => x.id === currentSelectedReportId);
           if (idx !== -1) {
             cachedReportTemplates[idx] = res.template || payload;
@@ -16619,7 +16783,7 @@ window.CelebrationEffect = (function() {
   }
 
   function resetCurrentReportTemplateToDefault() {
-    if (!confirm('このテンプレートを初期の完成形ひな形に戻しますか？\n（現在の編集内容は上書きされます）')) {
+    if (!confirm('この通知テンプレートを推奨の完成形ひな形に戻しますか？\n（現在の編集内容は上書きされます）')) {
       return;
     }
 
@@ -16651,9 +16815,10 @@ window.CelebrationEffect = (function() {
 
     if (typeof ApiService !== 'undefined' && ApiService.call) {
       ApiService.call('toggleReportTemplateApi', currentSelectedReportId, isEnabled).then(res => {
-        showToast(checked ? 'この報告を「有効」にしました' : 'この報告を「無効」にしました', 'info');
+        showToast(checked ? 'この通知を「有効」にしました' : 'この通知を「無効」にしました', 'info');
         const t = cachedReportTemplates.find(x => x.id === currentSelectedReportId);
         if (t) t.is_enabled = isEnabled;
+        renderReportManagerUI();
       }).catch(() => {
         showToast('設定の変更に失敗しました', 'error');
       });
@@ -16675,8 +16840,6 @@ window.CelebrationEffect = (function() {
     }
 
     showToast('info@k-d-o.biz からテストメールを送信中...', 'info');
-
-    // 複数アドレスの場合は最初のアドレスでテスト送信
     const firstRecipient = recipients.split(',')[0].trim();
 
     if (typeof ApiService !== 'undefined' && ApiService.call) {

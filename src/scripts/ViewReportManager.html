@@ -1,50 +1,78 @@
 <script>
-  /* --- 📢 Report & Message Manager Logic (HTML Email & LINE Reports Center) --- */
+  /* --- 📢 Report & Message Manager Logic (6 Mentor Reports & Schedule Control) --- */
   let cachedReportTemplates = [];
-  let currentSelectedReportId = 'meeting_recap';
+  let currentSelectedReportId = 'weekly_visitor_status';
   let currentReportChannel = 'email'; // 'email' | 'line'
 
   const REPORT_TAGS = {
-    meeting_recap: [
+    weekly_visitor_status: [
       { tag: '{{定例会日付}}', label: '定例会日付' },
-      { tag: '{{本日来訪数}}', label: '本日来訪数' },
-      { tag: '{{高感触A数}}', label: 'Aランク数' },
-      { tag: '{{要対応ToDo数}}', label: '要対応ToDo数' },
-      { tag: '{{来訪ビジターテーブルHTML}}', label: '来訪者テーブル(HTML)' },
-      { tag: '{{来訪ビジターLINE一覧}}', label: '来訪者一覧(LINE)' },
-      { tag: '{{要対応アクションリストHTML}}', label: 'ToDoリスト(HTML)' },
-      { tag: '{{要対応アクションLINE一覧}}', label: 'ToDo一覧(LINE)' },
+      { tag: '{{週間目標数}}', label: '週間目標数' },
+      { tag: '{{現在申込数}}', label: '現在申込数' },
+      { tag: '{{目標差分}}', label: '目標差分' },
+      { tag: '{{達成率}}', label: '達成率(%)' },
+      { tag: '{{メンターメッセージ}}', label: 'メンターメッセージ' },
+      { tag: '{{招待貢献メンバー一覧HTML}}', label: '招待メンバー(HTML)' },
+      { tag: '{{招待貢献メンバーLINE一覧}}', label: '招待メンバー(LINE)' },
       { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    member_remind: [
-      { tag: '{{メンバー名}}', label: 'メンバー名' },
-      { tag: '{{担当ToDo件数}}', label: '担当ToDo数' },
-      { tag: '{{メンバー担当ToDoHTML}}', label: '担当ToDo(HTML)' },
-      { tag: '{{メンバー担当ToDoLINE}}', label: '担当ToDo(LINE)' },
-      { tag: '{{メンバー個別URL}}', label: '個人ダッシュボードURL' }
+    tuesday_visitor_intro: [
+      { tag: '{{定例会日付}}', label: '定例会日付' },
+      { tag: '{{参加予定ビジター数}}', label: '参加ビジター数' },
+      { tag: '{{参加予定ビジターカード一覧HTML}}', label: 'ビジター紹介(HTML)' },
+      { tag: '{{参加予定ビジターLINE一覧}}', label: 'ビジター紹介(LINE)' },
+      { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    weekly_summary: [
-      { tag: '{{月間招待数}}', label: '今期招待ビジター数' },
-      { tag: '{{月間入会数}}', label: '入会決定数' },
-      { tag: '{{成約率}}', label: '入会成約率' },
+    weekly_full_report: [
+      { tag: '{{週間申込数}}', label: '今週の申込数' },
+      { tag: '{{完了アクション数}}', label: '完了アクション数' },
       { tag: '{{フォロー中件数}}', label: 'フォロー中件数' },
+      { tag: '{{残ToDo数}}', label: '要対応残数' },
+      { tag: '{{フォロー中ビジターテーブルHTML}}', label: 'フォロー中一覧(HTML)' },
+      { tag: '{{フォロー中重要ビジターLINE一覧}}', label: 'フォロー中一覧(LINE)' },
       { tag: '{{ダッシュボードURL}}', label: 'ダッシュボードURL' }
     ],
-    action_cleared: [
+    action_completed: [
+      { tag: '{{担当者名}}', label: '担当メンバー名' },
       { tag: '{{ビジター名}}', label: 'ビジター名' },
-      { tag: '{{担当者名}}', label: '担当者名' },
+      { tag: '{{ビジター会社}}', label: '会社・専門分野' },
+      { tag: '{{招待者名}}', label: '招待メンバー名' },
       { tag: '{{アクション内容}}', label: 'アクション内容' },
-      { tag: '{{報告内容}}', label: '報告内容' },
+      { tag: '{{報告内容}}', label: '報告コメント' },
+      { tag: '{{カルテURL}}', label: 'カルテURL' }
+    ],
+    today_due_tasks: [
+      { tag: '{{本日日付}}', label: '本日日付' },
+      { tag: '{{本日期限件数}}', label: '本日期限件数' },
+      { tag: '{{本日期限タスクテーブルHTML}}', label: '期限タスク(HTML)' },
+      { tag: '{{本日期限タスクLINE一覧}}', label: '期限タスク(LINE)' },
+      { tag: '{{アクション管理URL}}', label: 'アクション管理URL' }
+    ],
+    new_visitor_applied: [
+      { tag: '{{招待者名}}', label: '招待メンバー名' },
+      { tag: '{{ビジター名}}', label: 'ビジター名' },
+      { tag: '{{ビジター会社}}', label: 'ビジター会社' },
+      { tag: '{{ビジターカテゴリー}}', label: '専門分野' },
+      { tag: '{{参加予定日}}', label: '参加予定日' },
       { tag: '{{カルテURL}}', label: 'カルテURL' }
     ]
   };
+
+  const ALL_REPORT_IDS = [
+    'weekly_visitor_status',
+    'tuesday_visitor_intro',
+    'weekly_full_report',
+    'action_completed',
+    'today_due_tasks',
+    'new_visitor_applied'
+  ];
 
   function initReportManager() {
     fetchReportTemplatesData(false);
   }
 
   function fetchReportTemplatesData(force = false) {
-    if (!force && cachedReportTemplates && cachedReportTemplates.length > 0) {
+    if (!force && cachedReportTemplates && cachedReportTemplates.length >= 6) {
       renderReportManagerUI();
       return;
     }
@@ -65,13 +93,13 @@
   function switchReportTab(reportId) {
     currentSelectedReportId = reportId;
 
-    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+    ALL_REPORT_IDS.forEach(id => {
       const itemEl = document.getElementById('rm-item-' + id);
       if (itemEl) {
         if (id === reportId) {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
     });
@@ -111,7 +139,10 @@
   function getCurrentTemplate() {
     return cachedReportTemplates.find(t => t.id === currentSelectedReportId) || {
       id: currentSelectedReportId,
-      title: 'テンプレート',
+      title: '通知テンプレート',
+      schedule_type: 'weekly',
+      schedule_day: 'Sun',
+      schedule_time: '20:00',
       is_enabled: 1,
       email_subject: '',
       email_html_body: '',
@@ -120,20 +151,36 @@
     };
   }
 
+  function onScheduleTypeChange(val) {
+    const daySelect = document.getElementById('rm-schedule-day');
+    const timeInput = document.getElementById('rm-schedule-time');
+
+    if (val === 'weekly') {
+      if (daySelect) daySelect.style.display = 'inline-block';
+      if (timeInput) timeInput.style.display = 'inline-block';
+    } else if (val === 'daily') {
+      if (daySelect) daySelect.style.display = 'none';
+      if (timeInput) timeInput.style.display = 'inline-block';
+    } else { // instant
+      if (daySelect) daySelect.style.display = 'none';
+      if (timeInput) timeInput.style.display = 'none';
+    }
+  }
+
   function renderReportManagerUI() {
     const t = getCurrentTemplate();
 
     // 左カラムの全アイテムのアクティブ状態とステータスドットを更新
-    ['meeting_recap', 'member_remind', 'weekly_summary', 'action_cleared'].forEach(id => {
+    ALL_REPORT_IDS.forEach(id => {
       const itemEl = document.getElementById('rm-item-' + id);
       const badgeEl = document.getElementById('rm-badge-' + id);
       const tmpl = cachedReportTemplates.find(x => x.id === id);
 
       if (itemEl) {
         if (id === currentSelectedReportId) {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border-2 border-blue-600 bg-blue-50/40 shadow-2xs transition-all cursor-pointer flex items-center justify-between gap-3';
         } else {
-          itemEl.className = 'rm-nav-item p-3.5 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
+          itemEl.className = 'rm-nav-item p-3 rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-3 group';
         }
       }
 
@@ -147,18 +194,28 @@
     const titleEl = document.getElementById('rm-current-title');
     const toggleEl = document.getElementById('rm-enabled-toggle');
     const labelEl = document.getElementById('rm-enabled-label');
+    const schedTypeEl = document.getElementById('rm-schedule-type');
+    const schedDayEl = document.getElementById('rm-schedule-day');
+    const schedTimeEl = document.getElementById('rm-schedule-time');
     const recipientsEl = document.getElementById('rm-email-recipients');
     const subjectEl = document.getElementById('rm-email-subject');
     const emailBodyEl = document.getElementById('rm-email-body');
     const lineBodyEl = document.getElementById('rm-line-body');
 
-    if (titleEl) titleEl.innerText = t.title || '報告テンプレート';
+    if (titleEl) titleEl.innerText = t.title || '通知テンプレート';
     const isEnabled = Number(t.is_enabled) === 1;
     if (toggleEl) toggleEl.checked = isEnabled;
     if (labelEl) {
       labelEl.innerText = isEnabled ? '有効 (配信対象)' : '無効 (停止中)';
       labelEl.className = isEnabled ? 'text-xs font-bold text-emerald-600' : 'text-xs font-bold text-slate-400';
     }
+
+    if (schedTypeEl) {
+      schedTypeEl.value = t.schedule_type || 'weekly';
+      onScheduleTypeChange(schedTypeEl.value);
+    }
+    if (schedDayEl) schedDayEl.value = t.schedule_day || 'Sun';
+    if (schedTimeEl) schedTimeEl.value = t.schedule_time || '20:00';
 
     if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
     if (subjectEl) subjectEl.value = t.email_subject || '';
@@ -200,90 +257,86 @@
   }
 
   function getReportSampleContext() {
-    const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '/');
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0].replace(/-/g, '/');
     const origin = window.location.origin;
 
-    // 実データから抽出
     const visitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) ? cachedAllVisitors : [];
     const flatMembers = (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers)) ? cachedFlatMembers : [];
+    const apList = (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) ? currentDashboardActionPlans : [];
     
-    // 最近の定例会ビジター
-    const recentVisitors = visitors.slice(0, 4);
-    const feelACount = recentVisitors.filter(v => parseFeelAbc(v.feelAbc) === 'A').length;
-
-    // 来訪ビジターテーブル (HTML)
-    let visitorTableHtml = '<table class="table"><thead><tr><th>ビジター氏名</th><th>会社・専門分野</th><th>感触</th><th>招待者</th></tr></thead><tbody>';
-    if (recentVisitors.length > 0) {
-      recentVisitors.forEach(v => {
-        const feel = parseFeelAbc(v.feelAbc);
-        const feelBadge = feel === 'A' ? '<span class="badge badge-a">A (高感触)</span>' : (feel === 'B' ? '<span class="badge badge-b">B (中感触)</span>' : '<span class="badge badge-c">C (その他)</span>');
-        visitorTableHtml += `<tr><td style="font-weight:bold;">${escapeHtml(v.name || '')} 様</td><td>${escapeHtml(v.company || '')}</td><td>${feelBadge}</td><td>${escapeHtml(v.inviter || '')}</td></tr>`;
-      });
-    } else {
-      visitorTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">本日のビジターデータはありません</td></tr>';
-    }
-    visitorTableHtml += '</tbody></table>';
-
-    // 来訪ビジターLINE一覧
-    let visitorLineList = '';
-    if (recentVisitors.length > 0) {
-      recentVisitors.forEach((v, i) => {
-        visitorLineList += `${i + 1}. ${v.name || 'ビジター'} 様 (${v.company || ''}) / 招待: ${v.inviter || ''} / 感触: [${parseFeelAbc(v.feelAbc)}]\n`;
-      });
-    } else {
-      visitorLineList = '（本日の来訪者はありません）';
-    }
-
-    // 要対応アクション
-    const apList = (typeof currentDashboardActionPlans !== 'undefined' && Array.isArray(currentDashboardActionPlans)) ? currentDashboardActionPlans.filter(p => Number(p.is_completed) === 0).slice(0, 3) : [];
-    
-    let actionTableHtml = '<table class="table"><thead><tr><th>期日</th><th>ビジター</th><th>アクション内容</th><th>担当者</th></tr></thead><tbody>';
-    if (apList.length > 0) {
-      apList.forEach(p => {
-        actionTableHtml += `<tr><td style="color:#dc2626; font-weight:bold;">${escapeHtml(p.due_date || '')}</td><td>${escapeHtml(p.visitor_name || '')} 様</td><td>${escapeHtml(p.action_text || '')}</td><td>${escapeHtml(p.assignee_name || '')}</td></tr>`;
-      });
-    } else {
-      actionTableHtml += '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">現在未対応のアクションはありません</td></tr>';
-    }
-    actionTableHtml += '</tbody></table>';
-
-    let actionLineList = '';
-    if (apList.length > 0) {
-      apList.forEach((p, i) => {
-        actionLineList += `・【${p.due_date || '期日未設定'}】${p.visitor_name || ''}様: ${p.action_text || ''} (担当: ${p.assignee_name || ''})\n`;
-      });
-    } else {
-      actionLineList = '（未対応のTo-Doはありません）';
-    }
-
     // サンプルメンバー
-    const sampleMember = flatMembers[0] || { id: '1', name: '居原田 晃司' };
-    const memberShareUrl = `${origin}/member/${sampleMember.id || '1'}`;
+    const m1 = flatMembers[0] || { name: '居原田 晃司', category: '不動産' };
+    const m2 = flatMembers[1] || { name: '川口 陽平', category: 'Web制作' };
+
+    // 招待貢献メンバー一覧
+    const inviterMap = {};
+    visitors.forEach(v => {
+      if (v.inviter) inviterMap[v.inviter] = (inviterMap[v.inviter] || 0) + 1;
+    });
+    let inviterHtml = '<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px;">';
+    let inviterLine = '';
+    const topInviters = Object.entries(inviterMap).slice(0, 3);
+    if (topInviters.length > 0) {
+      topInviters.forEach(([name, count]) => {
+        inviterHtml += `<div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px;"><strong>${escapeHtml(name)} 様</strong><span style="color:#0071e3; font-weight:bold;">${count}名 招待中</span></div>`;
+        inviterLine += `・${name} 様: ${count}名 招待中\n`;
+      });
+    } else {
+      inviterHtml += `<div style="font-size:12px; color:#64748b;">${m1.name} 様: 2名 / ${m2.name} 様: 1名</div>`;
+      inviterLine = `・${m1.name} 様: 2名\n・${m2.name} 様: 1名`;
+    }
+    inviterHtml += '</div>';
+
+    // 参加予定ビジター
+    const upcomingVisitors = visitors.slice(0, 3);
+    let upHtml = '';
+    let upLine = '';
+    upcomingVisitors.forEach((v, i) => {
+      upHtml += `<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px;">
+        <div style="font-weight:bold; font-size:13px; color:#0f172a;">${escapeHtml(v.name || 'ビジター')} 様 (${escapeHtml(v.company || '会社名')})</div>
+        <div style="font-size:11px; color:#64748b; margin-top:2px;">専門: ${escapeHtml(v.businessCategory || '事業')} / 招待: <strong>${escapeHtml(v.inviter || m1.name)} 様</strong></div>
+      </div>`;
+      upLine += `${i + 1}. ${v.name || 'ビジター'} 様 (${v.company || ''}) / 専門: ${v.businessCategory || ''} (招待: ${v.inviter || m1.name} 様)\n`;
+    });
+
+    // メンターメッセージ
+    const mentorMsg = '次回定例会まであと少しです！現在申込は3名、目標5名まであと【2名】です。日曜夜の今こそ、見込みのお客様やお知り合いに「火曜朝にお茶しましょう」と一声お声がけを！全員で必ず目標を達成させましょう！🔥';
 
     return {
-      '{{定例会日付}}': todayStr,
-      '{{本日来訪数}}': `${recentVisitors.length}`,
-      '{{高感触A数}}': `${feelACount}`,
-      '{{要対応ToDo数}}': `${apList.length}`,
-      '{{来訪ビジターテーブルHTML}}': visitorTableHtml,
-      '{{来訪ビジターLINE一覧}}': visitorLineList.trim(),
-      '{{要対応アクションリストHTML}}': actionTableHtml,
-      '{{要対応アクションLINE一覧}}': actionLineList.trim(),
-      '{{ダッシュボードURL}}': `${origin}/#dashboard`,
-      '{{メンバー名}}': sampleMember.name,
-      '{{担当ToDo件数}}': '2',
-      '{{メンバー担当ToDoHTML}}': '<div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:8px; border:1px solid #e2e8f0;"><div style="font-weight:bold;">お礼連絡 ＆ フォロー1to1日程調整</div><div style="font-size:11px; color:#dc2626;">期日: 本日中</div></div>',
-      '{{メンバー担当ToDoLINE}}': '・山田 太郎様: お礼連絡 ＆ 1to1日程調整 (期日: 本日中)\n・鈴木 次郎様: 次回定例会リマインド (期日: 次回開催前)',
-      '{{メンバー個別URL}}': memberShareUrl,
-      '{{月間招待数}}': '18',
-      '{{月間入会数}}': '5',
-      '{{成約率}}': '28',
-      '{{フォロー中件数}}': '8',
-      '{{ビジター名}}': recentVisitors[0] ? recentVisitors[0].name : '山田 太郎',
-      '{{担当者名}}': sampleMember.name,
+      '{{定例会日付}}': '2026/08/25(火)',
+      '{{本日日付}}': todayStr,
+      '{{週間目標数}}': '5',
+      '{{現在申込数}}': '3',
+      '{{目標差分}}': '2',
+      '{{目標差分カラー}}': '#dc2626',
+      '{{達成率}}': '60',
+      '{{メンターメッセージ}}': mentorMsg,
+      '{{招待貢献メンバー一覧HTML}}': inviterHtml,
+      '{{招待貢献メンバーLINE一覧}}': inviterLine.trim(),
+      '{{参加予定ビジター数}}': `${upcomingVisitors.length || 3}`,
+      '{{参加予定ビジターカード一覧HTML}}': upHtml || '<p>参加予定ビジターはいません</p>',
+      '{{参加予定ビジターLINE一覧}}': upLine.trim() || '（参加予定ビジターはいません）',
+      '{{週間申込数}}': '4',
+      '{{完了アクション数}}': '7',
+      '{{フォロー中件数}}': '12',
+      '{{残ToDo数}}': '3',
+      '{{フォロー中ビジターテーブルHTML}}': '<table style="width:100%; font-size:12px; border-collapse:collapse;"><tr style="background:#f1f5f9;"><th style="padding:6px;">ビジター</th><th style="padding:6px;">状況</th><th style="padding:6px;">次回アクション</th></tr><tr><td style="padding:8px; border-bottom:1px solid #f1f5f9; font-weight:bold;">山田 太郎 様</td><td style="padding:8px; border-bottom:1px solid #f1f5f9;"><span style="color:#059669; font-weight:bold;">A (高感触)</span></td><td style="padding:8px; border-bottom:1px solid #f1f5f9;">8/26 1to1実施予定</td></tr></table>',
+      '{{フォロー中重要ビジターLINE一覧}}': '・山田 太郎 様 (Aランク): 8/26 1to1日程調整済\n・佐藤 次郎 様 (Bランク): 次回定例会再参加を提案中',
+      '{{担当者名}}': m1.name,
+      '{{ビジター名}}': '田中 健太',
+      '{{ビジター会社}}': '株式会社イノベーション / 代表取締役',
+      '{{ビジターカテゴリー}}': '不動産コンサルティング',
+      '{{招待者名}}': m2.name,
       '{{アクション内容}}': 'フォロー1to1 実施完了',
-      '{{報告内容}}': '自社サービスとBNIの仕組みについて詳しくご案内。前向きにご検討中とのことです！',
-      '{{カルテURL}}': `${origin}/#visitor/${recentVisitors[0] ? recentVisitors[0].id : '1'}`
+      '{{報告内容}}': 'チャプターの仕組みについて深くご理解いただき、入会申込書をお渡ししました！前向きにご検討中です。',
+      '{{本日期限件数}}': '2',
+      '{{本日期限タスクテーブルHTML}}': '<table style="width:100%; font-size:12px; border-collapse:collapse;"><tr style="background:#fee2e2; color:#991b1b;"><th style="padding:6px;">期日</th><th style="padding:6px;">ビジター</th><th style="padding:6px;">担当</th></tr><tr><td style="padding:8px; border-bottom:1px solid #fecaca; color:#dc2626; font-weight:bold;">本日中</td><td style="padding:8px; border-bottom:1px solid #fecaca;">鈴木 一郎 様 (お礼連絡)</td><td style="padding:8px; border-bottom:1px solid #fecaca;">居原田 様</td></tr></table>',
+      '{{本日期限タスクLINE一覧}}': '・【本日中】鈴木 一郎 様: 定例会参加お礼連絡 ＆ 1to1日程調整 (担当: 居原田 様)\n・【本日中】高橋 花子 様: 入会質問への回答メール (担当: 川口 様)',
+      '{{参加予定日}}': '2026/08/25(火) 06:45〜',
+      '{{ダッシュボードURL}}': `${origin}/#dashboard`,
+      '{{アクション管理URL}}': `${origin}/#actions`,
+      '{{カルテURL}}': `${origin}/#visitor/1`
     };
   }
 
@@ -327,6 +380,9 @@
     const t = getCurrentTemplate();
     const title = document.getElementById('rm-current-title')?.innerText || t.title;
     const isEnabled = document.getElementById('rm-enabled-toggle')?.checked ? 1 : 0;
+    const schedType = document.getElementById('rm-schedule-type')?.value || 'weekly';
+    const schedDay = document.getElementById('rm-schedule-day')?.value || 'Sun';
+    const schedTime = document.getElementById('rm-schedule-time')?.value || '20:00';
     const recipients = document.getElementById('rm-email-recipients')?.value || 'info@k-d-o.biz';
     const subject = document.getElementById('rm-email-subject')?.value || '';
     const emailBody = document.getElementById('rm-email-body')?.value || '';
@@ -335,6 +391,9 @@
     const payload = {
       id: currentSelectedReportId,
       title: title,
+      schedule_type: schedType,
+      schedule_day: schedDay,
+      schedule_time: schedTime,
       is_enabled: isEnabled,
       default_recipients: recipients,
       email_subject: subject,
@@ -345,8 +404,7 @@
     if (typeof ApiService !== 'undefined' && ApiService.call) {
       ApiService.call('updateReportTemplateApi', payload).then(res => {
         if (res && res.success) {
-          showToast('テンプレートを保存しました', 'success');
-          // キャッシュ更新
+          showToast('通知設定・テンプレートを保存しました', 'success');
           const idx = cachedReportTemplates.findIndex(x => x.id === currentSelectedReportId);
           if (idx !== -1) {
             cachedReportTemplates[idx] = res.template || payload;
@@ -359,7 +417,7 @@
   }
 
   function resetCurrentReportTemplateToDefault() {
-    if (!confirm('このテンプレートを初期の完成形ひな形に戻しますか？\n（現在の編集内容は上書きされます）')) {
+    if (!confirm('この通知テンプレートを推奨の完成形ひな形に戻しますか？\n（現在の編集内容は上書きされます）')) {
       return;
     }
 
@@ -391,9 +449,10 @@
 
     if (typeof ApiService !== 'undefined' && ApiService.call) {
       ApiService.call('toggleReportTemplateApi', currentSelectedReportId, isEnabled).then(res => {
-        showToast(checked ? 'この報告を「有効」にしました' : 'この報告を「無効」にしました', 'info');
+        showToast(checked ? 'この通知を「有効」にしました' : 'この通知を「無効」にしました', 'info');
         const t = cachedReportTemplates.find(x => x.id === currentSelectedReportId);
         if (t) t.is_enabled = isEnabled;
+        renderReportManagerUI();
       }).catch(() => {
         showToast('設定の変更に失敗しました', 'error');
       });
@@ -415,8 +474,6 @@
     }
 
     showToast('info@k-d-o.biz からテストメールを送信中...', 'info');
-
-    // 複数アドレスの場合は最初のアドレスでテスト送信
     const firstRecipient = recipients.split(',')[0].trim();
 
     if (typeof ApiService !== 'undefined' && ApiService.call) {

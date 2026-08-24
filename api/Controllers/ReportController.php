@@ -70,6 +70,9 @@ class ReportController extends Controller {
 
         $data = [];
         if ($this->hasParam('title')) $data['title'] = $this->getParam('title');
+        if ($this->hasParam('schedule_type')) $data['schedule_type'] = $this->getParam('schedule_type');
+        if ($this->hasParam('schedule_day')) $data['schedule_day'] = $this->getParam('schedule_day');
+        if ($this->hasParam('schedule_time')) $data['schedule_time'] = $this->getParam('schedule_time');
         if ($this->hasParam('is_enabled')) $data['is_enabled'] = intval($this->getParam('is_enabled'));
         if ($this->hasParam('email_subject')) $data['email_subject'] = $this->getParam('email_subject');
         if ($this->hasParam('email_html_body')) $data['email_html_body'] = $this->getParam('email_html_body');
