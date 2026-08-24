@@ -7480,6 +7480,7 @@ const ApiService = {
           method: 'POST',
           body: args[0] || {}
         };
+      case 'getMembersApi':
       case 'getMemberListApi':
         return { url: '/api/members.php?action=list', method: 'GET' };
       case 'addMemberApi':
@@ -9166,6 +9167,21 @@ window.CelebrationEffect = (function() {
         }
       })
       .catch(handleError);
+
+    // メンバーマスタをプリロードして全画面で即座に担当選択可能にする
+    if (typeof cachedMemberCategories === 'undefined' || !cachedMemberCategories || cachedMemberCategories.length === 0) {
+      ApiService.call('getMemberListApi')
+        .then(res => {
+          const list = (res && (res.memberCategories || (res.data && res.data.memberCategories))) || [];
+          if (list && list.length > 0) {
+            cachedMemberCategories = list;
+            if (typeof populateAssigneeSelectOptions === 'function') {
+              populateAssigneeSelectOptions(cachedMemberCategories);
+            }
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   function fetchAllVisitorsData(forceRefresh = false) {
@@ -10791,6 +10807,10 @@ window.CelebrationEffect = (function() {
         const h = res.hearing || {};
         const actionPlans = res.actionPlans || [];
         const memberCategories = res.memberCategories || [];
+        if (res.memberCategories && res.memberCategories.length > 0) {
+          cachedMemberCategories = res.memberCategories;
+        }
+        currentVisitorDetail = Object.assign({}, v, { status: st, hearing: h });
 
         const feel = (h.feelAbc || v.feelAbc || '').toUpperCase().trim();
         const rankChar = feel || '未';
@@ -13285,8 +13305,12 @@ window.CelebrationEffect = (function() {
     const currentVal = select.value;
     select.innerHTML = '<option value="">-- 担当メンバーを選択 --</option>';
 
-    if (cats && cats.length > 0) {
-      cats.forEach(catObj => {
+    const actualCats = (cats && Array.isArray(cats) && cats.length > 0)
+      ? cats
+      : ((typeof cachedMemberCategories !== 'undefined' && Array.isArray(cachedMemberCategories) && cachedMemberCategories.length > 0) ? cachedMemberCategories : null);
+
+    if (actualCats && actualCats.length > 0) {
+      actualCats.forEach(catObj => {
         const grp = document.createElement('optgroup');
         grp.label = catObj.category;
         if (catObj.members && catObj.members.length > 0) {
@@ -13294,25 +13318,28 @@ window.CelebrationEffect = (function() {
             const opt = document.createElement('option');
             opt.value = m.name;
             opt.textContent = `${m.name} (${m.profession || ''})`;
+            if (currentVal && m.name === currentVal) {
+              opt.selected = true;
+            }
             grp.appendChild(opt);
           });
         }
         select.appendChild(grp);
       });
+      if (currentVal) {
+        select.value = currentVal;
+      }
     } else {
-      // フォールバック: getMembersApi を呼んで取得
-      ApiService.call('getMembersApi')
+      // フォールバック: getMemberListApi を呼んで取得
+      ApiService.call('getMemberListApi')
         .then(res => {
-          if (res && res.memberCategories) {
-            cachedMemberCategories = res.memberCategories;
+          const list = (res && (res.memberCategories || (res.data && res.data.memberCategories))) || [];
+          if (list && list.length > 0) {
+            cachedMemberCategories = list;
             populateAssigneeSelectOptions(cachedMemberCategories);
           }
         })
         .catch(() => {});
-    }
-
-    if (currentVal) {
-      select.value = currentVal;
     }
   }
 
@@ -13617,11 +13644,27 @@ window.CelebrationEffect = (function() {
 
     if (optVisitorId) {
       currentVdVisitorId = String(optVisitorId);
-      const v = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
-        ? cachedAllVisitors.find(item => String(item.id) === String(optVisitorId))
-        : (currentVisitorDetail && String(currentVisitorDetail.id) === String(optVisitorId) ? currentVisitorDetail : null);
+      let v = null;
+      if (typeof cachedPriorityFollowList !== 'undefined' && Array.isArray(cachedPriorityFollowList)) {
+        v = cachedPriorityFollowList.find(item => String(item.id || item.visitorId) === String(optVisitorId) || (item.allIds && item.allIds.some(id => String(id) === String(optVisitorId))));
+      }
+      if (!v && typeof filteredPfVisitors !== 'undefined' && Array.isArray(filteredPfVisitors)) {
+        v = filteredPfVisitors.find(item => String(item.id || item.visitorId) === String(optVisitorId) || (item.allIds && item.allIds.some(id => String(id) === String(optVisitorId))));
+      }
+      if (!v && typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) {
+        v = cachedAllVisitors.find(item => String(item.id || item.visitorId) === String(optVisitorId) || (item.allIds && item.allIds.some(id => String(id) === String(optVisitorId))));
+      }
+      if (!v && typeof currentVisitorDetail !== 'undefined' && currentVisitorDetail && (String(currentVisitorDetail.id) === String(optVisitorId) || (currentVisitorDetail.visitor && String(currentVisitorDetail.visitor.id) === String(optVisitorId)))) {
+        v = currentVisitorDetail.visitor || currentVisitorDetail;
+      }
+      if (!v && typeof cachedHearingList !== 'undefined' && Array.isArray(cachedHearingList)) {
+        v = cachedHearingList.find(item => String(item.visitorId || item.id) === String(optVisitorId));
+      }
+
       if (v) {
-        initActionPlanForm(v, v);
+        initActionPlanForm(v, (currentVisitorDetail && currentVisitorDetail.hearing) ? currentVisitorDetail.hearing : v);
+      } else {
+        initActionPlanForm({}, {});
       }
     }
 
@@ -13629,10 +13672,7 @@ window.CelebrationEffect = (function() {
       document.body.appendChild(modal);
     }
 
-    const select = document.getElementById('vd-ap-assignee-select');
-    if (select && select.options.length <= 1) {
-      populateAssigneeSelectOptions(cachedMemberCategories);
-    }
+    populateAssigneeSelectOptions(cachedMemberCategories);
 
     modal.classList.add('is-open');
     const input = document.getElementById('vd-ap-action-text');

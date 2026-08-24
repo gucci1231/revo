@@ -118,6 +118,21 @@
         }
       })
       .catch(handleError);
+
+    // メンバーマスタをプリロードして全画面で即座に担当選択可能にする
+    if (typeof cachedMemberCategories === 'undefined' || !cachedMemberCategories || cachedMemberCategories.length === 0) {
+      ApiService.call('getMemberListApi')
+        .then(res => {
+          const list = (res && (res.memberCategories || (res.data && res.data.memberCategories))) || [];
+          if (list && list.length > 0) {
+            cachedMemberCategories = list;
+            if (typeof populateAssigneeSelectOptions === 'function') {
+              populateAssigneeSelectOptions(cachedMemberCategories);
+            }
+          }
+        })
+        .catch(() => {});
+    }
   }
 
   function fetchAllVisitorsData(forceRefresh = false) {

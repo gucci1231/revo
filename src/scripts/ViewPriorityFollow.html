@@ -238,6 +238,10 @@
         const h = res.hearing || {};
         const actionPlans = res.actionPlans || [];
         const memberCategories = res.memberCategories || [];
+        if (res.memberCategories && res.memberCategories.length > 0) {
+          cachedMemberCategories = res.memberCategories;
+        }
+        currentVisitorDetail = Object.assign({}, v, { status: st, hearing: h });
 
         const feel = (h.feelAbc || v.feelAbc || '').toUpperCase().trim();
         const rankChar = feel || '未';

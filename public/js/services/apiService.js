@@ -81,6 +81,7 @@ const ApiService = {
           method: 'POST',
           body: args[0] || {}
         };
+      case 'getMembersApi':
       case 'getMemberListApi':
         return { url: '/api/members.php?action=list', method: 'GET' };
       case 'addMemberApi':
