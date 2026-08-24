@@ -104,6 +104,22 @@
           existing.nextActionType = r.nextActionType || '';
         }
 
+        // 最終アクション履歴の引き継ぎ (最新の日付を優先)
+        const rLastDate = r.lastActionDate || '';
+        const exLastDate = existing.lastActionDate || '';
+        if (rLastDate && (!exLastDate || rLastDate > exLastDate)) {
+          existing.lastActionDate = rLastDate;
+          existing.lastActionText = r.lastActionText || '';
+          existing.lastActionType = r.lastActionType || '';
+          existing.lastActionReport = r.lastActionReport || '';
+          existing.lastActionReporter = r.lastActionReporter || '';
+        } else if (!existing.lastActionText && r.lastActionText) {
+          existing.lastActionText = r.lastActionText;
+          existing.lastActionType = r.lastActionType || '';
+          existing.lastActionReport = r.lastActionReport || '';
+          existing.lastActionReporter = r.lastActionReporter || '';
+        }
+
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
           if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
             existing[k] = r[k];
@@ -122,6 +138,11 @@
         item.nextActionText = item.nextActionText || '';
         item.nextActionAssignee = item.nextActionAssignee || '';
         item.nextActionType = item.nextActionType || '';
+        item.lastActionDate = item.lastActionDate || '';
+        item.lastActionText = item.lastActionText || '';
+        item.lastActionType = item.lastActionType || '';
+        item.lastActionReport = item.lastActionReport || '';
+        item.lastActionReporter = item.lastActionReporter || '';
         result.push(item);
         if (emailKey) emailMap.set(emailKey, item);
         if (nameKey) nameMap.set(nameKey, item);

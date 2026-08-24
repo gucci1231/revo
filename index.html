@@ -9550,6 +9550,22 @@ window.CelebrationEffect = (function() {
           existing.nextActionType = r.nextActionType || '';
         }
 
+        // 最終アクション履歴の引き継ぎ (最新の日付を優先)
+        const rLastDate = r.lastActionDate || '';
+        const exLastDate = existing.lastActionDate || '';
+        if (rLastDate && (!exLastDate || rLastDate > exLastDate)) {
+          existing.lastActionDate = rLastDate;
+          existing.lastActionText = r.lastActionText || '';
+          existing.lastActionType = r.lastActionType || '';
+          existing.lastActionReport = r.lastActionReport || '';
+          existing.lastActionReporter = r.lastActionReporter || '';
+        } else if (!existing.lastActionText && r.lastActionText) {
+          existing.lastActionText = r.lastActionText;
+          existing.lastActionType = r.lastActionType || '';
+          existing.lastActionReport = r.lastActionReport || '';
+          existing.lastActionReporter = r.lastActionReporter || '';
+        }
+
         ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'orientMemo', 'followMemo', 'orientUser'].forEach(k => {
           if ((!existing[k] || String(existing[k]).trim() === '') && (r[k] && String(r[k]).trim() !== '')) {
             existing[k] = r[k];
@@ -9568,6 +9584,11 @@ window.CelebrationEffect = (function() {
         item.nextActionText = item.nextActionText || '';
         item.nextActionAssignee = item.nextActionAssignee || '';
         item.nextActionType = item.nextActionType || '';
+        item.lastActionDate = item.lastActionDate || '';
+        item.lastActionText = item.lastActionText || '';
+        item.lastActionType = item.lastActionType || '';
+        item.lastActionReport = item.lastActionReport || '';
+        item.lastActionReporter = item.lastActionReporter || '';
         result.push(item);
         if (emailKey) emailMap.set(emailKey, item);
         if (nameKey) nameMap.set(nameKey, item);
@@ -11279,14 +11300,14 @@ window.CelebrationEffect = (function() {
         const pCount = Number(v.pendingActionCount) || 0;
         const isOverdue = (oCount > 0);
 
-        // 次回アクション表示ブロック
-        let actionBlockHtml = '';
+        // 1. 次回アクション（未完了・進行中/超過）
+        let nextActionBlockHtml = '';
         if (v.nextActionText) {
           const actionDateText = v.nextActionDueDate ? `<span class="tabular-nums font-bold ${isOverdue ? 'text-rose-600' : 'text-slate-500'}"><i class="fa-regular fa-clock mr-1"></i>${escapeHtml(v.nextActionDueDate)}</span>` : '';
           const assigneeText = v.nextActionAssignee ? `<span class="text-slate-500"><i class="fa-regular fa-user mr-1"></i>${escapeHtml(v.nextActionAssignee)}</span>` : '';
           const overdueBadge = isOverdue ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200"><i class="fa-solid fa-circle-exclamation"></i> 超過</span>` : '';
 
-          actionBlockHtml = `
+          nextActionBlockHtml = `
             <div class="p-2 bg-slate-50 rounded-lg border border-slate-100 mt-1">
               <div class="flex items-center justify-between gap-1 mb-1">
                 <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-600 truncate">
@@ -11299,7 +11320,48 @@ window.CelebrationEffect = (function() {
               ${assigneeText ? `<div class="text-[10px] text-right mt-1">${assigneeText}</div>` : ''}
             </div>
           `;
-          actionBlockHtml = `
+        }
+
+        // 2. 最終アクション履歴（完了実績）
+        let lastActionBlockHtml = '';
+        if (v.lastActionText || v.lastActionReport) {
+          const lastDate = v.lastActionDate ? formatActionDateSimple(v.lastActionDate) : '';
+          const lastReporter = v.lastActionReporter ? `<span class="text-slate-400">(${escapeHtml(v.lastActionReporter)})</span>` : '';
+          
+          lastActionBlockHtml = `
+            <div class="p-2 bg-emerald-50/40 rounded-lg border border-emerald-100/80 mt-1 text-[11px]">
+              <div class="flex items-center justify-between gap-1 mb-1 text-[10px]">
+                <span class="font-bold text-emerald-800 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                  <span>最終: ${escapeHtml(lastDate || '完了')}</span>
+                </span>
+                ${renderActionTypeBadgeHtml(v.lastActionType)}
+              </div>
+              ${v.lastActionText ? `<div class="font-medium text-slate-700 text-xs line-clamp-2">${escapeHtml(v.lastActionText)}</div>` : ''}
+              ${v.lastActionReport ? `
+                <div class="text-[10px] text-slate-600 bg-white/90 p-1.5 rounded mt-1 border border-emerald-100 line-clamp-2">
+                  <i class="fa-regular fa-comment-dots text-emerald-500 mr-1"></i>${escapeHtml(v.lastActionReport)} ${lastReporter}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }
+
+        // 3. アクション表示エリアの結合
+        let actionAreaHtml = '';
+        if (nextActionBlockHtml && lastActionBlockHtml) {
+          actionAreaHtml = nextActionBlockHtml + lastActionBlockHtml;
+        } else if (nextActionBlockHtml) {
+          actionAreaHtml = nextActionBlockHtml;
+        } else if (lastActionBlockHtml) {
+          actionAreaHtml = lastActionBlockHtml + `
+            <div class="p-1.5 bg-slate-50 rounded-lg border border-dashed border-slate-200 mt-1 flex items-center justify-between text-slate-500 text-xs">
+              <span class="font-bold flex items-center gap-1 text-[11px]"><i class="fa-solid fa-triangle-exclamation text-slate-400"></i> 次回未設定</span>
+              <button type="button" class="btn-action-primary text-[10px] py-0.5 px-2 font-bold" onclick="event.stopPropagation(); openPfVisitorFullDetail('${vid}');">次回設定</button>
+            </div>
+          `;
+        } else {
+          actionAreaHtml = `
             <div class="p-2 bg-slate-50 rounded-lg border border-dashed border-slate-200 mt-1 flex items-center justify-between text-slate-500 text-xs">
               <span class="font-bold flex items-center gap-1"><i class="fa-solid fa-triangle-exclamation text-slate-400"></i> 放置</span>
               <button type="button" class="btn-action-primary text-[10px] py-0.5 px-2 font-bold" onclick="event.stopPropagation(); openPfVisitorFullDetail('${vid}');">アクション設定</button>
@@ -11337,7 +11399,7 @@ window.CelebrationEffect = (function() {
 
           ${v.inviter ? `<div class="text-[10px] text-slate-400 truncate"><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: <span class="font-semibold text-slate-600">${escapeHtml(v.inviter)}</span></div>` : ''}
 
-          ${actionBlockHtml}
+          ${actionAreaHtml}
 
           <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100" onclick="event.stopPropagation()">
             <span class="text-[10px] font-bold text-slate-400">進捗</span>
@@ -11354,6 +11416,12 @@ window.CelebrationEffect = (function() {
     // モバイルの初期アクティブステージ同期
     setPriorityFollowMobileStage(pfMobileActiveStage);
     initPfMobileSwipeEvents();
+  }
+
+  function formatActionDateSimple(raw) {
+    if (!raw) return '';
+    const clean = String(raw).split(' ')[0].replace(/-/g, '/');
+    return clean;
   }
 
   function formatPfElapsed(eventDate) {
@@ -11579,10 +11647,10 @@ window.CelebrationEffect = (function() {
           </span>
         `;
       } else if (pCount === 0) {
-        borderAccentClass = 'border-l-4 border-l-amber-400 bg-amber-50/15';
+        borderAccentClass = 'border-l-4 border-l-slate-300 bg-slate-50/30';
         actionStatusBadge = `
-          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200" title="未設定">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>未設定
+          <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="放置">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>放置
           </span>
         `;
       } else {
@@ -11603,6 +11671,18 @@ window.CelebrationEffect = (function() {
 
       const memoText = v.q7 || v.orientMemo || v.followMemo || '';
 
+      // 最終アクション履歴の要約行
+      let lastActionSummaryHtml = '';
+      if (v.lastActionText || v.lastActionReport) {
+        const lastDate = v.lastActionDate ? formatActionDateSimple(v.lastActionDate) : '';
+        lastActionSummaryHtml = `
+          <div class="mt-1 text-[11px] text-slate-500 bg-slate-50/80 px-2 py-1 rounded border border-slate-100 flex items-center justify-between gap-1">
+            <span class="truncate"><i class="fa-solid fa-check text-emerald-600 mr-1"></i>${escapeHtml(v.lastActionText || '実績あり')}</span>
+            <span class="text-[10px] text-slate-400 shrink-0 tabular-nums">${escapeHtml(lastDate)}</span>
+          </div>
+        `;
+      }
+
       itemEl.innerHTML = `
         <div class="pf-visitor-item-rank ${rankClass}">
           ${rankChar}
@@ -11615,13 +11695,18 @@ window.CelebrationEffect = (function() {
               <span class="text-[10px] font-bold text-slate-400 shrink-0">${formatEventDateWithElapsed(v.eventDate)}</span>
             </div>
           </div>
-          <div class="pf-visitor-item-company truncate">
-            ${escapeHtml(v.company || '-')}${v.profession ? ` / ${escapeHtml(v.profession)}` : ''}
+
+          <div class="pf-visitor-item-company">
+            ${v.company ? escapeHtml(v.company) : ''}
+            ${v.profession ? `<span class="text-slate-400 font-normal"> / ${escapeHtml(v.profession)}</span>` : ''}
           </div>
+
           <div class="pf-visitor-item-meta">
-            <span><i class="fa-solid fa-user-plus text-slate-400 mr-0.5"></i>${escapeHtml(v.inviter || '-')}</span>
-            ${v.orientUser ? `<span><i class="fa-solid fa-user-check text-slate-400 mr-0.5"></i>${escapeHtml(v.orientUser)}</span>` : ''}
+            ${v.inviter ? `<span><i class="fa-solid fa-hand-holding-heart mr-1"></i>紹介: ${escapeHtml(v.inviter)}</span>` : ''}
           </div>
+
+          ${lastActionSummaryHtml}
+
           ${memoText ? `<div class="pf-visitor-item-q7">${escapeHtml(memoText)}</div>` : ''}
         </div>
       `;

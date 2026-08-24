@@ -36,7 +36,12 @@ class VisitorRepository {
                 COALESCE(ap_stat.next_due_date, '') as nextActionDueDate,
                 COALESCE(ap_stat.next_action_text, '') as nextActionText,
                 COALESCE(ap_stat.next_assignee, '') as nextActionAssignee,
-                COALESCE(ap_stat.next_action_type, '') as nextActionType
+                COALESCE(ap_stat.next_action_type, '') as nextActionType,
+                COALESCE(ap_stat.last_action_date, '') as lastActionDate,
+                COALESCE(ap_stat.last_action_text, '') as lastActionText,
+                COALESCE(ap_stat.last_action_type, '') as lastActionType,
+                COALESCE(ap_stat.last_action_report, '') as lastActionReport,
+                COALESCE(ap_stat.last_action_reporter, '') as lastActionReporter
             FROM visitors v
             LEFT JOIN visitors_status s ON v.id = s.visitor_id
             LEFT JOIN hearing_sheets h ON v.id = h.visitor_id
@@ -49,7 +54,12 @@ class VisitorRepository {
                     MIN(CASE WHEN is_completed = 0 AND due_date IS NOT NULL AND due_date != '' THEN due_date END) as next_due_date,
                     (SELECT action_text FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_action_text,
                     (SELECT assignee_name FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_assignee,
-                    (SELECT action_type FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_action_type
+                    (SELECT action_type FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 0 ORDER BY sub.due_date ASC, sub.id ASC LIMIT 1) as next_action_type,
+                    (SELECT COALESCE(NULLIF(completed_at, ''), due_date, updated_at) FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 1 ORDER BY sub.completed_at DESC, sub.updated_at DESC, sub.id DESC LIMIT 1) as last_action_date,
+                    (SELECT action_text FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 1 ORDER BY sub.completed_at DESC, sub.updated_at DESC, sub.id DESC LIMIT 1) as last_action_text,
+                    (SELECT action_type FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 1 ORDER BY sub.completed_at DESC, sub.updated_at DESC, sub.id DESC LIMIT 1) as last_action_type,
+                    (SELECT report_text FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 1 ORDER BY sub.completed_at DESC, sub.updated_at DESC, sub.id DESC LIMIT 1) as last_action_report,
+                    (SELECT COALESCE(NULLIF(reporter_name, ''), completed_by, assignee_name) FROM action_plans sub WHERE sub.visitor_id = ap.visitor_id AND sub.is_completed = 1 ORDER BY sub.completed_at DESC, sub.updated_at DESC, sub.id DESC LIMIT 1) as last_action_reporter
                 FROM action_plans ap
                 GROUP BY visitor_id
             ) ap_stat ON v.id = ap_stat.visitor_id
