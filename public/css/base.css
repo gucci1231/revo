@@ -147,11 +147,11 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 260px;
+  width: 210px;
   height: 100vh;
   background: #ffffff;
   z-index: 9995;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
   transform: translateX(-100%);
   transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
@@ -164,8 +164,8 @@ body {
 }
 
 .drawer-header {
-  height: 64px;
-  padding: 0 16px;
+  height: 48px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -175,16 +175,17 @@ body {
 }
 .drawer-brand {
   font-weight: 800;
-  font-size: 15px;
+  font-size: 13.5px;
   color: #0f172a;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   white-space: nowrap;
   overflow: hidden;
+  letter-spacing: -0.01em;
 }
 .drawer-brand i {
-  font-size: 20px;
+  font-size: 16px;
   flex-shrink: 0;
 }
 .drawer-brand-text {
@@ -195,11 +196,11 @@ body {
 .btn-drawer-close {
   background: transparent;
   border: none;
-  font-size: 18px;
+  font-size: 15px;
   color: #64748b;
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,12 +217,13 @@ body {
   border: 1px solid var(--border-color);
   color: #64748b;
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   display: none;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
+  font-size: 11px;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
@@ -234,41 +236,41 @@ body {
 }
 
 .drawer-nav-list {
-  padding: 12px 10px;
+  padding: 8px 6px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 .drawer-action-wrap {
-  padding: 0 2px 10px 2px;
+  padding: 0 2px 8px 2px;
   display: flex;
   justify-content: center;
 }
 .drawer-action-btn {
   width: 100%;
   justify-content: center;
-  padding: 10px 14px;
-  font-size: 13.5px;
+  padding: 7px 10px;
+  font-size: 12.5px;
   white-space: nowrap;
   overflow: hidden;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
+  border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.15);
 }
 
 .drawer-nav-item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
   border: none;
   background: transparent;
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
@@ -279,8 +281,8 @@ body {
   overflow: hidden;
 }
 .drawer-nav-item i {
-  font-size: 16px;
-  width: 20px;
+  font-size: 13.5px;
+  width: 18px;
   text-align: center;
   flex-shrink: 0;
   color: #64748b;
@@ -303,17 +305,17 @@ body {
 }
 
 .drawer-footer {
-  padding: 12px 16px;
+  padding: 6px 12px;
   border-top: 1px solid var(--border-color);
   background: #f8fafc;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 48px;
+  min-height: 36px;
 }
 .drawer-footer-text {
-  font-size: 11px;
+  font-size: 10px;
   color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
@@ -323,28 +325,28 @@ body {
 /* --- PC Responsive & Collapsed Mode --- */
 @media (min-width: 1024px) {
   body {
-    padding-left: 276px;
+    padding-left: 226px;
     transition: padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .left-drawer {
     transform: translateX(0) !important;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
     border-right: 1px solid var(--border-color);
   }
   .drawer-backdrop, .btn-drawer-close { display: none !important; }
   .btn-sidebar-collapse { display: inline-flex; }
   .btn-drawer-trigger { display: inline-flex; }
-  .container { max-width: 1380px; margin: 0 auto; }
+  .container { max-width: 1400px; margin: 0 auto; }
 
   /* Collapsed Mode (Icons Only) */
   body.sidebar-collapsed {
-    padding-left: 90px;
+    padding-left: 72px;
   }
   body.sidebar-collapsed .left-drawer {
-    width: 74px;
+    width: 58px;
   }
   body.sidebar-collapsed .drawer-header {
-    padding: 0 10px;
+    padding: 0 8px;
     justify-content: center;
     position: relative;
   }
@@ -357,25 +359,25 @@ body {
   }
   body.sidebar-collapsed .btn-sidebar-collapse {
     position: absolute;
-    right: 6px;
+    right: 4px;
     top: 50%;
     transform: translateY(-50%);
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
   }
   body.sidebar-collapsed .btn-sidebar-collapse i {
     transform: rotate(180deg);
   }
   body.sidebar-collapsed .drawer-action-wrap {
-    padding: 0 0 10px 0;
+    padding: 0 0 8px 0;
   }
   body.sidebar-collapsed .drawer-action-btn {
-    width: 44px;
-    height: 44px;
+    width: 38px;
+    height: 38px;
     padding: 0;
-    border-radius: 10px;
-    font-size: 16px;
+    border-radius: 8px;
+    font-size: 14px;
   }
   body.sidebar-collapsed .drawer-action-btn .nav-label {
     display: none;
@@ -384,24 +386,24 @@ body {
     margin: 0 !important;
   }
   body.sidebar-collapsed .drawer-nav-list {
-    padding: 12px 8px;
-    gap: 6px;
+    padding: 8px 6px;
+    gap: 4px;
   }
   body.sidebar-collapsed .drawer-nav-item {
-    padding: 11px 0;
+    padding: 8px 0;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 7px;
   }
   body.sidebar-collapsed .drawer-nav-item .nav-label {
     display: none;
   }
   body.sidebar-collapsed .drawer-nav-item i {
-    font-size: 18px;
+    font-size: 15px;
     width: auto;
     margin: 0;
   }
   body.sidebar-collapsed .drawer-footer {
-    padding: 8px;
+    padding: 6px;
     justify-content: center;
   }
   body.sidebar-collapsed .drawer-footer-text {
@@ -413,12 +415,12 @@ body {
   body.sidebar-collapsed .drawer-action-btn:hover::after {
     content: attr(data-tooltip);
     position: fixed;
-    left: 82px;
+    left: 66px;
     background: #0f172a;
     color: #ffffff;
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
     white-space: nowrap;
     z-index: 10000;
@@ -439,7 +441,7 @@ body {
     padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
   }
   .left-drawer {
-    width: min(320px, 86vw);
+    width: min(260px, 80vw);
     transform: translateX(-100%);
   }
   .left-drawer.open {
