@@ -122,26 +122,45 @@
   function setupMemberDashboardView(targetMemberIdentifier = null) {
     populateMemberDashDropdown();
 
-    let identifierToSelect = targetMemberIdentifier || getMemberNameFromUrl();
+    const urlIdentifier = getMemberNameFromUrl();
+    const hash = decodeURIComponent(window.location.hash || '');
+    const isExplicitAllView = hash.includes('view=all');
+
+    if (isExplicitAllView) {
+      toggleAllMembersView(true);
+      return;
+    }
+
+    let identifierToSelect = targetMemberIdentifier || urlIdentifier;
+
+    if (!identifierToSelect && currentSelectedMemberName) {
+      identifierToSelect = currentSelectedMemberName;
+    }
+
+    if (!identifierToSelect) {
+      try {
+        identifierToSelect = localStorage.getItem('revo_last_member_dash_id');
+      } catch(e) {}
+    }
+
+    if (!identifierToSelect) {
+      const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
+      if (members.length > 0) {
+        identifierToSelect = members[0].id !== undefined && members[0].id !== null ? String(members[0].id) : members[0].name;
+      }
+    }
 
     if (identifierToSelect) {
       selectMemberDashboard(identifierToSelect, false);
-    } else if (currentSelectedMemberName) {
-      selectMemberDashboard(currentSelectedMemberName, false);
     } else {
-      // メンバー未指定時はデフォルトで全体一覧を表示
       toggleAllMembersView(true);
     }
   }
 
   function onMemberDashSelectChange(val) {
     if (!val) {
-      // セレクターで未選択に戻した場合は全体一覧を表示
       currentSelectedMemberName = '';
       toggleAllMembersView(true);
-      if (window.history && window.history.pushState) {
-        window.history.pushState(null, '', '/#member-dashboard');
-      }
       return;
     }
     selectMemberDashboard(val, true);
@@ -156,8 +175,22 @@
 
     currentSelectedMemberName = memberName;
 
-    // 個別ダッシュボードを表示
-    toggleAllMembersView(false);
+    try {
+      if (memberId !== null) {
+        localStorage.setItem('revo_last_member_dash_id', String(memberId));
+      } else if (memberName) {
+        localStorage.setItem('revo_last_member_dash_id', memberName);
+      }
+    } catch(e) {}
+
+    // コンテナ表示切り替え
+    isAllMembersSummaryView = false;
+    const singleContainer = document.getElementById('member-single-dash-container');
+    const allContainer = document.getElementById('member-all-summary-container');
+    const labelEl = document.getElementById('label-toggle-all-members');
+    if (singleContainer) singleContainer.style.display = 'block';
+    if (allContainer) allContainer.style.display = 'none';
+    if (labelEl) labelEl.innerText = '全体';
 
     const select = document.getElementById('member-dash-select');
     if (select) {
@@ -170,14 +203,7 @@
 
     if (updateHistory) {
       const urlParam = memberId !== null ? String(memberId) : encodeURIComponent(memberName);
-      const cleanPath = '/member/' + urlParam;
-      try {
-        if (window.history && window.history.pushState) {
-          window.history.pushState({ memberId: memberId, memberName: memberName }, '', cleanPath);
-        } else {
-          updateUrlHash(`member/${urlParam}`);
-        }
-      } catch(e) {
+      if (typeof updateUrlHash === 'function') {
         updateUrlHash(`member/${urlParam}`);
       }
     }
@@ -856,8 +882,22 @@
       if (singleContainer) singleContainer.style.display = 'block';
       if (allContainer) allContainer.style.display = 'none';
       if (labelEl) labelEl.innerText = '全体';
-      if (currentSelectedMemberName) {
-        selectMemberDashboard(currentSelectedMemberName, false);
+
+      let targetMember = currentSelectedMemberName;
+      if (!targetMember) {
+        try {
+          targetMember = localStorage.getItem('revo_last_member_dash_id');
+        } catch(e) {}
+      }
+      if (!targetMember) {
+        const members = typeof getFlatMemberList === 'function' ? getFlatMemberList() : [];
+        if (members.length > 0) {
+          targetMember = members[0].id !== undefined && members[0].id !== null ? String(members[0].id) : members[0].name;
+        }
+      }
+
+      if (targetMember) {
+        selectMemberDashboard(targetMember, false);
       }
     }
   }
