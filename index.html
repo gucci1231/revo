@@ -20469,6 +20469,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     const rawReporter = document.getElementById('report-ap-reporter').value.trim();
     const reporterName = resolveMemberName(rawReporter);
     const isCompleted = document.getElementById('report-ap-is-completed').checked ? 1 : 0;
+    const reportText = document.getElementById('report-ap-text') ? document.getElementById('report-ap-text').value.trim() : '';
 
     if (!reportText) {
       alert('実施結果・報告内容を入力してください');

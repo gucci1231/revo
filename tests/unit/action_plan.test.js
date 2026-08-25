@@ -49,6 +49,20 @@ describe('Action Plan Feature Unit Tests', () => {
     assert.strictEqual(deleteConfig.method, 'POST');
     assert.strictEqual(deleteConfig.body.id, 'ap_123');
     assert.strictEqual(deleteConfig.body.visitorId, '225');
+
+    // 6. report
+    const reportConfig = ApiService.getRestConfig('reportActionPlanApi', [{
+      id: 'ap_123',
+      reportText: '1to1を実施し、次回定例会への参加意向を確認しました',
+      reporterName: '川口 陽平',
+      isCompleted: 1
+    }]);
+    assert.strictEqual(reportConfig.url, '/api/action_plans.php?action=report');
+    assert.strictEqual(reportConfig.method, 'POST');
+    assert.strictEqual(reportConfig.body.id, 'ap_123');
+    assert.strictEqual(reportConfig.body.reportText, '1to1を実施し、次回定例会への参加意向を確認しました');
+    assert.strictEqual(reportConfig.body.reporterName, '川口 陽平');
+    assert.strictEqual(reportConfig.body.isCompleted, 1);
   });
 
   it('correctly filters and sorts pending vs completed action plans', () => {
