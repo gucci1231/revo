@@ -157,4 +157,34 @@ function deduplicateVisitorListClient(list) {
       'Active Visitor'      // Rank 3: Active
     ]);
   });
+
+  it('preserves past term visitors in priority follow regardless of term change (e.g. 3rd term start 2026/10/01)', () => {
+    const listWithPastVisitors = [
+      { id: '1', name: 'Past Term Visitor A', feelAbc: 'A', isJoined: '未', eventDate: '2026/07/23', followType: '直近フォロー' },
+      { id: '2', name: 'Past Term Visitor B', feelAbc: 'B', isJoined: '検討中', eventDate: '2026/08/10', followType: 'フォロー' },
+      { id: '3', name: 'Joined Visitor (Exclude)', feelAbc: 'A', isJoined: '入会済', eventDate: '2026/07/30', followType: 'フォロー' },
+      { id: '4', name: 'Rejected Visitor (Exclude)', feelAbc: 'A', isJoined: '見送り', eventDate: '2026/08/01', followType: 'フォロー' },
+      { id: '5', name: 'Closed Follow Visitor (Exclude)', feelAbc: 'A', isJoined: '未', eventDate: '2026/08/15', followType: 'フォロー終了' },
+      { id: '6', name: 'New Term Visitor', feelAbc: 'A', isJoined: '未', eventDate: '2026/10/01', followType: '直近フォロー' }
+    ];
+
+    // Priority follow filter must NOT filter out past visitors by term start date
+    const basePfList = listWithPastVisitors.filter(v => {
+      const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
+      const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
+      const followType = v.followType || 'フォロー';
+      const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
+
+      if (isJoinedBool || isClosed || !isFollowActive) return false;
+      const feel = v.feelAbc;
+      return (feel === 'A' || feel === 'B');
+    });
+
+    assert.strictEqual(basePfList.length, 3);
+    assert.deepStrictEqual(basePfList.map(v => v.name), [
+      'Past Term Visitor A',
+      'Past Term Visitor B',
+      'New Term Visitor'
+    ]);
+  });
 });

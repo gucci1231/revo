@@ -133,11 +133,11 @@ class DashboardService {
             $periodVisitors[] = $r;
         }
 
-        // 2. ユニークビジターへの名寄せ（同一人物の2回参加を1人に統合）
-        $uniqueVisitors = $this->deduplicateVisitorsList($periodVisitors, $apMap);
+        // 2. ユニークビジターへの名寄せ（未入会パイプラインおよび最優先フォローは期をまたいで継続フォロー）
+        $allUniqueVisitors = $this->deduplicateVisitorsList($visitors, $apMap);
 
         // 3. ユニークビジターに対するパイプライン・最優先フォロー・1ヶ月フォロー集計
-        foreach ($uniqueVisitors as $uv) {
+        foreach ($allUniqueVisitors as $uv) {
             $isJoinedBool = VisitorStatus::isJoined($uv['isJoined'] ?? '');
             $isRejected = VisitorStatus::isClosed($uv['isJoined'] ?? '', $uv['followType'] ?? null);
             $isFollowActive = VisitorStatus::isFollowActive($uv['followType'] ?? null);
@@ -145,8 +145,14 @@ class DashboardService {
             $isFeelBOrAbove = ($feel === 'A' || $feel === 'B');
             $normalizedJoin = VisitorStatus::normalizeJoinStatus($uv['isJoined'] ?? '');
 
+            $uDate = trim($uv['eventDate'] ?? '');
+            $uTs = strtotime(str_replace('/', '-', $uDate));
+            $isCurrentTerm = ($uTs && $uTs >= $startDateTs);
+
             if ($isJoinedBool) {
-                $pipelineCounts[VisitorStatus::JOINED_DONE]++;
+                if ($isCurrentTerm) {
+                    $pipelineCounts[VisitorStatus::JOINED_DONE]++;
+                }
             } else if ($normalizedJoin === VisitorStatus::JOINED_REVIEW) {
                 $pipelineCounts[VisitorStatus::JOINED_REVIEW]++;
             } else if ($normalizedJoin === VisitorStatus::JOINED_PAYMENT) {
@@ -159,12 +165,11 @@ class DashboardService {
                 $pipelineCounts[VisitorStatus::JOINED_NONE]++;
             }
 
+            // 最優先フォロー（感触A）は期が変わっても過去の未入会・フォロー中ビジターを表示
             if ($feel === 'A' && !$isJoinedBool && !$isRejected && $isFollowActive) {
                 $hotVisitors[] = $uv;
             }
 
-            $uDate = trim($uv['eventDate'] ?? '');
-            $uTs = strtotime(str_replace('/', '-', $uDate));
             if ($uTs && $uTs >= $oneMonthAgoTs && !$isJoinedBool && !$isRejected) {
                 $oneMonthFollowupVisitors[] = $uv;
             }

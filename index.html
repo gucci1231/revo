@@ -17410,12 +17410,6 @@ window.CelebrationEffect = (function() {
       const startDateClean = startDateStr.replace(/\//g, '-');
 
       dedupedList.forEach(v => {
-        // 期首判定（今期ビジターに絞り込み）
-        if (v.eventDate) {
-          const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
-          if (evDateClean < startDateClean) return;
-        }
-
         const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
         const feel = typeof parseFeelAbc === 'function' ? parseFeelAbc(v.feelAbc) : (v.feelAbc || '');
         const isFeelBOrAbove = (feel === 'A' || feel === 'B');
@@ -17423,6 +17417,12 @@ window.CelebrationEffect = (function() {
         const isFollowClosed = (followType === 'フォロー終了');
         const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
         const isRejected = (status === '見送り' || status === 'フォロー終了' || isFollowClosed);
+
+        // 期首判定（入会済のみ今期の集計に限定、未入会パイプラインは期をまたいで継続フォロー）
+        if (status === '入会済' && v.eventDate) {
+          const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
+          if (evDateClean < startDateClean) return;
+        }
 
         if (status === '未') {
           if (isFeelBOrAbove && !isRejected && isFollowActive) {
@@ -20129,14 +20129,7 @@ window.CelebrationEffect = (function() {
     const rawList = cachedPriorityFollowList || [];
     const dedupedList = deduplicateVisitorListClient(rawList);
 
-    // 集計開始日（今期）の取得
-    let startDateStr = '2026/10/01';
-    if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
-      startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
-    }
-    const startDateClean = startDateStr.replace(/\//g, '-');
-
-    // 感触A/Bかつ今期・未入会・未クローズ・直近フォロー対象のベースリスト
+    // 感触A/Bかつ未入会・未クローズ・直近フォロー対象のベースリスト（期が変わっても過去のビジターを表示）
     const basePfList = dedupedList.filter(v => {
       const isJoinedBool = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const isClosed = (v.isJoined === '見送り' || v.isJoined === 'フォロー終了');
@@ -20144,12 +20137,6 @@ window.CelebrationEffect = (function() {
       const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
 
       if (isJoinedBool || isClosed || !isFollowActive) return false;
-
-      // 期首判定（今期ビジターに絞り込み）
-      if (v.eventDate) {
-        const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
-        if (evDateClean < startDateClean) return false;
-      }
 
       const feel = parseFeelAbc(v.feelAbc);
       const matchGrade = (currentPfGradeFilter === 'A' && feel === 'A') ||

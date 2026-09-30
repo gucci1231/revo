@@ -519,12 +519,6 @@
       const startDateClean = startDateStr.replace(/\//g, '-');
 
       dedupedList.forEach(v => {
-        // 期首判定（今期ビジターに絞り込み）
-        if (v.eventDate) {
-          const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
-          if (evDateClean < startDateClean) return;
-        }
-
         const status = typeof normalizeJoinStatus === 'function' ? normalizeJoinStatus(v.isJoined) : (v.isJoined || '未');
         const feel = typeof parseFeelAbc === 'function' ? parseFeelAbc(v.feelAbc) : (v.feelAbc || '');
         const isFeelBOrAbove = (feel === 'A' || feel === 'B');
@@ -532,6 +526,12 @@
         const isFollowClosed = (followType === 'フォロー終了');
         const isFollowActive = (followType === 'フォロー' || followType === '直近フォロー');
         const isRejected = (status === '見送り' || status === 'フォロー終了' || isFollowClosed);
+
+        // 期首判定（入会済のみ今期の集計に限定、未入会パイプラインは期をまたいで継続フォロー）
+        if (status === '入会済' && v.eventDate) {
+          const evDateClean = String(v.eventDate).replace(/\//g, '-').trim();
+          if (evDateClean < startDateClean) return;
+        }
 
         if (status === '未') {
           if (isFeelBOrAbove && !isRejected && isFollowActive) {
