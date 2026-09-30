@@ -872,6 +872,18 @@ function calcBniTrafficLightScore(r, weeks) {
 }
 
 /**
+ * Helper to get semantic color class based on score achievement ratio
+ * Green (>=80%), Yellow (>=50%), Red (<50%), Slate/Grey (0 or less)
+ */
+function getPalmsScoreColorClass(score, maxScore) {
+  if (score == null || score <= 0) return 'text-slate-400 font-medium';
+  const ratio = maxScore > 0 ? (score / maxScore) : 0;
+  if (ratio >= 0.8) return 'text-emerald-600 font-bold';
+  if (ratio >= 0.5) return 'text-amber-600 font-bold';
+  return 'text-rose-600 font-bold';
+}
+
+/**
  * Fetch PALMS records for specified or latest period
  */
 function fetchPalmsRankingData(startDate = null, endDate = null) {
@@ -1783,6 +1795,12 @@ function renderPalmsTable(records) {
 
     const colHighlightClass = 'bg-blue-50/50 font-bold text-blue-700';
 
+    let scoreColorClass = 'text-slate-800';
+    if (m.total_score >= 70) scoreColorClass = 'text-emerald-600';
+    else if (m.total_score >= 50) scoreColorClass = 'text-amber-600';
+    else if (m.total_score >= 30) scoreColorClass = 'text-rose-600';
+    else scoreColorClass = 'text-slate-500';
+
     html += `
       <tr class="hover:bg-slate-50/80 transition-colors">
         <!-- 1. 順位 -->
@@ -1805,53 +1823,53 @@ function renderPalmsTable(records) {
           </span>
         </td>
         <!-- 4. 総合点 -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isTotalActive ? colHighlightClass : 'text-slate-800'}">
-          <span class="text-sm font-black">${m.total_score}</span>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isTotalActive ? colHighlightClass : ''}">
+          <span class="text-sm font-black ${scoreColorClass}">${m.total_score}</span>
           <span class="text-3xs text-slate-400 font-normal">/100</span>
         </td>
         <!-- 5. PPW -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isPpwActive ? colHighlightClass : 'text-blue-700 font-bold'}">
-          <div class="text-sm font-black text-blue-600">${m.ppw.toFixed(2)}</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isPpwActive ? colHighlightClass : ''}">
+          <div class="text-sm font-black text-slate-800">${m.ppw.toFixed(2)}</div>
           <div class="text-3xs"><span class="px-1.5 py-0.2 rounded border ${tl.ppwBadgeClass}">${tl.ppwTierLabel.split(' ')[0]}</span></div>
         </td>
         <!-- 6. RPW -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isRpwActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
-          <div class="text-sm font-bold text-indigo-600">${m.rpw.toFixed(2)}</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRpwActive ? colHighlightClass : ''}">
+          <div class="text-sm font-bold text-slate-800">${m.rpw.toFixed(2)}</div>
           <div class="text-3xs text-slate-400 font-normal">件/週</div>
         </td>
         <!-- 7. 内与 -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgiActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.rgi}件</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgiActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${m.rgi}件</div>
         </td>
         <!-- 8. 外与 -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgoActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.rgo}件</div>
-          <div class="text-3xs text-blue-600 font-semibold">${tl.scores.referral} pt</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgoActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${m.rgo}件</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.referral, 25)}">${tl.scores.referral} pt</div>
         </td>
         <!-- 9. ビジター -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.visitors}名</div>
-          <div class="text-3xs text-emerald-600 font-semibold">${tl.scores.visitor} pt</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${m.visitors}名</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.visitor, 25)}">${tl.scores.visitor} pt</div>
         </td>
         <!-- 10. 1to1 -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.one_to_ones}回</div>
-          <div class="text-3xs text-amber-600 font-semibold">${tl.scores.one_to_ones} pt</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${m.one_to_ones}回</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.one_to_ones, 20)}">${tl.scores.one_to_ones} pt</div>
         </td>
         <!-- 11. TYFCB -->
-        <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">¥${m.tyfcb_yen.toLocaleString()}</div>
-          <div class="text-3xs text-indigo-600 font-semibold">${tl.scores.tyfcb} pt</div>
+        <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">¥${m.tyfcb_yen.toLocaleString()}</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.tyfcb, 5)}">${tl.scores.tyfcb} pt</div>
         </td>
         <!-- 12. CEU -->
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isCeuActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.ceu} pt</div>
-          <div class="text-3xs text-purple-600 font-semibold">${tl.scores.ceu} pt</div>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isCeuActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${m.ceu} pt</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.ceu, 10)}">${tl.scores.ceu} pt</div>
         </td>
         <!-- 13. 出席率 -->
-        <td class="py-3 px-3 text-center align-middle font-tabular ${isAttActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${tl.rates.attRate.toFixed(0)}%</div>
-          <div class="text-3xs text-slate-500 font-semibold">${tl.scores.attendance} pt</div>
+        <td class="py-3 px-3 text-center align-middle font-tabular ${isAttActive ? colHighlightClass : ''}">
+          <div class="font-bold text-slate-800">${tl.rates.attRate.toFixed(0)}%</div>
+          <div class="text-3xs ${getPalmsScoreColorClass(tl.scores.attendance, 10)}">${tl.scores.attendance} pt</div>
         </td>
       </tr>
     `;
@@ -2023,11 +2041,7 @@ function renderPalmsDetailScores(m) {
       unit: '名',
       actual: `${m.visitors}名 (6ヶ月換算: ${r.vis6m.toFixed(1)}名)`,
       desc: '5名以上=25pt / 4名=20pt / 3名=15pt / 2名=10pt / 1名=5pt',
-      icon: 'fa-users',
-      color: '#059669',
-      bgColor: 'bg-emerald-50/50',
-      textColor: 'text-emerald-700',
-      barColor: 'bg-emerald-500'
+      icon: 'fa-users'
     },
     {
       title: 'リファーラル提供',
@@ -2036,11 +2050,7 @@ function renderPalmsDetailScores(m) {
       unit: '件/週',
       actual: `${m.total_referrals_given}件 (週平均: ${r.refPerWeek.toFixed(2)}件)`,
       desc: '週1.25件以上=25pt / 1.00件=20pt / 0.75件=15pt / 0.50件=10pt / 0.25件=5pt',
-      icon: 'fa-handshake',
-      color: '#0071e3',
-      bgColor: 'bg-blue-50/50',
-      textColor: 'text-blue-700',
-      barColor: 'bg-blue-600'
+      icon: 'fa-handshake'
     },
     {
       title: '1to1実施',
@@ -2049,11 +2059,7 @@ function renderPalmsDetailScores(m) {
       unit: '回/週',
       actual: `${m.one_to_ones}回 (週平均: ${r.otoPerWeek.toFixed(2)}回)`,
       desc: '週1.00回以上=20pt / 0.75回=15pt / 0.50回=10pt / 0.25回=5pt',
-      icon: 'fa-mug-saucer',
-      color: '#d97706',
-      bgColor: 'bg-amber-50/50',
-      textColor: 'text-amber-700',
-      barColor: 'bg-amber-500'
+      icon: 'fa-mug-saucer'
     },
     {
       title: '定例会出席率',
@@ -2062,11 +2068,7 @@ function renderPalmsDetailScores(m) {
       unit: '%',
       actual: `${r.attRate.toFixed(0)}% (出席${m.p}回, 代理${m.s}回, 欠席${m.a}回)`,
       desc: '96%以上=10pt / 88%以上=5pt / 88%未満=0pt',
-      icon: 'fa-clipboard-check',
-      color: '#0284c7',
-      bgColor: 'bg-sky-50/50',
-      textColor: 'text-sky-700',
-      barColor: 'bg-sky-500'
+      icon: 'fa-clipboard-check'
     },
     {
       title: 'CEU学習単位',
@@ -2075,11 +2077,7 @@ function renderPalmsDetailScores(m) {
       unit: 'pt/週',
       actual: `${m.ceu}pt (週平均: ${r.ceuPerWeek.toFixed(2)}pt)`,
       desc: '週0.5pt超=10pt / 0超0.5以下=5pt / 0以下=0pt',
-      icon: 'fa-graduation-cap',
-      color: '#7c3aed',
-      bgColor: 'bg-purple-50/50',
-      textColor: 'text-purple-700',
-      barColor: 'bg-purple-500'
+      icon: 'fa-graduation-cap'
     },
     {
       title: 'TYFCB売上貢献',
@@ -2088,11 +2086,7 @@ function renderPalmsDetailScores(m) {
       unit: '円',
       actual: `¥${m.tyfcb_yen.toLocaleString()} (6ヶ月換算: ¥${Math.round(r.tyfcb6m).toLocaleString()})`,
       desc: '570万円以上=5pt / 285万円=4pt / 95万円=3pt / 38万円=2pt / 1円以上=1pt',
-      icon: 'fa-yen-sign',
-      color: '#4f46e5',
-      bgColor: 'bg-indigo-50/50',
-      textColor: 'text-indigo-700',
-      barColor: 'bg-indigo-600'
+      icon: 'fa-yen-sign'
     },
     {
       title: '推薦状・スポンサー',
@@ -2101,22 +2095,35 @@ function renderPalmsDetailScores(m) {
       unit: '件',
       actual: `${m.sponsors}件`,
       desc: '1件以上=5pt / 0件=0pt',
-      icon: 'fa-award',
-      color: '#0d9488',
-      bgColor: 'bg-teal-50/50',
-      textColor: 'text-teal-700',
-      barColor: 'bg-teal-600'
+      icon: 'fa-award'
     }
   ];
 
   let html = '';
   items.forEach(it => {
     const pct = Math.min(100, Math.round((it.score / it.maxScore) * 100));
+    const ratio = it.maxScore > 0 ? (it.score / it.maxScore) : 0;
+    
+    let scoreColor = 'text-slate-400';
+    let barColor = 'bg-slate-300';
+    if (it.score > 0) {
+      if (ratio >= 0.8) {
+        scoreColor = 'text-emerald-600';
+        barColor = 'bg-emerald-500';
+      } else if (ratio >= 0.5) {
+        scoreColor = 'text-amber-600';
+        barColor = 'bg-amber-500';
+      } else {
+        scoreColor = 'text-rose-600';
+        barColor = 'bg-rose-500';
+      }
+    }
+
     html += `
       <div class="border border-slate-200/90 rounded-2xl p-3.5 bg-white shadow-2xs flex flex-col justify-between">
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-xl ${it.bgColor} ${it.textColor} flex items-center justify-center text-xs">
+            <div class="w-7 h-7 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
               <i class="fa-solid ${it.icon}"></i>
             </div>
             <div>
@@ -2125,7 +2132,7 @@ function renderPalmsDetailScores(m) {
             </div>
           </div>
           <div class="text-right">
-            <div class="text-sm font-black font-tabular text-slate-800">
+            <div class="text-sm font-black font-tabular ${scoreColor}">
               ${it.score} <span class="text-3xs font-bold text-slate-400">/ ${it.maxScore} pt</span>
             </div>
           </div>
@@ -2133,7 +2140,7 @@ function renderPalmsDetailScores(m) {
 
         <!-- Progress Bar -->
         <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden mb-2">
-          <div class="${it.barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+          <div class="${barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${pct}%"></div>
         </div>
 
         <!-- Threshold Description -->
@@ -2358,44 +2365,44 @@ function renderPalmsDetailWeeklySubmissions(weeklyList) {
       slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md text-3xs border border-slate-200"><i class="fa-solid fa-minus text-slate-300"></i> スリップなし</span>';
     }
 
-    // PPW Display
+    // PPW Display (Point Metric)
     let ppwHtml = '<span class="text-slate-300 font-medium">-</span>';
     if (ppw >= 2.0) {
-      ppwHtml = `<span class="font-black text-blue-600">${ppw.toFixed(2)}</span>`;
+      ppwHtml = `<span class="font-black text-emerald-600">${ppw.toFixed(2)}</span>`;
     } else if (ppw >= 1.0) {
-      ppwHtml = `<span class="font-bold text-indigo-600">${ppw.toFixed(2)}</span>`;
+      ppwHtml = `<span class="font-bold text-amber-600">${ppw.toFixed(2)}</span>`;
     } else if (ppw > 0) {
       ppwHtml = `<span class="font-bold text-slate-600">${ppw.toFixed(2)}</span>`;
     }
 
-    // Referrals Display
+    // Referrals Display (Raw Activity)
     let refHtml = '<span class="text-slate-300">-</span>';
     if (totalRef > 0) {
       refHtml = `<span class="font-black text-slate-800">${totalRef}件</span> <span class="text-3xs text-slate-400">(${rgi}/${rgo})</span>`;
     }
 
-    // Visitors Display
+    // Visitors Display (Raw Activity)
     let visHtml = '<span class="text-slate-300">-</span>';
     if (visitors > 0) {
-      visHtml = `<span class="font-black text-emerald-600">${visitors}名</span>`;
+      visHtml = `<span class="font-bold text-slate-800">${visitors}名</span>`;
     }
 
-    // 1to1 Display
+    // 1to1 Display (Raw Activity)
     let otoHtml = '<span class="text-slate-300">-</span>';
     if (oto > 0) {
-      otoHtml = `<span class="font-black text-amber-600">${oto}回</span>`;
+      otoHtml = `<span class="font-bold text-slate-800">${oto}回</span>`;
     }
 
-    // TYFCB Display
+    // TYFCB Display (Raw Activity)
     let tyfcbHtml = '<span class="text-slate-300">-</span>';
     if (tyfcbYen > 0) {
-      tyfcbHtml = `<span class="font-bold text-indigo-600">¥${tyfcbYen.toLocaleString()}</span>`;
+      tyfcbHtml = `<span class="font-bold text-slate-800">¥${tyfcbYen.toLocaleString()}</span>`;
     }
 
-    // CEU Display
+    // CEU Display (Raw Activity)
     let ceuHtml = '<span class="text-slate-300">-</span>';
     if (ceu > 0) {
-      ceuHtml = `<span class="font-bold text-purple-600">${ceu} pt</span>`;
+      ceuHtml = `<span class="font-bold text-slate-800">${ceu} pt</span>`;
     }
 
     html += `
@@ -3192,10 +3199,10 @@ function renderTrafficLightsGrid() {
             <div>
               <div class="flex justify-between text-slate-500 font-bold mb-0.5">
                 <span>リファーラル</span>
-                <span class="tabular-nums font-black text-indigo-600">${scores.referral}/25</span>
+                <span class="tabular-nums ${getPalmsScoreColorClass(scores.referral, 25)}">${scores.referral}/25</span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${(scores.referral / 25) * 100}%;"></div>
+                <div class="${(scores.referral / 25) >= 0.8 ? 'bg-emerald-500' : ((scores.referral / 25) >= 0.5 ? 'bg-amber-500' : (scores.referral > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.referral / 25) * 100}%;"></div>
               </div>
             </div>
 
@@ -3203,10 +3210,10 @@ function renderTrafficLightsGrid() {
             <div>
               <div class="flex justify-between text-slate-500 font-bold mb-0.5">
                 <span>ビジター</span>
-                <span class="tabular-nums font-black text-emerald-600">${scores.visitor}/25</span>
+                <span class="tabular-nums ${getPalmsScoreColorClass(scores.visitor, 25)}">${scores.visitor}/25</span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-emerald-600 h-1.5 rounded-full" style="width: ${(scores.visitor / 25) * 100}%;"></div>
+                <div class="${(scores.visitor / 25) >= 0.8 ? 'bg-emerald-500' : ((scores.visitor / 25) >= 0.5 ? 'bg-amber-500' : (scores.visitor > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.visitor / 25) * 100}%;"></div>
               </div>
             </div>
 
@@ -3214,18 +3221,18 @@ function renderTrafficLightsGrid() {
             <div>
               <div class="flex justify-between text-slate-500 font-bold mb-0.5">
                 <span>1to1</span>
-                <span class="tabular-nums font-black text-amber-600">${scores.one_to_ones}/20</span>
+                <span class="tabular-nums ${getPalmsScoreColorClass(scores.one_to_ones, 20)}">${scores.one_to_ones}/20</span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-amber-600 h-1.5 rounded-full" style="width: ${(scores.one_to_ones / 20) * 100}%;"></div>
+                <div class="${(scores.one_to_ones / 20) >= 0.8 ? 'bg-emerald-500' : ((scores.one_to_ones / 20) >= 0.5 ? 'bg-amber-500' : (scores.one_to_ones > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.one_to_ones / 20) * 100}%;"></div>
               </div>
             </div>
 
             <!-- CEU & Attendance & TYFCB (Compact Row) -->
             <div class="grid grid-cols-3 gap-1 pt-1.5 text-slate-400 font-semibold text-center border-t border-slate-100">
-              <div>CEU <b class="text-purple-600 tabular-nums">${scores.ceu}</b>/10</div>
-              <div>出席 <b class="text-blue-600 tabular-nums">${scores.attendance}</b>/10</div>
-              <div>TYFCB <b class="text-slate-700 tabular-nums">${scores.tyfcb}</b>/5</div>
+              <div>CEU <b class="${getPalmsScoreColorClass(scores.ceu, 10)} tabular-nums">${scores.ceu}</b>/10</div>
+              <div>出席 <b class="${getPalmsScoreColorClass(scores.attendance, 10)} tabular-nums">${scores.attendance}</b>/10</div>
+              <div>TYFCB <b class="${getPalmsScoreColorClass(scores.tyfcb, 5)} tabular-nums">${scores.tyfcb}</b>/5</div>
             </div>
           </div>
 

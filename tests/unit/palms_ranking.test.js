@@ -321,6 +321,36 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.ok(fnBody.includes('<!-- 12. CEU -->'));
     assert.ok(fnBody.includes('<!-- 13. 出席率 -->'));
   });
+
+  it('verifies score-based semantic coloring and removal of arbitrary column colors in PALMS ranking', () => {
+    // 1. Helper getPalmsScoreColorClass exists
+    assert.ok(indexHtml.includes('function getPalmsScoreColorClass(score, maxScore)'));
+
+    const helperMatch = indexHtml.match(/function getPalmsScoreColorClass\(score,\s*maxScore\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(helperMatch, 'getPalmsScoreColorClass function must exist');
+    const getPalmsScoreColorClass = new Function('score', 'maxScore', helperMatch[1]);
+
+    // Test scoring tiers
+    assert.strictEqual(getPalmsScoreColorClass(25, 25), 'text-emerald-600 font-bold'); // 100% -> Green
+    assert.strictEqual(getPalmsScoreColorClass(20, 25), 'text-emerald-600 font-bold'); // 80% -> Green
+    assert.strictEqual(getPalmsScoreColorClass(15, 25), 'text-amber-600 font-bold');   // 60% -> Yellow
+    assert.strictEqual(getPalmsScoreColorClass(5, 25), 'text-rose-600 font-bold');     // 20% -> Red
+    assert.strictEqual(getPalmsScoreColorClass(0, 25), 'text-slate-400 font-medium');  // 0% -> Slate
+
+    // 2. renderPalmsTable should use getPalmsScoreColorClass for items and not hardcoded item colors
+    const renderTableFnMatch = indexHtml.match(/function renderPalmsTable\(records\)\s*\{([\s\S]*?)\n\}/);
+    const tableBody = renderTableFnMatch[1];
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.referral, 25)'));
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.visitor, 25)'));
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.one_to_ones, 20)'));
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.tyfcb, 5)'));
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.ceu, 10)'));
+    assert.ok(tableBody.includes('getPalmsScoreColorClass(tl.scores.attendance, 10)'));
+
+    // Arbitrary item column colors must NOT exist in tableBody
+    assert.strictEqual(tableBody.includes('text-indigo-600 font-semibold'), false);
+    assert.strictEqual(tableBody.includes('text-purple-600 font-semibold'), false);
+  });
 });
 
 
