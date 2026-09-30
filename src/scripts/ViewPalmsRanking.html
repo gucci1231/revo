@@ -889,7 +889,7 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="12" class="py-12 text-center text-slate-400">
+        <td colspan="13" class="py-12 text-center text-slate-400">
           <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
           <p class="text-xs">データを読込中...</p>
         </td>
@@ -1568,29 +1568,39 @@ function renderPalmsRankingView() {
         valA = a.rpw;
         valB = b.rpw;
         break;
+      case 'rgi':
+        valA = a.rgi;
+        valB = b.rgi;
+        break;
+      case 'rgo':
+        valA = a.rgo;
+        valB = b.rgo;
+        break;
       case 'referrals_given':
-        valA = a.trafficLight.scores.referral;
-        valB = b.trafficLight.scores.referral;
+      case 'referrals':
+        valA = a.total_referrals_given;
+        valB = b.total_referrals_given;
         break;
       case 'visitors':
-        valA = a.trafficLight.scores.visitor;
-        valB = b.trafficLight.scores.visitor;
+        valA = a.visitors;
+        valB = b.visitors;
         break;
       case 'one_to_ones':
-        valA = a.trafficLight.scores.one_to_ones;
-        valB = b.trafficLight.scores.one_to_ones;
+        valA = a.one_to_ones;
+        valB = b.one_to_ones;
         break;
       case 'ceu':
-        valA = a.trafficLight.scores.ceu;
-        valB = b.trafficLight.scores.ceu;
+        valA = a.ceu;
+        valB = b.ceu;
         break;
+      case 'attendance_rate':
       case 'attendance':
-        valA = a.trafficLight.scores.attendance;
-        valB = b.trafficLight.scores.attendance;
+        valA = a.trafficLight ? a.trafficLight.rates.attRate : 0;
+        valB = b.trafficLight ? b.trafficLight.rates.attRate : 0;
         break;
       case 'tyfcb':
-        valA = a.trafficLight.scores.tyfcb;
-        valB = b.trafficLight.scores.tyfcb;
+        valA = a.tyfcb_yen;
+        valB = b.tyfcb_yen;
         break;
       default:
         valA = a.total_score;
@@ -1731,7 +1741,7 @@ function renderPalmsTable(records) {
   if (records.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="12" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="13" class="py-12 text-center text-slate-400 text-xs">
           表示対象のデータがありません
         </td>
       </tr>
@@ -1760,23 +1770,26 @@ function renderPalmsTable(records) {
     const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
 
     // Determine highlight column styling based on active metric
-    const isTotalActive = currentPalmsMetric === 'total';
-    const isPpwActive = currentPalmsMetric === 'ppw';
-    const isRpwActive = currentPalmsMetric === 'rpw';
-    const isVisActive = currentPalmsMetric === 'visitors';
-    const isRefActive = currentPalmsMetric === 'referrals';
-    const isOtoActive = currentPalmsMetric === 'one_to_ones';
-    const isCeuActive = currentPalmsMetric === 'ceu';
-    const isAttActive = currentPalmsMetric === 'attendance';
-    const isTyfcbActive = currentPalmsMetric === 'tyfcb';
+    const isTotalActive = currentPalmsMetric === 'total' || currentPalmsSort.field === 'total_score' || currentPalmsSort.field === 'rank';
+    const isPpwActive = currentPalmsMetric === 'ppw' || currentPalmsSort.field === 'ppw';
+    const isRpwActive = currentPalmsMetric === 'rpw' || currentPalmsSort.field === 'rpw';
+    const isRgiActive = currentPalmsMetric === 'referrals' || currentPalmsSort.field === 'rgi';
+    const isRgoActive = currentPalmsMetric === 'referrals' || currentPalmsSort.field === 'rgo' || currentPalmsSort.field === 'referrals_given';
+    const isVisActive = currentPalmsMetric === 'visitors' || currentPalmsSort.field === 'visitors';
+    const isOtoActive = currentPalmsMetric === 'one_to_ones' || currentPalmsSort.field === 'one_to_ones';
+    const isTyfcbActive = currentPalmsMetric === 'tyfcb' || currentPalmsSort.field === 'tyfcb';
+    const isCeuActive = currentPalmsMetric === 'ceu' || currentPalmsSort.field === 'ceu';
+    const isAttActive = currentPalmsMetric === 'attendance' || currentPalmsSort.field === 'attendance_rate' || currentPalmsSort.field === 'attendance';
 
     const colHighlightClass = 'bg-blue-50/50 font-bold text-blue-700';
 
     html += `
       <tr class="hover:bg-slate-50/80 transition-colors">
+        <!-- 1. 順位 -->
         <td class="py-3 px-3 text-center align-middle">
           ${rankBadge}
         </td>
+        <!-- 2. メンバー -->
         <td class="py-3 px-4 align-middle">
           <div class="font-bold text-slate-800 hover:text-blue-600 cursor-pointer flex items-center gap-1.5 transition-colors group" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
             <span class="group-hover:underline underline-offset-4 decoration-blue-500">${m.member_name}</span>
@@ -1784,47 +1797,61 @@ function renderPalmsTable(records) {
           </div>
           <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[140px]">${memberCategory}</div>
         </td>
+        <!-- 3. 判定 -->
         <td class="py-3 px-3 text-center align-middle">
           <span class="inline-flex items-center gap-1 text-2xs font-black px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
             <span>${tl.tierDot}</span>
             <span>${tl.tierName}</span>
           </span>
         </td>
+        <!-- 4. 総合点 -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isTotalActive ? colHighlightClass : 'text-slate-800'}">
           <span class="text-sm font-black">${m.total_score}</span>
           <span class="text-3xs text-slate-400 font-normal">/100</span>
         </td>
+        <!-- 5. PPW -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isPpwActive ? colHighlightClass : 'text-blue-700 font-bold'}">
           <div class="text-sm font-black text-blue-600">${m.ppw.toFixed(2)}</div>
           <div class="text-3xs"><span class="px-1.5 py-0.2 rounded border ${tl.ppwBadgeClass}">${tl.ppwTierLabel.split(' ')[0]}</span></div>
         </td>
+        <!-- 6. RPW -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isRpwActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
           <div class="text-sm font-bold text-indigo-600">${m.rpw.toFixed(2)}</div>
           <div class="text-3xs text-slate-400 font-normal">件/週</div>
         </td>
+        <!-- 7. 内与 -->
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgiActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${m.rgi}件</div>
+        </td>
+        <!-- 8. 外与 -->
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRgoActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${m.rgo}件</div>
+          <div class="text-3xs text-blue-600 font-semibold">${tl.scores.referral} pt</div>
+        </td>
+        <!-- 9. ビジター -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">${m.visitors}名</div>
           <div class="text-3xs text-emerald-600 font-semibold">${tl.scores.visitor} pt</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isRefActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.total_referrals_given}件</div>
-          <div class="text-3xs text-blue-600 font-semibold">${tl.scores.referral} pt</div>
-        </td>
+        <!-- 10. 1to1 -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">${m.one_to_ones}回</div>
           <div class="text-3xs text-amber-600 font-semibold">${tl.scores.one_to_ones} pt</div>
         </td>
+        <!-- 11. TYFCB -->
+        <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">¥${m.tyfcb_yen.toLocaleString()}</div>
+          <div class="text-3xs text-indigo-600 font-semibold">${tl.scores.tyfcb} pt</div>
+        </td>
+        <!-- 12. CEU -->
         <td class="py-3 px-3 text-right align-middle font-tabular ${isCeuActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">${m.ceu} pt</div>
           <div class="text-3xs text-purple-600 font-semibold">${tl.scores.ceu} pt</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isAttActive ? colHighlightClass : 'text-slate-700'}">
+        <!-- 13. 出席率 -->
+        <td class="py-3 px-3 text-center align-middle font-tabular ${isAttActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">${tl.rates.attRate.toFixed(0)}%</div>
           <div class="text-3xs text-slate-500 font-semibold">${tl.scores.attendance} pt</div>
-        </td>
-        <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">¥${m.tyfcb_yen.toLocaleString()}</div>
-          <div class="text-3xs text-indigo-600 font-semibold">${tl.scores.tyfcb} pt</div>
         </td>
       </tr>
     `;
@@ -2534,10 +2561,13 @@ function sortPalmsTable(field) {
   }
 
   // Update table sort header icons
-  ['rank', 'name', 'traffic_light', 'total_score', 'ppw', 'rpw', 'visitors', 'referrals_given', 'one_to_ones', 'ceu', 'attendance', 'tyfcb'].forEach(f => {
+  ['rank', 'name', 'traffic_light', 'total_score', 'ppw', 'rpw', 'rgi', 'rgo', 'visitors', 'one_to_ones', 'tyfcb', 'ceu', 'attendance_rate'].forEach(f => {
     const iconEl = document.getElementById('sort-icon-' + f);
     if (!iconEl) return;
-    if (f === currentPalmsSort.field) {
+    const isCurrent = (f === currentPalmsSort.field) || 
+      (f === 'attendance_rate' && currentPalmsSort.field === 'attendance') ||
+      ((f === 'rgi' || f === 'rgo') && (currentPalmsSort.field === 'referrals_given' || currentPalmsSort.field === 'referrals'));
+    if (isCurrent) {
       iconEl.innerHTML = currentPalmsSort.asc 
         ? '<i class="fa-solid fa-sort-up text-blue-600 text-3xs"></i>' 
         : '<i class="fa-solid fa-sort-down text-blue-600 text-3xs"></i>';
@@ -2577,7 +2607,7 @@ function renderPalmsEmptyState(customMessage = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="12" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="13" class="py-12 text-center text-slate-400 text-xs">
           表示可能なデータがありません
         </td>
       </tr>

@@ -275,6 +275,52 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('function applyPalmsDateModal('), true);
     assert.strictEqual(indexHtml.includes('function updatePalmsPeriodDisplayLabel('), true);
   });
+
+  it('verifies PALMS Ranking table header and row columns are strictly aligned (13 columns)', () => {
+    // 1. Table header columns must match exactly
+    const headerThRegex = /<th[^>]*>([\s\S]*?)<\/th>/g;
+    const tableHeaderStart = indexHtml.indexOf('<tbody id="palms-table-body"');
+    const tableBeforeTbody = indexHtml.substring(indexHtml.indexOf('id="palms-table-container"'), tableHeaderStart);
+    
+    const thMatches = [...tableBeforeTbody.matchAll(headerThRegex)];
+    assert.strictEqual(thMatches.length, 13, 'Header must have exactly 13 columns');
+
+    // Expected columns in order
+    const expectedHeaders = [
+      '順位', 'メンバー', '判定', '総合点', 'PPW', 'RPW',
+      '内与', '外与', 'ビジター', '1to1', 'TYFCB', 'CEU', '出席率'
+    ];
+
+    expectedHeaders.forEach((name, idx) => {
+      assert.ok(
+        thMatches[idx][1].includes(name),
+        `Column ${idx + 1} header should contain "${name}", got: ${thMatches[idx][1]}`
+      );
+    });
+
+    // 2. Colspan for empty/loading states must be 13
+    assert.strictEqual(indexHtml.includes('colspan="13"'), true);
+
+    // 3. renderPalmsTable row HTML must render exactly 13 <td> elements per member
+    const renderTableFnMatch = indexHtml.match(/function renderPalmsTable\(records\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(renderTableFnMatch, 'renderPalmsTable function must exist');
+
+    const fnBody = renderTableFnMatch[1];
+    // Check that inside records.forEach row template, all 13 columns are clearly laid out
+    assert.ok(fnBody.includes('<!-- 1. 順位 -->'));
+    assert.ok(fnBody.includes('<!-- 2. メンバー -->'));
+    assert.ok(fnBody.includes('<!-- 3. 判定 -->'));
+    assert.ok(fnBody.includes('<!-- 4. 総合点 -->'));
+    assert.ok(fnBody.includes('<!-- 5. PPW -->'));
+    assert.ok(fnBody.includes('<!-- 6. RPW -->'));
+    assert.ok(fnBody.includes('<!-- 7. 内与 -->'));
+    assert.ok(fnBody.includes('<!-- 8. 外与 -->'));
+    assert.ok(fnBody.includes('<!-- 9. ビジター -->'));
+    assert.ok(fnBody.includes('<!-- 10. 1to1 -->'));
+    assert.ok(fnBody.includes('<!-- 11. TYFCB -->'));
+    assert.ok(fnBody.includes('<!-- 12. CEU -->'));
+    assert.ok(fnBody.includes('<!-- 13. 出席率 -->'));
+  });
 });
 
 
