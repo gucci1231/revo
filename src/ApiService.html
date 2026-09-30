@@ -243,6 +243,10 @@ const ApiService = {
         const q = (pStart && pEnd) ? `&startDate=${pStart}&endDate=${pEnd}` : '';
         return { url: `/api/palms.php?action=list${q}`, method: 'GET' };
       }
+      case 'getPalmsMemberHistoryApi': {
+        const mName = args[0] ? encodeURIComponent(args[0]) : '';
+        return { url: `/api/palms.php?action=member&name=${mName}`, method: 'GET' };
+      }
       case 'getPalmsPeriodsApi':
         return { url: '/api/palms.php?action=periods', method: 'GET' };
       case 'syncPalmsApi':

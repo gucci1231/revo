@@ -1,0 +1,264 @@
+<!-- Modal: PALMS & Traffic Lights Member Detail (REvo OS Phase 2) -->
+<div id="modal-palms-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs transition-opacity duration-200" style="display: none;">
+  <div class="bg-white rounded-3xl max-w-4xl w-full mx-4 shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] transform transition-transform duration-200 scale-95" id="modal-palms-container">
+    
+    <!-- Modal Header -->
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
+      <div class="flex items-center gap-3.5 min-w-0">
+        <div id="palms-detail-avatar" class="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-2xs shrink-0">
+          --
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 id="palms-detail-name" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight truncate">
+              --
+            </h3>
+            <span id="palms-detail-tier-badge" class="text-2xs font-black px-2.5 py-0.5 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center gap-1 shrink-0">
+              <span id="palms-detail-tier-dot">⚪</span>
+              <span id="palms-detail-tier-name">--</span>
+            </span>
+            <span id="palms-detail-rank-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
+              第--位
+            </span>
+          </div>
+          <p id="palms-detail-category" class="text-xs text-slate-400 mt-0.5 truncate font-medium">
+            --
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" id="btn-palms-detail-link-member" onclick="navigateToMemberFollowFromPalms()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 text-xs font-bold transition-all shadow-2xs cursor-pointer" title="ビジターフォロー画面を開く">
+          <i class="fa-solid fa-address-book text-3xs"></i>
+          <span>ビジター連携</span>
+        </button>
+        <button type="button" onclick="closePalmsDetailModal()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer" title="閉じる">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body (Scrollable) -->
+    <div class="overflow-y-auto p-5 sm:p-7 space-y-6 flex-1 text-slate-700">
+      
+      <!-- Period Banner & Top 3 Primary Metrics -->
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-calendar-check text-blue-600 text-xs"></i>
+            <span id="palms-detail-period-label" class="text-xs font-bold text-slate-600">集計期間: --</span>
+          </div>
+          <span id="palms-detail-weeks-count" class="text-3xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">--週</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <!-- Total Score -->
+          <div class="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合スコア</span>
+              <span id="palms-detail-status-pill" class="text-3xs font-extrabold px-1.5 py-0.2 rounded bg-white text-slate-600">--</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="palms-detail-total-score" class="text-3xl font-black text-slate-800 tabular-nums">--</span>
+              <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+            </div>
+            <div id="palms-detail-score-desc" class="text-2xs font-semibold text-slate-500 mt-2">
+              --
+            </div>
+          </div>
+
+          <!-- PPW -->
+          <div class="bg-blue-50/40 border border-blue-100 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-blue-700">週貢献指数 (PPW)</span>
+              <span class="text-3xs font-bold px-1.5 py-0.2 rounded bg-white text-blue-600 border border-blue-100">目標 2.0+</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="palms-detail-ppw-value" class="text-3xl font-black text-blue-600 tabular-nums">--</span>
+              <span class="text-xs font-bold text-blue-400">pt/週</span>
+            </div>
+            <div id="palms-detail-ppw-status" class="text-2xs font-semibold text-blue-600 mt-2">
+              --
+            </div>
+          </div>
+
+          <!-- RPW -->
+          <div class="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-indigo-700">週リファーラル (RPW)</span>
+              <span class="text-3xs font-bold px-1.5 py-0.2 rounded bg-white text-indigo-600 border border-indigo-100">目標 1.25+</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="palms-detail-rpw-value" class="text-3xl font-black text-indigo-600 tabular-nums">--</span>
+              <span class="text-xs font-bold text-indigo-400">件/週</span>
+            </div>
+            <div id="palms-detail-rpw-status" class="text-2xs font-semibold text-indigo-600 mt-2">
+              総提供: --件
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 Traffic Light Scoring Indicators Breakdown -->
+      <div>
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-blue-600"></i>
+            <span>公式100点基準 7大採点項目の詳細内訳</span>
+          </h4>
+          <span class="text-2xs text-slate-400">BNI公式トラフィックライト採点基準</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="palms-detail-scores-grid">
+          <!-- Dynamically populated by renderPalmsDetailScores -->
+        </div>
+      </div>
+
+      <!-- Raw PALMS Breakdown (Attendance, Referrals, Activities) -->
+      <div>
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-table-cells text-blue-600"></i>
+            <span>PALMS 原票データ完全内訳</span>
+          </h4>
+          <span class="text-2xs text-slate-400">活動実績数値</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <!-- Attendance (P A L M S) -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-user-check text-emerald-600"></i>
+                <span>出席実績 (PALMS)</span>
+              </span>
+              <span id="palms-raw-att-rate" class="text-xs font-black text-emerald-600 tabular-nums">--%</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1 text-center py-1">
+              <div class="bg-slate-50 rounded-lg p-1.5">
+                <div class="text-3xs font-extrabold text-slate-400">P(出席)</div>
+                <div id="palms-raw-p" class="text-sm font-black text-slate-800 tabular-nums">0</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-1.5">
+                <div class="text-3xs font-extrabold text-slate-400">A(欠席)</div>
+                <div id="palms-raw-a" class="text-sm font-black text-rose-600 tabular-nums">0</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-1.5">
+                <div class="text-3xs font-extrabold text-slate-400">L(遅刻)</div>
+                <div id="palms-raw-l" class="text-sm font-black text-amber-600 tabular-nums">0</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-1.5">
+                <div class="text-3xs font-extrabold text-slate-400">M(医療)</div>
+                <div id="palms-raw-m" class="text-sm font-black text-slate-600 tabular-nums">0</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-1.5">
+                <div class="text-3xs font-extrabold text-slate-400">S(代理)</div>
+                <div id="palms-raw-s" class="text-sm font-black text-blue-600 tabular-nums">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Referrals (Given & Received) -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-handshake text-blue-600"></i>
+                <span>リファーラル実績</span>
+              </span>
+              <span id="palms-raw-ref-total" class="text-xs font-black text-blue-600 tabular-nums">提供 --件</span>
+            </div>
+            <div class="space-y-1.5 text-xs py-1">
+              <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-lg">
+                <span class="text-3xs font-bold text-slate-500">内部提供 (RGI) / 外部 (RGO)</span>
+                <span class="font-black text-slate-800 tabular-nums" id="palms-raw-ref-given-split">0 / 0</span>
+              </div>
+              <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-lg">
+                <span class="text-3xs font-bold text-slate-500">受領合計 (RRI+RRO)</span>
+                <span class="font-black text-indigo-600 tabular-nums" id="palms-raw-ref-received">0件</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Activities (Visitors, 1-2-1, TYFCB, CEU) -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line text-indigo-600"></i>
+                <span>ビジネス貢献成果</span>
+              </span>
+              <span id="palms-raw-tyfcb-badge" class="text-xs font-black text-indigo-600 tabular-nums">¥0</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5 text-xs py-0.5">
+              <div class="bg-slate-50 px-2 py-1.5 rounded-lg flex justify-between items-center">
+                <span class="text-3xs font-bold text-slate-500">ビジター</span>
+                <span class="font-black text-emerald-600 tabular-nums" id="palms-raw-visitors">0名</span>
+              </div>
+              <div class="bg-slate-50 px-2 py-1.5 rounded-lg flex justify-between items-center">
+                <span class="text-3xs font-bold text-slate-500">1to1回数</span>
+                <span class="font-black text-amber-600 tabular-nums" id="palms-raw-oto">0回</span>
+              </div>
+              <div class="bg-slate-50 px-2 py-1.5 rounded-lg flex justify-between items-center">
+                <span class="text-3xs font-bold text-slate-500">CEU学習</span>
+                <span class="font-black text-purple-600 tabular-nums" id="palms-raw-ceu">0 pt</span>
+              </div>
+              <div class="bg-slate-50 px-2 py-1.5 rounded-lg flex justify-between items-center">
+                <span class="text-3xs font-bold text-slate-500">推薦/スポンサー</span>
+                <span class="font-black text-slate-700 tabular-nums" id="palms-raw-sponsor">0件</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Period History Comparison Table -->
+      <div>
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+            <span>期別ヒストリー推移・期間別比較</span>
+          </h4>
+          <span class="text-2xs text-slate-400">過去期間のスコア・活動比較</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full text-left text-xs border-collapse min-w-[640px]">
+            <thead>
+              <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                <th class="py-2.5 px-3">対象期間</th>
+                <th class="py-2.5 px-3 text-center">判定</th>
+                <th class="py-2.5 px-3 text-right">総合スコア</th>
+                <th class="py-2.5 px-3 text-right">PPW (週貢献)</th>
+                <th class="py-2.5 px-3 text-right">RPW (週リファ)</th>
+                <th class="py-2.5 px-3 text-right">ビジター</th>
+                <th class="py-2.5 px-3 text-right">1to1</th>
+                <th class="py-2.5 px-3 text-right">TYFCB売上</th>
+              </tr>
+            </thead>
+            <tbody id="palms-detail-history-tbody" class="divide-y divide-slate-100 font-tabular">
+              <tr>
+                <td colspan="8" class="py-6 text-center text-slate-400 text-xs">
+                  <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+                  <p>期間別履歴を読込中...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+      <button type="button" onclick="navigateToMemberFollowFromPalms()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-user-group text-3xs"></i>
+        <span>このメンバーのビジターフォロー画面を開く</span>
+      </button>
+
+      <button type="button" onclick="closePalmsDetailModal()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer">
+        閉じる
+      </button>
+    </div>
+
+  </div>
+</div>

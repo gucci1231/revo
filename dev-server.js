@@ -951,6 +951,37 @@ function handleApiRequest(req, res, urlObj) {
     if (pathname === '/api/palms.php') {
       const action = urlObj.searchParams.get('action') || (req.method === 'POST' ? 'sync' : 'list');
       
+      if (action === 'member') {
+        const memberName = urlObj.searchParams.get('name');
+        const memberId = urlObj.searchParams.get('member_id');
+        if (!memberName && !memberId) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ success: false, error: 'Member name or ID is required' }));
+        }
+
+        const safeVal = (memberId || memberName).replace(/'/g, "''");
+        const where = memberId ? `p.member_id = '${safeVal}'` : `p.member_name = '${safeVal}'`;
+        const sql = `
+          SELECT 
+            p.*,
+            (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) as total_referrals_given,
+            (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
+            (p.tyfcb_amount * 1000) as tyfcb_yen,
+            m.category as member_category,
+            m.profession as member_profession
+          FROM palms_reports p
+          LEFT JOIN members m ON p.member_id = m.id
+          WHERE ${where}
+          ORDER BY p.end_date DESC;
+        `;
+        const history = runSqlJson(sql);
+        return res.end(JSON.stringify({
+          success: true,
+          member: memberName || (history[0] ? history[0].member_name : ''),
+          history: history
+        }));
+      }
+
       if (action === 'periods') {
         const sql = `SELECT DISTINCT start_date, end_date, COUNT(*) as member_count FROM palms_reports GROUP BY start_date, end_date ORDER BY end_date DESC;`;
         const periods = runSqlJson(sql);

@@ -196,5 +196,38 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('data-metric="ppw"'), true);
     assert.strictEqual(indexHtml.includes('data-metric="rpw"'), true);
   });
+
+  it('verifies PALMS member detail modal UI elements and script functions exist', () => {
+    // Modal container
+    assert.strictEqual(indexHtml.includes('id="modal-palms-detail"'), true);
+    assert.strictEqual(indexHtml.includes('id="modal-palms-container"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-name"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-tier-badge"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-total-score"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-ppw-value"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-rpw-value"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-scores-grid"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-history-tbody"'), true);
+
+    // Raw numbers
+    assert.strictEqual(indexHtml.includes('id="palms-raw-p"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-raw-ref-total"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-raw-visitors"'), true);
+
+    // Script functions
+    assert.strictEqual(indexHtml.includes('function openPalmsDetailModal('), true);
+    assert.strictEqual(indexHtml.includes('function closePalmsDetailModal('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsDetailScores('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsDetailRawBreakdown('), true);
+    assert.strictEqual(indexHtml.includes('function fetchPalmsMemberHistory('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsDetailHistory('), true);
+
+    // ApiService mapping
+    assert.strictEqual(indexHtml.includes('getPalmsMemberHistoryApi'), true);
+
+    // Podium and Table calls openPalmsDetailModal
+    assert.strictEqual(indexHtml.includes("openPalmsDetailModal('${memberNameSafe}')"), true);
+  });
 });
+
 

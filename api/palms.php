@@ -17,6 +17,39 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $action = $_GET['action'] ?? ($method === 'POST' ? 'sync' : 'list');
 
 try {
+    if ($action === 'member') {
+        $memberName = $_GET['name'] ?? null;
+        $memberId = $_GET['member_id'] ?? null;
+        if (!$memberName && !$memberId) {
+            throw new Exception("Member name or ID is required");
+        }
+
+        $where = $memberId ? "p.member_id = :val" : "p.member_name = :val";
+        $sql = "
+            SELECT 
+                p.*,
+                (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) as total_referrals_given,
+                (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
+                (p.tyfcb_amount * 1000) as tyfcb_yen,
+                m.category as member_category,
+                m.profession as member_profession
+            FROM palms_reports p
+            LEFT JOIN members m ON p.member_id = m.id
+            WHERE {$where}
+            ORDER BY p.end_date DESC
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':val' => $memberId ?: $memberName]);
+        $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'success' => true,
+            'member' => $memberName ?: ($history[0]['member_name'] ?? ''),
+            'history' => $history
+        ]);
+        exit;
+    }
+
     if ($action === 'periods') {
         $stmt = $pdo->query("
             SELECT DISTINCT start_date, end_date, COUNT(*) as member_count

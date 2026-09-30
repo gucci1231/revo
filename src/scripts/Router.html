@@ -92,6 +92,22 @@
       } else if (hash.includes('period') || hash.includes('term')) {
         setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('period'); }, 50);
       }
+    } else if (hash.startsWith('palms')) {
+      switchTab('palms-ranking', false);
+      let targetMember = null;
+      if (hash.startsWith('palms/')) {
+        targetMember = hash.replace('palms/', '').split('?')[0].trim();
+      } else {
+        const match = hash.match(/[?&](?:name|member)=([^&]+)/);
+        if (match) targetMember = match[1];
+      }
+      if (targetMember) {
+        setTimeout(() => {
+          if (typeof openPalmsDetailModal === 'function') {
+            openPalmsDetailModal(decodeURIComponent(targetMember));
+          }
+        }, 300);
+      }
     } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'palms-ranking', 'training', 'schedules'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
     }
