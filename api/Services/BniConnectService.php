@@ -405,7 +405,7 @@ class BniConnectService {
             $eIso = $endThu->format('Y-m-d');
 
             if ($skipExisting) {
-                $checkStmt = $this->pdo->prepare("SELECT COUNT(*) FROM palms_reports WHERE start_date = :s AND end_date = :e");
+                $checkStmt = $this->db->getPdo()->prepare("SELECT COUNT(*) FROM palms_reports WHERE start_date = :s AND end_date = :e");
                 $checkStmt->execute([':s' => $sIso, ':e' => $eIso]);
                 $existingCount = (int)$checkStmt->fetchColumn();
                 if ($existingCount > 0) {
