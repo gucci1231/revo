@@ -228,6 +228,16 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     // Podium and Table calls openPalmsDetailModal
     assert.strictEqual(indexHtml.includes("openPalmsDetailModal('${memberNameSafe}')"), true);
   });
+
+  it('verifies weekly PALMS submissions table and rendering function exist in compiled index.html', () => {
+    // Weekly table container & badge
+    assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-tbody"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-badge"'), true);
+    assert.strictEqual(indexHtml.includes('週別の入力状況・スリップ活動推移'), true);
+
+    // Script functions
+    assert.strictEqual(indexHtml.includes('function renderPalmsDetailWeeklySubmissions('), true);
+  });
 });
 
 

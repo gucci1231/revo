@@ -1565,47 +1565,268 @@ function renderPalmsDetailRawBreakdown(m) {
 }
 
 function fetchPalmsMemberHistory(memberName) {
-  const tbody = document.getElementById('palms-detail-history-tbody');
-  if (!tbody) return;
+  const weeklyTbody = document.getElementById('palms-detail-weekly-tbody');
+  const historyTbody = document.getElementById('palms-detail-history-tbody');
+  const weeklyBadge = document.getElementById('palms-detail-weekly-badge');
 
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="8" class="py-6 text-center text-slate-400 text-xs">
-        <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
-        <p>期間別履歴を読込中...</p>
-      </td>
-    </tr>
-  `;
+  if (weeklyTbody) {
+    weeklyTbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
+          <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+          <p>週別入力状況を読込中...</p>
+        </td>
+      </tr>
+    `;
+  }
+
+  if (historyTbody) {
+    historyTbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="py-6 text-center text-slate-400 text-xs">
+          <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+          <p>期間別履歴を読込中...</p>
+        </td>
+      </tr>
+    `;
+  }
 
   ApiService.call('getPalmsMemberHistoryApi', memberName)
     .then(res => {
-      if (res && res.success && Array.isArray(res.history) && res.history.length > 0) {
-        renderPalmsDetailHistory(res.history);
+      if (res && res.success && Array.isArray(res.history)) {
+        // Categorize into weekly (<= 14 days) and terms (> 14 days)
+        const weeklyList = res.weekly || res.history.filter(h => {
+          const d1 = new Date(h.start_date);
+          const d2 = new Date(h.end_date);
+          const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+          return diffDays <= 14;
+        });
+
+        const termsList = res.terms || res.history.filter(h => {
+          const d1 = new Date(h.start_date);
+          const d2 = new Date(h.end_date);
+          const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+          return diffDays > 14;
+        });
+
+        renderPalmsDetailWeeklySubmissions(weeklyList);
+        renderPalmsDetailHistory(termsList);
       } else {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="py-4 text-center text-slate-400 text-xs">
-              該当メンバーの過去期間データはありません
-            </td>
-          </tr>
-        `;
+        if (weeklyTbody) {
+          weeklyTbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="py-4 text-center text-slate-400 text-xs">
+                該当メンバーの週別データはありません
+              </td>
+            </tr>
+          `;
+        }
+        if (historyTbody) {
+          historyTbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="py-4 text-center text-slate-400 text-xs">
+                該当メンバーの過去期間データはありません
+              </td>
+            </tr>
+          `;
+        }
       }
     })
     .catch(err => {
       console.error('Failed to fetch PALMS member history:', err);
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="8" class="py-4 text-center text-slate-400 text-xs">
-            履歴の取得に失敗しました
-          </td>
-        </tr>
-      `;
+      if (weeklyTbody) {
+        weeklyTbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-4 text-center text-slate-400 text-xs">
+              週別データの取得に失敗しました
+            </td>
+          </tr>
+        `;
+      }
+      if (historyTbody) {
+        historyTbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-4 text-center text-slate-400 text-xs">
+              履歴の取得に失敗しました
+            </td>
+          </tr>
+        `;
+      }
     });
+}
+
+/**
+ * Render Weekly PALMS Submissions & Slip Activity Table
+ */
+function renderPalmsDetailWeeklySubmissions(weeklyList) {
+  const tbody = document.getElementById('palms-detail-weekly-tbody');
+  const badge = document.getElementById('palms-detail-weekly-badge');
+  if (!tbody) return;
+
+  if (badge) {
+    badge.textContent = `直近${weeklyList ? weeklyList.length : 0}週`;
+  }
+
+  if (!weeklyList || weeklyList.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
+          <i class="fa-solid fa-calendar-xmark text-lg mb-1 text-slate-300"></i>
+          <p>週別データがまだ登録されていません</p>
+          <p class="text-3xs text-slate-400 mt-0.5">※ 上部の「Connect同期」を実行すると直近週のデータが自動反映されます</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  let html = '';
+
+  weeklyList.forEach(w => {
+    const p = Number(w.p_present || 0);
+    const a = Number(w.a_absent || 0);
+    const l = Number(w.l_late || 0);
+    const m = Number(w.m_medical || 0);
+    const s = Number(w.s_substitute || 0);
+
+    const rgi = Number(w.rgi_referrals_given_internal || 0);
+    const rgo = Number(w.rgo_referrals_given_external || 0);
+    const totalRef = Number(w.total_referrals_given != null ? w.total_referrals_given : (rgi + rgo));
+
+    const visitors = Number(w.v_visitors || 0);
+    const oto = Number(w.one_to_ones || 0);
+    const tyfcbYen = Number(w.tyfcb_yen != null ? w.tyfcb_yen : (Number(w.tyfcb_amount || 0) * 1000));
+    const ceu = Number(w.ceu || 0);
+    const sponsors = Number(w.testimonials || w.sponsors || 0);
+
+    // Weekly PPW (1 week basis)
+    const ppw = (totalRef + visitors + sponsors);
+
+    // Format Meeting Date
+    const endDateObj = new Date(w.end_date);
+    const dayOfWeek = isNaN(endDateObj.getDay()) ? '' : ` (${dayNames[endDateObj.getDay()]})`;
+    const dateFormatted = `${w.end_date.replace(/-/g, '/')}${dayOfWeek}`;
+    const periodSubText = `${w.start_date.substring(5).replace(/-/g, '/')}〜${w.end_date.substring(5).replace(/-/g, '/')}`;
+
+    // Attendance Badge
+    let attBadge = '<span class="text-slate-300">-</span>';
+    if (p > 0) {
+      attBadge = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-3xs border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>出席 (P)</span>';
+    } else if (s > 0) {
+      attBadge = '<span class="inline-flex items-center gap-1 font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full text-3xs border border-blue-200"><span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>代理 (S)</span>';
+    } else if (l > 0) {
+      attBadge = '<span class="inline-flex items-center gap-1 font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full text-3xs border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>遅刻 (L)</span>';
+    } else if (a > 0) {
+      attBadge = '<span class="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full text-3xs border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>欠席 (A)</span>';
+    } else if (m > 0) {
+      attBadge = '<span class="inline-flex items-center gap-1 font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full text-3xs border border-slate-200"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>医療 (M)</span>';
+    }
+
+    // Slip Submission Status Badge
+    let slipStatusBadge = '';
+    const hasHighImpact = (totalRef > 0 || visitors > 0);
+    const hasActivity = (hasHighImpact || oto > 0 || ceu > 0 || tyfcbYen > 0);
+
+    if (hasHighImpact) {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md text-3xs border border-blue-200"><i class="fa-solid fa-fire text-amber-500"></i> 高貢献</span>';
+    } else if (hasActivity) {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-3xs border border-emerald-200"><i class="fa-solid fa-check text-emerald-600"></i> 入力済</span>';
+    } else {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md text-3xs border border-slate-200"><i class="fa-solid fa-minus text-slate-300"></i> スリップなし</span>';
+    }
+
+    // PPW Display
+    let ppwHtml = '<span class="text-slate-300 font-medium">-</span>';
+    if (ppw >= 2.0) {
+      ppwHtml = `<span class="font-black text-blue-600">${ppw.toFixed(2)}</span>`;
+    } else if (ppw >= 1.0) {
+      ppwHtml = `<span class="font-bold text-indigo-600">${ppw.toFixed(2)}</span>`;
+    } else if (ppw > 0) {
+      ppwHtml = `<span class="font-bold text-slate-600">${ppw.toFixed(2)}</span>`;
+    }
+
+    // Referrals Display
+    let refHtml = '<span class="text-slate-300">-</span>';
+    if (totalRef > 0) {
+      refHtml = `<span class="font-black text-slate-800">${totalRef}件</span> <span class="text-3xs text-slate-400">(${rgi}/${rgo})</span>`;
+    }
+
+    // Visitors Display
+    let visHtml = '<span class="text-slate-300">-</span>';
+    if (visitors > 0) {
+      visHtml = `<span class="font-black text-emerald-600">${visitors}名</span>`;
+    }
+
+    // 1to1 Display
+    let otoHtml = '<span class="text-slate-300">-</span>';
+    if (oto > 0) {
+      otoHtml = `<span class="font-black text-amber-600">${oto}回</span>`;
+    }
+
+    // TYFCB Display
+    let tyfcbHtml = '<span class="text-slate-300">-</span>';
+    if (tyfcbYen > 0) {
+      tyfcbHtml = `<span class="font-bold text-indigo-600">¥${tyfcbYen.toLocaleString()}</span>`;
+    }
+
+    // CEU Display
+    let ceuHtml = '<span class="text-slate-300">-</span>';
+    if (ceu > 0) {
+      ceuHtml = `<span class="font-bold text-purple-600">${ceu} pt</span>`;
+    }
+
+    html += `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-3 whitespace-nowrap">
+          <div class="font-bold text-slate-800">${dateFormatted}</div>
+          <div class="text-3xs text-slate-400">${periodSubText}</div>
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+          ${attBadge}
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+          ${slipStatusBadge}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${ppwHtml}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${refHtml}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${visHtml}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${otoHtml}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${tyfcbHtml}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${ceuHtml}
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
 }
 
 function renderPalmsDetailHistory(historyList) {
   const tbody = document.getElementById('palms-detail-history-tbody');
   if (!tbody) return;
+
+  if (!historyList || historyList.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="py-4 text-center text-slate-400 text-xs">
+          表示可能な期別履歴はありません
+        </td>
+      </tr>
+    `;
+    return;
+  }
 
   let html = '';
   historyList.forEach(rawH => {

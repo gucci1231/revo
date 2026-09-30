@@ -210,6 +210,48 @@
         </div>
       </div>
 
+      <!-- Weekly Submissions & Slip Activity Status (New Section) -->
+      <div>
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-week text-blue-600"></i>
+              <span>週別の入力状況・スリップ活動推移</span>
+            </h4>
+            <span id="palms-detail-weekly-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              直近--週
+            </span>
+          </div>
+          <span class="text-2xs text-slate-400">定例会ごとの出席・スリップ入力実績</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
+          <table class="w-full text-left text-xs border-collapse min-w-[700px]">
+            <thead>
+              <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                <th class="py-2.5 px-3">開催日 (週)</th>
+                <th class="py-2.5 px-3 text-center">出席判定</th>
+                <th class="py-2.5 px-3 text-center">スリップ状況</th>
+                <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>
+                <th class="py-2.5 px-3 text-right">リファーラル</th>
+                <th class="py-2.5 px-3 text-right">ビジター</th>
+                <th class="py-2.5 px-3 text-right">1to1</th>
+                <th class="py-2.5 px-3 text-right">TYFCB売上</th>
+                <th class="py-2.5 px-3 text-right">CEU</th>
+              </tr>
+            </thead>
+            <tbody id="palms-detail-weekly-tbody" class="divide-y divide-slate-100 font-tabular">
+              <tr>
+                <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
+                  <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+                  <p>週別データを読込中...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Multi-Period History Comparison Table -->
       <div>
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
@@ -217,7 +259,7 @@
             <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
             <span>期別ヒストリー推移・期間別比較</span>
           </h4>
-          <span class="text-2xs text-slate-400">過去期間のスコア・活動比較</span>
+          <span class="text-2xs text-slate-400">過去期間のスコア・マクロ活動比較</span>
         </div>
 
         <div class="overflow-x-auto rounded-2xl border border-slate-200">

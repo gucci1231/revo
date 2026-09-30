@@ -42,10 +42,25 @@ try {
         $stmt->execute([':val' => $memberId ?: $memberName]);
         $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $weekly = [];
+        $terms = [];
+        foreach ($history as $h) {
+            $d1 = new \DateTime($h['start_date']);
+            $d2 = new \DateTime($h['end_date']);
+            $diffDays = $d1->diff($d2)->days + 1;
+            if ($diffDays <= 14) {
+                $weekly[] = $h;
+            } else {
+                $terms[] = $h;
+            }
+        }
+
         echo json_encode([
             'success' => true,
             'member' => $memberName ?: ($history[0]['member_name'] ?? ''),
-            'history' => $history
+            'history' => $history,
+            'weekly' => $weekly,
+            'terms' => $terms
         ]);
         exit;
     }
@@ -66,6 +81,19 @@ try {
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         $startDate = $input['startDate'] ?? $_GET['startDate'] ?? null;
         $endDate = $input['endDate'] ?? $_GET['endDate'] ?? null;
+        $weeksCount = isset($input['weeksCount']) ? (int)$input['weeksCount'] : (isset($_GET['weeksCount']) ? (int)$_GET['weeksCount'] : 0);
+
+        $service = new BniConnectService($db);
+
+        if ($weeksCount > 0) {
+            $result = $service->syncRecentWeeks($weeksCount);
+            echo json_encode([
+                'success' => true,
+                'message' => "直近{$weeksCount}週間のPALMSデータを正常に取得・更新しました（{$result['totalSaved']}件）",
+                'data' => $result
+            ]);
+            exit;
+        }
 
         if (!$startDate || !$endDate) {
             $range = BniConnectService::getDefaultWeeklyRange();
@@ -73,7 +101,6 @@ try {
             $endDate = $range['endDate'];
         }
 
-        $service = new BniConnectService($db);
         $result = $service->sync($startDate, $endDate);
 
         echo json_encode([

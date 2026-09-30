@@ -972,13 +972,28 @@ function handleApiRequest(req, res, urlObj) {
           FROM palms_reports p
           LEFT JOIN members m ON p.member_id = m.id
           WHERE ${where}
-          ORDER BY p.end_date DESC;
+          ORDER BY p.end_date DESC, p.start_date DESC;
         `;
         const history = runSqlJson(sql);
+        const weekly = [];
+        const terms = [];
+        history.forEach(h => {
+          const d1 = new Date(h.start_date);
+          const d2 = new Date(h.end_date);
+          const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+          if (diffDays <= 14) {
+            weekly.push(h);
+          } else {
+            terms.push(h);
+          }
+        });
+
         return res.end(JSON.stringify({
           success: true,
           member: memberName || (history[0] ? history[0].member_name : ''),
-          history: history
+          history: history,
+          weekly: weekly,
+          terms: terms
         }));
       }
 

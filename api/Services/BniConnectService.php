@@ -373,6 +373,56 @@ class BniConnectService {
     }
 
     /**
+     * Sync multiple recent weeks of PALMS data (e.g. 4 to 8 weeks)
+     */
+    public function syncRecentWeeks(int $weeksCount = 4): array {
+        $tokens = $this->authenticate();
+        $cookie = $this->establishWebSession($tokens);
+
+        $results = [];
+        $totalSaved = 0;
+
+        $today = new \DateTime();
+        $dayOfWeek = (int)$today->format('w');
+        $baseThu = clone $today;
+        if ($dayOfWeek >= 4) {
+            $baseThu->modify('-' . ($dayOfWeek - 4) . ' days');
+        } else {
+            $baseThu->modify('-' . ($dayOfWeek + 3) . ' days');
+        }
+
+        for ($i = 0; $i < $weeksCount; $i++) {
+            $endThu = clone $baseThu;
+            if ($i > 0) {
+                $endThu->modify('-' . ($i * 7) . ' days');
+            }
+            $startThu = clone $endThu;
+            $startThu->modify('-7 days');
+
+            $s = $startThu->format('m/d/Y');
+            $e = $endThu->format('m/d/Y');
+
+            $html = $this->fetchPalmsReportHtml($cookie, $s, $e);
+            $records = $this->parsePalmsHtml($html, $s, $e);
+            $saved = $this->savePalmsToDb($records);
+            $totalSaved += $saved;
+
+            $results[] = [
+                'startDate' => $s,
+                'endDate' => $e,
+                'recordsCount' => count($records),
+                'savedCount' => $saved
+            ];
+        }
+
+        return [
+            'success' => true,
+            'totalSaved' => $totalSaved,
+            'weeks' => $results
+        ];
+    }
+
+    /**
      * Compute last week's date range (last Thursday to this Thursday) in MM/DD/YYYY format
      */
     public static function getDefaultWeeklyRange(): array {
