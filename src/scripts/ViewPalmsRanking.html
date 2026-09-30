@@ -35,6 +35,477 @@ function formatPalmsPeriodLabel(p) {
 }
 
 /**
+ * --- GA4-Style Period Selection Modal Controller ---
+ */
+let palmsDateModalState = {
+  start: null,
+  end: null,
+  selectingEnd: false,
+  hoverDate: null,
+  viewYear: 2026,
+  viewMonth: 8, // 0-indexed (8 = September)
+  activePreset: '6months'
+};
+
+/**
+ * Format human-friendly label for the trigger button
+ */
+function updatePalmsPeriodDisplayLabel(s, e) {
+  const labelEl = document.getElementById('palms-period-display-label');
+  if (!labelEl) return;
+  if (!s || !e) {
+    labelEl.textContent = '期間を選択';
+    return;
+  }
+  const sFmt = s.replace(/-/g, '/');
+  const eFmt = e.replace(/-/g, '/');
+
+  if (s === '2026-04-01' && e === '2026-09-30') {
+    labelEl.textContent = `半年: 直近第2期 (${sFmt}〜${eFmt})`;
+  } else if (s === '2024-10-01' && e === '2026-09-30') {
+    labelEl.textContent = `全期間: 過去2年通算 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-08-27' && e === '2026-09-24') {
+    labelEl.textContent = `１ヶ月: 直近4週間 (${sFmt}〜${eFmt})`;
+  } else if (s === '2025-10-01' && e === '2026-03-31') {
+    labelEl.textContent = `第1期後半 6ヶ月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2025-04-01' && e === '2025-09-30') {
+    labelEl.textContent = `第1期前半 6ヶ月 (${sFmt}〜${eFmt})`;
+  } else {
+    const preset = detectPalmsActivePreset(s, e);
+    if (preset === '1month') labelEl.textContent = `１ヶ月 (${sFmt}〜${eFmt})`;
+    else if (preset === '2months') labelEl.textContent = `２ヶ月 (${sFmt}〜${eFmt})`;
+    else if (preset === '3months') labelEl.textContent = `３ヶ月 (${sFmt}〜${eFmt})`;
+    else if (preset === '6months') labelEl.textContent = `半年 (${sFmt}〜${eFmt})`;
+    else if (preset === 'all') labelEl.textContent = `全期間 (${sFmt}〜${eFmt})`;
+    else labelEl.textContent = `${sFmt} 〜 ${eFmt}`;
+  }
+}
+
+/**
+ * Calculate Start & End Date for presets based on loaded periods or latest anchor
+ */
+function calcPalmsPresetRange(presetKey) {
+  let maxEnd = '2026-09-30';
+  let minStart = '2024-10-01';
+
+  if (Array.isArray(currentPalmsPeriodsList) && currentPalmsPeriodsList.length > 0) {
+    const ends = currentPalmsPeriodsList.map(p => p.end_date).filter(Boolean).sort();
+    const starts = currentPalmsPeriodsList.map(p => p.start_date).filter(Boolean).sort();
+    if (ends.length) maxEnd = ends[ends.length - 1];
+    if (starts.length) minStart = starts[0];
+  }
+
+  const endObj = new Date(maxEnd + 'T00:00:00');
+
+  function fmtDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  if (presetKey === 'all') {
+    return { start: minStart, end: maxEnd };
+  } else if (presetKey === '6months') {
+    const hasPref6M = currentPalmsPeriodsList.some(p => p.start_date === '2026-04-01' && p.end_date === '2026-09-30');
+    if (hasPref6M) return { start: '2026-04-01', end: '2026-09-30' };
+
+    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 5, 1);
+    return { start: fmtDate(startObj), end: maxEnd };
+  } else if (presetKey === '3months') {
+    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 2, 1);
+    return { start: fmtDate(startObj), end: maxEnd };
+  } else if (presetKey === '2months') {
+    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 1, 1);
+    return { start: fmtDate(startObj), end: maxEnd };
+  } else if (presetKey === '1month') {
+    const has4W = currentPalmsPeriodsList.some(p => p.start_date === '2026-08-27' && p.end_date === '2026-09-24');
+    if (has4W) return { start: '2026-08-27', end: '2026-09-24' };
+
+    const startObj = new Date(endObj.getFullYear(), endObj.getMonth(), 1);
+    return { start: fmtDate(startObj), end: maxEnd };
+  }
+
+  return { start: minStart, end: maxEnd };
+}
+
+/**
+ * Detect which preset matches the given range
+ */
+function detectPalmsActivePreset(s, e) {
+  if (!s || !e) return 'custom';
+  const pAll = calcPalmsPresetRange('all');
+  if (s === pAll.start && e === pAll.end) return 'all';
+
+  const p6m = calcPalmsPresetRange('6months');
+  if (s === p6m.start && e === p6m.end) return '6months';
+
+  const p3m = calcPalmsPresetRange('3months');
+  if (s === p3m.start && e === p3m.end) return '3months';
+
+  const p2m = calcPalmsPresetRange('2months');
+  if (s === p2m.start && e === p2m.end) return '2months';
+
+  const p1m = calcPalmsPresetRange('1month');
+  if (s === p1m.start && e === p1m.end) return '1month';
+
+  if (s === '2026-08-27' && e === '2026-09-24') return '1month';
+  if (s === '2026-04-01' && e === '2026-09-30') return '6months';
+  if (s === '2024-10-01' && e === '2026-09-30') return 'all';
+
+  return 'custom';
+}
+
+/**
+ * Open GA4-Style Date Range Modal
+ */
+function openPalmsDateModal() {
+  const modal = document.getElementById('modal-palms-date-range');
+  if (!modal) return;
+
+  const s = currentPalmsPeriod.startDate || '2026-04-01';
+  const e = currentPalmsPeriod.endDate || '2026-09-30';
+  palmsDateModalState.start = s;
+  palmsDateModalState.end = e;
+  palmsDateModalState.selectingEnd = false;
+  palmsDateModalState.hoverDate = null;
+
+  const endD = new Date(e + 'T00:00:00');
+  palmsDateModalState.viewYear = !isNaN(endD.getFullYear()) ? endD.getFullYear() : 2026;
+  palmsDateModalState.viewMonth = !isNaN(endD.getMonth()) ? endD.getMonth() : 8;
+
+  palmsDateModalState.activePreset = detectPalmsActivePreset(s, e);
+
+  syncPalmsModalInputs();
+  updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
+  renderPalmsModalCalendars();
+
+  modal.classList.remove('hidden');
+}
+
+/**
+ * Close GA4-Style Date Range Modal
+ */
+function closePalmsDateModal() {
+  const modal = document.getElementById('modal-palms-date-range');
+  if (modal) modal.classList.add('hidden');
+  palmsDateModalState.selectingEnd = false;
+  palmsDateModalState.hoverDate = null;
+}
+
+/**
+ * Synchronize inputs and duration badge
+ */
+function syncPalmsModalInputs() {
+  const startInput = document.getElementById('palms-modal-start');
+  const endInput = document.getElementById('palms-modal-end');
+  const badge = document.getElementById('palms-modal-duration-badge');
+
+  if (startInput) startInput.value = palmsDateModalState.start || '';
+  if (endInput) endInput.value = palmsDateModalState.end || '';
+
+  if (badge) {
+    if (palmsDateModalState.start && palmsDateModalState.end) {
+      const d1 = new Date(palmsDateModalState.start + 'T00:00:00');
+      const d2 = new Date(palmsDateModalState.end + 'T00:00:00');
+      const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+      badge.textContent = `${Math.max(1, days)} 日間`;
+    } else if (palmsDateModalState.start) {
+      badge.textContent = '終了日を選択...';
+    } else {
+      badge.textContent = '-- 日間';
+    }
+  }
+}
+
+/**
+ * Update Sidebar Active Preset Highlight
+ */
+function updatePalmsModalSidebarActive(presetKey) {
+  const items = document.querySelectorAll('#palms-modal-sidebar .palms-preset-item');
+  items.forEach(item => {
+    const key = item.getAttribute('data-preset-key');
+    if (key === presetKey) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+/**
+ * Preset selection from Sidebar
+ */
+function selectPalmsDatePreset(presetKey) {
+  if (presetKey === 'custom') {
+    palmsDateModalState.activePreset = 'custom';
+    updatePalmsModalSidebarActive('custom');
+    return;
+  }
+
+  const range = calcPalmsPresetRange(presetKey);
+  palmsDateModalState.start = range.start;
+  palmsDateModalState.end = range.end;
+  palmsDateModalState.selectingEnd = false;
+  palmsDateModalState.hoverDate = null;
+  palmsDateModalState.activePreset = presetKey;
+
+  const endD = new Date(range.end + 'T00:00:00');
+  palmsDateModalState.viewYear = endD.getFullYear();
+  palmsDateModalState.viewMonth = endD.getMonth();
+
+  syncPalmsModalInputs();
+  updatePalmsModalSidebarActive(presetKey);
+  renderPalmsModalCalendars();
+}
+
+/**
+ * Input direct change event
+ */
+function onPalmsModalInputChange() {
+  const sInput = document.getElementById('palms-modal-start');
+  const eInput = document.getElementById('palms-modal-end');
+  if (!sInput || !eInput) return;
+
+  const s = sInput.value;
+  const e = eInput.value;
+
+  if (s && e) {
+    if (s <= e) {
+      palmsDateModalState.start = s;
+      palmsDateModalState.end = e;
+    } else {
+      palmsDateModalState.start = e;
+      palmsDateModalState.end = s;
+    }
+    palmsDateModalState.selectingEnd = false;
+    palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
+    updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
+    syncPalmsModalInputs();
+    renderPalmsModalCalendars();
+  }
+}
+
+/**
+ * Navigate Month (-1 or +1)
+ */
+function movePalmsCalendarMonth(delta) {
+  palmsDateModalState.viewMonth += delta;
+  if (palmsDateModalState.viewMonth < 0) {
+    palmsDateModalState.viewYear--;
+    palmsDateModalState.viewMonth = 11;
+  } else if (palmsDateModalState.viewMonth > 11) {
+    palmsDateModalState.viewYear++;
+    palmsDateModalState.viewMonth = 0;
+  }
+  renderPalmsModalCalendars();
+}
+
+/**
+ * Handle date click inside calendar
+ */
+function onPalmsCalendarDateClick(dateStr) {
+  if (!palmsDateModalState.selectingEnd || !palmsDateModalState.start) {
+    // 1st Click: Start Date
+    palmsDateModalState.start = dateStr;
+    palmsDateModalState.end = null;
+    palmsDateModalState.selectingEnd = true;
+    palmsDateModalState.hoverDate = null;
+    palmsDateModalState.activePreset = 'custom';
+  } else {
+    // 2nd Click: End Date
+    if (dateStr < palmsDateModalState.start) {
+      palmsDateModalState.end = palmsDateModalState.start;
+      palmsDateModalState.start = dateStr;
+    } else {
+      palmsDateModalState.end = dateStr;
+    }
+    palmsDateModalState.selectingEnd = false;
+    palmsDateModalState.hoverDate = null;
+    palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
+  }
+
+  syncPalmsModalInputs();
+  updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
+  renderPalmsModalCalendars();
+}
+
+/**
+ * Handle date hover inside calendar for interactive range preview
+ */
+function onPalmsCalendarDateHover(dateStr) {
+  if (!palmsDateModalState.selectingEnd || !palmsDateModalState.start) return;
+  palmsDateModalState.hoverDate = dateStr;
+  renderPalmsModalCalendars();
+}
+
+/**
+ * Render Both Left & Right Calendars
+ */
+function renderPalmsModalCalendars() {
+  const rightY = palmsDateModalState.viewYear;
+  const rightM = palmsDateModalState.viewMonth;
+
+  let leftY = rightY;
+  let leftM = rightM - 1;
+  if (leftM < 0) {
+    leftY--;
+    leftM = 11;
+  }
+
+  const leftTitle = document.getElementById('palms-cal-left-title');
+  const rightTitle = document.getElementById('palms-cal-right-title');
+  if (leftTitle) leftTitle.textContent = `${leftY}年 ${leftM + 1}月`;
+  if (rightTitle) rightTitle.textContent = `${rightY}年 ${rightM + 1}月`;
+
+  renderSingleMonthGrid('palms-cal-left-grid', leftY, leftM);
+  renderSingleMonthGrid('palms-cal-right-grid', rightY, rightM);
+}
+
+/**
+ * Render single month days into container
+ */
+function renderSingleMonthGrid(containerId, year, month) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0(Sun) - 6(Sat)
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Range bounds
+  const start = palmsDateModalState.start;
+  const end = palmsDateModalState.end;
+  const selectingEnd = palmsDateModalState.selectingEnd;
+  const hoverDate = palmsDateModalState.hoverDate;
+
+  // Empty cells before 1st day
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'palms-cal-day empty';
+    container.appendChild(emptyCell);
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayStr = String(day).padStart(2, '0');
+    const monthStr = String(month + 1).padStart(2, '0');
+    const dateStr = `${year}-${monthStr}-${dayStr}`;
+
+    const cell = document.createElement('div');
+    cell.className = 'palms-cal-day';
+    cell.textContent = day;
+    cell.setAttribute('data-date', dateStr);
+
+    let isStart = (start === dateStr);
+    let isEnd = (end === dateStr);
+    let isSingle = (isStart && isEnd);
+    let isInRange = (start && end && dateStr > start && dateStr < end);
+
+    // Hover preview handling
+    if (selectingEnd && start && hoverDate) {
+      const minH = start < hoverDate ? start : hoverDate;
+      const maxH = start < hoverDate ? hoverDate : start;
+      if (dateStr === minH) isStart = true;
+      if (dateStr === maxH) isEnd = true;
+      if (dateStr > minH && dateStr < maxH) {
+        cell.classList.add('hover-range');
+      }
+    }
+
+    if (isSingle) {
+      cell.classList.add('range-single');
+    } else if (isStart) {
+      cell.classList.add('range-start');
+    } else if (isEnd) {
+      cell.classList.add('range-end');
+    } else if (isInRange) {
+      cell.classList.add('in-range');
+    }
+
+    if (dateStr === todayStr && !isStart && !isEnd && !isInRange) {
+      cell.classList.add('font-bold', 'text-blue-600', 'underline');
+    }
+
+    cell.onclick = () => onPalmsCalendarDateClick(dateStr);
+    cell.onmouseenter = () => onPalmsCalendarDateHover(dateStr);
+
+    container.appendChild(cell);
+  }
+}
+
+/**
+ * Apply GA4-Style Selected Period
+ */
+function applyPalmsDateModal() {
+  const s = palmsDateModalState.start;
+  const e = palmsDateModalState.end;
+
+  if (!s || !e) {
+    showToast('開始日と終了日を両方指定してください', 'warning');
+    return;
+  }
+
+  const sFin = s <= e ? s : e;
+  const eFin = s <= e ? e : s;
+
+  // Sync with compatibility inputs
+  const startInput = document.getElementById('palms-custom-start');
+  const endInput = document.getElementById('palms-custom-end');
+  if (startInput) startInput.value = sFin;
+  if (endInput) endInput.value = eFin;
+
+  // Update dropdown if matching option exists
+  const selectEl = document.getElementById('palms-period-select');
+  if (selectEl) {
+    const matchVal = `${sFin}_${eFin}`;
+    for (let i = 0; i < selectEl.options.length; i++) {
+      if (selectEl.options[i].value === matchVal) {
+        selectEl.selectedIndex = i;
+        break;
+      }
+    }
+  }
+
+  // Update display label
+  updatePalmsPeriodDisplayLabel(sFin, eFin);
+
+  // Close Modal
+  closePalmsDateModal();
+
+  // Check if period exists in DB
+  const exists = currentPalmsPeriodsList.some(p => p.start_date === sFin && p.end_date === eFin);
+
+  if (exists) {
+    fetchPalmsRankingData(sFin, eFin);
+  } else {
+    // Sync via BNI Connect
+    showToast(`BNI Connectより指定期間 (${sFin}〜${eFin}) を取得中...`, 'info');
+    const partsS = sFin.split('-');
+    const partsE = eFin.split('-');
+    const bniStart = `${partsS[1]}/${partsS[2]}/${partsS[0]}`;
+    const bniEnd = `${partsE[1]}/${partsE[2]}/${partsE[0]}`;
+
+    ApiService.call('syncPalmsApi', bniStart, bniEnd)
+      .then(res => {
+        if (res && res.success) {
+          showToast(res.message || '指定期間のデータを正常に取得しました', 'success');
+          fetchPalmsPeriods();
+        } else {
+          showToast('データ取得に失敗しました: ' + (res ? res.error : '不明なエラー'), 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Custom sync error:', err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+}
+
+
+/**
  * Fetch list of available PALMS periods
  */
 function fetchPalmsPeriods() {
@@ -445,7 +916,9 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
           }
 
           updatePeriodPresetPillActive(currentPalmsPeriod.startDate, currentPalmsPeriod.endDate);
+          updatePalmsPeriodDisplayLabel(currentPalmsPeriod.startDate, currentPalmsPeriod.endDate);
         }
+
 
         // Process records with BNI Traffic Light Scoring System
         const rawRecords = res.records || [];

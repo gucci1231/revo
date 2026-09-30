@@ -238,6 +238,44 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     // Script functions
     assert.strictEqual(indexHtml.includes('function renderPalmsDetailWeeklySubmissions('), true);
   });
+
+  it('verifies GA4-style Date Range Modal and sidebar presets (All, 1M, 2M, 3M, 6M) exist and work in compiled index.html', () => {
+    // Trigger button
+    assert.strictEqual(indexHtml.includes('id="btn-open-palms-date-modal"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-period-display-label"'), true);
+
+    // Modal container
+    assert.strictEqual(indexHtml.includes('id="modal-palms-date-range"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-modal-sidebar"'), true);
+
+    // Sidebar presets requested by USER: 全期間, １ヶ月, ２ヶ月, ３ヶ月, 半年
+    assert.strictEqual(indexHtml.includes('data-preset-key="all"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="1month"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="2months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="3months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="6months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="custom"'), true);
+
+    // Inputs & Calendar
+    assert.strictEqual(indexHtml.includes('id="palms-modal-start"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-modal-end"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-modal-duration-badge"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-cal-left-grid"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-cal-right-grid"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-palms-modal-apply"'), true);
+
+    // JS functions
+    assert.strictEqual(indexHtml.includes('function openPalmsDateModal('), true);
+    assert.strictEqual(indexHtml.includes('function closePalmsDateModal('), true);
+    assert.strictEqual(indexHtml.includes('function selectPalmsDatePreset('), true);
+    assert.strictEqual(indexHtml.includes('function calcPalmsPresetRange('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsModalCalendars('), true);
+    assert.strictEqual(indexHtml.includes('function movePalmsCalendarMonth('), true);
+    assert.strictEqual(indexHtml.includes('function onPalmsCalendarDateClick('), true);
+    assert.strictEqual(indexHtml.includes('function applyPalmsDateModal('), true);
+    assert.strictEqual(indexHtml.includes('function updatePalmsPeriodDisplayLabel('), true);
+  });
 });
+
 
 

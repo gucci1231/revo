@@ -5740,6 +5740,70 @@ select.form-input, select.form-select {
   border: 1px solid #cbd5e1;
 }
 
+/* --- 📅 GA4-Style Interactive Date Range Picker Calendar --- */
+.palms-cal-day {
+  position: relative;
+  height: 34px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  user-select: none;
+}
+.palms-cal-day.empty {
+  pointer-events: none;
+  cursor: default;
+}
+.palms-cal-day.range-start {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-top-left-radius: 9999px !important;
+  border-bottom-left-radius: 9999px !important;
+}
+.palms-cal-day.range-end {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-top-right-radius: 9999px !important;
+  border-bottom-right-radius: 9999px !important;
+}
+.palms-cal-day.range-single {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  border-radius: 9999px !important;
+}
+.palms-cal-day.in-range {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  font-weight: 600;
+  border-radius: 0 !important;
+}
+.palms-cal-day.hover-range {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+.palms-cal-day:not(.range-start):not(.range-end):not(.range-single):not(.empty):hover {
+  background-color: #e2e8f0;
+  border-radius: 8px;
+}
+.palms-preset-item.active {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+.palms-preset-item.active .check-icon {
+  display: inline-block !important;
+  color: #ffffff !important;
+}
+
+
 
 
 
