@@ -170,6 +170,29 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(res3.rpw, 0.25);
     assert.strictEqual(res3.ppw, 0.25);
     assert.strictEqual(res3.ppwTier, 'low'); // < 1.0
+
+    // Test Case 4: 新しい会員（期間が26週であっても、出席が始まった週＝P+A+L+M+S からカウントして算出）
+    // 期間週数=26週だが、期中入会で6週出席 (p=5, a=1, l=0, m=0, s=0 -> 6週)
+    // 期間の週数(26週)で割るのではなく、出席が始まった週からのカウント(6週)で算出
+    // RPW = 12 / 6 = 2.0000
+    // PPW = (12 + 3) / 6 = 2.5000
+    const newMember = {
+      p_present: 5,
+      a_absent: 1,
+      l_late: 0,
+      m_medical: 0,
+      s_substitute: 0,
+      rgi_referrals_given_internal: 8,
+      rgo_referrals_given_external: 4,
+      total_referrals_given: 12,
+      v_visitors: 3,
+      testimonials: 0
+    };
+    const resNew = calcBniTrafficLightScore(newMember, 26);
+    assert.strictEqual(resNew.weeksCount, 6);
+    assert.strictEqual(resNew.rpw, 2.0);
+    assert.strictEqual(resNew.ppw, 2.5);
+    assert.strictEqual(resNew.ppwTier, 'high');
   });
 
   it('verifies flexible period selection elements exist in compiled index.html', () => {
