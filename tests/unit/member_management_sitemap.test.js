@@ -75,6 +75,7 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     assert.strictEqual(indexHtml.includes('function selectMemberForPpwSim('), true);
     assert.strictEqual(indexHtml.includes('function runPpwGoalSimulation('), true);
     assert.strictEqual(indexHtml.includes('function renderTrafficLightsGrid('), true);
+    assert.strictEqual(indexHtml.includes('function renderMiniRadarSvg('), true);
     assert.strictEqual(indexHtml.includes('function renderChapterTrafficView('), true);
   });
 

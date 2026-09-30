@@ -263,8 +263,25 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-badge"'), true);
     assert.strictEqual(indexHtml.includes('半年間活動実績・スリップ推移'), true);
 
+    // Period switcher tabs (week, month, 2months, 3months, half)
+    assert.strictEqual(indexHtml.includes('id="palms-detail-period-tabs"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-period-tabs"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="week"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="month"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="2months"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="3months"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="half"'), true);
+
+    // Trend chart canvas
+    assert.strictEqual(indexHtml.includes('id="palms-detail-chart-history"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-chart-history"'), true);
+
     // Script functions
     assert.strictEqual(indexHtml.includes('function renderPalmsDetailWeeklySubmissions('), true);
+    assert.strictEqual(indexHtml.includes('function switchPalmsHistoryPeriod('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsHistoryChart('), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsHistoryTable('), true);
+    assert.strictEqual(indexHtml.includes('function getFilteredPalmsHistory('), true);
   });
 
   it('verifies GA4-style Date Range Modal and sidebar presets (All, 1M, 2M, 3M, 6M) exist and work in compiled index.html', () => {

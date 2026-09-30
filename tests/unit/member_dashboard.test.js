@@ -68,6 +68,8 @@ describe('Member Personal Dashboard Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('id="member-chart-palms-radar"'), true);
     assert.strictEqual(indexHtml.includes('id="member-palms-scores-grid"'), true);
     assert.strictEqual(indexHtml.includes('id="member-palms-weekly-tbody"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-period-tabs"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-chart-history"'), true);
 
     // Script Functions
     assert.strictEqual(indexHtml.includes('function switchMemberDashboardSubTab'), true);

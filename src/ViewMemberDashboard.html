@@ -279,26 +279,53 @@
           </div>
         </div>
 
-        <!-- 4. 半年間活動実績・スリップ推移テーブル -->
+        <!-- 4. 半年間活動実績・スリップ推移テーブル & グラフ -->
         <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
             <div class="flex items-center gap-2">
               <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
                 <i class="fa-solid fa-calendar-check text-blue-600"></i>
                 <span>半年間活動実績・スリップ推移</span>
               </h3>
               <span id="member-palms-weekly-badge" class="text-3xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                半年間 (26週)
+                週ごと (基本)
               </span>
             </div>
-            <span class="text-3xs text-slate-400 font-bold">定例会・月別スリップ実績推移</span>
+
+            <!-- 期間切り替えセグメントコントロール -->
+            <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="member-palms-period-tabs">
+              <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">週ごと</button>
+              <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
+              <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
+              <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+              <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
+            </div>
+          </div>
+
+          <!-- スリップ・活動実績推移グラフ -->
+          <div class="mb-4 p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-3xs font-extrabold text-slate-500 tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-column text-blue-500"></i>
+                <span>活動スリップ推移グラフ</span>
+              </span>
+              <div class="flex items-center gap-2.5 text-3xs font-bold text-slate-500">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-blue-600 inline-block"></span>リファーラル</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-emerald-500 inline-block"></span>ビジター</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-amber-500 inline-block"></span>1to1</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-purple-500 inline-block"></span>PPW</span>
+              </div>
+            </div>
+            <div class="relative w-full h-44 sm:h-52">
+              <canvas id="member-palms-chart-history"></canvas>
+            </div>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
             <table class="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                  <th class="py-2.5 px-3">対象期間 / 月</th>
+                  <th class="py-2.5 px-3">対象期間 / 日程</th>
                   <th class="py-2.5 px-3 text-center">出席状況</th>
                   <th class="py-2.5 px-3 text-center">活動ステータス</th>
                   <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>

@@ -8144,26 +8144,53 @@ select.form-input, select.form-select {
         </div>
       </div>
 
-      <!-- Half-Year Submissions & Activity Status Table -->
+      <!-- Half-Year Submissions & Activity Status Table & Chart -->
       <div>
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-100">
           <div class="flex items-center gap-2">
-            <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
+            <h4 class="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2 m-0">
               <i class="fa-solid fa-calendar-check text-blue-600"></i>
               <span>半年間活動実績・スリップ推移</span>
             </h4>
             <span id="palms-detail-weekly-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              半年間 (26週)
+              週ごと (基本)
             </span>
           </div>
-          <span class="text-2xs text-slate-400">直近半年間の期間・月別スリップ実績推移</span>
+
+          <!-- 期間切り替えセグメントコントロール -->
+          <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="palms-detail-period-tabs">
+            <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">週ごと</button>
+            <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
+            <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
+            <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+            <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
+          </div>
+        </div>
+
+        <!-- スリップ・活動実績推移グラフ -->
+        <div class="mb-3 p-3 bg-slate-50/70 rounded-2xl border border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-3xs font-extrabold text-slate-500 tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-column text-blue-500"></i>
+              <span>活動スリップ推移グラフ</span>
+            </span>
+            <div class="flex items-center gap-2.5 text-3xs font-bold text-slate-500">
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-blue-600 inline-block"></span>リファーラル</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-emerald-500 inline-block"></span>ビジター</span>
+              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-amber-500 inline-block"></span>1to1</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-purple-500 inline-block"></span>PPW</span>
+            </div>
+          </div>
+          <div class="relative w-full h-40 sm:h-48">
+            <canvas id="palms-detail-chart-history"></canvas>
+          </div>
         </div>
 
         <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
           <table class="w-full text-left text-xs border-collapse min-w-[700px]">
             <thead>
               <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                <th class="py-2.5 px-3">対象期間 / 月</th>
+                <th class="py-2.5 px-3">対象期間 / 日程</th>
                 <th class="py-2.5 px-3 text-center">出席状況</th>
                 <th class="py-2.5 px-3 text-center">活動ステータス</th>
                 <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>
@@ -9095,26 +9122,53 @@ select.form-input, select.form-select {
           </div>
         </div>
 
-        <!-- 4. 半年間活動実績・スリップ推移テーブル -->
+        <!-- 4. 半年間活動実績・スリップ推移テーブル & グラフ -->
         <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
             <div class="flex items-center gap-2">
               <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
                 <i class="fa-solid fa-calendar-check text-blue-600"></i>
                 <span>半年間活動実績・スリップ推移</span>
               </h3>
               <span id="member-palms-weekly-badge" class="text-3xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                半年間 (26週)
+                週ごと (基本)
               </span>
             </div>
-            <span class="text-3xs text-slate-400 font-bold">定例会・月別スリップ実績推移</span>
+
+            <!-- 期間切り替えセグメントコントロール -->
+            <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="member-palms-period-tabs">
+              <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">週ごと</button>
+              <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
+              <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
+              <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+              <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
+            </div>
+          </div>
+
+          <!-- スリップ・活動実績推移グラフ -->
+          <div class="mb-4 p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-3xs font-extrabold text-slate-500 tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-column text-blue-500"></i>
+                <span>活動スリップ推移グラフ</span>
+              </span>
+              <div class="flex items-center gap-2.5 text-3xs font-bold text-slate-500">
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-blue-600 inline-block"></span>リファーラル</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-emerald-500 inline-block"></span>ビジター</span>
+                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-xs bg-amber-500 inline-block"></span>1to1</span>
+                <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-purple-500 inline-block"></span>PPW</span>
+              </div>
+            </div>
+            <div class="relative w-full h-44 sm:h-52">
+              <canvas id="member-palms-chart-history"></canvas>
+            </div>
           </div>
 
           <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
             <table class="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                  <th class="py-2.5 px-3">対象期間 / 月</th>
+                  <th class="py-2.5 px-3">対象期間 / 日程</th>
                   <th class="py-2.5 px-3 text-center">出席状況</th>
                   <th class="py-2.5 px-3 text-center">活動ステータス</th>
                   <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>
@@ -28406,8 +28460,12 @@ function closePalmsDetailModal() {
     setTimeout(() => {
       modalEl.style.display = 'none';
       if (palmsDetailRadarChart) {
-        palmsDetailRadarChart.destroy();
+        try { palmsDetailRadarChart.destroy(); } catch(e) {}
         palmsDetailRadarChart = null;
+      }
+      if (palmsDetailHistoryChartInstance) {
+        try { palmsDetailHistoryChartInstance.destroy(); } catch(e) {}
+        palmsDetailHistoryChartInstance = null;
       }
     }, 150);
   }
@@ -28830,176 +28888,284 @@ function fetchPalmsMemberHistory(memberName) {
     });
 }
 
-/**
- * Render Half-Year PALMS Activity & Slip Submissions Table
- */
-function renderPalmsDetailWeeklySubmissions(historyList, targetTbodyId = 'palms-detail-weekly-tbody', targetBadgeId = 'palms-detail-weekly-badge') {
-  const tbody = document.getElementById(targetTbodyId);
-  const badge = document.getElementById(targetBadgeId);
-  if (!tbody) return;
+// --- PALMS Detail & Member Dashboard History State ---
+let palmsDetailHistoryList = [];
+let palmsDetailCurrentPeriod = 'week';
+let palmsDetailHistoryChartInstance = null;
 
-  if (badge) {
-    badge.textContent = '半年間 (26週)';
+let memberPalmsHistoryList = [];
+let memberPalmsCurrentPeriod = 'week';
+let memberPalmsHistoryChartInstance = null;
+
+/**
+ * Filter or Aggregate PALMS History based on chosen periodKey
+ * ('week' | 'month' | '2months' | '3months' | 'half')
+ */
+function getFilteredPalmsHistory(historyList, periodKey = 'week') {
+  if (!Array.isArray(historyList) || historyList.length === 0) return [];
+
+  const getDiffDays = (h) => {
+    const d1 = new Date(h.start_date);
+    const d2 = new Date(h.end_date);
+    return Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+  };
+
+  // 1. 週ごと (基本: diffDays <= 14 の全レコード)
+  if (periodKey === 'week') {
+    return historyList
+      .filter(h => getDiffDays(h) <= 14)
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
   }
 
-  if (!historyList || historyList.length === 0) {
+  // 2. 月毎 (1ヶ月単位: diffDays between 25 and 35)
+  if (periodKey === 'month') {
+    const months = historyList
+      .filter(h => {
+        const d = getDiffDays(h);
+        return d >= 25 && d <= 35;
+      })
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (months.length > 0) return months;
+    return aggregateWeeklyToMonths(historyList);
+  }
+
+  // 3. 2ヶ月 (diffDays between 50 and 70, or aggregate monthly)
+  if (periodKey === '2months') {
+    const biMonths = historyList
+      .filter(h => {
+        const d = getDiffDays(h);
+        return d >= 50 && d <= 70;
+      })
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (biMonths.length > 0) return biMonths;
+    return aggregateToMultiMonth(historyList, 2);
+  }
+
+  // 4. 3ヶ月 (diffDays between 80 and 110, or aggregate quarterly)
+  if (periodKey === '3months') {
+    const quarters = historyList
+      .filter(h => {
+        const d = getDiffDays(h);
+        return d >= 80 && d <= 110;
+      })
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (quarters.length > 0) return quarters;
+    return aggregateToMultiMonth(historyList, 3);
+  }
+
+  // 5. 半年 (diffDays between 150 and 210, or all)
+  if (periodKey === 'half') {
+    const halfYears = historyList
+      .filter(h => {
+        const d = getDiffDays(h);
+        return d >= 150 && d <= 210;
+      })
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (halfYears.length > 0) return halfYears;
+    return [combineHistoryRecords(historyList, '直近半年間 (累計)')];
+  }
+
+  return historyList;
+}
+
+/**
+ * Aggregate weekly records into calendar month buckets
+ */
+function aggregateWeeklyToMonths(historyList) {
+  const weekly = historyList.filter(h => {
+    const d1 = new Date(h.start_date);
+    const d2 = new Date(h.end_date);
+    return Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1) <= 14;
+  });
+
+  if (weekly.length === 0) return [];
+
+  const groups = {};
+  weekly.forEach(w => {
+    const key = w.end_date.substring(0, 7); // 'YYYY-MM'
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(w);
+  });
+
+  const sortedKeys = Object.keys(groups).sort().reverse();
+  return sortedKeys.map(k => {
+    const recs = groups[k];
+    const monthNum = parseInt(k.substring(5, 7), 10);
+    return combineHistoryRecords(recs, `${monthNum}月度 (${recs.length}週)`);
+  });
+}
+
+/**
+ * Aggregate monthly (or weekly) into N-month buckets
+ */
+function aggregateToMultiMonth(historyList, monthSpan = 2) {
+  let baseRecords = historyList.filter(h => {
+    const d1 = new Date(h.start_date);
+    const d2 = new Date(h.end_date);
+    const diff = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+    return diff >= 25 && diff <= 35;
+  }).sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+  if (baseRecords.length === 0) {
+    baseRecords = aggregateWeeklyToMonths(historyList);
+  }
+
+  if (baseRecords.length === 0) return [];
+
+  const results = [];
+  for (let i = 0; i < baseRecords.length; i += monthSpan) {
+    const chunk = baseRecords.slice(i, i + monthSpan);
+    const label = `${chunk.length}ヶ月間 (${chunk.map(c => (c.period_label || c.end_date.substring(5, 7) + '月')).reverse().join('〜')})`;
+    results.push(combineHistoryRecords(chunk, label));
+  }
+  return results;
+}
+
+/**
+ * Helper to combine multiple PALMS records into one aggregated summary record
+ */
+function combineHistoryRecords(records, label, startDate, endDate) {
+  if (!records || records.length === 0) return null;
+  const sDate = startDate || records[records.length - 1].start_date || '2026-04-01';
+  const eDate = endDate || records[0].end_date || '2026-09-30';
+  const d1 = new Date(sDate);
+  const d2 = new Date(eDate);
+  const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+  const weeks = Math.max(1, Math.round(diffDays / 7));
+
+  let p = 0, a = 0, l = 0, m = 0, s = 0;
+  let rgi = 0, rgo = 0, totalRef = 0;
+  let visitors = 0, oto = 0, tyfcbYen = 0, ceu = 0, sponsors = 0;
+
+  records.forEach(r => {
+    p += Number(r.p_present != null ? r.p_present : (r.p || 0));
+    a += Number(r.a_absent != null ? r.a_absent : (r.a || 0));
+    l += Number(r.l_late != null ? r.l_late : (r.l || 0));
+    m += Number(r.m_medical != null ? r.m_medical : (r.m || 0));
+    s += Number(r.s_substitute != null ? r.s_substitute : (r.s || 0));
+
+    const rgiVal = Number(r.rgi_referrals_given_internal != null ? r.rgi_referrals_given_internal : (r.rgi || 0));
+    const rgoVal = Number(r.rgo_referrals_given_external != null ? r.rgo_referrals_given_external : (r.rgo || 0));
+    rgi += rgiVal;
+    rgo += rgoVal;
+    totalRef += Number(r.total_referrals_given != null ? r.total_referrals_given : (rgiVal + rgoVal));
+
+    visitors += Number(r.v_visitors != null ? r.v_visitors : (r.visitors || 0));
+    oto += Number(r.one_to_ones || 0);
+    tyfcbYen += Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
+    ceu += Number(r.ceu || 0);
+    sponsors += Number(r.testimonials != null ? r.testimonials : (r.sponsors || 0));
+  });
+
+  const ppw = weeks > 0 ? ((totalRef + visitors + sponsors) / weeks) : 0;
+  const rpw = weeks > 0 ? (totalRef / weeks) : 0;
+
+  return {
+    start_date: sDate,
+    end_date: eDate,
+    period_label: label,
+    p_present: p,
+    a_absent: a,
+    l_late: l,
+    m_medical: m,
+    s_substitute: s,
+    rgi_referrals_given_internal: rgi,
+    rgo_referrals_given_external: rgo,
+    total_referrals_given: totalRef,
+    v_visitors: visitors,
+    one_to_ones: oto,
+    tyfcb_yen: tyfcbYen,
+    ceu: ceu,
+    testimonials: sponsors,
+    sponsors: sponsors,
+    ppw: ppw,
+    rpw: rpw,
+    weeks: weeks
+  };
+}
+
+/**
+ * Render PALMS History Table Rows
+ */
+function renderPalmsHistoryTable(tbodyId, records, periodKey) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+
+  if (!records || records.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
           <i class="fa-solid fa-calendar-xmark text-lg mb-1 text-slate-300"></i>
-          <p>表示可能な半年間データがまだ登録されていません</p>
-          <p class="text-3xs text-slate-400 mt-0.5">※ 上部の「Connect同期」を実行すると最新データが自動反映されます</p>
+          <p>この期間の活動実績データはありません</p>
         </td>
       </tr>
     `;
     return;
   }
 
-  // 1. Identify primary 6-month record (approx 26 weeks, 150-200 days or matching currentPalmsPeriod)
-  let halfYearRec = historyList.find(h => {
-    if (currentPalmsPeriod.startDate && currentPalmsPeriod.endDate) {
-      if (h.start_date === currentPalmsPeriod.startDate && h.end_date === currentPalmsPeriod.endDate) return true;
-    }
-    const d1 = new Date(h.start_date);
-    const d2 = new Date(h.end_date);
-    const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
-    return diffDays >= 60 && diffDays <= 210;
-  });
-
-  // If not found in history, fallback to current loaded record
-  if (!halfYearRec && typeof currentPalmsRecords !== 'undefined') {
-    const cached = currentPalmsRecords.find(r => r.member_name === currentInspectedPalmsMember);
-    if (cached) halfYearRec = cached;
-  }
-
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
   let html = '';
 
-  // --- Row 1: 6-Month Comprehensive Total Row (Highlighted) ---
-  if (halfYearRec) {
-    const d1 = new Date(halfYearRec.start_date || currentPalmsPeriod.startDate || '2026-04-01');
-    const d2 = new Date(halfYearRec.end_date || currentPalmsPeriod.endDate || '2026-09-30');
+  let sumRef = 0, sumVisitors = 0, sumOto = 0, sumTyfcb = 0, sumCeu = 0, sumP = 0, sumA = 0;
+
+  records.forEach((w) => {
+    const d1 = new Date(w.start_date);
+    const d2 = new Date(w.end_date);
     const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
-    const weeks = Math.max(1, Math.round(diffDays / 7));
+    const isSingleWeek = (periodKey === 'week' || diffDays <= 14);
 
-    const p = Number(halfYearRec.p_present != null ? halfYearRec.p_present : (halfYearRec.p || 0));
-    const a = Number(halfYearRec.a_absent != null ? halfYearRec.a_absent : (halfYearRec.a || 0));
-    const l = Number(halfYearRec.l_late != null ? halfYearRec.l_late : (halfYearRec.l || 0));
-    const m = Number(halfYearRec.m_medical != null ? halfYearRec.m_medical : (halfYearRec.m || 0));
-    const s = Number(halfYearRec.s_substitute != null ? halfYearRec.s_substitute : (halfYearRec.s || 0));
+    const p = Number(w.p_present != null ? w.p_present : (w.p || 0));
+    const a = Number(w.a_absent != null ? w.a_absent : (w.a || 0));
+    const l = Number(w.l_late != null ? w.l_late : (w.l || 0));
+    const m = Number(w.m_medical != null ? w.m_medical : (w.m || 0));
+    const s = Number(w.s_substitute != null ? w.s_substitute : (w.s || 0));
 
-    const rgi = Number(halfYearRec.rgi_referrals_given_internal != null ? halfYearRec.rgi_referrals_given_internal : (halfYearRec.rgi || 0));
-    const rgo = Number(halfYearRec.rgo_referrals_given_external != null ? halfYearRec.rgo_referrals_given_external : (halfYearRec.rgo || 0));
-    const totalRef = Number(halfYearRec.total_referrals_given != null ? halfYearRec.total_referrals_given : (rgi + rgo));
+    const rgi = Number(w.rgi_referrals_given_internal != null ? w.rgi_referrals_given_internal : (w.rgi || 0));
+    const rgo = Number(w.rgo_referrals_given_external != null ? w.rgo_referrals_given_external : (w.rgo || 0));
+    const totalRef = Number(w.total_referrals_given != null ? w.total_referrals_given : (rgi + rgo));
 
-    const visitors = Number(halfYearRec.v_visitors != null ? halfYearRec.v_visitors : (halfYearRec.visitors || 0));
-    const oto = Number(halfYearRec.one_to_ones || 0);
-    const tyfcbYen = Number(halfYearRec.tyfcb_yen != null ? halfYearRec.tyfcb_yen : (Number(halfYearRec.tyfcb_amount || 0) * 1000));
-    const ceu = Number(halfYearRec.ceu || 0);
-    const sponsors = Number(halfYearRec.testimonials != null ? halfYearRec.testimonials : (halfYearRec.sponsors || 0));
+    const visitors = Number(w.v_visitors != null ? w.v_visitors : (w.visitors || 0));
+    const oto = Number(w.one_to_ones || 0);
+    const tyfcbYen = Number(w.tyfcb_yen != null ? w.tyfcb_yen : (Number(w.tyfcb_amount || 0) * 1000));
+    const ceu = Number(w.ceu || 0);
+    const sponsors = Number(w.testimonials != null ? w.testimonials : (w.sponsors || 0));
 
-    const totalSessions = (p + a + l + m + s) || weeks;
-    const attRate = totalSessions > 0 ? Math.round(((p + s) / totalSessions) * 100) : 100;
-    const ppw = weeks > 0 ? ((totalRef + visitors + sponsors) / weeks) : 0;
-    const rpw = weeks > 0 ? (totalRef / weeks) : 0;
+    sumRef += totalRef;
+    sumVisitors += visitors;
+    sumOto += oto;
+    sumTyfcb += tyfcbYen;
+    sumCeu += ceu;
+    sumP += p;
+    sumA += a;
 
-    let attBadge = `<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-3xs border border-emerald-200">出席${p}回 (${attRate}%)</span>`;
-    if (a > 0) {
-      attBadge += `<span class="text-3xs text-rose-600 font-bold ml-1">欠${a}</span>`;
+    const weeksCount = isSingleWeek ? 1 : Math.max(1, Math.round(diffDays / 7));
+    const ppw = w.ppw != null ? w.ppw : ((totalRef + visitors + sponsors) / weeksCount);
+
+    const endDateObj = new Date(w.end_date);
+    const dayOfWeek = isNaN(endDateObj.getDay()) ? '' : ` (${dayNames[endDateObj.getDay()]})`;
+
+    let dateFormatted = '';
+    let periodLabel = w.period_label || '';
+
+    if (isSingleWeek) {
+      dateFormatted = `${w.end_date.replace(/-/g, '/')}${dayOfWeek}`;
+      if (!periodLabel) periodLabel = '定例会 (週別)';
+    } else {
+      dateFormatted = `${w.start_date.replace(/-/g, '/')} 〜 ${w.end_date.replace(/-/g, '/')}`;
+      if (!periodLabel) {
+        if (periodKey === 'month') periodLabel = `${endDateObj.getMonth() + 1}月度`;
+        else if (periodKey === 'half') periodLabel = `半年間 (${weeksCount}週)`;
+        else periodLabel = `${Math.round(diffDays / 30)}ヶ月間`;
+      }
     }
 
-    const sFmt = (halfYearRec.start_date || '2026-04-01').replace(/-/g, '/');
-    const eFmt = (halfYearRec.end_date || '2026-09-30').replace(/-/g, '/');
-
-    html += `
-      <tr class="bg-blue-50/70 border-b-2 border-blue-200 hover:bg-blue-100/60 transition-colors">
-        <td class="py-3 px-3 whitespace-nowrap">
-          <div class="flex items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded-md bg-blue-600 text-white text-3xs font-extrabold shadow-2xs">直近半年間 累計</span>
-            <span class="font-black text-slate-800 text-xs">${weeks}週通算</span>
-          </div>
-          <div class="text-3xs text-slate-500 font-semibold mt-0.5">${sFmt} 〜 ${eFmt}</div>
-        </td>
-        <td class="py-3 px-3 text-center whitespace-nowrap">
-          ${attBadge}
-        </td>
-        <td class="py-3 px-3 text-center whitespace-nowrap">
-          <span class="inline-flex items-center gap-1 font-extrabold text-blue-800 bg-blue-100/80 px-2.5 py-0.5 rounded-md text-3xs border border-blue-300">
-            <i class="fa-solid fa-trophy text-amber-500"></i> 半年実績
-          </span>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap font-black text-blue-700 text-sm">
-          ${ppw.toFixed(2)} <span class="text-3xs font-normal text-slate-400">pt/週</span>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="font-black text-slate-900 text-xs">${totalRef}件</div>
-          <div class="text-3xs text-slate-400">週${rpw.toFixed(2)}件 (${rgi}/${rgo})</div>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="font-black text-slate-900 text-xs">${visitors}名</div>
-          <div class="text-3xs text-slate-400">月${(visitors / (weeks / 4.33)).toFixed(1)}名換算</div>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="font-black text-slate-900 text-xs">${oto}回</div>
-          <div class="text-3xs text-slate-400">週${(oto / weeks).toFixed(1)}回</div>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="font-black text-slate-900 text-xs">¥${tyfcbYen.toLocaleString()}</div>
-          <div class="text-3xs text-slate-400">月平均 ¥${Math.round(tyfcbYen / (weeks / 4.33)).toLocaleString()}</div>
-        </td>
-        <td class="py-3 px-3 text-right whitespace-nowrap">
-          <div class="font-black text-slate-900 text-xs">${ceu} pt</div>
-          <div class="text-3xs text-slate-400">週${(ceu / weeks).toFixed(1)} pt</div>
-        </td>
-      </tr>
-    `;
-  }
-
-  // 2. Extract monthly or sub-period records and weekly submissions within the half-year
-  const subRecords = historyList.filter(h => {
-    const d1 = new Date(h.start_date);
-    const d2 = new Date(h.end_date);
-    const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
-    // Include monthly (15-40 days) or weekly (<= 14 days)
-    return diffDays <= 45;
-  });
-
-  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-
-  if (subRecords.length > 0) {
-    subRecords.forEach(w => {
-      const d1 = new Date(w.start_date);
-      const d2 = new Date(w.end_date);
-      const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
-      const isSingleWeek = diffDays <= 14;
-
-      const p = Number(w.p_present || 0);
-      const a = Number(w.a_absent || 0);
-      const l = Number(w.l_late || 0);
-      const m = Number(w.m_medical || 0);
-      const s = Number(w.s_substitute || 0);
-
-      const rgi = Number(w.rgi_referrals_given_internal || 0);
-      const rgo = Number(w.rgo_referrals_given_external || 0);
-      const totalRef = Number(w.total_referrals_given != null ? w.total_referrals_given : (rgi + rgo));
-
-      const visitors = Number(w.v_visitors || 0);
-      const oto = Number(w.one_to_ones || 0);
-      const tyfcbYen = Number(w.tyfcb_yen != null ? w.tyfcb_yen : (Number(w.tyfcb_amount || 0) * 1000));
-      const ceu = Number(w.ceu || 0);
-      const sponsors = Number(w.testimonials || w.sponsors || 0);
-
-      const weeksCount = isSingleWeek ? 1 : Math.max(1, Math.round(diffDays / 7));
-      const ppw = (totalRef + visitors + sponsors) / weeksCount;
-
-      const endDateObj = new Date(w.end_date);
-      const dayOfWeek = isNaN(endDateObj.getDay()) ? '' : ` (${dayNames[endDateObj.getDay()]})`;
-      const dateFormatted = isSingleWeek
-        ? `${w.end_date.replace(/-/g, '/')}${dayOfWeek}`
-        : `${w.start_date.replace(/-/g, '/')} 〜 ${w.end_date.replace(/-/g, '/')}`;
-      const periodLabel = isSingleWeek ? '定例会 (週別)' : `${Math.round(diffDays / 30)}ヶ月間`;
-
-      // Attendance Badge
-      let attBadge = '<span class="text-slate-300">-</span>';
+    // 出席バッジ
+    let attBadge = '<span class="text-slate-300">-</span>';
+    if (isSingleWeek) {
       if (p > 0) {
         attBadge = `<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-3xs border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>出席 (${p})</span>`;
       } else if (s > 0) {
@@ -29011,56 +29177,328 @@ function renderPalmsDetailWeeklySubmissions(historyList, targetTbodyId = 'palms-
       } else if (m > 0) {
         attBadge = `<span class="inline-flex items-center gap-1 font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full text-3xs border border-slate-200"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>医療 (${m})</span>`;
       }
+    } else {
+      const totalSessions = (p + a + l + m + s) || weeksCount;
+      const attRate = totalSessions > 0 ? Math.round(((p + s) / totalSessions) * 100) : 100;
+      attBadge = `<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-3xs border border-emerald-200">出席${p}回 (${attRate}%)</span>`;
+      if (a > 0) attBadge += `<span class="text-3xs text-rose-600 font-bold ml-1">欠${a}</span>`;
+    }
 
-      // Slip Status Badge
-      let slipStatusBadge = '';
-      const hasHighImpact = (totalRef > 0 || visitors > 0);
-      const hasActivity = (hasHighImpact || oto > 0 || ceu > 0 || tyfcbYen > 0);
+    // スリップ状態バッジ
+    let slipStatusBadge = '';
+    const hasHighImpact = (totalRef > 0 || visitors > 0);
+    const hasActivity = (hasHighImpact || oto > 0 || ceu > 0 || tyfcbYen > 0);
 
-      if (hasHighImpact) {
-        slipStatusBadge = '<span class="inline-flex items-center gap-1 font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md text-3xs border border-blue-200"><i class="fa-solid fa-fire text-amber-500"></i> 高貢献</span>';
-      } else if (hasActivity) {
-        slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-3xs border border-emerald-200"><i class="fa-solid fa-check text-emerald-600"></i> 入力済</span>';
-      } else {
-        slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md text-3xs border border-slate-200"><i class="fa-solid fa-minus text-slate-300"></i> スリップなし</span>';
+    if (hasHighImpact) {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md text-3xs border border-blue-200"><i class="fa-solid fa-fire text-amber-500"></i> 高貢献</span>';
+    } else if (hasActivity) {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md text-3xs border border-emerald-200"><i class="fa-solid fa-check text-emerald-600"></i> 入力済</span>';
+    } else {
+      slipStatusBadge = '<span class="inline-flex items-center gap-1 font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md text-3xs border border-slate-200"><i class="fa-solid fa-minus text-slate-300"></i> スリップなし</span>';
+    }
+
+    html += `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-2.5 px-3 whitespace-nowrap">
+          <div class="font-bold text-slate-800 text-xs">${dateFormatted}</div>
+          <div class="text-3xs text-slate-400">${periodLabel}</div>
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+          ${attBadge}
+        </td>
+        <td class="py-2.5 px-3 text-center whitespace-nowrap">
+          ${slipStatusBadge}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap font-black text-slate-800">
+          ${ppw.toFixed(2)}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${totalRef > 0 ? `<span class="font-black text-slate-800">${totalRef}件</span> <span class="text-3xs text-slate-400">(${rgi}/${rgo})</span>` : '<span class="text-slate-300">-</span>'}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${visitors > 0 ? `<span class="font-bold text-slate-800">${visitors}名</span>` : '<span class="text-slate-300">-</span>'}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${oto > 0 ? `<span class="font-bold text-slate-800">${oto}回</span>` : '<span class="text-slate-300">-</span>'}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${tyfcbYen > 0 ? `<span class="font-bold text-slate-800">¥${tyfcbYen.toLocaleString()}</span>` : '<span class="text-slate-300">-</span>'}
+        </td>
+        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+          ${ceu > 0 ? `<span class="font-bold text-slate-800">${ceu} pt</span>` : '<span class="text-slate-300">-</span>'}
+        </td>
+      </tr>
+    `;
+  });
+
+  // 合計サマリー行
+  html += `
+    <tr class="bg-blue-50/70 border-t-2 border-blue-200 font-bold">
+      <td class="py-2.5 px-3 whitespace-nowrap text-blue-900 font-extrabold text-xs">
+        期間合計 (${records.length}件)
+      </td>
+      <td class="py-2.5 px-3 text-center text-xs text-blue-900">
+        出席 ${sumP}回 ${sumA > 0 ? `<span class="text-rose-600">(欠${sumA})</span>` : ''}
+      </td>
+      <td class="py-2.5 px-3 text-center">
+        <span class="text-3xs font-extrabold text-blue-700 bg-blue-100/60 px-2 py-0.5 rounded-md">集計済</span>
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-800 text-sm">
+        ${(sumRef > 0 ? (sumRef / records.length).toFixed(2) : '0.00')}
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-900">
+        ${sumRef}件
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-900">
+        ${sumVisitors}名
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-900">
+        ${sumOto}回
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-900">
+        ¥${sumTyfcb.toLocaleString()}
+      </td>
+      <td class="py-2.5 px-3 text-right font-black text-blue-900">
+        ${sumCeu} pt
+      </td>
+    </tr>
+  `;
+
+  tbody.innerHTML = html;
+}
+
+/**
+ * Render PALMS Trend Chart (Chart.js)
+ */
+function renderPalmsHistoryChart(canvasId, records, periodKey) {
+  if (typeof Chart === 'undefined') return;
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const isMember = canvasId.includes('member');
+  if (isMember && memberPalmsHistoryChartInstance) {
+    try { memberPalmsHistoryChartInstance.destroy(); } catch(e) {}
+    memberPalmsHistoryChartInstance = null;
+  } else if (!isMember && palmsDetailHistoryChartInstance) {
+    try { palmsDetailHistoryChartInstance.destroy(); } catch(e) {}
+    palmsDetailHistoryChartInstance = null;
+  }
+
+  if (!records || records.length === 0) return;
+
+  // グラフ用には時系列順（古い順 -> 新しい順）に反転
+  const chrono = [...records].reverse();
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const labels = chrono.map(r => {
+    if (r.period_label && periodKey !== 'week') {
+      return r.period_label.replace(/\(.*\)/, '').trim();
+    }
+    const d2 = new Date(r.end_date);
+    const m = d2.getMonth() + 1;
+    const d = d2.getDate();
+    if (periodKey === 'week') {
+      const day = isNaN(d2.getDay()) ? '' : `(${dayNames[d2.getDay()]})`;
+      return `${m}/${d}${day}`;
+    }
+    if (periodKey === 'month') return `${m}月`;
+    if (periodKey === 'half') return `${d2.getFullYear()}年${m <= 3 ? '下期' : (m <= 9 ? '上期' : '下期')}`;
+    return `${m}/${d}`;
+  });
+
+  const refData = chrono.map(r => Number(r.total_referrals_given != null ? r.total_referrals_given : (Number(r.rgi || r.rgi_referrals_given_internal || 0) + Number(r.rgo || r.rgo_referrals_given_external || 0))));
+  const visitorData = chrono.map(r => Number(r.v_visitors != null ? r.v_visitors : (r.visitors || 0)));
+  const otoData = chrono.map(r => Number(r.one_to_ones || 0));
+  const ppwData = chrono.map(r => {
+    if (r.ppw != null) return Number(r.ppw.toFixed(2));
+    const d1 = new Date(r.start_date);
+    const d2 = new Date(r.end_date);
+    const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+    const weeks = Math.max(1, Math.round(diffDays / 7));
+    const tot = Number(r.total_referrals_given != null ? r.total_referrals_given : (Number(r.rgi || 0) + Number(r.rgo || 0)));
+    const v = Number(r.v_visitors != null ? r.v_visitors : (r.visitors || 0));
+    const s = Number(r.testimonials || r.sponsors || 0);
+    return Number(((tot + v + s) / weeks).toFixed(2));
+  });
+
+  const ctx = canvas.getContext('2d');
+  const newInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'リファーラル',
+          data: refData,
+          backgroundColor: 'rgba(0, 113, 227, 0.85)',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 28,
+          yAxisID: 'y'
+        },
+        {
+          label: 'ビジター',
+          data: visitorData,
+          backgroundColor: 'rgba(16, 185, 129, 0.85)',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 28,
+          yAxisID: 'y'
+        },
+        {
+          label: '1to1',
+          data: otoData,
+          backgroundColor: 'rgba(245, 158, 11, 0.85)',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 28,
+          yAxisID: 'y'
+        },
+        {
+          label: '週貢献 (PPW)',
+          data: ppwData,
+          type: 'line',
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#8b5cf6',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 1.5,
+          pointRadius: 3.5,
+          pointHoverRadius: 5,
+          tension: 0.25,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleFont: { size: 11, weight: 'bold' },
+          bodyFont: { size: 10 },
+          padding: 8,
+          boxPadding: 4,
+          callbacks: {
+            afterBody: function(items) {
+              const idx = items[0].dataIndex;
+              const rec = chrono[idx];
+              const tyfcb = Number(rec.tyfcb_yen != null ? rec.tyfcb_yen : (Number(rec.tyfcb_amount || 0) * 1000));
+              const ceu = Number(rec.ceu || 0);
+              let lines = [];
+              if (tyfcb > 0) lines.push(`TYFCB売上: ¥${tyfcb.toLocaleString()}`);
+              if (ceu > 0) lines.push(`CEU学習: ${ceu} pt`);
+              return lines.join('\n');
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+        },
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          beginAtZero: true,
+          suggestedMax: 3,
+          ticks: { stepSize: 1, font: { size: 9 }, color: '#94a3b8' },
+          grid: { color: '#f1f5f9' }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          beginAtZero: true,
+          suggestedMax: 2.0,
+          ticks: { font: { size: 9 }, color: '#a855f7' },
+          grid: { drawOnChartArea: false }
+        }
       }
+    }
+  });
 
-      html += `
-        <tr class="hover:bg-slate-50/80 transition-colors">
-          <td class="py-2.5 px-3 whitespace-nowrap">
-            <div class="font-bold text-slate-800 text-xs">${dateFormatted}</div>
-            <div class="text-3xs text-slate-400">${periodLabel}</div>
-          </td>
-          <td class="py-2.5 px-3 text-center whitespace-nowrap">
-            ${attBadge}
-          </td>
-          <td class="py-2.5 px-3 text-center whitespace-nowrap">
-            ${slipStatusBadge}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap font-bold text-slate-800">
-            ${ppw.toFixed(2)}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap">
-            ${totalRef > 0 ? `<span class="font-black text-slate-800">${totalRef}件</span> <span class="text-3xs text-slate-400">(${rgi}/${rgo})</span>` : '<span class="text-slate-300">-</span>'}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap">
-            ${visitors > 0 ? `<span class="font-bold text-slate-800">${visitors}名</span>` : '<span class="text-slate-300">-</span>'}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap">
-            ${oto > 0 ? `<span class="font-bold text-slate-800">${oto}回</span>` : '<span class="text-slate-300">-</span>'}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap">
-            ${tyfcbYen > 0 ? `<span class="font-bold text-slate-800">¥${tyfcbYen.toLocaleString()}</span>` : '<span class="text-slate-300">-</span>'}
-          </td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap">
-            ${ceu > 0 ? `<span class="font-bold text-slate-800">${ceu} pt</span>` : '<span class="text-slate-300">-</span>'}
-          </td>
-        </tr>
-      `;
+  if (isMember) {
+    memberPalmsHistoryChartInstance = newInst;
+  } else {
+    palmsDetailHistoryChartInstance = newInst;
+  }
+}
+
+/**
+ * Switch PALMS History Period View
+ */
+function switchPalmsHistoryPeriod(periodKey, context = 'detail') {
+  const isMember = (context === 'member');
+  const prefix = isMember ? 'member-palms' : 'palms-detail';
+  const historyList = isMember ? memberPalmsHistoryList : palmsDetailHistoryList;
+
+  if (isMember) {
+    memberPalmsCurrentPeriod = periodKey;
+  } else {
+    palmsDetailCurrentPeriod = periodKey;
+  }
+
+  // Update button active styling
+  const container = document.getElementById(`${prefix}-period-tabs`);
+  if (container) {
+    container.querySelectorAll('.history-period-btn').forEach(btn => {
+      const p = btn.getAttribute('data-period');
+      if (p === periodKey) {
+        btn.className = 'history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer';
+      } else {
+        btn.className = 'history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer';
+      }
     });
   }
 
-  tbody.innerHTML = html;
+  // Filter records
+  const filtered = getFilteredPalmsHistory(historyList, periodKey);
+
+  // Update Badge
+  const badge = document.getElementById(`${prefix}-weekly-badge`);
+  if (badge) {
+    const periodNames = {
+      'week': `週ごと (${filtered.length}週分)`,
+      'month': `月毎 (${filtered.length}ヶ月分)`,
+      '2months': `2ヶ月 (${filtered.length}期)`,
+      '3months': `3ヶ月 (${filtered.length}期)`,
+      'half': `半年 (${filtered.length}期)`
+    };
+    badge.textContent = periodNames[periodKey] || '活動推移';
+  }
+
+  // Render Table
+  renderPalmsHistoryTable(`${prefix}-weekly-tbody`, filtered, periodKey);
+
+  // Render Chart
+  renderPalmsHistoryChart(`${prefix}-chart-history`, filtered, periodKey);
+}
+
+/**
+ * Render Half-Year PALMS Activity & Slip Submissions Table
+ */
+function renderPalmsDetailWeeklySubmissions(historyList, targetTbodyId = 'palms-detail-weekly-tbody', targetBadgeId = 'palms-detail-weekly-badge') {
+  const isMember = targetTbodyId.includes('member');
+  const context = isMember ? 'member' : 'detail';
+
+  if (isMember) {
+    memberPalmsHistoryList = Array.isArray(historyList) ? historyList : [];
+  } else {
+    palmsDetailHistoryList = Array.isArray(historyList) ? historyList : [];
+  }
+
+  // デフォルト表示: 基本は１週間ごとに全て表示
+  switchPalmsHistoryPeriod('week', context);
 }
 
 /**
@@ -29932,25 +30370,6 @@ function renderTrafficLightsGrid() {
     return;
   }
 
-  // Helper for mini equalizer bar (Apple Activity Bar Style)
-  const renderMiniBar = (val, max, label, title) => {
-    const v = Number(val) || 0;
-    const ratio = Math.min(1, Math.max(0, v / max));
-    const pct = Math.round(ratio * 100);
-    let color = 'bg-slate-300';
-    if (ratio >= 0.8) color = 'bg-emerald-500';
-    else if (ratio >= 0.5) color = 'bg-amber-500';
-    else if (ratio > 0) color = 'bg-rose-500';
-
-    return `
-      <div class="flex flex-col items-center gap-1 group/bar" title="${title}: ${v}/${max}pt (${pct}%)">
-        <div class="w-full bg-slate-100 rounded-full h-8 flex items-end p-0.5 overflow-hidden">
-          <div class="w-full ${color} rounded-full transition-all duration-300" style="height: ${Math.max(12, pct)}%;"></div>
-        </div>
-        <span class="text-3xs font-black text-slate-400 group-hover/bar:text-slate-700 tracking-tighter leading-none">${label}</span>
-      </div>
-    `;
-  };
 
   let html = '';
   filtered.forEach(m => {
@@ -29960,15 +30379,25 @@ function renderTrafficLightsGrid() {
     const currentScore = Number(m.total_score) || 0;
 
     let dotColor = 'bg-slate-300';
-    if (currentScore >= 70) dotColor = 'bg-emerald-500 shadow-2xs shadow-emerald-500/50';
-    else if (currentScore >= 50) dotColor = 'bg-amber-500 shadow-2xs shadow-amber-500/50';
-    else if (currentScore >= 30) dotColor = 'bg-rose-500 shadow-2xs shadow-rose-500/50';
+    let zoneTheme = 'grey';
+    if (currentScore >= 70) {
+      dotColor = 'bg-emerald-500 shadow-2xs shadow-emerald-500/50';
+      zoneTheme = 'green';
+    } else if (currentScore >= 50) {
+      dotColor = 'bg-amber-500 shadow-2xs shadow-amber-500/50';
+      zoneTheme = 'yellow';
+    } else if (currentScore >= 30) {
+      dotColor = 'bg-rose-500 shadow-2xs shadow-rose-500/50';
+      zoneTheme = 'red';
+    }
+
+    const radarSvg = renderMiniRadarSvg(scores, zoneTheme);
 
     html += `
       <div onclick="navigateToMemberPersonalDashboard('${memberNameSafe}', 'traffic')" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
         <div>
           <!-- Top Row: Avatar, Name, Category, Score & Status Dot -->
-          <div class="flex items-start justify-between gap-2.5 mb-3">
+          <div class="flex items-start justify-between gap-2.5 mb-2">
             <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                 ${m.member_name ? m.member_name.charAt(0) : '名'}
@@ -29988,16 +30417,24 @@ function renderTrafficLightsGrid() {
             </div>
           </div>
 
-          <!-- 7-Metric Visual Equalizer (Apple Activity Bar Style, Radical Minimalism) -->
-          <div class="bg-slate-50/70 rounded-xl p-2">
-            <div class="grid grid-cols-7 gap-1 items-end">
-              ${renderMiniBar(scores.referral, 25, 'REF', 'リファーラル')}
-              ${renderMiniBar(scores.visitor, 25, 'VIS', 'ビジター')}
-              ${renderMiniBar(scores.one_to_ones, 20, '1:1', '1to1')}
-              ${renderMiniBar(scores.ceu, 10, 'CEU', 'CEU')}
-              ${renderMiniBar(scores.attendance, 10, 'ATT', '出席')}
-              ${renderMiniBar(scores.tyfcb, 5, 'TYF', 'TYFCB')}
-              ${renderMiniBar(scores.sponsor, 5, 'SPO', '推薦/スポンサー')}
+          <!-- Mini 7-Axis Radar Chart (Radical Minimalism & High Information Density) -->
+          <div class="bg-slate-50/60 rounded-xl p-2 flex items-center justify-center my-1.5 border border-slate-100/60 group-hover:bg-slate-50 transition-colors">
+            ${radarSvg}
+          </div>
+
+          <!-- Bottom Key Metric Scores (Top Weight Indicators: REF / VIS / 1:1) -->
+          <div class="mt-2 pt-2 border-t border-slate-100 grid grid-cols-3 gap-1.5 text-center">
+            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">REF</span>
+              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.referral || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
+            </div>
+            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">VIS</span>
+              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.visitor || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
+            </div>
+            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">1:1</span>
+              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.one_to_ones || 0}<span class="text-3xs font-bold text-slate-400">/20</span></span>
             </div>
           </div>
         </div>
@@ -30006,6 +30443,126 @@ function renderTrafficLightsGrid() {
   });
 
   container.innerHTML = html;
+}
+
+/**
+ * Generate Apple Minimalist SVG Radar Chart for 7 PALMS Indicators
+ * @param {Object} scores - scores object { referral, visitor, one_to_ones, ceu, attendance, tyfcb, sponsor }
+ * @param {string} themeColor - 'green' | 'yellow' | 'red' | 'grey'
+ * @returns {string} SVG HTML string
+ */
+function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
+  const items = [
+    { key: 'referral', label: 'REF', max: 25, name: 'リファーラル' },
+    { key: 'visitor', label: 'VIS', max: 25, name: 'ビジター' },
+    { key: 'one_to_ones', label: '1:1', max: 20, name: '1to1' },
+    { key: 'ceu', label: 'CEU', max: 10, name: 'CEU' },
+    { key: 'attendance', label: 'ATT', max: 10, name: '出席' },
+    { key: 'tyfcb', label: 'TYF', max: 5, name: 'TYFCB' },
+    { key: 'sponsor', label: 'SPO', max: 5, name: '推薦' }
+  ];
+
+  const size = 180;
+  const cx = 90;
+  const cy = 90;
+  const r = 50;
+  const total = items.length;
+
+  // Angles: start at top (-PI/2) and go clockwise
+  const angles = items.map((_, i) => -Math.PI / 2 + (i * 2 * Math.PI) / total);
+
+  // Concentric polygon grids (50% and 100%)
+  const createPolygonPoints = (radiusRatio) => {
+    return angles.map(a => {
+      const x = (cx + r * radiusRatio * Math.cos(a)).toFixed(1);
+      const y = (cy + r * radiusRatio * Math.sin(a)).toFixed(1);
+      return `${x},${y}`;
+    }).join(' ');
+  };
+
+  const grid100 = createPolygonPoints(1.0);
+  const grid50 = createPolygonPoints(0.5);
+
+  // Axis lines
+  const axisLines = angles.map(a => {
+    const x = (cx + r * Math.cos(a)).toFixed(1);
+    const y = (cy + r * Math.sin(a)).toFixed(1);
+    return `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f1f5f9" stroke-width="0.8" />`;
+  }).join('');
+
+  // Labels positioning
+  const labelsHtml = items.map((item, i) => {
+    const a = angles[i];
+    const lr = r + 15;
+    const lx = (cx + lr * Math.cos(a)).toFixed(1);
+    const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
+    let anchor = 'middle';
+    if (Math.cos(a) > 0.25) anchor = 'start';
+    else if (Math.cos(a) < -0.25) anchor = 'end';
+
+    const val = Number(scores[item.key]) || 0;
+    const pct = Math.round((Math.min(item.max, Math.max(0, val)) / item.max) * 100);
+
+    return `
+      <text x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="7.5" font-weight="800" fill="#64748b" class="select-none tracking-tighter">
+        ${item.label}
+        <title>${item.name}: ${val}/${item.max}pt (${pct}%)</title>
+      </text>
+    `;
+  }).join('');
+
+  // Data points
+  const dataPoints = items.map((item, i) => {
+    const val = Number(scores[item.key]) || 0;
+    const ratio = Math.min(1, Math.max(0, val / item.max));
+    const a = angles[i];
+    const x = cx + r * ratio * Math.cos(a);
+    const y = cy + r * ratio * Math.sin(a);
+    return { x: x.toFixed(1), y: y.toFixed(1), val, max: item.max, name: item.name, ratio };
+  });
+
+  const polygonPoints = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+
+  // Color scheme
+  let strokeColor = '#10b981';
+  let fillColor = 'rgba(16, 185, 129, 0.22)';
+  let dotColor = '#10b981';
+  if (themeColor === 'yellow') {
+    strokeColor = '#f59e0b';
+    fillColor = 'rgba(245, 158, 11, 0.22)';
+    dotColor = '#f59e0b';
+  } else if (themeColor === 'red') {
+    strokeColor = '#f43f5e';
+    fillColor = 'rgba(244, 63, 94, 0.22)';
+    dotColor = '#f43f5e';
+  } else if (themeColor === 'grey') {
+    strokeColor = '#94a3b8';
+    fillColor = 'rgba(148, 163, 184, 0.22)';
+    dotColor = '#94a3b8';
+  }
+
+  // Dots for each apex
+  const dotsHtml = dataPoints.map(p => `
+    <circle cx="${p.x}" cy="${p.y}" r="2.2" fill="${dotColor}" stroke="#ffffff" stroke-width="1.2">
+      <title>${p.name}: ${p.val}/${p.max}pt</title>
+    </circle>
+  `).join('');
+
+  return `
+    <svg viewBox="0 0 ${size} ${size}" class="w-full h-auto max-w-[160px] mx-auto block overflow-visible">
+      <!-- Outer & Inner Polygons -->
+      <polygon points="${grid100}" fill="none" stroke="#cbd5e1" stroke-width="1" />
+      <polygon points="${grid50}" fill="none" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="2,2" />
+      <!-- Spoke lines -->
+      ${axisLines}
+      <!-- Data Area -->
+      <polygon points="${polygonPoints}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" stroke-linejoin="round" class="transition-all duration-300 group-hover:fill-opacity-35" />
+      <!-- Data Dots -->
+      ${dotsHtml}
+      <!-- Labels -->
+      ${labelsHtml}
+    </svg>
+  `;
 }
 
 /**
