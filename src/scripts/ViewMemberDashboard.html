@@ -81,8 +81,11 @@
       if (pv && typeof pv.then === 'function') promises.push(pv);
     }
 
-    // PALMS個人成績データのキャッシュ確認
-    if ((typeof currentPalmsRecords === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) && typeof fetchPalmsRankingData === 'function') {
+    // PALMS個人成績データのキャッシュ確認 (過去半年のデータを優先取得)
+    if ((typeof cachedPalmsHalfYearRecords === 'undefined' || !cachedPalmsHalfYearRecords || cachedPalmsHalfYearRecords.length === 0) && typeof fetchPalmsHalfYearRecords === 'function') {
+      const ph = fetchPalmsHalfYearRecords();
+      if (ph && typeof ph.then === 'function') promises.push(ph);
+    } else if ((typeof currentPalmsRecords === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) && typeof fetchPalmsRankingData === 'function') {
       const pp = fetchPalmsRankingData();
       if (pp && typeof pp.then === 'function') promises.push(pp);
     }
@@ -766,22 +769,35 @@
     if (!memberName) return;
     const cleanName = String(memberName).trim();
 
-    // currentPalmsRecordsから検索
+    // 過去半年のレコード群（cachedPalmsHalfYearRecords）を最優先で使用
+    const recordsSource = (typeof cachedPalmsHalfYearRecords !== 'undefined' && Array.isArray(cachedPalmsHalfYearRecords) && cachedPalmsHalfYearRecords.length > 0)
+      ? cachedPalmsHalfYearRecords
+      : (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) ? currentPalmsRecords : []);
+
     let record = null;
-    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords)) {
-      record = currentPalmsRecords.find(r => 
+    if (recordsSource.length > 0) {
+      record = recordsSource.find(r => 
         (r.member_name || '').trim() === cleanName ||
         (targetMemberId && (String(r.member_id) === String(targetMemberId) || String(r.id) === String(targetMemberId)))
       );
       if (!record && typeof findMemberByName === 'function') {
         const fuzzy = findMemberByName(cleanName);
         if (fuzzy && fuzzy.name) {
-          record = currentPalmsRecords.find(r => (r.member_name || '').trim() === fuzzy.name);
+          record = recordsSource.find(r => (r.member_name || '').trim() === fuzzy.name);
         }
       }
     }
 
     if (!record) {
+      if (typeof fetchPalmsHalfYearRecords === 'function') {
+        const ph = fetchPalmsHalfYearRecords();
+        if (ph && typeof ph.then === 'function') {
+          ph.then(() => {
+            renderMemberPalmsPersonalScores(memberName, targetMemberId);
+          });
+          return;
+        }
+      }
       if (typeof fetchPalmsRankingData === 'function') {
         const p = fetchPalmsRankingData();
         if (p && typeof p.then === 'function') {
@@ -826,12 +842,12 @@
       else elScoreDesc.innerHTML = '<span class="text-rose-700 font-bold">改善・注力ライン (&lt;50点)</span>';
     }
 
-    // チャプター全体の平均スコア・PPW・RPW (みんなの統計)
-    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
-      const cnt = currentPalmsRecords.length;
-      const sumS = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.total_score) || 0), 0);
-      const sumP = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.ppw) || 0), 0);
-      const sumR = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
+    // チャプター全体の平均スコア・PPW・RPW (みんなの統計 - 過去半年基準)
+    if (recordsSource.length > 0) {
+      const cnt = recordsSource.length;
+      const sumS = recordsSource.reduce((acc, r) => acc + (Number(r.total_score) || 0), 0);
+      const sumP = recordsSource.reduce((acc, r) => acc + (Number(r.ppw) || 0), 0);
+      const sumR = recordsSource.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
       const avgScore = (sumS / cnt).toFixed(1);
       const avgPpw = (sumP / cnt).toFixed(2);
       const avgRpw = (sumR / cnt).toFixed(2);
@@ -938,13 +954,13 @@
       it.pct = Math.min(100, Math.round((it.score / it.maxScore) * 100));
     });
 
-    // チャプター全体の各項目平均達成率 (みんなの統計 %)
+    // チャプター全体の各項目平均達成率 (みんなの統計 % - 過去半年基準)
     let chapterAvgPcts = [0, 0, 0, 0, 0, 0, 0];
-    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
-      const totalMembers = currentPalmsRecords.length;
+    if (recordsSource.length > 0) {
+      const totalMembers = recordsSource.length;
       chapterAvgPcts = items.map(it => {
         let sum = 0;
-        currentPalmsRecords.forEach(rec => {
+        recordsSource.forEach(rec => {
           const sc = (rec.trafficLight && rec.trafficLight.scores) ? rec.trafficLight.scores : {};
           if (it.shortTitle === 'ビジター') sum += (Number(sc.visitor) || 0);
           else if (it.shortTitle === 'リファーラル') sum += (Number(sc.referral) || 0);

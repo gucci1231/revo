@@ -1043,6 +1043,118 @@ function getPalmsScoreColorClass(score, maxScore) {
   return 'text-rose-600 font-bold';
 }
 
+let cachedPalmsHalfYearRecords = null;
+let activePalmsHalfYearPromise = null;
+
+/**
+ * Process raw PALMS records with BNI Traffic Light Scoring System
+ */
+function parseAndProcessPalmsRecords(rawRecords, weeks) {
+  if (!Array.isArray(rawRecords)) return [];
+  let chapterMaxMeetings = 0;
+  rawRecords.forEach(r => {
+    const mCount = Number(r.p_present || 0) + Number(r.a_absent || 0) + Number(r.l_late || 0) + Number(r.m_medical || 0) + Number(r.s_substitute || 0);
+    if (mCount > chapterMaxMeetings) chapterMaxMeetings = mCount;
+  });
+
+  return rawRecords.map(r => {
+    const p = Number(r.p_present || 0);
+    const a = Number(r.a_absent || 0);
+    const l = Number(r.l_late || 0);
+    const m = Number(r.m_medical || 0);
+    const s = Number(r.s_substitute || 0);
+    const rgi = Number(r.rgi_referrals_given_internal || 0);
+    const rgo = Number(r.rgo_referrals_given_external || 0);
+    const totalRefGiven = Number(r.total_referrals_given != null ? r.total_referrals_given : (rgi + rgo));
+    const rri = Number(r.rri_referrals_received_internal || 0);
+    const rro = Number(r.rro_referrals_received_external || 0);
+    const totalRefReceived = Number(r.total_referrals_received != null ? r.total_referrals_received : (rri + rro));
+    const visitors = Number(r.v_visitors || 0);
+    const oto = Number(r.one_to_ones || 0);
+    const tyfcbYen = Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
+    const ceu = Number(r.ceu || r.ceu_credits || 0);
+    const sponsors = Number(r.testimonials || r.sponsors || 0);
+
+    // 出席が始まった週からのカウント（定例会参加週数＝P+A+L+M+S）
+    const memberAttendanceWeeks = (p + a + l + m + s);
+    // 新会員に関しては出席が始まった週からカウントして算出（未出席の場合は期間週数）
+    const memberWeeks = Math.max(1, memberAttendanceWeeks > 0 ? memberAttendanceWeeks : Math.round(weeks));
+    // 新会員判定: 定例会開催数が一定以上あり、かつ出席週数がチャプター最大より少ない場合
+    const isNewMember = chapterMaxMeetings >= 6 && memberAttendanceWeeks < chapterMaxMeetings;
+
+    const parsed = {
+      ...r,
+      p, a, l, m, s,
+      rgi, rgo,
+      total_referrals_given: totalRefGiven,
+      rri, rro,
+      total_referrals_received: totalRefReceived,
+      visitors,
+      one_to_ones: oto,
+      tyfcb_yen: tyfcbYen,
+      ceu,
+      sponsors,
+      weeks_count: memberWeeks,
+      attendance_weeks: memberAttendanceWeeks,
+      is_new_member: isNewMember
+    };
+
+    const trafficLight = calcBniTrafficLightScore(parsed, weeks);
+
+    return {
+      ...parsed,
+      trafficLight,
+      total_score: trafficLight.totalScore,
+      rpw: trafficLight.rpw,
+      ppw: trafficLight.ppw,
+      weeks_count: trafficLight.weeksCount || memberWeeks,
+      attendance_weeks: memberAttendanceWeeks,
+      is_new_member: isNewMember,
+      tier: trafficLight.tier,
+      tierName: trafficLight.tierName,
+      tierColor: trafficLight.tierColor,
+      tierDot: trafficLight.tierDot
+    };
+  });
+}
+
+/**
+ * Fetch PALMS records for the past 6 months (half year)
+ */
+function fetchPalmsHalfYearRecords() {
+  if (cachedPalmsHalfYearRecords && cachedPalmsHalfYearRecords.length > 0) {
+    return Promise.resolve(cachedPalmsHalfYearRecords);
+  }
+  if (activePalmsHalfYearPromise) {
+    return activePalmsHalfYearPromise;
+  }
+  const range = (typeof calcPalmsPresetRange === 'function')
+    ? calcPalmsPresetRange('6months')
+    : { start: '2026-04-01', end: '2026-09-30' };
+
+  const d1 = new Date(range.start);
+  const d2 = new Date(range.end);
+  const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+  const weeks = Math.max(1, diffDays / 7);
+
+  activePalmsHalfYearPromise = ApiService.call('getPalmsListApi', range.start, range.end)
+    .then(res => {
+      activePalmsHalfYearPromise = null;
+      if (res && res.success && Array.isArray(res.records)) {
+        cachedPalmsHalfYearRecords = parseAndProcessPalmsRecords(res.records, weeks);
+        return cachedPalmsHalfYearRecords;
+      }
+      return [];
+    })
+    .catch(err => {
+      activePalmsHalfYearPromise = null;
+      console.error('Failed to fetch half-year PALMS records:', err);
+      return [];
+    });
+
+  return activePalmsHalfYearPromise;
+}
+
 let activePalmsFetchPromise = null;
 
 /**
@@ -1113,76 +1225,9 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
           updatePalmsPeriodDisplayLabel(currentPalmsPeriod.startDate, currentPalmsPeriod.endDate);
         }
 
-
         // Process records with BNI Traffic Light Scoring System
         const rawRecords = res.records || [];
-
-        // チャプター全体の定例会開催週数を特定（既存メンバーの最大定例会回数）
-        let chapterMaxMeetings = 0;
-        rawRecords.forEach(r => {
-          const mCount = Number(r.p_present || 0) + Number(r.a_absent || 0) + Number(r.l_late || 0) + Number(r.m_medical || 0) + Number(r.s_substitute || 0);
-          if (mCount > chapterMaxMeetings) chapterMaxMeetings = mCount;
-        });
-
-        currentPalmsRecords = rawRecords.map(r => {
-          const p = Number(r.p_present || 0);
-          const a = Number(r.a_absent || 0);
-          const l = Number(r.l_late || 0);
-          const m = Number(r.m_medical || 0);
-          const s = Number(r.s_substitute || 0);
-          const rgi = Number(r.rgi_referrals_given_internal || 0);
-          const rgo = Number(r.rgo_referrals_given_external || 0);
-          const totalRefGiven = Number(r.total_referrals_given != null ? r.total_referrals_given : (rgi + rgo));
-          const rri = Number(r.rri_referrals_received_internal || 0);
-          const rro = Number(r.rro_referrals_received_external || 0);
-          const totalRefReceived = Number(r.total_referrals_received != null ? r.total_referrals_received : (rri + rro));
-          const visitors = Number(r.v_visitors || 0);
-          const oto = Number(r.one_to_ones || 0);
-          const tyfcbYen = Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
-          const ceu = Number(r.ceu || r.ceu_credits || 0);
-          const sponsors = Number(r.testimonials || r.sponsors || 0);
-
-          // 出席が始まった週からのカウント（定例会参加週数＝P+A+L+M+S）
-          const memberAttendanceWeeks = (p + a + l + m + s);
-          // 新会員に関しては出席が始まった週からカウントして算出（未出席の場合は期間週数）
-          const memberWeeks = Math.max(1, memberAttendanceWeeks > 0 ? memberAttendanceWeeks : Math.round(weeks));
-          // 新会員判定: 定例会開催数が一定以上あり、かつ出席週数がチャプター最大より少ない場合
-          const isNewMember = chapterMaxMeetings >= 6 && memberAttendanceWeeks < chapterMaxMeetings;
-
-          const parsed = {
-            ...r,
-            p, a, l, m, s,
-            rgi, rgo,
-            total_referrals_given: totalRefGiven,
-            rri, rro,
-            total_referrals_received: totalRefReceived,
-            visitors,
-            one_to_ones: oto,
-            tyfcb_yen: tyfcbYen,
-            ceu,
-            sponsors,
-            weeks_count: memberWeeks,
-            attendance_weeks: memberAttendanceWeeks,
-            is_new_member: isNewMember
-          };
-
-          const trafficLight = calcBniTrafficLightScore(parsed, weeks);
-
-          return {
-            ...parsed,
-            trafficLight,
-            total_score: trafficLight.totalScore,
-            rpw: trafficLight.rpw,
-            ppw: trafficLight.ppw,
-            weeks_count: trafficLight.weeksCount || memberWeeks,
-            attendance_weeks: memberAttendanceWeeks,
-            is_new_member: isNewMember,
-            tier: trafficLight.tier,
-            tierName: trafficLight.tierName,
-            tierColor: trafficLight.tierColor,
-            tierDot: trafficLight.tierDot
-          };
-        });
+        currentPalmsRecords = parseAndProcessPalmsRecords(rawRecords, weeks);
 
         // Update member count badge
         const countBadge = document.getElementById('palms-member-count-badge');

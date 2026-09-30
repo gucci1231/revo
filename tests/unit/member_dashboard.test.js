@@ -97,6 +97,11 @@ describe('Member Personal Dashboard Feature Tests', () => {
 
     // fetchPalmsRankingData returns Promise
     assert.strictEqual(indexHtml.includes('return activePalmsFetchPromise;'), true);
+
+    // Past 6-month radar chart badge and fetching
+    assert.strictEqual(indexHtml.includes('id="member-palms-radar-period-badge"'), true);
+    assert.strictEqual(indexHtml.includes('function fetchPalmsHalfYearRecords'), true);
+    assert.strictEqual(indexHtml.includes('function parseAndProcessPalmsRecords'), true);
   });
 });
 
