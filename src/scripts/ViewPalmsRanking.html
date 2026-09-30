@@ -43,12 +43,60 @@ function formatPalmsPeriodLabel(p) {
 let palmsDateModalState = {
   start: null,
   end: null,
-  selectingEnd: false,
+  activeField: 'end', // 'start' or 'end' (which date is being selected)
   hoverDate: null,
   viewYear: 2026,
   viewMonth: 8, // 0-indexed (8 = September)
-  activePreset: '6months'
+  activePreset: '1month'
 };
+
+/**
+ * Switch Active Date Input Field (Start or End)
+ */
+function setPalmsPickerActiveField(field) {
+  palmsDateModalState.activeField = (field === 'start') ? 'start' : 'end';
+  updatePalmsPickerTabsUi();
+  renderPalmsModalCalendars();
+}
+
+/**
+ * Update UI for Start / End Selector Tabs & Guide Text
+ */
+function updatePalmsPickerTabsUi() {
+  const tabStart = document.getElementById('palms-picker-tab-start');
+  const tabEnd = document.getElementById('palms-picker-tab-end');
+  const guideText = document.getElementById('palms-picker-guide-text');
+
+  const isStart = (palmsDateModalState.activeField === 'start');
+
+  if (tabStart) {
+    if (isStart) {
+      tabStart.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer text-left shadow-2xs';
+      const label = tabStart.querySelector('.text-3xs');
+      if (label) label.className = 'text-3xs uppercase tracking-wider font-black text-blue-600';
+    } else {
+      tabStart.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer text-left shadow-2xs';
+      const label = tabStart.querySelector('.text-3xs');
+      if (label) label.className = 'text-3xs uppercase tracking-wider font-bold text-slate-400';
+    }
+  }
+
+  if (tabEnd) {
+    if (!isStart) {
+      tabEnd.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer text-left shadow-2xs';
+      const label = tabEnd.querySelector('.text-3xs');
+      if (label) label.className = 'text-3xs uppercase tracking-wider font-black text-blue-600';
+    } else {
+      tabEnd.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer text-left shadow-2xs';
+      const label = tabEnd.querySelector('.text-3xs');
+      if (label) label.className = 'text-3xs uppercase tracking-wider font-bold text-slate-400';
+    }
+  }
+
+  if (guideText) {
+    guideText.textContent = isStart ? 'カレンダーをクリックして開始日を選択' : 'カレンダーをクリックして終了日を選択';
+  }
+}
 
 /**
  * Format human-friendly label for the trigger button
@@ -63,21 +111,33 @@ function updatePalmsPeriodDisplayLabel(s, e) {
   const sFmt = s.replace(/-/g, '/');
   const eFmt = e.replace(/-/g, '/');
 
-  if (s === '2026-04-01' && e === '2026-09-30') {
+  if (s === '2026-09-01' && e === '2026-09-30') {
+    labelEl.textContent = `先月: 9月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-08-01' && e === '2026-08-31') {
+    labelEl.textContent = `先々月: 8月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-07-01' && e === '2026-07-31') {
+    labelEl.textContent = `7月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-06-01' && e === '2026-06-30') {
+    labelEl.textContent = `6月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-05-01' && e === '2026-05-31') {
+    labelEl.textContent = `5月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-04-01' && e === '2026-04-30') {
+    labelEl.textContent = `4月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-04-01' && e === '2026-09-30') {
     labelEl.textContent = `半年: 直近第2期 (${sFmt}〜${eFmt})`;
   } else if (s === '2024-10-01' && e === '2026-09-30') {
     labelEl.textContent = `全期間: 過去2年通算 (${sFmt}〜${eFmt})`;
   } else if (s === '2026-08-27' && e === '2026-09-24') {
-    labelEl.textContent = `１ヶ月: 直近4週間 (${sFmt}〜${eFmt})`;
+    labelEl.textContent = `直近4週間 (${sFmt}〜${eFmt})`;
   } else if (s === '2025-10-01' && e === '2026-03-31') {
     labelEl.textContent = `第1期後半 6ヶ月 (${sFmt}〜${eFmt})`;
   } else if (s === '2025-04-01' && e === '2025-09-30') {
     labelEl.textContent = `第1期前半 6ヶ月 (${sFmt}〜${eFmt})`;
   } else {
     const preset = detectPalmsActivePreset(s, e);
-    if (preset === '1month') labelEl.textContent = `１ヶ月 (${sFmt}〜${eFmt})`;
-    else if (preset === '2months') labelEl.textContent = `２ヶ月 (${sFmt}〜${eFmt})`;
-    else if (preset === '3months') labelEl.textContent = `３ヶ月 (${sFmt}〜${eFmt})`;
+    if (preset === '1month') labelEl.textContent = `先月: 9月 (${sFmt}〜${eFmt})`;
+    else if (preset === '2months') labelEl.textContent = `先々月: 8月 (${sFmt}〜${eFmt})`;
+    else if (preset === '3months') labelEl.textContent = `7月 (${sFmt}〜${eFmt})`;
     else if (preset === '6months') labelEl.textContent = `半年 (${sFmt}〜${eFmt})`;
     else if (preset === 'all') labelEl.textContent = `全期間 (${sFmt}〜${eFmt})`;
     else labelEl.textContent = `${sFmt} 〜 ${eFmt}`;
@@ -85,7 +145,7 @@ function updatePalmsPeriodDisplayLabel(s, e) {
 }
 
 /**
- * Calculate Start & End Date for presets based on loaded periods or latest anchor
+ * Calculate Start & End Date for presets (1-Month Units & Terms)
  */
 function calcPalmsPresetRange(presetKey) {
   let maxEnd = '2026-09-30';
@@ -98,35 +158,23 @@ function calcPalmsPresetRange(presetKey) {
     if (starts.length) minStart = starts[0];
   }
 
-  const endObj = new Date(maxEnd + 'T00:00:00');
-
-  function fmtDate(d) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
-
-  if (presetKey === 'all') {
-    return { start: minStart, end: maxEnd };
+  // 1-Month Units requested by user (先月=9月, 先々月=8月, 7月, 6月, 5月, 4月)
+  if (presetKey === '1month' || presetKey === 'last_month') {
+    return { start: '2026-09-01', end: '2026-09-30' };
+  } else if (presetKey === '2months' || presetKey === 'two_months_ago') {
+    return { start: '2026-08-01', end: '2026-08-31' };
+  } else if (presetKey === '3months' || presetKey === 'month_7') {
+    return { start: '2026-07-01', end: '2026-07-31' };
+  } else if (presetKey === 'month_6') {
+    return { start: '2026-06-01', end: '2026-06-30' };
+  } else if (presetKey === 'month_5') {
+    return { start: '2026-05-01', end: '2026-05-31' };
+  } else if (presetKey === 'month_4') {
+    return { start: '2026-04-01', end: '2026-04-30' };
   } else if (presetKey === '6months') {
-    const hasPref6M = currentPalmsPeriodsList.some(p => p.start_date === '2026-04-01' && p.end_date === '2026-09-30');
-    if (hasPref6M) return { start: '2026-04-01', end: '2026-09-30' };
-
-    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 5, 1);
-    return { start: fmtDate(startObj), end: maxEnd };
-  } else if (presetKey === '3months') {
-    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 2, 1);
-    return { start: fmtDate(startObj), end: maxEnd };
-  } else if (presetKey === '2months') {
-    const startObj = new Date(endObj.getFullYear(), endObj.getMonth() - 1, 1);
-    return { start: fmtDate(startObj), end: maxEnd };
-  } else if (presetKey === '1month') {
-    const has4W = currentPalmsPeriodsList.some(p => p.start_date === '2026-08-27' && p.end_date === '2026-09-24');
-    if (has4W) return { start: '2026-08-27', end: '2026-09-24' };
-
-    const startObj = new Date(endObj.getFullYear(), endObj.getMonth(), 1);
-    return { start: fmtDate(startObj), end: maxEnd };
+    return { start: '2026-04-01', end: '2026-09-30' };
+  } else if (presetKey === 'all') {
+    return { start: minStart, end: maxEnd };
   }
 
   return { start: minStart, end: maxEnd };
@@ -137,24 +185,20 @@ function calcPalmsPresetRange(presetKey) {
  */
 function detectPalmsActivePreset(s, e) {
   if (!s || !e) return 'custom';
-  const pAll = calcPalmsPresetRange('all');
-  if (s === pAll.start && e === pAll.end) return 'all';
-
-  const p6m = calcPalmsPresetRange('6months');
-  if (s === p6m.start && e === p6m.end) return '6months';
-
-  const p3m = calcPalmsPresetRange('3months');
-  if (s === p3m.start && e === p3m.end) return '3months';
-
-  const p2m = calcPalmsPresetRange('2months');
-  if (s === p2m.start && e === p2m.end) return '2months';
-
-  const p1m = calcPalmsPresetRange('1month');
-  if (s === p1m.start && e === p1m.end) return '1month';
-
-  if (s === '2026-08-27' && e === '2026-09-24') return '1month';
+  if (s === '2026-09-01' && e === '2026-09-30') return '1month';
+  if (s === '2026-08-01' && e === '2026-08-31') return '2months';
+  if (s === '2026-07-01' && e === '2026-07-31') return '3months';
+  if (s === '2026-06-01' && e === '2026-06-30') return 'month_6';
+  if (s === '2026-05-01' && e === '2026-05-31') return 'month_5';
+  if (s === '2026-04-01' && e === '2026-04-30') return 'month_4';
   if (s === '2026-04-01' && e === '2026-09-30') return '6months';
   if (s === '2024-10-01' && e === '2026-09-30') return 'all';
+
+  // 4W fallback compatibility
+  if (s === '2026-08-27' && e === '2026-09-24') return '1month';
+
+  const pAll = calcPalmsPresetRange('all');
+  if (s === pAll.start && e === pAll.end) return 'all';
 
   return 'custom';
 }
@@ -166,11 +210,12 @@ function openPalmsDateModal() {
   const modal = document.getElementById('modal-palms-date-range');
   if (!modal) return;
 
-  const s = currentPalmsPeriod.startDate || '2026-04-01';
+  const s = currentPalmsPeriod.startDate || '2026-09-01';
   const e = currentPalmsPeriod.endDate || '2026-09-30';
   palmsDateModalState.start = s;
   palmsDateModalState.end = e;
-  palmsDateModalState.selectingEnd = false;
+  // Default active field is 'end' so clicking a date immediately sets the end date without clearing start!
+  palmsDateModalState.activeField = 'end';
   palmsDateModalState.hoverDate = null;
 
   const endD = new Date(e + 'T00:00:00');
@@ -192,33 +237,42 @@ function openPalmsDateModal() {
 function closePalmsDateModal() {
   const modal = document.getElementById('modal-palms-date-range');
   if (modal) modal.classList.add('hidden');
-  palmsDateModalState.selectingEnd = false;
   palmsDateModalState.hoverDate = null;
 }
 
 /**
- * Synchronize inputs and duration badge
+ * Synchronize inputs, displays and duration badge
  */
 function syncPalmsModalInputs() {
   const startInput = document.getElementById('palms-modal-start');
   const endInput = document.getElementById('palms-modal-end');
+  const startDisplay = document.getElementById('palms-modal-start-display');
+  const endDisplay = document.getElementById('palms-modal-end-display');
   const badge = document.getElementById('palms-modal-duration-badge');
 
-  if (startInput) startInput.value = palmsDateModalState.start || '';
-  if (endInput) endInput.value = palmsDateModalState.end || '';
+  const s = palmsDateModalState.start || '';
+  const e = palmsDateModalState.end || '';
+
+  if (startInput) startInput.value = s;
+  if (endInput) endInput.value = e;
+
+  if (startDisplay) startDisplay.textContent = s ? s.replace(/-/g, '/') : '開始日を選択';
+  if (endDisplay) endDisplay.textContent = e ? e.replace(/-/g, '/') : '終了日を選択';
 
   if (badge) {
-    if (palmsDateModalState.start && palmsDateModalState.end) {
-      const d1 = new Date(palmsDateModalState.start + 'T00:00:00');
-      const d2 = new Date(palmsDateModalState.end + 'T00:00:00');
+    if (s && e) {
+      const d1 = new Date(s + 'T00:00:00');
+      const d2 = new Date(e + 'T00:00:00');
       const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
       badge.textContent = `${Math.max(1, days)} 日間`;
-    } else if (palmsDateModalState.start) {
-      badge.textContent = '終了日を選択...';
+    } else if (s) {
+      badge.textContent = '終了日を選択中';
     } else {
       badge.textContent = '-- 日間';
     }
   }
+
+  updatePalmsPickerTabsUi();
 }
 
 /**
@@ -229,9 +283,15 @@ function updatePalmsModalSidebarActive(presetKey) {
   items.forEach(item => {
     const key = item.getAttribute('data-preset-key');
     if (key === presetKey) {
-      item.classList.add('active');
+      item.classList.add('active', 'bg-blue-50', 'text-blue-700', 'font-black');
+      item.classList.remove('text-slate-700');
+      const icon = item.querySelector('.check-icon');
+      if (icon) icon.classList.remove('hidden');
     } else {
-      item.classList.remove('active');
+      item.classList.remove('active', 'bg-blue-50', 'text-blue-700', 'font-black');
+      item.classList.add('text-slate-700');
+      const icon = item.querySelector('.check-icon');
+      if (icon) icon.classList.add('hidden');
     }
   });
 }
@@ -249,7 +309,7 @@ function selectPalmsDatePreset(presetKey) {
   const range = calcPalmsPresetRange(presetKey);
   palmsDateModalState.start = range.start;
   palmsDateModalState.end = range.end;
-  palmsDateModalState.selectingEnd = false;
+  palmsDateModalState.activeField = 'end';
   palmsDateModalState.hoverDate = null;
   palmsDateModalState.activePreset = presetKey;
 
@@ -281,7 +341,7 @@ function onPalmsModalInputChange() {
       palmsDateModalState.start = e;
       palmsDateModalState.end = s;
     }
-    palmsDateModalState.selectingEnd = false;
+    palmsDateModalState.activeField = 'end';
     palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
     updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
     syncPalmsModalInputs();
@@ -305,28 +365,32 @@ function movePalmsCalendarMonth(delta) {
 }
 
 /**
- * Handle date click inside calendar
+ * Handle date click inside calendar:
+ * If selecting start -> updates start, auto-advances to end
+ * If selecting end -> updates end directly!
  */
 function onPalmsCalendarDateClick(dateStr) {
-  if (!palmsDateModalState.selectingEnd || !palmsDateModalState.start) {
-    // 1st Click: Start Date
+  if (palmsDateModalState.activeField === 'start') {
     palmsDateModalState.start = dateStr;
-    palmsDateModalState.end = null;
-    palmsDateModalState.selectingEnd = true;
-    palmsDateModalState.hoverDate = null;
-    palmsDateModalState.activePreset = 'custom';
+    // If end exists and is before start, advance end to match start
+    if (palmsDateModalState.end && dateStr > palmsDateModalState.end) {
+      palmsDateModalState.end = dateStr;
+    }
+    // Auto-advance to end date selection
+    palmsDateModalState.activeField = 'end';
   } else {
-    // 2nd Click: End Date
-    if (dateStr < palmsDateModalState.start) {
+    // Selecting End Date
+    if (palmsDateModalState.start && dateStr < palmsDateModalState.start) {
+      // If clicked date is before start, gracefully swap them
       palmsDateModalState.end = palmsDateModalState.start;
       palmsDateModalState.start = dateStr;
     } else {
       palmsDateModalState.end = dateStr;
     }
-    palmsDateModalState.selectingEnd = false;
-    palmsDateModalState.hoverDate = null;
-    palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
   }
+
+  palmsDateModalState.hoverDate = null;
+  palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
 
   syncPalmsModalInputs();
   updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
@@ -337,7 +401,7 @@ function onPalmsCalendarDateClick(dateStr) {
  * Handle date hover inside calendar for interactive range preview
  */
 function onPalmsCalendarDateHover(dateStr) {
-  if (!palmsDateModalState.selectingEnd || !palmsDateModalState.start) return;
+  if (!palmsDateModalState.start && !palmsDateModalState.end) return;
   palmsDateModalState.hoverDate = dateStr;
   renderPalmsModalCalendars();
 }
@@ -407,10 +471,19 @@ function renderSingleMonthGrid(containerId, year, month) {
     let isSingle = (isStart && isEnd);
     let isInRange = (start && end && dateStr > start && dateStr < end);
 
-    // Hover preview handling
-    if (selectingEnd && start && hoverDate) {
+    // Hover preview handling based on activeField
+    const activeField = palmsDateModalState.activeField;
+    if (activeField === 'end' && start && hoverDate) {
       const minH = start < hoverDate ? start : hoverDate;
       const maxH = start < hoverDate ? hoverDate : start;
+      if (dateStr === minH) isStart = true;
+      if (dateStr === maxH) isEnd = true;
+      if (dateStr > minH && dateStr < maxH) {
+        cell.classList.add('hover-range');
+      }
+    } else if (activeField === 'start' && end && hoverDate) {
+      const minH = end < hoverDate ? end : hoverDate;
+      const maxH = end < hoverDate ? hoverDate : end;
       if (dateStr === minH) isStart = true;
       if (dateStr === maxH) isEnd = true;
       if (dateStr > minH && dateStr < maxH) {

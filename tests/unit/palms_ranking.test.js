@@ -284,7 +284,10 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('data-preset-key="6months"'), true);
     assert.strictEqual(indexHtml.includes('data-preset-key="custom"'), true);
 
-    // Inputs & Calendar
+    // Inputs, Tabs & Calendar
+    assert.strictEqual(indexHtml.includes('id="palms-picker-tab-start"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-picker-tab-end"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-picker-guide-badge"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-modal-start"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-modal-end"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-modal-duration-badge"'), true);
@@ -292,9 +295,14 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('id="palms-cal-right-grid"'), true);
     assert.strictEqual(indexHtml.includes('id="btn-palms-modal-apply"'), true);
 
+    // 1-Month Unit Labels
+    assert.strictEqual(indexHtml.includes('先月 (9月)'), true);
+    assert.strictEqual(indexHtml.includes('先々月 (8月)'), true);
+
     // JS functions
     assert.strictEqual(indexHtml.includes('function openPalmsDateModal('), true);
     assert.strictEqual(indexHtml.includes('function closePalmsDateModal('), true);
+    assert.strictEqual(indexHtml.includes('function setPalmsPickerActiveField('), true);
     assert.strictEqual(indexHtml.includes('function selectPalmsDatePreset('), true);
     assert.strictEqual(indexHtml.includes('function calcPalmsPresetRange('), true);
     assert.strictEqual(indexHtml.includes('function renderPalmsModalCalendars('), true);

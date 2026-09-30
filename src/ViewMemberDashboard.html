@@ -6,7 +6,7 @@
     
     <!-- 左側: 戻るボタン ＆ メンバー選択 -->
     <div class="flex items-center gap-2.5 flex-1 min-w-0">
-      <button type="button" onclick="switchTab('settings')" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors shrink-0 cursor-pointer" title="設定に戻る">
+      <button type="button" onclick="navigateBackFromMemberDashboard()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm border border-slate-200/60 transition-colors shrink-0 cursor-pointer" title="戻る">
         <i class="fa-solid fa-chevron-left"></i>
       </button>
 
@@ -51,7 +51,7 @@
     <div id="member-dash-content" style="display: none;">
 
       <!-- メンバープロフィール・ヘッダー (Pure White & Typography Focus) -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs flex items-center justify-between gap-4">
+      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="flex items-center gap-3.5 min-w-0">
           <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white font-black text-xl flex items-center justify-center shrink-0 tracking-tight" id="member-dash-avatar">
             名
@@ -67,6 +67,14 @@
 
         <div class="flex items-center gap-4 shrink-0">
           <div class="text-right">
+            <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">個人スコア</div>
+            <div class="flex items-center justify-end gap-1.5">
+              <span class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-total-score">--</span>
+              <span id="member-dash-tier-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+            </div>
+          </div>
+          <div class="w-px h-8 bg-slate-200"></div>
+          <div class="text-right">
             <div class="text-[10px] font-bold text-slate-400 tracking-wider uppercase">招待成約率</div>
             <div class="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight" id="member-dash-join-rate">0%</div>
           </div>
@@ -78,198 +86,439 @@
         </div>
       </div>
 
-      <!-- 6大KPIカード (招待力 ＆ オリエン・クロージング力) -->
-      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-5">
-        <!-- 招待数 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待ビジター</div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
-            <span class="text-[10px] font-bold text-slate-400">名</span>
+      <!-- サブタブナビゲーション (Apple Segmented Pill Style) -->
+      <div class="flex items-center gap-2 mb-5" id="member-dash-subtabs">
+        <button type="button" id="btn-subtab-traffic" onclick="switchMemberDashboardSubTab('traffic')" class="px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-slate-900 text-white shadow-2xs flex items-center gap-1.5">
+          <i class="fa-solid fa-traffic-light text-3xs"></i>
+          <span>個人成績 (100点スコア)</span>
+        </button>
+        <button type="button" id="btn-subtab-visitors" onclick="switchMemberDashboardSubTab('visitors')" class="px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-user-group text-3xs"></i>
+          <span>ビジター活動</span>
+        </button>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- サブビュー 1: 個人成績 (トラフィックライト 100点スコア & PALMS) -->
+      <!-- ======================================================== -->
+      <div id="member-dash-subview-traffic" class="space-y-5">
+        <!-- 1. 3大指標カード (総合スコア, PPW, RPW) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <!-- Total Score -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合スコア</span>
+              <span id="member-tl-status-pill" class="text-3xs font-extrabold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">--</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="member-tl-total-score" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
+              <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+            </div>
+            <div id="member-tl-score-desc" class="text-2xs font-semibold text-slate-500 mt-2">
+              --
+            </div>
+          </div>
+
+          <!-- PPW -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">週貢献指数 (PPW)</span>
+              <span class="text-3xs font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">基準 2.0+</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="member-tl-ppw-value" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
+              <span class="text-xs font-bold text-slate-400">pt/週</span>
+            </div>
+            <div id="member-tl-ppw-status" class="text-2xs font-semibold text-slate-600 mt-2">
+              --
+            </div>
+          </div>
+
+          <!-- RPW -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+            <div class="flex items-center justify-between text-slate-400 mb-1">
+              <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">週リファーラル (RPW)</span>
+              <span class="text-3xs font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700 border border-slate-200">基準 1.25+</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="member-tl-rpw-value" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
+              <span class="text-xs font-bold text-slate-400">件/週</span>
+            </div>
+            <div id="member-tl-rpw-status" class="text-2xs font-semibold text-slate-600 mt-2">
+              総提供: --件
+            </div>
           </div>
         </div>
 
-        <!-- 招待入会 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待入会</div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
-            <span class="text-[10px] font-bold text-slate-400">名</span>
+        <!-- 2. 公式100点基準 7大採点項目バランス (Radar Chart + Details) -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-slate-600"></i>
+              <span>公式100点基準 7大採点項目バランス</span>
+            </h3>
+            <span class="text-3xs text-slate-400 font-bold">得意・不得意の直感ビジュアライズ</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+            <!-- Left: Radar Chart Container -->
+            <div class="lg:col-span-5 bg-slate-50/50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center">
+              <div class="w-full text-center mb-2">
+                <span class="text-3xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  レーダー診断 (100%基準)
+                </span>
+              </div>
+              <div class="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square flex items-center justify-center">
+                <canvas id="member-chart-palms-radar"></canvas>
+              </div>
+              <p class="text-3xs text-slate-400 mt-2 text-center">
+                ※ 青枠: 本人実績比率 / 点線: 目標クリア基準 (70%水準)
+              </p>
+            </div>
+
+            <!-- Right: Detailed Scores List -->
+            <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="member-palms-scores-grid">
+              <!-- Dynamically populated -->
+            </div>
           </div>
         </div>
 
-        <!-- オリエン担当回数 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン担当</div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-count">0</span>
-            <span class="text-[10px] font-bold text-slate-400">回</span>
+        <!-- 3. PALMS 原票データ完全内訳 (Attendance, Referrals, Activities) -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+              <i class="fa-solid fa-table-cells text-slate-600"></i>
+              <span>PALMS 原票データ完全内訳</span>
+            </h3>
+            <span class="text-3xs text-slate-400 font-bold">活動実績数値</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Attendance (P A L M S) -->
+            <div class="bg-slate-50/50 border border-slate-200/80 rounded-2xl p-4">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <i class="fa-solid fa-user-check text-slate-600"></i>
+                  <span>出席実績 (PALMS)</span>
+                </span>
+                <span id="member-palms-raw-att-rate" class="text-xs font-black text-slate-800 tabular-nums">--%</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1 text-center py-1">
+                <div class="bg-white rounded-lg p-1.5 border border-slate-100">
+                  <div class="text-3xs font-extrabold text-slate-400">P(出席)</div>
+                  <div id="member-palms-raw-p" class="text-sm font-black text-slate-800 tabular-nums">0</div>
+                </div>
+                <div class="bg-white rounded-lg p-1.5 border border-slate-100">
+                  <div class="text-3xs font-extrabold text-slate-400">A(欠席)</div>
+                  <div id="member-palms-raw-a" class="text-sm font-black text-slate-800 tabular-nums">0</div>
+                </div>
+                <div class="bg-white rounded-lg p-1.5 border border-slate-100">
+                  <div class="text-3xs font-extrabold text-slate-400">L(遅刻)</div>
+                  <div id="member-palms-raw-l" class="text-sm font-black text-slate-800 tabular-nums">0</div>
+                </div>
+                <div class="bg-white rounded-lg p-1.5 border border-slate-100">
+                  <div class="text-3xs font-extrabold text-slate-400">M(医療)</div>
+                  <div id="member-palms-raw-m" class="text-sm font-black text-slate-600 tabular-nums">0</div>
+                </div>
+                <div class="bg-white rounded-lg p-1.5 border border-slate-100">
+                  <div class="text-3xs font-extrabold text-slate-400">S(代理)</div>
+                  <div id="member-palms-raw-s" class="text-sm font-black text-slate-800 tabular-nums">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Referrals (Given & Received) -->
+            <div class="bg-slate-50/50 border border-slate-200/80 rounded-2xl p-4">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <i class="fa-solid fa-handshake text-slate-600"></i>
+                  <span>リファーラル実績</span>
+                </span>
+                <span id="member-palms-raw-ref-total" class="text-xs font-black text-slate-800 tabular-nums">提供 --件</span>
+              </div>
+              <div class="space-y-1.5 text-xs py-1">
+                <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">内与 (RGI) / 外与 (RGO)</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-ref-given-split">0 / 0</span>
+                </div>
+                <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">受領合計 (RRI+RRO)</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-ref-received">0件</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Business Activities (Visitors, 1-2-1, TYFCB, CEU) -->
+            <div class="bg-slate-50/50 border border-slate-200/80 rounded-2xl p-4">
+              <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <i class="fa-solid fa-chart-line text-slate-600"></i>
+                  <span>ビジネス貢献成果</span>
+                </span>
+                <span id="member-palms-raw-tyfcb-badge" class="text-xs font-black text-slate-800 tabular-nums">¥0</span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 text-xs py-0.5">
+                <div class="bg-white px-2 py-1.5 rounded-lg flex justify-between items-center border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">ビジター</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-visitors">0名</span>
+                </div>
+                <div class="bg-white px-2 py-1.5 rounded-lg flex justify-between items-center border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">1to1回数</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-oto">0回</span>
+                </div>
+                <div class="bg-white px-2 py-1.5 rounded-lg flex justify-between items-center border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">CEU学習</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-ceu">0 pt</span>
+                </div>
+                <div class="bg-white px-2 py-1.5 rounded-lg flex justify-between items-center border border-slate-100">
+                  <span class="text-3xs font-bold text-slate-500">推薦/スポンサー</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-sponsor">0件</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- オリエン入会決定 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン入会</div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-joined-count">0</span>
-            <span class="text-[10px] font-bold text-slate-400">名</span>
+        <!-- 4. 半年間活動実績・スリップ推移テーブル -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-blue-600"></i>
+                <span>半年間活動実績・スリップ推移</span>
+              </h3>
+              <span id="member-palms-weekly-badge" class="text-3xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                半年間 (26週)
+              </span>
+            </div>
+            <span class="text-3xs text-slate-400 font-bold">定例会・月別スリップ実績推移</span>
           </div>
-        </div>
 
-        <!-- フォロー中 -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="text-[10px] font-bold text-slate-400 mb-0.5">フォロー中</div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
-            <span class="text-[10px] font-bold text-slate-400">名</span>
-          </div>
-        </div>
-
-        <!-- 要対応アクション -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
-          <div class="flex items-center justify-between mb-0.5">
-            <span class="text-[10px] font-bold text-slate-400">要対応To-Do</span>
-            <span id="member-kpi-todo-dot" class="kpi-status-dot blue" title="正常"></span>
-          </div>
-          <div class="flex items-baseline gap-1">
-            <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
-            <span class="text-[10px] font-bold text-slate-400">件</span>
+          <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
+            <table class="w-full text-left text-xs border-collapse min-w-[700px]">
+              <thead>
+                <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-2.5 px-3">対象期間 / 月</th>
+                  <th class="py-2.5 px-3 text-center">出席状況</th>
+                  <th class="py-2.5 px-3 text-center">活動ステータス</th>
+                  <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>
+                  <th class="py-2.5 px-3 text-right">リファーラル</th>
+                  <th class="py-2.5 px-3 text-right">ビジター</th>
+                  <th class="py-2.5 px-3 text-right">1to1</th>
+                  <th class="py-2.5 px-3 text-right">TYFCB売上</th>
+                  <th class="py-2.5 px-3 text-right">CEU</th>
+                </tr>
+              </thead>
+              <tbody id="member-palms-weekly-tbody" class="divide-y divide-slate-100 font-tabular">
+                <tr>
+                  <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
+                    <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+                    <p>半年間データを読込中...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- セクション: 活動推移グラフ ＆ 温度感分布 (Pure White & Sleek Chart.js) -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5 mb-5">
-        <!-- 1. 月別推移チャート (2カラム) -->
-        <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-            <div>
-              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">活動推移 (招待 ＆ オリエン)</h3>
-            </div>
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0071e3]"></i> 招待</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0f172a]"></i> 入会</span>
-              <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#94a3b8]"></i> オリエン</span>
-            </div>
-          </div>
-          <div class="relative w-full h-[180px]">
-            <canvas id="member-activity-chart"></canvas>
-          </div>
-        </div>
-
-        <!-- 2. 温度感・感触ランク分布 (ドーナツチャート) -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-          <div class="pb-2.5 mb-2.5 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">ゲスト温度感</h3>
-            <span class="text-[10px] font-bold text-slate-400 font-mono" id="member-feel-total-label">0名</span>
-          </div>
-
-          <div class="flex items-center gap-4 my-auto">
-            <!-- ドーナツグラフ -->
-            <div class="relative w-28 h-28 shrink-0 flex items-center justify-center">
-              <canvas id="member-feel-donut-chart"></canvas>
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span class="text-xs font-black text-slate-900 font-mono tracking-tight" id="member-feel-donut-center">0%</span>
-                <span class="text-[9px] font-bold text-slate-400 uppercase">Aランク</span>
-              </div>
-            </div>
-
-            <!-- 内訳凡例 -->
-            <div class="space-y-2 flex-1 min-w-0">
-              <!-- Aランク -->
-              <div class="flex items-center justify-between text-xs font-bold">
-                <span class="flex items-center gap-1.5 text-slate-700">
-                  <i class="fa-solid fa-circle text-[7px] text-emerald-500"></i>
-                  <span>A (高感触)</span>
-                </span>
-                <span class="font-mono text-slate-900" id="member-feel-a-count">0名</span>
-              </div>
-
-              <!-- Bランク -->
-              <div class="flex items-center justify-between text-xs font-bold">
-                <span class="flex items-center gap-1.5 text-slate-700">
-                  <i class="fa-solid fa-circle text-[7px] text-amber-500"></i>
-                  <span>B (中感触)</span>
-                </span>
-                <span class="font-mono text-slate-900" id="member-feel-b-count">0名</span>
-              </div>
-
-              <!-- Cランク -->
-              <div class="flex items-center justify-between text-xs font-bold">
-                <span class="flex items-center gap-1.5 text-slate-700">
-                  <i class="fa-solid fa-circle text-[7px] text-slate-300"></i>
-                  <span>C (その他)</span>
-                </span>
-                <span class="font-mono text-slate-900" id="member-feel-c-count">0名</span>
-              </div>
+      <!-- ======================================================== -->
+      <!-- サブビュー 2: ビジター活動 (招待・オリエン・フォロー)       -->
+      <!-- ======================================================== -->
+      <div id="member-dash-subview-visitors" class="space-y-5" style="display: none;">
+        <!-- 6大KPIカード (招待力 ＆ オリエン・クロージング力) -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
+          <!-- 招待数 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待ビジター</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-total-visitors">0</span>
+              <span class="text-[10px] font-bold text-slate-400">名</span>
             </div>
           </div>
 
-          <div class="pt-2 text-[10px] text-slate-400 font-semibold text-right">
-            ※ 招待・担当ビジター計
+          <!-- 招待入会 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 mb-0.5">招待入会</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-joined-count">0</span>
+              <span class="text-[10px] font-bold text-slate-400">名</span>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <!-- セクション 1: アクション実績 (To-Do ＆ 完了アクション) -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 mb-5 shadow-2xs">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
-          <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
-            <span>アクション管理</span>
-          </h3>
-          
-          <!-- アクション切り替えタブ (未対応 ⇄ 完了済 ⇄ すべて) -->
-          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-action-filter-tabs">
-            <button type="button" id="tab-action-pending" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberActionList('pending')">
-              未対応 (<span id="todo-count-pending">0</span>)
-            </button>
-            <button type="button" id="tab-action-completed" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('completed')">
-              完了済 (<span id="todo-count-completed">0</span>)
-            </button>
-            <button type="button" id="tab-action-all" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('all')">
-              全件 (<span id="todo-count-all">0</span>)
-            </button>
+          <!-- オリエン担当回数 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン担当</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-count">0</span>
+              <span class="text-[10px] font-bold text-slate-400">回</span>
+            </div>
           </div>
-        </div>
 
-        <!-- アクションリスト -->
-        <div id="member-todo-list" class="space-y-2.5">
-          <!-- JSで動的描画 -->
-        </div>
-      </div>
-
-      <!-- セクション 2: ビジター進捗一覧 (招待 ⇄ オリエン担当 切り替え) -->
-      <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-3">
-          
-          <!-- 役割タブ (招待 ⇄ オリエン担当) -->
-          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-role-filter-tabs">
-            <button type="button" id="tab-role-invited" class="px-3 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="switchMemberRoleView('invited')">
-              招待ビジター (<span id="role-count-invited">0</span>)
-            </button>
-            <button type="button" id="tab-role-oriented" class="px-3 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="switchMemberRoleView('oriented')">
-              オリエン担当 (<span id="role-count-oriented">0</span>)
-            </button>
+          <!-- オリエン入会決定 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 mb-0.5">オリエン入会</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-orient-joined-count">0</span>
+              <span class="text-[10px] font-bold text-slate-400">名</span>
+            </div>
           </div>
-          
-          <!-- 状態フィルタ -->
-          <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-visitor-filter-tabs">
-            <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
-            <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
-            <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
+
+          <!-- フォロー中 -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 mb-0.5">フォロー中</div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-active-count">0</span>
+              <span class="text-[10px] font-bold text-slate-400">名</span>
+            </div>
+          </div>
+
+          <!-- 要対応アクション -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs">
+            <div class="flex items-center justify-between mb-0.5">
+              <span class="text-[10px] font-bold text-slate-400">要対応To-Do</span>
+              <span id="member-kpi-todo-dot" class="kpi-status-dot blue" title="正常"></span>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 font-mono tracking-tight" id="member-kpi-todo-count">0</span>
+              <span class="text-[10px] font-bold text-slate-400">件</span>
+            </div>
           </div>
         </div>
 
-        <!-- ビジターカード一覧 -->
-        <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          <!-- JSで動的描画 -->
+        <!-- 活動推移グラフ ＆ 温度感分布 (Pure White & Sleek Chart.js) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+          <!-- 1. 月別推移チャート (2カラム) -->
+          <div class="lg:col-span-2 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div>
+                <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">活動推移 (招待 ＆ オリエン)</h3>
+              </div>
+              <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0071e3]"></i> 招待</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#0f172a]"></i> 入会</span>
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[7px] text-[#94a3b8]"></i> オリエン</span>
+              </div>
+            </div>
+            <div class="relative w-full h-[180px]">
+              <canvas id="member-activity-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- 2. 温度感・感触ランク分布 (ドーナツチャート) -->
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+            <div class="pb-2.5 mb-2.5 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight">ゲスト温度感</h3>
+              <span class="text-[10px] font-bold text-slate-400 font-mono" id="member-feel-total-label">0名</span>
+            </div>
+
+            <div class="flex items-center gap-4 my-auto">
+              <!-- ドーナツグラフ -->
+              <div class="relative w-28 h-28 shrink-0 flex items-center justify-center">
+                <canvas id="member-feel-donut-chart"></canvas>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-xs font-black text-slate-900 font-mono tracking-tight" id="member-feel-donut-center">0%</span>
+                  <span class="text-[9px] font-bold text-slate-400 uppercase">Aランク</span>
+                </div>
+              </div>
+
+              <!-- 内訳凡例 -->
+              <div class="space-y-2 flex-1 min-w-0">
+                <!-- Aランク -->
+                <div class="flex items-center justify-between text-xs font-bold">
+                  <span class="flex items-center gap-1.5 text-slate-700">
+                    <i class="fa-solid fa-circle text-[7px] text-emerald-500"></i>
+                    <span>A (高感触)</span>
+                  </span>
+                  <span class="font-mono text-slate-900" id="member-feel-a-count">0名</span>
+                </div>
+
+                <!-- Bランク -->
+                <div class="flex items-center justify-between text-xs font-bold">
+                  <span class="flex items-center gap-1.5 text-slate-700">
+                    <i class="fa-solid fa-circle text-[7px] text-amber-500"></i>
+                    <span>B (中感触)</span>
+                  </span>
+                  <span class="font-mono text-slate-900" id="member-feel-b-count">0名</span>
+                </div>
+
+                <!-- Cランク -->
+                <div class="flex items-center justify-between text-xs font-bold">
+                  <span class="flex items-center gap-1.5 text-slate-700">
+                    <i class="fa-solid fa-circle text-[7px] text-slate-300"></i>
+                    <span>C (その他)</span>
+                  </span>
+                  <span class="font-mono text-slate-900" id="member-feel-c-count">0名</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 text-[10px] text-slate-400 font-semibold text-right">
+              ※ 招待・担当ビジター計
+            </div>
+          </div>
         </div>
 
-        <!-- 空状態 -->
-        <div id="member-visitor-empty" class="text-center py-8" style="display: none;">
-          <div class="text-xs font-bold text-slate-400">該当するビジターはいません</div>
+        <!-- アクション実績 (To-Do ＆ 完了アクション) -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-3 border-b border-slate-100 gap-2">
+            <h3 class="text-xs sm:text-sm font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+              <span>アクション管理</span>
+            </h3>
+            
+            <!-- アクション切り替えタブ (未対応 ⇄ 完了済 ⇄ すべて) -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-action-filter-tabs">
+              <button type="button" id="tab-action-pending" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberActionList('pending')">
+                未対応 (<span id="todo-count-pending">0</span>)
+              </button>
+              <button type="button" id="tab-action-completed" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('completed')">
+                完了済 (<span id="todo-count-completed">0</span>)
+              </button>
+              <button type="button" id="tab-action-all" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberActionList('all')">
+                全件 (<span id="todo-count-all">0</span>)
+              </button>
+            </div>
+          </div>
+
+          <!-- アクションリスト -->
+          <div id="member-todo-list" class="space-y-2.5">
+            <!-- JSで動的描画 -->
+          </div>
         </div>
 
+        <!-- ビジター進捗一覧 (招待 ⇄ オリエン担当 切り替え) -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-2xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-slate-100 gap-3">
+            
+            <!-- 役割タブ (招待 ⇄ オリエン担当) -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-role-filter-tabs">
+              <button type="button" id="tab-role-invited" class="px-3 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="switchMemberRoleView('invited')">
+                招待ビジター (<span id="role-count-invited">0</span>)
+              </button>
+              <button type="button" id="tab-role-oriented" class="px-3 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="switchMemberRoleView('oriented')">
+                オリエン担当 (<span id="role-count-oriented">0</span>)
+              </button>
+            </div>
+            
+            <!-- 状態フィルタ -->
+            <div class="inline-flex rounded-xl bg-slate-100 p-0.5 text-xs font-bold" id="member-visitor-filter-tabs">
+              <button type="button" id="tab-mv-all" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs cursor-pointer" onclick="filterMemberVisitors('all')">全件</button>
+              <button type="button" id="tab-mv-active" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('active')">フォロー中</button>
+              <button type="button" id="tab-mv-joined" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 cursor-pointer" onclick="filterMemberVisitors('joined')">入会済</button>
+            </div>
+          </div>
+
+          <!-- ビジターカード一覧 -->
+          <div id="member-visitor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <!-- JSで動的描画 -->
+          </div>
+
+          <!-- 空状態 -->
+          <div id="member-visitor-empty" class="text-center py-8" style="display: none;">
+            <div class="text-xs font-bold text-slate-400">該当するビジターはいません</div>
+          </div>
+
+        </div>
       </div>
 
     </div>
