@@ -249,6 +249,8 @@ const ApiService = {
       }
       case 'getPalmsPeriodsApi':
         return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'getPalmsChapterTrendsApi':
+        return { url: '/api/palms.php?action=chapter_trends', method: 'GET' };
       case 'syncPalmsApi':
       case 'syncPalmsFromBniConnectApi':
         return {

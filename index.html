@@ -11648,14 +11648,21 @@ select.form-input, select.form-select {
 
     <!-- Chapter Growth Charts (Multi-Period Trend & 7-Metric Radar) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
-      <!-- Multi-Period 2-Year Trend (Line Chart) -->
+      <!-- Multi-Period & Weekly Trend (Line Chart) -->
       <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
-            <h3 class="text-sm font-bold text-slate-800">チャプター成長推移・2年間期別トレンド</h3>
+            <h3 class="text-sm font-bold text-slate-800" id="growth-trend-chart-title">チャプター成長推移・毎週刻みトレンド</h3>
           </div>
-          <span class="text-2xs font-bold text-slate-400">売上・リファーラル・1to1</span>
+          <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-2xs font-bold">
+            <button type="button" id="btn-palms-trend-weekly" onclick="setGrowthTrendGranularity('weekly')" class="px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs">
+              毎週刻み
+            </button>
+            <button type="button" id="btn-palms-trend-period" onclick="setGrowthTrendGranularity('period')" class="px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800">
+              2年間期別
+            </button>
+          </div>
         </div>
         <div class="relative w-full h-64 sm:h-72">
           <canvas id="chart-palms-trend-line"></canvas>
@@ -13551,6 +13558,8 @@ const ApiService = {
       }
       case 'getPalmsPeriodsApi':
         return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'getPalmsChapterTrendsApi':
+        return { url: '/api/palms.php?action=chapter_trends', method: 'GET' };
       case 'syncPalmsApi':
       case 'syncPalmsFromBniConnectApi':
         return {
@@ -25580,6 +25589,8 @@ let palmsDonutChart = null;
 let palmsPpwChart = null;
 let palmsRadarChart = null;
 let palmsTrendChart = null;
+let palmsChapterTrendsData = null;
+let growthTrendGranularity = 'weekly';
 
 /**
  * Human-friendly period label formatter
@@ -26823,77 +26834,191 @@ function renderPalmsCharts() {
     });
   }
 
-  // --- Chart 4: Multi-Period 2-Year Trend Line Chart ---
+  // --- Chart 4: Multi-Period & Weekly Trend Line Chart ---
+  renderChapterTrendLineChart();
+  if (!palmsChapterTrendsData) {
+    fetchPalmsChapterTrends();
+  }
+}
+
+/**
+ * Switch Growth Trend Line Chart Granularity ('weekly' vs 'period')
+ */
+function setGrowthTrendGranularity(mode) {
+  growthTrendGranularity = mode;
+  const btnWeekly = document.getElementById('btn-palms-trend-weekly');
+  const btnPeriod = document.getElementById('btn-palms-trend-period');
+  const titleEl = document.getElementById('growth-trend-chart-title');
+  if (btnWeekly && btnPeriod) {
+    if (mode === 'weekly') {
+      btnWeekly.className = 'px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs font-bold';
+      btnPeriod.className = 'px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800 font-bold';
+      if (titleEl) titleEl.textContent = 'チャプター成長推移・毎週刻みトレンド';
+    } else {
+      btnPeriod.className = 'px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs font-bold';
+      btnWeekly.className = 'px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800 font-bold';
+      if (titleEl) titleEl.textContent = 'チャプター成長推移・2年間期別トレンド';
+    }
+  }
+  renderChapterTrendLineChart();
+}
+
+/**
+ * Fetch PALMS Chapter Trends (Weekly & Period aggregations)
+ */
+function fetchPalmsChapterTrends() {
+  if (typeof ApiService === 'undefined') return Promise.resolve(null);
+  return ApiService.call('getPalmsChapterTrendsApi')
+    .then(res => {
+      if (res && res.success) {
+        palmsChapterTrendsData = res;
+        renderChapterTrendLineChart();
+      }
+      return res;
+    })
+    .catch(err => {
+      console.warn('Failed to fetch chapter trends:', err);
+      renderChapterTrendLineChart();
+    });
+}
+
+/**
+ * Render Chart 4: Multi-Period & Weekly Trend Line Chart
+ */
+function renderChapterTrendLineChart() {
+  if (typeof Chart === 'undefined') return;
   const trendCanvas = document.getElementById('chart-palms-trend-line');
-  if (trendCanvas) {
-    if (palmsTrendChart) palmsTrendChart.destroy();
+  if (!trendCanvas) return;
 
-    const periodLabels = ['25年前期(4-9月)', '25年後期(10-3月)', '26年第2期(4-9月)'];
-    const trendReferrals = [28, 42, 65];
-    const trendOto = [35, 52, 94];
-    const trendVisitors = [4, 8, 14];
+  if (palmsTrendChart) {
+    palmsTrendChart.destroy();
+    palmsTrendChart = null;
+  }
 
-    const ctx = trendCanvas.getContext('2d');
-    palmsTrendChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: periodLabels,
-        datasets: [
-          {
-            label: 'リファーラル提供数',
-            data: trendReferrals,
-            borderColor: '#0071e3',
-            backgroundColor: 'rgba(0, 113, 227, 0.08)',
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4
-          },
-          {
-            label: '1to1 実施回数',
-            data: trendOto,
-            borderColor: '#d97706',
-            backgroundColor: 'rgba(217, 119, 6, 0.08)',
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4
-          },
-          {
-            label: 'ビジター招待人数',
-            data: trendVisitors,
-            borderColor: '#059669',
-            backgroundColor: 'rgba(5, 150, 105, 0.08)',
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 4
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10, weight: 'bold' }, color: '#334155' }
-          }
+  let labels = [];
+  let trendReferrals = [];
+  let trendOto = [];
+  let trendVisitors = [];
+  const isWeekly = (growthTrendGranularity === 'weekly');
+
+  if (isWeekly) {
+    // 毎週刻み
+    const weeklyList = (palmsChapterTrendsData && palmsChapterTrendsData.weekly && palmsChapterTrendsData.weekly.length > 0)
+      ? palmsChapterTrendsData.weekly
+      : [
+          { start_date: '2026-08-20', end_date: '2026-08-27', total_referrals: 41, total_oto: 52, total_visitors: 3 },
+          { start_date: '2026-08-27', end_date: '2026-09-03', total_referrals: 40, total_oto: 57, total_visitors: 5 },
+          { start_date: '2026-09-03', end_date: '2026-09-10', total_referrals: 31, total_oto: 48, total_visitors: 4 },
+          { start_date: '2026-09-10', end_date: '2026-09-17', total_referrals: 27, total_oto: 48, total_visitors: 2 },
+          { start_date: '2026-09-17', end_date: '2026-09-24', total_referrals: 46, total_oto: 33, total_visitors: 1 }
+        ];
+
+    labels = weeklyList.map(w => {
+      const parts = (w.end_date || '').split('-');
+      if (parts.length === 3) {
+        return `${Number(parts[1])}/${Number(parts[2])}週`;
+      }
+      return w.end_date;
+    });
+    trendReferrals = weeklyList.map(w => Number(w.total_referrals || 0));
+    trendOto = weeklyList.map(w => Number(w.total_oto || 0));
+    trendVisitors = weeklyList.map(w => Number(w.total_visitors || 0));
+  } else {
+    // 2年間期別
+    const termList = (palmsChapterTrendsData && palmsChapterTrendsData.terms && palmsChapterTrendsData.terms.length > 0)
+      ? palmsChapterTrendsData.terms
+      : [
+          { start_date: '2025-04-01', end_date: '2025-09-30', total_referrals: 204, total_oto: 305, total_visitors: 25 },
+          { start_date: '2025-10-01', end_date: '2026-03-31', total_referrals: 322, total_oto: 252, total_visitors: 37 },
+          { start_date: '2026-04-01', end_date: '2026-09-30', total_referrals: 515, total_oto: 645, total_visitors: 56 }
+        ];
+
+    labels = termList.map(t => {
+      const s = t.start_date || '';
+      if (s.startsWith('2025-04')) return '25年前期(4-9月)';
+      if (s.startsWith('2025-10')) return '25年後期(10-3月)';
+      if (s.startsWith('2026-04')) return '26年第2期(4-9月)';
+      const sParts = s.split('-');
+      return `${sParts[0]}年${sParts[1]}月〜`;
+    });
+    trendReferrals = termList.map(t => Number(t.total_referrals || 0));
+    trendOto = termList.map(t => Number(t.total_oto || 0));
+    trendVisitors = termList.map(t => Number(t.total_visitors || 0));
+  }
+
+  const ctx = trendCanvas.getContext('2d');
+  palmsTrendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'リファーラル提供数',
+          data: trendReferrals,
+          borderColor: '#0071e3',
+          backgroundColor: 'rgba(0, 113, 227, 0.08)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6
         },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, padding: 10 }
+        {
+          label: '1to1 実施回数',
+          data: trendOto,
+          borderColor: '#d97706',
+          backgroundColor: 'rgba(217, 119, 6, 0.08)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'ビジター招待人数',
+          data: trendVisitors,
+          borderColor: '#059669',
+          backgroundColor: 'rgba(5, 150, 105, 0.08)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#f1f5f9' },
+          ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 10, weight: 'bold' }, color: '#334155' }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, padding: 10 }
+        },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              if (items && items[0]) {
+                return `${items[0].label} (${isWeekly ? '週間実績' : '期別実績'})`;
+              }
+              return '';
+            }
           }
         }
       }
-    });
-  }
+    }
+  });
 }
 
 /**
@@ -28133,6 +28258,9 @@ function switchPalmsSubTab(subTabName) {
  * Render Subview 1: Growth Dashboard Summary Metrics
  */
 function renderGrowthDashboardSummary() {
+  if (!palmsChapterTrendsData) {
+    fetchPalmsChapterTrends();
+  }
   if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
 
   let totalTyfcb = 0;

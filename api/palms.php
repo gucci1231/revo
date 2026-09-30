@@ -65,6 +65,45 @@ try {
         exit;
     }
 
+    if ($action === 'chapter_trends') {
+        $stmtWeekly = $pdo->query("
+            SELECT 
+                start_date, end_date,
+                SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                SUM(one_to_ones) as total_oto,
+                SUM(v_visitors) as total_visitors,
+                SUM(tyfcb_amount * 1000) as total_tyfcb,
+                COUNT(DISTINCT member_id) as member_count
+            FROM palms_reports
+            WHERE (julianday(end_date) - julianday(start_date)) <= 14
+            GROUP BY start_date, end_date
+            ORDER BY end_date ASC
+        ");
+        $weekly = $stmtWeekly->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtTerms = $pdo->query("
+            SELECT 
+                start_date, end_date,
+                SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                SUM(one_to_ones) as total_oto,
+                SUM(v_visitors) as total_visitors,
+                SUM(tyfcb_amount * 1000) as total_tyfcb,
+                COUNT(DISTINCT member_id) as member_count
+            FROM palms_reports
+            WHERE (julianday(end_date) - julianday(start_date)) > 60
+            GROUP BY start_date, end_date
+            ORDER BY start_date ASC
+        ");
+        $terms = $stmtTerms->fetchAll(PDO::FETCH_ASSOC);
+
+        echo json_encode([
+            'success' => true,
+            'weekly' => $weekly,
+            'terms' => $terms
+        ]);
+        exit;
+    }
+
     if ($action === 'periods') {
         $stmt = $pdo->query("
             SELECT DISTINCT start_date, end_date, COUNT(*) as member_count

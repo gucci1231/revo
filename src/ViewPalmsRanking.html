@@ -147,14 +147,21 @@
 
     <!-- Chapter Growth Charts (Multi-Period Trend & 7-Metric Radar) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
-      <!-- Multi-Period 2-Year Trend (Line Chart) -->
+      <!-- Multi-Period & Weekly Trend (Line Chart) -->
       <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
-            <h3 class="text-sm font-bold text-slate-800">チャプター成長推移・2年間期別トレンド</h3>
+            <h3 class="text-sm font-bold text-slate-800" id="growth-trend-chart-title">チャプター成長推移・毎週刻みトレンド</h3>
           </div>
-          <span class="text-2xs font-bold text-slate-400">売上・リファーラル・1to1</span>
+          <div class="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-2xs font-bold">
+            <button type="button" id="btn-palms-trend-weekly" onclick="setGrowthTrendGranularity('weekly')" class="px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs">
+              毎週刻み
+            </button>
+            <button type="button" id="btn-palms-trend-period" onclick="setGrowthTrendGranularity('period')" class="px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800">
+              2年間期別
+            </button>
+          </div>
         </div>
         <div class="relative w-full h-64 sm:h-72">
           <canvas id="chart-palms-trend-line"></canvas>

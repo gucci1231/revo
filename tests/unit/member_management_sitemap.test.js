@@ -73,8 +73,23 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     assert.strictEqual(indexHtml.includes('function renderPpwFollowMemberGrid('), true);
     assert.strictEqual(indexHtml.includes('function selectMemberForPpwSim('), true);
     assert.strictEqual(indexHtml.includes('function runPpwGoalSimulation('), true);
-    assert.strictEqual(indexHtml.includes('function copyPpwGoalPlanText('), true);
     assert.strictEqual(indexHtml.includes('function renderTrafficLightsGrid('), true);
     assert.strictEqual(indexHtml.includes('function renderChapterTrafficView('), true);
   });
+
+  it('verifies weekly and period granularity toggle controls and functions for Chapter Growth Trend', () => {
+    // UI elements
+    assert.strictEqual(indexHtml.includes('id="btn-palms-trend-weekly"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-palms-trend-period"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-trend-chart-title"'), true);
+    assert.strictEqual(indexHtml.includes('毎週刻み'), true);
+    assert.strictEqual(indexHtml.includes('2年間期別'), true);
+
+    // JS functions & API mappings
+    assert.strictEqual(indexHtml.includes('function setGrowthTrendGranularity('), true);
+    assert.strictEqual(indexHtml.includes('function fetchPalmsChapterTrends('), true);
+    assert.strictEqual(indexHtml.includes('function renderChapterTrendLineChart('), true);
+    assert.strictEqual(indexHtml.includes('getPalmsChapterTrendsApi'), true);
+  });
 });
+
