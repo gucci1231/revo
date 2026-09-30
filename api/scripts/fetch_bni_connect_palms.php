@@ -15,14 +15,15 @@ use Api\Services\BniConnectService;
 use Api\Core\Database;
 
 $logFile = __DIR__ . '/../data/palms_sync.log';
-function logMessage(string $msg) use ($logFile) {
+function logPalmsMessage(string $msg): void {
+    global $logFile;
     $time = date('Y-m-d H:i:s');
     $line = "[{$time}] {$msg}\n";
     echo $line;
-    file_put_contents($logFile, $line, FILE_APPEND);
+    @file_put_contents($logFile, $line, FILE_APPEND);
 }
 
-logMessage("=== BNI Connect PALMS Fetcher Started ===");
+logPalmsMessage("=== BNI Connect PALMS Fetcher Started ===");
 
 // Parse CLI options
 $options = getopt("", ["start:", "end:", "term:", "help"]);
@@ -49,7 +50,7 @@ if (isset($options['term'])) {
         $startDate = '04/01/2026';
         $endDate = '09/30/2026';
     } else {
-        logMessage("Error: Unsupported term number {$term}");
+        logPalmsMessage("Error: Unsupported term number {$term}");
         exit(1);
     }
 } elseif (isset($options['start']) && isset($options['end'])) {
@@ -61,17 +62,17 @@ if (isset($options['term'])) {
     $endDate = $range['endDate'];
 }
 
-logMessage("Target Date Range: {$startDate} -> {$endDate}");
+logPalmsMessage("Target Date Range: {$startDate} -> {$endDate}");
 
 try {
     $service = new BniConnectService();
     $result = $service->sync($startDate, $endDate);
 
-    logMessage("Successfully fetched {$result['recordsCount']} member records, saved {$result['savedCount']} records to SQLite.");
-    logMessage("=== BNI Connect PALMS Fetcher Finished Successfully ===");
+    logPalmsMessage("Successfully fetched {$result['recordsCount']} member records, saved {$result['savedCount']} records to SQLite.");
+    logPalmsMessage("=== BNI Connect PALMS Fetcher Finished Successfully ===");
     exit(0);
 } catch (Exception $e) {
-    logMessage("CRITICAL ERROR: " . $e->getMessage());
-    logMessage($e->getTraceAsString());
+    logPalmsMessage("CRITICAL ERROR: " . $e->getMessage());
+    logPalmsMessage($e->getTraceAsString());
     exit(1);
 }
