@@ -265,6 +265,8 @@
 
     if (tabName === 'lottery' && typeof initLotteryView === 'function') {
       initLotteryView();
+    } else if (tabName !== 'lottery' && typeof stopLotteryAudio === 'function') {
+      stopLotteryAudio();
     }
 
     if (window.innerWidth < 1024) {

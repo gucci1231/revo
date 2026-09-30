@@ -1,4 +1,4 @@
-<!-- 定例会スロット抽選ロジック & Web Audio API & 16:9演出エンジン -->
+<!-- 定例会ルーレット抽選ロジック & Web Audio API & 16:9演出エンジン (Las Vegas Hyper-Climax Edition) -->
 <script>
   let lotteryMembers = [];
   let lotteryExcludedMemberIds = new Set();
@@ -9,9 +9,14 @@
   let lotteryAudioCtx = null;
   let currentWinner = null;
   let confettiAnimationId = null;
+  let vegasMusicInterval = null;
+  let vegasLoungeInterval = null;
+  let vegasAudioUnlocked = false;
+  let vegasBgEffectMode = 'idle'; // 'idle' | 'warp' | 'red_alert' | 'insane_vortex' | 'supernova'
+  let vegasBgAnimId = null;
 
   const AWARD_PRESETS = [
-    '定例会スペシャル賞',
+    '商品抽選',
     '豪華グルメカタログ賞',
     '感謝のAmazonギフト賞',
     'ベストプレゼンター賞',
@@ -25,6 +30,11 @@
   function initLotteryView() {
     loadLotteryData();
     setupLotteryShortcuts();
+    initVegasBgVisualizer();
+    updateVegasBgmDisplay();
+    updateVegasDramaDisplay();
+    updateVegasImpactDisplay();
+    setupVegasAudioAutoUnlock();
   }
 
   async function loadLotteryData() {
@@ -33,11 +43,9 @@
       if (res && res.success !== false) {
         lotteryMembers = res.members || [];
         lotteryHistory = res.history || [];
-        updateLotteryUI();
       }
     } catch (e) {
       console.error('Failed to load lottery data:', e);
-      // フォールバック: membersテーブルから取得を試みる
       if (typeof rawInitialData !== 'undefined' && rawInitialData.members) {
         lotteryMembers = rawInitialData.members.map(m => ({
           id: m.id,
@@ -47,9 +55,27 @@
           win_count: 0,
           last_won_at: null
         }));
-        updateLotteryUI();
       }
     }
+
+    // 基本DNA、上田、小瀬戸は初期状態でチェックを外す
+    lotteryExcludedMemberIds.clear();
+    lotteryMembers.forEach(m => {
+      const mName = String(m.name || '');
+      const mCat = String(m.category || '');
+      const mProf = String(m.profession || '');
+      if (
+        mCat.includes('DNA') ||
+        mProf.includes('DNA') ||
+        mName.includes('DNA') ||
+        mName.includes('上田') ||
+        mName.includes('小瀬戸')
+      ) {
+        lotteryExcludedMemberIds.add(String(m.id));
+      }
+    });
+
+    updateLotteryUI();
   }
 
   function updateLotteryUI() {
@@ -69,7 +95,652 @@
     return lotteryMembers.filter(m => !lotteryExcludedMemberIds.has(String(m.id)));
   }
 
-  /* --- Web Audio API 効果音エンジン --- */
+  /* --- ルーレットアイテムの中央位置計算（物理的ズレ完全ゼロ保証） --- */
+  function getCenterTranslateY(itemElement) {
+    const windowEl = document.querySelector('.single-reel-window');
+    if (!windowEl || !itemElement) return 0;
+    const itemCenter = itemElement.offsetTop + (itemElement.offsetHeight / 2);
+    const windowCenter = windowEl.clientHeight / 2;
+    return windowCenter - itemCenter;
+  }
+
+  /* =========================================================================
+     🌌 狂気のラスベガス背景エフェクトエンジン (60FPS Dynamic Canvas Visualizer)
+     ========================================================================= */
+  function initVegasBgVisualizer() {
+    const canvas = document.getElementById('lottery-bg-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      if (canvas.parentElement) {
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
+      }
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const particles = [];
+    for (let i = 0; i < 95; i++) {
+      particles.push({
+        angle: Math.random() * Math.PI * 2,
+        radius: Math.random() * 520 + 40,
+        speed: (Math.random() * 0.03 + 0.01),
+        size: Math.random() * 4 + 2,
+        color: ['#f59e0b', '#fbbf24', '#fde047', '#ef4444', '#ffffff'][Math.floor(Math.random() * 5)],
+        alpha: Math.random() * 0.8 + 0.2
+      });
+    }
+
+    let vortexAngle = 0;
+    let shockwaveRadius = 0;
+    let lightningTicks = 0;
+    let alertTicks = 0;
+
+    function renderBg() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height * 0.48;
+
+      if (vegasBgEffectMode === 'idle') {
+        particles.forEach(p => {
+          p.angle += 0.003;
+          const px = cx + Math.cos(p.angle) * p.radius;
+          const py = cy + Math.sin(p.angle) * (p.radius * 0.5);
+          ctx.beginPath();
+          ctx.arc(px, py, p.size * 0.6, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha * 0.5;
+          ctx.fill();
+        });
+      } else if (vegasBgEffectMode === 'warp') {
+        ctx.globalAlpha = 0.85;
+        for (let i = 0; i < 38; i++) {
+          const ang = (i / 38) * Math.PI * 2 + vortexAngle;
+          const r1 = 110;
+          const r2 = Math.max(canvas.width, canvas.height) * 0.85;
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * (r1 * 0.6));
+          ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * (r2 * 0.6));
+          ctx.strokeStyle = i % 2 === 0 ? 'rgba(251, 191, 36, 0.45)' : 'rgba(245, 158, 11, 0.2)';
+          ctx.lineWidth = (i % 3 === 0) ? 4 : 2;
+          ctx.stroke();
+        }
+        vortexAngle += 0.08;
+
+        // ★★★ ラスベガス・ムービングレーザービーム (4色レーザー) ★★★
+        const laserColors = ['#10b981', '#38bdf8', '#f59e0b', '#ec4899'];
+        laserColors.forEach((color, idx) => {
+          ctx.save();
+          const sweep = Math.sin(vortexAngle * 0.8 + idx * 1.5) * 0.45;
+          const originX = idx % 2 === 0 ? 0 : canvas.width;
+          const originY = idx < 2 ? 0 : canvas.height;
+          const targetX = cx + sweep * canvas.width;
+          const targetY = cy;
+
+          ctx.beginPath();
+          ctx.moveTo(originX, originY);
+          ctx.lineTo(targetX, targetY);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3.5;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 25;
+          ctx.globalAlpha = 0.75;
+          ctx.stroke();
+          ctx.restore();
+        });
+      } else if (vegasBgEffectMode === 'red_alert') {
+        // ★★★ 緊急事態レッドアラート・ストロボ警報 ★★★
+        alertTicks++;
+        const flashAlpha = (Math.sin(alertTicks * 0.25) + 1) * 0.5;
+
+        // 赤色ストロボ
+        ctx.fillStyle = `rgba(239, 68, 68, ${0.15 + flashAlpha * 0.25})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 警告斜めストライプ（警戒区域バー）
+        ctx.save();
+        ctx.strokeStyle = `rgba(239, 68, 68, ${0.25 + flashAlpha * 0.35})`;
+        ctx.lineWidth = 12;
+        for (let x = -canvas.height; x < canvas.width + canvas.height; x += 60) {
+          ctx.beginPath();
+          ctx.moveTo(x + (alertTicks * 4) % 60, 0);
+          ctx.lineTo(x + canvas.height + (alertTicks * 4) % 60, canvas.height);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // 巨大 WARNING ネオン
+        ctx.save();
+        ctx.font = '900 42px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = `rgba(255, 255, 255, ${0.7 + flashAlpha * 0.3})`;
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 30;
+        ctx.fillText('🚨 EMERGENCY WARNING 🚨', cx, cy - 200);
+        ctx.fillText('⚡ FREEZE SYSTEM REVIVAL ⚡', cx, cy + 240);
+        ctx.restore();
+
+      } else if (vegasBgEffectMode === 'insane_vortex') {
+        // ★★★ 狂気の黄金コズミック・ボルテックス ＆ 電撃ストーム ★★★
+        vortexAngle += 0.05;
+
+        const auraGrad = ctx.createRadialGradient(cx, cy, 60, cx, cy, canvas.width * 0.65);
+        auraGrad.addColorStop(0, 'rgba(245, 158, 11, 0.4)');
+        auraGrad.addColorStop(0.4, 'rgba(180, 83, 9, 0.2)');
+        auraGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = auraGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let ring = 0; ring < 3; ring++) {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(vortexAngle * (ring % 2 === 0 ? 1 : -1.2) + ring * 1.5);
+          ctx.beginPath();
+          for (let a = 0; a < Math.PI * 2; a += 0.15) {
+            const rad = 140 + ring * 90 + Math.sin(a * 4 + vortexAngle * 3) * 30;
+            const rx = Math.cos(a) * rad;
+            const ry = Math.sin(a) * (rad * 0.55);
+            if (a === 0) ctx.moveTo(rx, ry);
+            else ctx.lineTo(rx, ry);
+          }
+          ctx.closePath();
+          ctx.strokeStyle = ring === 0 ? 'rgba(253, 224, 71, 0.85)' : (ring === 1 ? 'rgba(245, 158, 11, 0.65)' : 'rgba(239, 68, 68, 0.55)');
+          ctx.lineWidth = 3.5 + ring * 1.5;
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 20;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        particles.forEach(p => {
+          p.angle += p.speed * 4;
+          p.radius -= 1.3;
+          if (p.radius < 50) p.radius = canvas.width * 0.55;
+
+          const px = cx + Math.cos(p.angle) * p.radius;
+          const py = cy + Math.sin(p.angle) * (p.radius * 0.55);
+
+          ctx.beginPath();
+          ctx.arc(px, py, p.size * 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = Math.min(1, p.alpha * 1.6);
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 14;
+          ctx.fill();
+        });
+
+        lightningTicks++;
+        if (lightningTicks % 7 === 0) {
+          ctx.save();
+          ctx.strokeStyle = '#ffffff';
+          ctx.shadowColor = '#fde047';
+          ctx.shadowBlur = 25;
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          let lx = Math.random() > 0.5 ? 0 : canvas.width;
+          let ly = Math.random() * canvas.height;
+          ctx.moveTo(lx, ly);
+          for (let s = 0; s < 5; s++) {
+            lx += (cx - lx) * 0.3 + (Math.random() - 0.5) * 80;
+            ly += (cy - ly) * 0.3 + (Math.random() - 0.5) * 80;
+            ctx.lineTo(lx, ly);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.font = '900 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.14)';
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 15;
+        ctx.fillText('★ LAS VEGAS 100M MEGA JACKPOT ★', cx, cy - 200);
+        ctx.fillText('⚡ FEVER CLIMAX REACH ⚡', cx, cy + 240);
+        ctx.restore();
+
+      } else if (vegasBgEffectMode === 'supernova') {
+        shockwaveRadius += 18;
+        if (shockwaveRadius < canvas.width * 1.5) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cx, cy, shockwaveRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(253, 224, 71, ' + (1 - shockwaveRadius / (canvas.width * 1.5)) + ')';
+          ctx.lineWidth = 15;
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 35;
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      vegasBgAnimId = requestAnimationFrame(renderBg);
+    }
+
+    if (vegasBgAnimId) cancelAnimationFrame(vegasBgAnimId);
+    renderBg();
+  }
+
+  function setVegasBgMode(mode) {
+    vegasBgEffectMode = mode;
+  }
+
+  /* =========================================================================
+     🎧 ラスベガス・スタジオ音響エンジン (Web Audio API Studio Synthesizer)
+     コンプレッサー、ホールリバーブ、808/909ドラム、スーパーソウ和音、ブラスファンファーレ
+     ========================================================================= */
+  let lotteryMasterGain = null;
+  let lotteryCompressor = null;
+  let lotteryReverbNode = null;
+  let lotteryNoiseBuffer = null;
+
+  /* --- 🎰 ラスベガス 豪華BGM 10パターン定義 --- */
+  const VEGAS_BGM_STYLES = [
+    {
+      id: 'mega_edm',
+      name: '1. ラスベガス・メガEDM',
+      shortName: '1. メガEDM',
+      desc: '132BPM ユーロビート＆スーパーソウ（超王道カジノアンセム）',
+      bpm: 132,
+      chords: [
+        [261.63, 311.13, 392.00, 466.16, 587.33], // Cm9
+        [207.65, 261.63, 311.13, 392.00],        // AbMaj7
+        [233.08, 293.66, 349.23, 415.30],        // Bb7
+        [311.13, 392.00, 466.16, 587.33]         // EbMaj9
+      ],
+      bass: [65.41, 51.91, 58.27, 77.78],
+      type: 'edm'
+    },
+    {
+      id: 'oceans_funk',
+      name: '2. オーシャンズ11・ファンク',
+      shortName: '2. オーシャンズ11',
+      desc: '118BPM スラップベース＆ソウルファンク（映画さながらの潜入感）',
+      bpm: 118,
+      chords: [
+        [293.66, 349.23, 440.00, 523.25, 659.25], // Dm9
+        [196.00, 246.94, 293.66, 370.00, 440.00], // G13
+        [293.66, 349.23, 440.00, 523.25, 659.25], // Dm9
+        [220.00, 277.18, 329.63, 392.00]          // A7#9
+      ],
+      bass: [73.42, 49.00, 73.42, 55.00],
+      type: 'funk'
+    },
+    {
+      id: 'bellagio_swing',
+      name: '3. ベラージオ・ビッグバンド',
+      shortName: '3. ビッグバンド',
+      desc: '142BPM スウィングジャズ＆ホーン隊（シナトラ黄金期の華麗な夜）',
+      bpm: 142,
+      chords: [
+        [349.23, 440.00, 523.25, 587.33], // F6
+        [293.66, 370.00, 440.00, 523.25, 622.25], // D7b9
+        [196.00, 293.66, 349.23, 440.00, 523.25], // Gm7
+        [261.63, 329.63, 392.00, 466.16, 554.37]  // C7b9
+      ],
+      bass: [87.31, 73.42, 98.00, 65.41],
+      type: 'swing'
+    },
+    {
+      id: 'slot_fever',
+      name: '4. 777スロットフィーバー',
+      shortName: '4. 777フィーバー',
+      desc: '138BPM 高速ベル滝＆エレクトロ（コインがジャラジャラ湧き出る高揚感）',
+      bpm: 138,
+      chords: [
+        [261.63, 329.63, 392.00, 523.25], // C
+        [196.00, 246.94, 293.66, 392.00], // G
+        [220.00, 261.63, 329.63, 440.00], // Am
+        [174.61, 220.00, 261.63, 349.23]  // F
+      ],
+      bass: [65.41, 49.00, 55.00, 43.65],
+      type: 'fever'
+    },
+    {
+      id: 'showgirl_samba',
+      name: '5. ショーガール・サンバ',
+      shortName: '5. ショーガール',
+      desc: '136BPM リオ・カーニバル＆ブラス（羽飾りと熱狂のラテンフェスタ）',
+      bpm: 136,
+      chords: [
+        [349.23, 440.00, 523.25, 659.25], // FMaj7
+        [196.00, 246.94, 293.66, 392.00], // G7
+        [329.63, 392.00, 493.88, 587.33], // Em7
+        [220.00, 261.63, 329.63, 440.00]  // Am7
+      ],
+      bass: [43.65, 49.00, 41.20, 55.00],
+      type: 'samba'
+    },
+    {
+      id: 'highroller_euro',
+      name: '6. ハイローラー・ユーロビート',
+      shortName: '6. ユーロビート',
+      desc: '152BPM 超高速アグレッシブ・ユーロ（息をもつかせぬスリリングな疾走）',
+      bpm: 152,
+      chords: [
+        [220.00, 261.63, 329.63, 440.00], // Am
+        [174.61, 220.00, 261.63, 349.23], // F
+        [196.00, 246.94, 293.66, 392.00], // G
+        [164.81, 196.00, 246.94, 329.63]  // Em
+      ],
+      bass: [55.00, 43.65, 49.00, 41.20],
+      type: 'eurobeat'
+    },
+    {
+      id: 'cyber_trance',
+      name: '7. サイバーネオン・トランス',
+      shortName: '7. サイバートランス',
+      desc: '140BPM ローリングベース＆近未来ベガス（噴水ショー×レーザー光線）',
+      bpm: 140,
+      chords: [
+        [293.66, 349.23, 440.00, 587.33], // Dm
+        [233.08, 293.66, 349.23, 466.16], // Bb
+        [261.63, 329.63, 392.00, 523.25], // C
+        [220.00, 261.63, 329.63, 440.00]  // Am
+      ],
+      bass: [73.42, 58.27, 65.41, 55.00],
+      type: 'trance'
+    },
+    {
+      id: 'action_trailer',
+      name: '8. 映画予告シネマティック',
+      shortName: '8. 映画シネマ',
+      desc: '108BPM 重厚太鼓＆サスペンスブラス（大金を賭けた極限の心理戦）',
+      bpm: 108,
+      chords: [
+        [146.83, 174.61, 220.00, 293.66], // Low Dm
+        [155.56, 196.00, 233.08, 311.13], // Eb
+        [146.83, 174.61, 220.00, 293.66], // Low Dm
+        [130.81, 164.81, 196.00, 261.63]  // Low C
+      ],
+      bass: [36.71, 38.89, 36.71, 32.70],
+      type: 'trailer'
+    },
+    {
+      id: 'studio54_disco',
+      name: '9. ゴージャス・70sディスコ',
+      shortName: '9. 70sディスコ',
+      desc: '124BPM オクターブベース＆VIPラウンジ（シャンパンとミラーボールの輝き）',
+      bpm: 124,
+      chords: [
+        [311.13, 370.00, 466.16, 554.37, 698.46], // Ebm9
+        [207.65, 261.63, 311.13, 392.00, 466.16], // Ab13
+        [277.18, 349.23, 415.30, 523.25],         // DbMaj9
+        [233.08, 293.66, 349.23, 415.30]          // Bb7
+      ],
+      bass: [38.89, 51.91, 34.65, 58.27],
+      type: 'disco'
+    },
+    {
+      id: 'mega_climax',
+      name: '10. 1億円クライマックス',
+      shortName: '10. 1億円クライマックス',
+      desc: '146BPM 狂乱のメガジャックポット狂詩曲（アドレナリンMAXの頂点）',
+      bpm: 146,
+      chords: [
+        [261.63, 329.63, 392.00, 523.25, 659.25], // C add9
+        [293.66, 370.00, 440.00, 587.33],         // D
+        [329.63, 392.00, 493.88, 587.33, 659.25], // Em9
+        [349.23, 440.00, 523.25, 698.46]          // F Maj
+      ],
+      bass: [65.41, 73.42, 82.41, 87.31],
+      type: 'climax'
+    },
+    {
+      id: 'eva_second_impact',
+      name: '11. 黙示録セカンドインパクト交響曲',
+      shortName: '11. セカンドインパクト',
+      desc: '130BPM 巨匠・鷺巣詩郎オマージュ（ティンパニ乱打・重低音ブラス・大聖堂聖歌隊合唱）',
+      bpm: 130,
+      chords: [
+        [220.00, 261.63, 329.63, 415.30, 523.25], // Am(maj7) 決戦の緊迫和音
+        [207.65, 261.63, 311.13, 415.30, 493.88], // Abdim
+        [196.00, 246.94, 293.66, 392.00, 493.88], // G
+        [185.00, 233.08, 277.18, 369.99, 466.16]  // F#dim7
+      ],
+      bass: [55.00, 51.91, 49.00, 46.25],
+      type: 'eva_impact'
+    }
+  ];
+
+  let currentVegasBgmIndex = 0; // デフォルトで最高に盛り上がる「1. ラスベガス・メガEDM」を設定！
+
+  function cycleVegasBgmStyle() {
+    currentVegasBgmIndex = (currentVegasBgmIndex + 1) % (VEGAS_BGM_STYLES.length + 1);
+    updateVegasBgmDisplay();
+
+    if (currentVegasBgmIndex < VEGAS_BGM_STYLES.length) {
+      const s = VEGAS_BGM_STYLES[currentVegasBgmIndex];
+      showToast(`🎵 BGM変更: ${s.name}\n${s.desc}`, 'info');
+    } else {
+      showToast('🎰 BGM変更: 0. ランダム・カジノDJ（スピン毎に自動選曲）', 'info');
+    }
+
+    if (lotteryIsSpinning) {
+      startVegasCasinoGroove();
+    } else if (lotterySoundEnabled) {
+      playVegasBgmStylePreview(currentVegasBgmIndex);
+    }
+  }
+
+  function updateVegasBgmDisplay() {
+    const topLabel = document.getElementById('lottery-bgm-style-label');
+    const stageLabel = document.getElementById('lottery-stage-bgm-label');
+
+    let textTop = '';
+    let textStage = '';
+
+    if (currentVegasBgmIndex < VEGAS_BGM_STYLES.length) {
+      const s = VEGAS_BGM_STYLES[currentVegasBgmIndex];
+      textTop = `BGM: ${s.shortName}`;
+      textStage = `🎵 BGM: ${s.shortName}`;
+    } else {
+      textTop = 'BGM: 🎰 ランダムDJ';
+      textStage = '🎵 BGM: 🎰 ランダムDJ';
+    }
+
+    if (topLabel) topLabel.innerText = textTop;
+    if (stageLabel) stageLabel.innerText = textStage;
+  }
+
+  /* --- 🎭 ラスベガス 豪華ドラマ演出 10パターン定義 --- */
+  const VEGAS_DRAMA_PATTERNS = [
+    {
+      id: 'kawaguchi',
+      name: '1. 製作者・自作自演疑惑SP',
+      shortName: '1. 自作自演SP',
+      desc: '製作者・川口陽平で一旦停止！ 偽ファンファーレ→暗転ブラックアウト→逆戻り→綱引き→8秒コズミック這い寄り'
+    },
+    {
+      id: 'president',
+      name: '2. プレジデント忖度疑惑・大逆転',
+      shortName: '2. プレジ忖度逆転',
+      desc: '役員・会長で停止！？ 「忖度検知！」ブザーから超高速リバース回転で真逆のメンバーへ大ジャンプ！'
+    },
+    {
+      id: 'deadheat',
+      name: '3. 2強一騎打ち・写真判定デッドヒート',
+      shortName: '3. 2強写真判定',
+      desc: 'ペイライン上で2人の候補者が超高速で往復！ 最後の1ミリで第3の勝者が下から滑り込む！'
+    },
+    {
+      id: 'overrun',
+      name: '4. 行き過ぎオーバーラン＆急ブレーキ逆噴射',
+      shortName: '4. オーバーラン逆噴射',
+      desc: '当選者を通り過ぎて会場落胆…からの猛烈バックギア急ブレーキ！ 火花を散らしてピタ止まり！'
+    },
+    {
+      id: 'rookie',
+      name: '5. ルーキー下剋上・大番狂わせ',
+      shortName: '5. ルーキー下剋上',
+      desc: 'ベテラン勢をバシバシ蹴散らし、ルーキーが王座に迫る！ 心拍音とともに大金星ロックイン！'
+    },
+    {
+      id: 'defibrillator',
+      name: '6. 電源喪失フリーズ＆電撃ショック蘇生',
+      shortName: '6. 電源喪失＆電撃蘇生',
+      desc: '境界線で完全フリーズ停止… 会場沈黙の1.8秒後、ドカンッ！と落雷蘇生で勝者を捉える！'
+    },
+    {
+      id: 'triplejump',
+      name: '7. 怒涛の3段跳びフェイクジャンプ',
+      shortName: '7. 怒涛の3段跳び',
+      desc: '第1候補ストップ！…動いた！ 第2候補ストップ！…まだ動く！ 第3候補で大爆発ロック！'
+    },
+    {
+      id: 'blackhole',
+      name: '8. 反重力ブラックホール吸引',
+      shortName: '8. 反重力吸引',
+      desc: '一旦下に沈み込んで落選か…と思いきや、見えない重力でグググッと引き戻される奇跡の生還！'
+    },
+    {
+      id: 'instantflash',
+      name: '9. 電光石火・超音速一撃スラム',
+      shortName: '9. 電光石火一撃',
+      desc: '減速フェーズなし！？ 10秒間トップスピードのまま「ガッチィィィン！！」と火花散る即死ストップ！'
+    },
+    {
+      id: 'poltergeist',
+      name: '10. カジノゴースト・ポルターガイスト',
+      shortName: '10. カジノゴースト',
+      desc: '音がピタッと消え、ドラムが勝手に上下にフワフワ浮遊… 突然の爆発クラッシュで神々しく着地！'
+    }
+  ];
+
+  let currentVegasDramaIndex = 10; // 0..9 (固定パターン) または 10 (🎲 ランダムドラマ：スピン毎に変化)
+
+  function cycleVegasDramaStyle() {
+    currentVegasDramaIndex = (currentVegasDramaIndex + 1) % (VEGAS_DRAMA_PATTERNS.length + 1);
+    updateVegasDramaDisplay();
+
+    if (currentVegasDramaIndex < VEGAS_DRAMA_PATTERNS.length) {
+      const d = VEGAS_DRAMA_PATTERNS[currentVegasDramaIndex];
+      showToast(`🎭 ドラマ演出変更: ${d.name}\n${d.desc}`, 'info');
+    } else {
+      showToast('🎲 ドラマ演出変更: 0. ランダムドラマ（スピン毎に異なるストーリーが発動）', 'info');
+    }
+  }
+
+  function updateVegasDramaDisplay() {
+    const topLabel = document.getElementById('lottery-drama-style-label');
+    const stageLabel = document.getElementById('lottery-stage-drama-label');
+
+    let textTop = '';
+    let textStage = '';
+
+    if (currentVegasDramaIndex < VEGAS_DRAMA_PATTERNS.length) {
+      const d = VEGAS_DRAMA_PATTERNS[currentVegasDramaIndex];
+      textTop = `演出: ${d.shortName}`;
+      textStage = `🎭 演出: ${d.shortName}`;
+    } else {
+      textTop = '演出: 🎲 ランダム';
+      textStage = '🎭 演出: 🎲 ランダムドラマ';
+    }
+
+    if (topLabel) topLabel.innerText = textTop;
+    if (stageLabel) stageLabel.innerText = textStage;
+  }
+
+  /* --- 💥 エヴァンゲリオン・覚醒インパクト 10大演出定義 --- */
+  const EVA_IMPACT_PATTERNS = [
+    {
+      id: 'second_impact',
+      name: '1. 第二次接触 (光の十字架＆幾何学ATフィールド粉砕)',
+      shortName: '1. 第二次接触',
+      desc: '4本の光柱・LCL血の海・幾何学ATフィールド展開＆超衝撃波粉砕'
+    },
+    {
+      id: 'yashima',
+      name: '2. ヤシマ作戦 (超長距離陽電子砲狙撃)',
+      shortName: '2. ヤシマ作戦',
+      desc: '日本全土1億8000万kW充電・照準ロックオン・超閃光陽電子ビーム直撃'
+    },
+    {
+      id: 'awakening',
+      name: '3. 初号機神化 (神の輪＆光の巨翼)',
+      shortName: '3. 初号機神化',
+      desc: '頭上に黄金のエンジェルリング・画面を覆う光の翼・暴走咆哮覚醒'
+    },
+    {
+      id: 'ramiel',
+      name: '4. 第5使徒ラミエル (正八面体幾何学変形)',
+      shortName: '4. 使徒ラミエル',
+      desc: '青水晶ダイヤモンドが4次元多面体へ変形・加粒子砲ドリル貫通'
+    },
+    {
+      id: 'instrumentality',
+      name: '5. 人類補完計画 (LCL還元＆光の魂飛翔)',
+      shortName: '5. 人類補完計画',
+      desc: '夕焼け色の温かいLCLの海・金色の魂オーブが天空へ舞い上がる昇天'
+    },
+    {
+      id: 'longinus',
+      name: '6. ロンギヌスの槍 (成層圏超音速投擲撃墜)',
+      shortName: '6. ロンギヌス槍',
+      desc: '成層圏から深紅の二重螺旋槍がマッハ50で飛来・ペイラインへ激突貫通'
+    },
+    {
+      id: 'timer_defib',
+      name: '7. 活動限界00:00:00 (電源喪失＆電撃再始動)',
+      shortName: '7. 活動限界0秒',
+      desc: '巨大赤色デジタル残量カウントダウン・完全沈黙暗転からAED電撃蘇生'
+    },
+    {
+      id: 'geofront',
+      name: '8. ジオフロント開帳 (要塞都市地下格納)',
+      shortName: '8. ジオフロント',
+      desc: '兵装高層ビル群が地底へ油圧沈降・巨大黒色ピラミッドが出現'
+    },
+    {
+      id: 'core_breaker',
+      name: '9. 使徒コア粉砕 (連続打撃＆真紅のコア破壊)',
+      shortName: '9. 使徒コア粉砕',
+      desc: '真紅の使徒コアが出現・連続ラッシュ打撃の亀裂からルビー大爆発'
+    },
+    {
+      id: 'door_of_guf',
+      name: '10. ガフの扉 (サードインパクト・次元特異点)',
+      shortName: '10. ガフの扉',
+      desc: '天の裂け目が漆黒の瞳へ・虹色のオーラ環・反重力浮遊からの超光臨'
+    }
+  ];
+
+  let currentVegasImpactIndex = 10; // 0..9 (固定) または 10 (🎲 ランダム：スピン毎に変化)
+
+  function cycleVegasImpactStyle() {
+    currentVegasImpactIndex = (currentVegasImpactIndex + 1) % (EVA_IMPACT_PATTERNS.length + 1);
+    updateVegasImpactDisplay();
+
+    if (currentVegasImpactIndex < EVA_IMPACT_PATTERNS.length) {
+      const p = EVA_IMPACT_PATTERNS[currentVegasImpactIndex];
+      showToast(`💥 覚醒演出切替: ${p.name}\n${p.desc}`, 'info');
+    } else {
+      showToast('🎲 覚醒演出切替: 0. ランダム・インパクト（スピン毎に異なる覚醒が発動）', 'info');
+    }
+  }
+
+  function updateVegasImpactDisplay() {
+    const topLabel = document.getElementById('lottery-impact-style-label');
+    const stageLabel = document.getElementById('lottery-stage-impact-label');
+
+    let textTop = '';
+    let textStage = '';
+
+    if (currentVegasImpactIndex < EVA_IMPACT_PATTERNS.length) {
+      const p = EVA_IMPACT_PATTERNS[currentVegasImpactIndex];
+      textTop = `覚醒: ${p.shortName}`;
+      textStage = `💥 覚醒: ${p.shortName}`;
+    } else {
+      textTop = '覚醒: 🎲 ランダム';
+      textStage = '💥 覚醒: 🎲 ランダム';
+    }
+
+    if (topLabel) topLabel.innerText = textTop;
+    if (stageLabel) stageLabel.innerText = textStage;
+  }
+
   function getAudioContext() {
     if (!lotteryAudioCtx) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -80,20 +751,1046 @@
     if (lotteryAudioCtx && lotteryAudioCtx.state === 'suspended') {
       lotteryAudioCtx.resume();
     }
+    if (lotteryAudioCtx && !lotteryMasterGain) {
+      setupStudioAudioRack(lotteryAudioCtx);
+    }
     return lotteryAudioCtx;
+  }
+
+  function setupStudioAudioRack(ctx) {
+    try {
+      // 1. ノイズバッファの生成（スネア・ハイハット・クラッシュ用: 1秒で十分、超低負荷）
+      const bufferSize = Math.floor(ctx.sampleRate * 1.0);
+      lotteryNoiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = lotteryNoiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      // 2. スタジオ・マスタリング・コンプレッサー（音圧最大化＆クリッピング防止リミッター）
+      lotteryCompressor = ctx.createDynamicsCompressor();
+      lotteryCompressor.threshold.setValueAtTime(-14, ctx.currentTime);
+      lotteryCompressor.knee.setValueAtTime(8, ctx.currentTime);
+      lotteryCompressor.ratio.setValueAtTime(10, ctx.currentTime);
+      lotteryCompressor.attack.setValueAtTime(0.003, ctx.currentTime);
+      lotteryCompressor.release.setValueAtTime(0.12, ctx.currentTime);
+
+      // 3. ラグジュアリー・ステレオ・ディレイ（軽快・安定・広大な空間音響）
+      const delayNode = ctx.createDelay();
+      delayNode.delayTime.setValueAtTime(0.24, ctx.currentTime);
+      const delayFeedback = ctx.createGain();
+      delayFeedback.gain.setValueAtTime(0.20, ctx.currentTime);
+      const delayDamp = ctx.createBiquadFilter();
+      delayDamp.type = 'lowpass';
+      delayDamp.frequency.setValueAtTime(3200, ctx.currentTime);
+
+      // 4. マスターゲイン（十分な音量）
+      lotteryMasterGain = ctx.createGain();
+      lotteryMasterGain.gain.setValueAtTime(1.15, ctx.currentTime);
+
+      // 配線: Master -> Compressor -> Destination & Delay Loop
+      lotteryMasterGain.connect(lotteryCompressor);
+      lotteryMasterGain.connect(delayNode);
+      delayNode.connect(delayDamp);
+      delayDamp.connect(delayFeedback);
+      delayFeedback.connect(delayNode);
+      delayFeedback.connect(lotteryCompressor);
+
+      lotteryCompressor.connect(ctx.destination);
+    } catch (e) {
+      console.warn('Audio Rack init error:', e);
+      if (!lotteryMasterGain) {
+        lotteryMasterGain = ctx.createGain();
+        lotteryMasterGain.connect(ctx.destination);
+      }
+    }
+  }
+
+  function getMasterBus() {
+    const ctx = getAudioContext();
+    if (!ctx) return null;
+    return lotteryMasterGain || ctx.destination;
+  }
+
+  /* --- 🥁 ドラム＆シンセ音源ジェネレーター（ラスベガス最高峰音質） --- */
+  function playDrumKick(ctx, t, vol = 0.85) {
+    // 1. サブベース・ボディ（重厚なサイン波ピッチスイープ）
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(185, t);
+    osc.frequency.exponentialRampToValueAtTime(42, t + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(28, t + 0.28);
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+    osc.connect(gain);
+    gain.connect(getMasterBus());
+    osc.start(t);
+    osc.stop(t + 0.32);
+
+    // 2. アタック・トランジェント（パンチの効いた「カチッ」という芯）
+    if (lotteryNoiseBuffer) {
+      const click = ctx.createBufferSource();
+      click.buffer = lotteryNoiseBuffer;
+      const clickFilter = ctx.createBiquadFilter();
+      clickFilter.type = 'bandpass';
+      clickFilter.frequency.setValueAtTime(2800, t);
+      clickFilter.Q.setValueAtTime(2.5, t);
+      const clickGain = ctx.createGain();
+      clickGain.gain.setValueAtTime(vol * 0.45, t);
+      clickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+      click.connect(clickFilter);
+      clickFilter.connect(clickGain);
+      clickGain.connect(getMasterBus());
+      click.start(t);
+      click.stop(t + 0.025);
+    }
+  }
+
+  function playDrumSnare(ctx, t, vol = 0.5) {
+    if (!lotteryNoiseBuffer) return;
+    // ノイズ成分
+    const noise = ctx.createBufferSource();
+    noise.buffer = lotteryNoiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1400, t);
+    filter.Q.setValueAtTime(1.2, t);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+    noise.start(t);
+    noise.stop(t + 0.16);
+
+    // ボディトーン
+    const tone = ctx.createOscillator();
+    const toneGain = ctx.createGain();
+    tone.type = 'triangle';
+    tone.frequency.setValueAtTime(220, t);
+    tone.frequency.exponentialRampToValueAtTime(70, t + 0.1);
+    toneGain.gain.setValueAtTime(vol * 0.7, t);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    tone.connect(toneGain);
+    toneGain.connect(getMasterBus());
+    tone.start(t);
+    tone.stop(t + 0.1);
+  }
+
+  function playDrumHiHat(ctx, t, vol = 0.2) {
+    if (!lotteryNoiseBuffer) return;
+    const noise = ctx.createBufferSource();
+    noise.buffer = lotteryNoiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(8000, t);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+    noise.start(t);
+    noise.stop(t + 0.045);
+  }
+
+  function playDrumCrash(ctx, t, vol = 0.55) {
+    if (!lotteryNoiseBuffer) return;
+    const noise = ctx.createBufferSource();
+    noise.buffer = lotteryNoiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(4500, t);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 2.2);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+    noise.start(t);
+    noise.stop(t + 2.2);
+  }
+
+  function playSynthBass(ctx, t, freq, dur = 0.18, vol = 0.45) {
+    [-4, 4].forEach(detune => {
+      const osc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.detune.setValueAtTime(detune, t);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(400, t);
+      filter.frequency.exponentialRampToValueAtTime(2600, t + 0.04);
+      filter.frequency.exponentialRampToValueAtTime(500, t + dur);
+      filter.Q.setValueAtTime(6.5, t);
+
+      gain.gain.setValueAtTime(vol * 0.5, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(getMasterBus());
+      osc.start(t);
+      osc.stop(t + dur);
+    });
+  }
+
+  function playSuperSawChord(ctx, t, chordFreqs, dur = 0.28, vol = 0.25) {
+    chordFreqs.forEach(freq => {
+      [-8, 0, 8].forEach(detune => {
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        osc.detune.setValueAtTime(detune, t);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1200, t);
+        filter.frequency.exponentialRampToValueAtTime(4500, t + 0.05);
+        filter.frequency.exponentialRampToValueAtTime(1500, t + dur);
+
+        gain.gain.setValueAtTime(vol * 0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(getMasterBus());
+        osc.start(t);
+        osc.stop(t + dur);
+      });
+    });
+  }
+
+  /* 🎺 本場ラスベガス・ビッグバンド＆ブラススタブ（華麗な金管ホーンセクション） */
+  function playVegasBrassStab(ctx, t, chordFreqs, dur = 0.22, vol = 0.45) {
+    chordFreqs.forEach(freq => {
+      // 2台のデチューンSawtoothでトロンボーン＆トランペットの厚みのある和音を生成
+      [-6, 6].forEach(detune => {
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, t);
+        osc.detune.setValueAtTime(detune, t);
+
+        // ブラス特有の鋭いアタック開閉エンベロープフィルター（プァッ！）
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(900, t);
+        filter.frequency.linearRampToValueAtTime(5800, t + 0.035);
+        filter.frequency.exponentialRampToValueAtTime(1600, t + dur);
+        filter.Q.setValueAtTime(4.5, t);
+
+        gain.gain.setValueAtTime(vol * 0.26, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(getMasterBus());
+        osc.start(t);
+        osc.stop(t + dur);
+      });
+    });
+  }
+
+  /* 💰 ラスベガスカジノ・金貨コインカスケード（キラキラ降り注ぐコイン音） */
+  function playCoinCascade(ctx, t, vol = 0.16) {
+    const coinPitches = [1760.00, 2093.00, 2637.02, 3135.96];
+    coinPitches.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t + idx * 0.03);
+      gain.gain.setValueAtTime(vol, t + idx * 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.03 + 0.07);
+      osc.connect(gain);
+      gain.connect(getMasterBus());
+      osc.start(t + idx * 0.03);
+      osc.stop(t + idx * 0.03 + 0.07);
+    });
+  }
+
+  /* 🚀 クラブ＆カジノ特有のホワイトノイズ・ライザースウィープ（急上昇ビルドアップ） */
+  function playWhiteNoiseRiser(ctx, t, dur = 0.85, vol = 0.28) {
+    if (!lotteryNoiseBuffer) return;
+    const src = ctx.createBufferSource();
+    src.buffer = lotteryNoiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(450, t);
+    filter.frequency.exponentialRampToValueAtTime(7500, t + dur);
+    filter.Q.setValueAtTime(3.2, t);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.02, t);
+    gain.gain.linearRampToValueAtTime(vol, t + dur - 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+    src.start(t);
+    src.stop(t + dur);
+  }
+
+  function playCinemaBraam(ctx, t) {
+    // ハリウッド映画特有の超重低音インセプション・ホーン（BWAAAAAM!）
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(55, t); // Low A1
+    osc2.type = 'sawtooth';
+    osc2.frequency.setValueAtTime(110, t); // A2
+    osc2.detune.setValueAtTime(14, t);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(400, t);
+    filter.frequency.exponentialRampToValueAtTime(3200, t + 0.15);
+    filter.frequency.exponentialRampToValueAtTime(350, t + 1.8);
+    filter.Q.setValueAtTime(7, t);
+
+    gain.gain.setValueAtTime(0.75, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+
+    osc1.start(t);
+    osc2.start(t);
+    osc1.stop(t + 1.8);
+    osc2.stop(t + 1.8);
+  }
+
+  function playHollywoodSiren(ctx, t) {
+    // 緊迫の空襲警報・パトカーサイレン
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+
+    osc.frequency.setValueAtTime(700, t);
+    osc.frequency.linearRampToValueAtTime(1050, t + 0.4);
+    osc.frequency.linearRampToValueAtTime(700, t + 0.8);
+    osc.frequency.linearRampToValueAtTime(1050, t + 1.2);
+
+    gain.gain.setValueAtTime(0.4, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+
+    osc.connect(gain);
+    gain.connect(getMasterBus());
+    osc.start(t);
+    osc.stop(t + 1.4);
+  }
+
+  /* --- 🎤 ラスベガス公式実況（※リアル司会者のマイク進行を妨げないよう音声読み上げは完全OFF） --- */
+  function speakVegasAnnouncer(text, cancelCurrent = true) {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) { }
+    }
+    return;
+  }
+
+  /* --- 🏟️ オーディエンス・大歓声＆拍手チアエンジン --- */
+  function playCrowdCheer(ctx, duration = 4.0, intensity = 0.8) {
+    if (!lotteryNoiseBuffer) return;
+    try {
+      const src = ctx.createBufferSource();
+      src.buffer = lotteryNoiseBuffer;
+      src.loop = true;
+
+      const f1 = ctx.createBiquadFilter();
+      f1.type = 'bandpass';
+      f1.frequency.setValueAtTime(1050, ctx.currentTime);
+      f1.Q.setValueAtTime(1.4, ctx.currentTime);
+
+      const f2 = ctx.createBiquadFilter();
+      f2.type = 'bandpass';
+      f2.frequency.setValueAtTime(2300, ctx.currentTime);
+      f2.Q.setValueAtTime(1.8, ctx.currentTime);
+
+      const gain = ctx.createGain();
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.01, now);
+      gain.gain.exponentialRampToValueAtTime(intensity * 0.7, now + 0.5);
+      gain.gain.setValueAtTime(intensity * 0.65, now + duration - 0.8);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      src.connect(f1);
+      src.connect(f2);
+      f1.connect(gain);
+      f2.connect(gain);
+      gain.connect(getMasterBus());
+
+      src.start(now);
+      src.stop(now + duration);
+    } catch (e) {
+      console.warn('Crowd cheer error:', e);
+    }
+  }
+
+  /* --- 📳 ハリウッド・アースクエイク（画面カメラ激震） --- */
+  function triggerVegasScreenShake(durationMs = 600) {
+    const wrapper = document.getElementById('lottery-theater-wrapper');
+    const cabinet = document.getElementById('lottery-cabinet-box');
+    if (wrapper) {
+      wrapper.classList.remove('vegas-quake-heavy');
+      void wrapper.offsetWidth;
+      wrapper.classList.add('vegas-quake-heavy');
+    }
+    if (cabinet) {
+      cabinet.classList.remove('vegas-quake-heavy');
+      void cabinet.offsetWidth;
+      cabinet.classList.add('vegas-quake-heavy');
+    }
+    setTimeout(() => {
+      if (wrapper) wrapper.classList.remove('vegas-quake-heavy');
+      if (cabinet) cabinet.classList.remove('vegas-quake-heavy');
+    }, durationMs);
+  }
+
+  /* --- 🪙 3Dゴールドコイン・リアル物理爆発シャワー --- */
+  let vegasCoinAnimId = null;
+  function spawn3DGoldCoinPhysicsExplosion(count = 140) {
+    const canvas = document.getElementById('lottery-confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
+    canvas.height = canvas.parentElement.offsetHeight || window.innerHeight;
+
+    const coins = [];
+    const cx = canvas.width / 2;
+    const cy = canvas.height * 0.45;
+
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+      const speed = 7 + Math.random() * 16;
+      coins.push({
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (5 + Math.random() * 8),
+        gravity: 0.45 + Math.random() * 0.25,
+        radius: 10 + Math.random() * 14,
+        rotX: Math.random() * Math.PI,
+        vRotX: 0.08 + Math.random() * 0.2,
+        rotY: Math.random() * Math.PI,
+        vRotY: 0.05 + Math.random() * 0.15,
+        bounceCount: 0,
+        maxBounces: 2 + Math.floor(Math.random() * 3),
+        opacity: 1,
+        colorType: Math.random() > 0.25 ? 'gold' : (Math.random() > 0.5 ? 'amber' : 'white')
+      });
+    }
+
+    if (vegasCoinAnimId) cancelAnimationFrame(vegasCoinAnimId);
+
+    function renderCoins() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let aliveCount = 0;
+
+      coins.forEach(c => {
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vy += c.gravity;
+        c.rotX += c.vRotX;
+        c.rotY += c.vRotY;
+
+        // 床バウンド物理
+        if (c.y + c.radius >= canvas.height && c.bounceCount < c.maxBounces) {
+          c.y = canvas.height - c.radius;
+          c.vy = -c.vy * 0.55;
+          c.vx *= 0.8;
+          c.bounceCount++;
+        }
+
+        if (c.bounceCount >= c.maxBounces) {
+          c.opacity -= 0.015;
+        }
+
+        if (c.opacity > 0) {
+          aliveCount++;
+          ctx.save();
+          ctx.translate(c.x, c.y);
+          ctx.globalAlpha = Math.max(0, c.opacity);
+
+          const scaleX = Math.cos(c.rotX);
+          ctx.scale(scaleX, 1);
+
+          // コイン本体グラデーション
+          const grad = ctx.createLinearGradient(-c.radius, -c.radius, c.radius, c.radius);
+          if (c.colorType === 'gold') {
+            grad.addColorStop(0, '#fef08a');
+            grad.addColorStop(0.3, '#f59e0b');
+            grad.addColorStop(0.7, '#d97706');
+            grad.addColorStop(1, '#78350f');
+          } else {
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.5, '#fde047');
+            grad.addColorStop(1, '#b45309');
+          }
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // メタリック縁取り
+          ctx.strokeStyle = '#fef08a';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // 中央 '$' 刻印
+          ctx.fillStyle = '#78350f';
+          ctx.font = `900 ${Math.floor(c.radius * 1.1)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('$', 0, 1);
+
+          ctx.restore();
+        }
+      });
+
+      if (aliveCount > 0) {
+        vegasCoinAnimId = requestAnimationFrame(renderCoins);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    renderCoins();
+  }
+
+  /* =========================================================================
+     🍸 ラスベガス・カジノラウンジ待機BGM音源 (大人のジャズ＆ファンキーグルーヴ)
+     ========================================================================= */
+  function playLoungeRhodesChord(ctx, t, freqs, vol = 0.22) {
+    freqs.forEach(freq => {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, t);
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq * 2, t);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(2400, t);
+      filter.frequency.exponentialRampToValueAtTime(800, t + 0.6);
+
+      gain.gain.setValueAtTime(vol * 0.18, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.65);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(getMasterBus());
+
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + 0.65);
+      osc2.stop(t + 0.65);
+    });
+  }
+
+  function playLoungeWalkingBass(ctx, t, freq, dur = 0.25, vol = 0.38) {
+    const osc = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, t);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(380, t);
+    filter.frequency.exponentialRampToValueAtTime(140, t + dur);
+
+    gain.gain.setValueAtTime(vol * 0.5, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+
+    osc.start(t);
+    osc.stop(t + dur);
+  }
+
+  function playLoungeSoftKick(ctx, t, vol = 0.45) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, t);
+    osc.frequency.exponentialRampToValueAtTime(45, t + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(32, t + 0.22);
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+    osc.connect(gain);
+    gain.connect(getMasterBus());
+    osc.start(t);
+    osc.stop(t + 0.24);
+  }
+
+  function playLoungeRimshot(ctx, t, vol = 0.26) {
+    if (!lotteryNoiseBuffer) return;
+    const noise = ctx.createBufferSource();
+    noise.buffer = lotteryNoiseBuffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1800, t);
+    filter.Q.setValueAtTime(3.0, t);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(getMasterBus());
+    noise.start(t);
+    noise.stop(t + 0.08);
+  }
+
+  /* --- 🍸 ラスベガス・カジノラウンジ待機BGM (スピン待機中の極上グルーヴ) --- */
+  function startVegasLoungeBgm() {
+    if (!lotterySoundEnabled || lotteryIsSpinning) return;
+    stopVegasLoungeBgm();
+
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // エレガントなラスベガス・コード進行 (Cm9 -> Fm9 -> Bb13 -> Ebmaj9)
+      const loungeChords = [
+        [261.63, 311.13, 392.00, 466.16, 587.33], // Cm9
+        [174.61, 207.65, 261.63, 311.13, 392.00], // Fm9
+        [233.08, 293.66, 349.23, 415.30, 523.25], // Bb13
+        [155.56, 196.00, 233.08, 293.66, 349.23]  // Ebmaj9
+      ];
+      const walkingBassLines = [
+        [65.41, 73.42, 82.41, 87.31], // C -> D -> E -> F
+        [87.31, 98.00, 103.83, 116.54], // F -> G -> G# -> A#
+        [58.27, 65.41, 73.42, 77.78], // A# -> C -> D -> D#
+        [77.78, 87.31, 98.00, 110.00]  // D# -> F -> G -> A
+      ];
+
+      let beat = 0;
+      const bpm = 110;
+      const stepDuration = 60 / bpm / 4; // 16分音符
+
+      vegasLoungeInterval = setInterval(() => {
+        if (lotteryIsSpinning || !lotterySoundEnabled) {
+          stopVegasLoungeBgm();
+          return;
+        }
+
+        const now = ctx.currentTime;
+        const stepInBar = beat % 16;
+        const barIdx = Math.floor((beat / 16) % 4);
+        const currChord = loungeChords[barIdx % loungeChords.length];
+        const bassLine = walkingBassLines[barIdx % walkingBassLines.length];
+        const currBass = bassLine[Math.floor(stepInBar / 4) % bassLine.length];
+
+        // 1. キック（1拍・3拍の頭）
+        if (stepInBar === 0 || stepInBar === 8) {
+          playLoungeSoftKick(ctx, now, 0.42);
+        }
+        // 2. リムショット（2拍・4拍）
+        if (stepInBar === 4 || stepInBar === 12) {
+          playLoungeRimshot(ctx, now, 0.25);
+        }
+        // 3. ハイハット（裏拍シャッフル）
+        if (stepInBar % 2 === 0) {
+          const isAccent = (stepInBar % 4 === 2);
+          playDrumHiHat(ctx, now, isAccent ? 0.18 : 0.08);
+        }
+        // 4. ウォーキングベース（各拍の頭）
+        if (stepInBar % 4 === 0) {
+          playLoungeWalkingBass(ctx, now, currBass, 0.24, 0.35);
+        }
+        // 5. ローズピアノ和音（シンコペーション：0拍、6拍、10拍）
+        if (stepInBar === 0 || stepInBar === 6 || stepInBar === 10) {
+          playLoungeRhodesChord(ctx, now, currChord, 0.2);
+        }
+        // 6. クリスタル・コイン音（2小節に1回、キラッと輝く）
+        if (barIdx === 3 && stepInBar === 14) {
+          playCoinCascade(ctx, now, 0.12);
+        }
+
+        beat++;
+      }, stepDuration * 1000);
+
+    } catch (e) {
+      console.warn('Lounge BGM error:', e);
+    }
+  }
+
+  function stopVegasLoungeBgm() {
+    if (vegasLoungeInterval) {
+      clearInterval(vegasLoungeInterval);
+      vegasLoungeInterval = null;
+    }
+  }
+
+  /* --- 🎵 BGMスタイル即時プレビュー（試聴音） --- */
+  function playVegasBgmStylePreview(styleIdx) {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume();
+
+      const idx = (styleIdx < VEGAS_BGM_STYLES.length) ? styleIdx : 0;
+      const style = VEGAS_BGM_STYLES[idx];
+      const now = ctx.currentTime;
+      const chord = style.chords[0];
+      const bass = style.bass[0];
+
+      // 即座にドン！とキック＋クラッシュ＋ブラススタブで試聴させる！
+      playDrumKick(ctx, now, 0.95);
+      playDrumCrash(ctx, now, 0.55);
+      playDrumHiHat(ctx, now, 0.3);
+      playSynthBass(ctx, now, bass, 0.3, 0.55);
+      playVegasBrassStab(ctx, now, chord, 0.35, 0.45);
+      playCoinCascade(ctx, now + 0.1, 0.2);
+    } catch (e) {
+      console.warn('Preview error:', e);
+    }
+  }
+
+  /* --- 🎵 オーディオ自動アンロック ＆ 全体停止 --- */
+  function setupVegasAudioAutoUnlock() {
+    if (lotteryAudioCtx && lotteryAudioCtx.state === 'running' && lotterySoundEnabled) {
+      if (!lotteryIsSpinning && !vegasMusicInterval && !vegasLoungeInterval) {
+        startVegasLoungeBgm();
+      }
+      return;
+    }
+
+    const onFirstUserAction = () => {
+      const ctx = getAudioContext();
+      if (ctx) {
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => {
+            vegasAudioUnlocked = true;
+            if (lotterySoundEnabled && !lotteryIsSpinning && !vegasMusicInterval && !vegasLoungeInterval) {
+              startVegasLoungeBgm();
+            }
+          }).catch(e => console.warn('Audio resume failed:', e));
+        } else {
+          vegasAudioUnlocked = true;
+          if (lotterySoundEnabled && !lotteryIsSpinning && !vegasMusicInterval && !vegasLoungeInterval) {
+            startVegasLoungeBgm();
+          }
+        }
+      }
+      cleanup();
+    };
+
+    const cleanup = () => {
+      document.removeEventListener('click', onFirstUserAction, true);
+      document.removeEventListener('keydown', onFirstUserAction, true);
+      document.removeEventListener('touchstart', onFirstUserAction, true);
+    };
+
+    document.addEventListener('click', onFirstUserAction, { capture: true, once: true });
+    document.addEventListener('keydown', onFirstUserAction, { capture: true, once: true });
+    document.addEventListener('touchstart', onFirstUserAction, { capture: true, once: true });
+  }
+
+  function stopLotteryAudio() {
+    stopVegasMusic();
+    stopVegasLoungeBgm();
   }
 
   function toggleLotterySound() {
     lotterySoundEnabled = !lotterySoundEnabled;
     const icon = document.getElementById('lottery-sound-icon');
     const label = document.getElementById('lottery-sound-label');
+    const stageMusicBtn = document.getElementById('lottery-stage-bgm-play-btn');
+
     if (lotterySoundEnabled) {
-      if (icon) icon.className = 'fa-solid fa-volume-high text-amber-500';
-      if (label) label.innerText = 'サウンド ON';
-      playLotterySound('tick');
+      if (icon) icon.className = 'fa-solid fa-volume-high text-amber-500 animate-pulse';
+      if (label) label.innerText = 'BGM 演奏中';
+      if (stageMusicBtn) stageMusicBtn.innerHTML = '<i class="fa-solid fa-pause text-xs text-amber-300"></i>';
+
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      playLotterySound('snap');
+
+      if (lotteryIsSpinning) {
+        startVegasCasinoGroove();
+      } else {
+        startVegasLoungeBgm();
+      }
     } else {
       if (icon) icon.className = 'fa-solid fa-volume-xmark text-slate-400';
-      if (label) label.innerText = 'サウンド OFF';
+      if (label) label.innerText = 'BGM 停止中';
+      if (stageMusicBtn) stageMusicBtn.innerHTML = '<i class="fa-solid fa-play text-xs text-amber-300"></i>';
+
+      stopVegasMusic();
+      stopVegasLoungeBgm();
+    }
+  }
+
+  /* --- 🚀 ラスベガス・メガグルーヴBGM (10種類の豪華ラスベガス・スタイル自動演奏) --- */
+  function startVegasCasinoGroove() {
+    if (!lotterySoundEnabled) return;
+    stopVegasMusic();
+
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      // 現在のスタイル（ランダムDJならスピン毎に選出）
+      let activeStyle = null;
+      if (currentVegasBgmIndex >= VEGAS_BGM_STYLES.length) {
+        const randIdx = Math.floor(Math.random() * VEGAS_BGM_STYLES.length);
+        activeStyle = VEGAS_BGM_STYLES[randIdx];
+        const stageLabel = document.getElementById('lottery-stage-bgm-label');
+        if (stageLabel) stageLabel.innerText = `🎵 DJ: ${activeStyle.shortName}`;
+      } else {
+        activeStyle = VEGAS_BGM_STYLES[currentVegasBgmIndex];
+      }
+
+      let beat = 0;
+      const bpm = activeStyle.bpm || 132;
+      const stepDuration = 60 / bpm / 4; // 16分音符 (ms)
+
+      const chordProg = activeStyle.chords;
+      const bassProg = activeStyle.bass;
+      const styleType = activeStyle.type;
+      const arpeggios = [523.25, 622.25, 783.99, 932.33, 1046.50, 1244.51, 1567.98];
+
+      vegasMusicInterval = setInterval(() => {
+        if (!lotteryIsSpinning) {
+          stopVegasMusic();
+          return;
+        }
+
+        const now = ctx.currentTime;
+        const stepInBar = beat % 16;
+        const barIdx = Math.floor((beat / 16) % 4);
+        const currChord = chordProg[barIdx % chordProg.length];
+        const currBass = bassProg[barIdx % bassProg.length];
+
+        // 盛り上がり度（ビルドアップ）：スピンが長引くほど会場の興奮度上昇
+        const isBuildUpBar = (barIdx >= 2);
+        const isClimaxMeasure = (barIdx === 3 && stepInBar >= 8);
+
+        if (styleType === 'edm') {
+          // 1. ラスベガス・メガEDM: 4つ打ち + 808サブベース + ブラススタブ + コインベル + ビルドアップライザー
+          if (stepInBar % 4 === 0) {
+            playDrumKick(ctx, now, 0.95);
+            if (stepInBar === 0 && barIdx === 0) playDrumCrash(ctx, now, 0.65);
+          }
+          if (stepInBar === 4 || stepInBar === 12) {
+            playDrumSnare(ctx, now, 0.6);
+          } else if (isClimaxMeasure && stepInBar % 2 === 0) {
+            // クライマックスでのスネアロール連打
+            playDrumSnare(ctx, now, 0.45);
+          }
+          // 裏拍オープンハイハット
+          if (stepInBar % 2 === 0) playDrumHiHat(ctx, now, stepInBar % 4 === 2 ? 0.4 : 0.2);
+
+          // 808サブベース（オクターブ跳躍でグルーヴ感をブースト）
+          const edmBass = (stepInBar % 4 === 2) ? currBass * 1.5 : currBass;
+          if (stepInBar % 2 === 0) playSynthBass(ctx, now, edmBass, 0.16, 0.5);
+
+          // 華麗なブラススタブ（0拍・6拍・10拍で強烈なキメ）
+          if ([0, 6, 10].includes(stepInBar)) {
+            playVegasBrassStab(ctx, now, currChord, 0.2, 0.42);
+          } else if ([3, 8, 14].includes(stepInBar)) {
+            playSuperSawChord(ctx, now, currChord, 0.24, 0.32);
+          }
+
+          // カジノ金貨カスケード（小節の頭でチャリンと輝く）
+          if (stepInBar === 0) playCoinCascade(ctx, now, 0.14);
+
+          // 4小節目後半のホワイトノイズ・ライザースウィープ
+          if (barIdx === 3 && stepInBar === 6) {
+            playWhiteNoiseRiser(ctx, now, 0.95, 0.35);
+          }
+
+        } else if (styleType === 'funk') {
+          // 2. オーシャンズ11・ファンク: スラップベース + ブレイクビート + ワウ＆ブラススタブ
+          if (stepInBar === 0 || stepInBar === 7 || stepInBar === 10) playDrumKick(ctx, now, 0.85);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.65);
+          if (stepInBar === 15) playDrumSnare(ctx, now, 0.3); // ゴーストスネア
+          playDrumHiHat(ctx, now, stepInBar % 4 === 2 ? 0.3 : 0.2);
+
+          // スラップベースのオクターブ跳躍
+          if (stepInBar % 2 === 0) {
+            const octJump = stepInBar === 2 || stepInBar === 6 ? currBass * 2 : currBass;
+            playSynthBass(ctx, now, octJump, 0.13, 0.52);
+          }
+          // キレ味抜群のファンクホーン
+          if ([2, 6, 11].includes(stepInBar)) {
+            playVegasBrassStab(ctx, now, currChord, 0.16, 0.4);
+          } else if (stepInBar === 0) {
+            playCoinCascade(ctx, now, 0.12);
+          }
+
+        } else if (styleType === 'swing') {
+          // 3. ベラージオ・ビッグバンド: スウィングドラム + ウォーキングベース + 豪華ホーンセクション
+          if (stepInBar === 0 || stepInBar === 8) playDrumKick(ctx, now, 0.7);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.5);
+          // シャッフルライドシンバル
+          if ([0, 3, 4, 7, 8, 11, 12, 15].includes(stepInBar)) playDrumHiHat(ctx, now, 0.28);
+
+          // ウォーキングベース (4分音符毎に滑らかに推移)
+          if (stepInBar % 4 === 0) {
+            const walkStep = (stepInBar / 4);
+            const walkFreq = currBass * (1 + walkStep * 0.18);
+            playSynthBass(ctx, now, walkFreq, 0.26, 0.48);
+          }
+          // ビッグバンド金管ブラスのゴージャスな咆哮！
+          if ([0, 3, 6, 10].includes(stepInBar)) {
+            playVegasBrassStab(ctx, now, currChord, 0.24, 0.48);
+          }
+          if (stepInBar === 0 && barIdx % 2 === 0) playCoinCascade(ctx, now, 0.12);
+
+        } else if (styleType === 'fever') {
+          // 4. 777スロットフィーバー: 金貨の滝 + 高速ベル + ディスコキック
+          if (stepInBar % 4 === 0) playDrumKick(ctx, now, 0.9);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.55);
+          playDrumHiHat(ctx, now, 0.22);
+          if (stepInBar % 2 === 0) playSynthBass(ctx, now, currBass, 0.14, 0.45);
+          if (stepInBar % 4 === 0) playVegasBrassStab(ctx, now, currChord, 0.22, 0.38);
+
+          // 毎拍鳴り響くキラキラ金貨コイン
+          if (stepInBar % 4 === 2) playCoinCascade(ctx, now, 0.18);
+
+          // 毎16分音符でキラキラ滝のように鳴るベル
+          const bellFreq = arpeggios[beat % arpeggios.length];
+          const bellOsc = ctx.createOscillator();
+          const bellGain = ctx.createGain();
+          bellOsc.type = 'sine';
+          bellOsc.frequency.setValueAtTime(bellFreq, now);
+          bellGain.gain.setValueAtTime(0.14, now);
+          bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          bellOsc.connect(bellGain);
+          bellGain.connect(getMasterBus());
+          bellOsc.start(now);
+          bellOsc.stop(now + 0.1);
+
+        } else if (styleType === 'samba') {
+          // 5. ショーガール・サンバ: アゴゴ・シンコペーション + ラテンブラス
+          if ([0, 3, 6, 10, 12].includes(stepInBar)) playDrumKick(ctx, now, 0.85);
+          if ([4, 8, 12].includes(stepInBar)) playDrumSnare(ctx, now, 0.55);
+          playDrumHiHat(ctx, now, 0.25);
+          if (stepInBar % 2 === 0) playSynthBass(ctx, now, currBass, 0.15, 0.48);
+          if ([0, 3, 7, 10, 14].includes(stepInBar)) playVegasBrassStab(ctx, now, currChord, 0.22, 0.44);
+
+        } else if (styleType === 'eurobeat') {
+          // 6. ハイローラー・ユーロビート: 152BPMの猛スピード疾走 + 16分ベース + 鋭利ブラス
+          if (stepInBar % 4 === 0) playDrumKick(ctx, now, 0.95);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.65);
+          if (stepInBar % 2 === 1) playDrumHiHat(ctx, now, 0.35); // 裏拍オープンハイハット
+          // 16分連打ベース
+          playSynthBass(ctx, now, currBass, 0.1, 0.48);
+          if ([0, 3, 6, 9, 12, 14].includes(stepInBar)) playVegasBrassStab(ctx, now, currChord, 0.16, 0.42);
+
+        } else if (styleType === 'trance') {
+          // 7. サイバーネオン・トランス: 909キック + 16分ローリングサブベース + フィルターコード
+          if (stepInBar % 4 === 0) playDrumKick(ctx, now, 0.95);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.55);
+          if (stepInBar % 2 === 1) playDrumHiHat(ctx, now, 0.38);
+          if (stepInBar % 4 !== 0) playSynthBass(ctx, now, currBass, 0.11, 0.52);
+          if (stepInBar === 0 || stepInBar === 8) playSuperSawChord(ctx, now, currChord, 0.5, 0.38);
+          if (stepInBar === 0) playCoinCascade(ctx, now, 0.15);
+
+        } else if (styleType === 'trailer') {
+          // 8. 映画予告シネマティック: ハンス・ジマー重厚太鼓 + 迫真の緊張感
+          if (stepInBar === 0 || stepInBar === 8) playDrumKick(ctx, now, 1.0);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.45);
+          const tickOsc = ctx.createOscillator();
+          const tickGain = ctx.createGain();
+          tickOsc.type = 'triangle';
+          tickOsc.frequency.setValueAtTime(1200, now);
+          tickGain.gain.setValueAtTime(0.08, now);
+          tickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+          tickOsc.connect(tickGain);
+          tickGain.connect(getMasterBus());
+          tickOsc.start(now);
+          tickOsc.stop(now + 0.02);
+          if (stepInBar === 0) playCinemaBraam(ctx, now);
+          if (stepInBar % 4 === 0) playVegasBrassStab(ctx, now, currChord, 0.3, 0.45);
+
+        } else if (styleType === 'disco') {
+          // 9. ゴージャス・70sディスコ: 4つ打ち + オクターブディスコベース + ホーンスタブ
+          if (stepInBar % 4 === 0) playDrumKick(ctx, now, 0.9);
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.6);
+          if (stepInBar % 4 === 2) playDrumHiHat(ctx, now, 0.42); // ディスコオープンハット
+          const discoBassFreq = (stepInBar % 4 === 2) ? currBass * 2 : currBass;
+          playSynthBass(ctx, now, discoBassFreq, 0.16, 0.48);
+          if ([0, 3, 6, 8, 10, 14].includes(stepInBar)) playVegasBrassStab(ctx, now, currChord, 0.2, 0.42);
+          if (stepInBar === 0) playCoinCascade(ctx, now, 0.14);
+
+        } else if (styleType === 'climax') {
+          // 10. 1億円クライマックス: ダブルキック + 全開ブラス + 金貨の嵐
+          if (stepInBar % 2 === 0) playDrumKick(ctx, now, 0.95);
+          if (stepInBar % 4 === 2) playDrumSnare(ctx, now, 0.65);
+          playDrumHiHat(ctx, now, 0.3);
+          playSynthBass(ctx, now, currBass, 0.12, 0.55);
+          if (stepInBar % 2 === 0) playVegasBrassStab(ctx, now, currChord, 0.2, 0.48);
+          if (stepInBar % 8 === 0) playDrumCrash(ctx, now, 0.5);
+          if (stepInBar % 4 === 0) playCoinCascade(ctx, now, 0.18);
+
+        } else if (styleType === 'eva_impact') {
+          // 11. 黙示録セカンドインパクト交響曲: ティンパニ乱打 + 聖歌隊 + 重低音ブラス
+          if ([0, 1, 2, 3, 6, 7, 8, 12, 13, 14].includes(stepInBar)) {
+            const isAcc = [0, 6, 8, 12].includes(stepInBar);
+            playDrumKick(ctx, now, isAcc ? 0.98 : 0.68);
+            playSynthBass(ctx, now, currBass, 0.12, isAcc ? 0.65 : 0.38);
+          }
+          if (stepInBar === 4 || stepInBar === 12) playDrumSnare(ctx, now, 0.68);
+          if (stepInBar === 0 && barIdx === 0) playDrumCrash(ctx, now, 0.7);
+
+          if (stepInBar === 0 || stepInBar === 8) {
+            playSuperSawChord(ctx, now, currChord, 0.6, 0.45);
+          }
+          if (barIdx === 3 && stepInBar === 0) {
+            playCinemaBraam(ctx, now);
+          }
+        }
+
+        beat++;
+      }, stepDuration * 1000);
+    } catch (e) {
+      console.warn('Vegas groove error:', e);
+    }
+  }
+
+  function stopVegasMusic() {
+    if (vegasMusicInterval) {
+      clearInterval(vegasMusicInterval);
+      vegasMusicInterval = null;
     }
   }
 
@@ -102,163 +1799,260 @@
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
-
       const now = ctx.currentTime;
 
       if (type === 'spin_start') {
-        // スピン始動音: 上昇グリッサンド
+        // スタジオ始動音: キック ＋ クラッシュ ＋ 上昇グリッサンド
+        playDrumKick(ctx, now, 0.9);
+        playDrumCrash(ctx, now, 0.5);
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.exponentialRampToValueAtTime(700, now + 0.35);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(getMasterBus());
         osc.start(now);
-        osc.stop(now + 0.35);
+        osc.stop(now + 0.5);
+
       } else if (type === 'tick') {
-        // リール回転音: 短いクリック
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(450, now);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.04);
-      } else if (type === 'reel_stop') {
-        // リール停止音: ドスンという低音打撃
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.18);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        osc.frequency.setValueAtTime(750, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(getMasterBus());
         osc.start(now);
-        osc.stop(now + 0.18);
-      } else if (type === 'reach') {
-        // 激アツリーチアラート音 (サイレン)
-        const notes = [600, 800, 600, 800, 1000];
-        notes.forEach((freq, idx) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-          gain.gain.setValueAtTime(0.25, now + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.07);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + idx * 0.08);
-          osc.stop(now + idx * 0.08 + 0.07);
-        });
+        osc.stop(now + 0.03);
+
+      } else if (type === 'snap') {
+        // 鋭く響く金属ラチェットスナップ
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(950, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.09);
+        gain.gain.setValueAtTime(0.48, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+        osc.connect(gain);
+        gain.connect(getMasterBus());
+        osc.start(now);
+        osc.stop(now + 0.09);
+
+      } else if (type === 'reverse_snap') {
+        // 逆戻り時の映画的巨大ショック（BWAAAM! ＋ 歪み）
+        playCinemaBraam(ctx, now);
+
+      } else if (type === 'slow_creep_tick') {
+        playSynthBass(ctx, now, 85, 0.12, 0.5);
+
       } else if (type === 'heartbeat') {
-        // 心拍音 (ドクン…ドクン…)
-        [0, 0.12].forEach(delay => {
+        // 重低音心拍: 映画館のウーファーが揺れる808サブベース
+        [0, 0.16].forEach((delay, idx) => {
+          playDrumKick(ctx, now + delay, idx === 0 ? 0.95 : 0.7);
+        });
+
+      } else if (type === 'fake_fanfare') {
+        // 偽の確定ブラスファンファーレ（タ・タ・タ〜♪）
+        const chords = [
+          { t: 0.0, freqs: [392.00, 523.25, 659.25] },
+          { t: 0.2, freqs: [392.00, 523.25, 659.25] },
+          { t: 0.42, freqs: [523.25, 659.25, 783.99, 1046.50] }
+        ];
+        chords.forEach(c => {
+          playSuperSawChord(ctx, now + c.t, c.freqs, 0.35, 0.5);
+        });
+
+      } else if (type === 'blackout_power_down') {
+        // 電源遮断の「ブツンッ…」ノイズ
+        playCinemaBraam(ctx, now);
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.exponentialRampToValueAtTime(15, now + 0.25);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(getMasterBus());
+        osc.start(now);
+        osc.stop(now + 0.25);
+
+      } else if (type === 'emergency_siren') {
+        playHollywoodSiren(ctx, now);
+
+      } else if (type === 'glitch_burst') {
+        if (!lotteryNoiseBuffer) return;
+        const noise = ctx.createBufferSource();
+        noise.buffer = lotteryNoiseBuffer;
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        noise.connect(gain);
+        gain.connect(getMasterBus());
+        noise.start(now);
+        noise.stop(now + 0.2);
+
+      } else if (type === 'tug_tick') {
+        playSynthBass(ctx, now, 120, 0.08, 0.45);
+
+      } else if (type === 'drumroll') {
+        for (let i = 0; i < 18; i++) {
+          playDrumSnare(ctx, now + i * 0.035, 0.12 + (i * 0.025));
+        }
+
+      } else if (type === 'winner_lock' || type === 'reel_stop') {
+        // 1億円ジャックポット確定ロック音: キック ＋ クラッシュ ＋ 重厚低音 ＋ チャイム
+        playDrumKick(ctx, now, 1.0);
+        playDrumCrash(ctx, now, 0.8);
+        playCinemaBraam(ctx, now);
+
+        [1046.50, 1318.51, 1567.98, 2093.00].forEach((freq, idx) => {
+          const osc2 = ctx.createOscillator();
+          const gain2 = ctx.createGain();
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(freq, now + idx * 0.05);
+          gain2.gain.setValueAtTime(0.4, now + idx * 0.05);
+          gain2.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.7);
+          osc2.connect(gain2);
+          gain2.connect(getMasterBus());
+          osc2.start(now + idx * 0.05);
+          osc2.stop(now + idx * 0.05 + 0.7);
+        });
+
+      } else if (type === 'jackpot_bells') {
+        // カジノスロット・金貨コインシャワー（16音高速滝）
+        const bellNotes = [
+          523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00, 2637.02,
+          2093.00, 1567.98, 1318.51, 1046.50, 783.99, 659.25, 523.25, 1046.50
+        ];
+        bellNotes.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(80, now + delay);
-          osc.frequency.exponentialRampToValueAtTime(40, now + delay + 0.1);
-          gain.gain.setValueAtTime(0.4, now + delay);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.1);
+          osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          gain.gain.setValueAtTime(0.35, now + idx * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.5);
           osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + delay);
-          osc.stop(now + delay + 0.1);
+          gain.connect(getMasterBus());
+          osc.start(now + idx * 0.07);
+          osc.stop(now + idx * 0.07 + 0.5);
         });
+
       } else if (type === 'fanfare') {
-        // 豪華祝賀ファンファーレ (C-E-G-C メロディ＋和音)
-        const chords = [
-          { time: 0.0, freqs: [261.63, 329.63, 392.00] }, // C major
-          { time: 0.2, freqs: [329.63, 392.00, 523.25] }, // E-G-C
-          { time: 0.4, freqs: [392.00, 493.88, 587.33] }, // G major
-          { time: 0.6, freqs: [523.25, 659.25, 783.99] }, // High C major
-          { time: 0.9, freqs: [523.25, 659.25, 783.99, 1046.50] } // Grand Final Chord
+        // ★★★ ラスベガス・グランドファンファーレ (豪華12声ビッグバンド・ブラスアンセム) ★★★
+        playDrumCrash(ctx, now, 0.9);
+        playDrumCrash(ctx, now + 0.85, 0.95);
+
+        // 会場中がスタンディングオベーションの大歓声＆拍手
+        playCrowdCheer(ctx, 6.5, 0.95);
+
+        const fanfareChords = [
+          { time: 0.0, freqs: [233.08, 293.66, 349.23, 466.16], dur: 0.28 }, // Bb
+          { time: 0.24, freqs: [261.63, 329.63, 392.00, 523.25], dur: 0.28 }, // C
+          { time: 0.48, freqs: [349.23, 440.00, 523.25, 698.46], dur: 0.38 }, // F
+          { time: 0.85, freqs: [466.16, 587.33, 698.46, 932.33, 1174.66], dur: 3.5 } // High Bb Major add9
         ];
 
-        chords.forEach(c => {
-          c.freqs.forEach(freq => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, now + c.time);
-            gain.gain.setValueAtTime(0.18, now + c.time);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + c.time + (c.time === 0.9 ? 1.5 : 0.22));
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now + c.time);
-            osc.stop(now + c.time + (c.time === 0.9 ? 1.5 : 0.22));
-          });
+        fanfareChords.forEach(c => {
+          playVegasBrassStab(ctx, now + c.time, c.freqs, c.dur, 0.65);
+          playSuperSawChord(ctx, now + c.time, c.freqs, c.dur, 0.45);
+          playDrumKick(ctx, now + c.time, 0.85);
         });
+
+        // 金貨コインシャワーの連続カスケード
+        [0.1, 0.4, 0.7, 1.0, 1.3, 1.6, 2.0, 2.4].forEach(d => {
+          playCoinCascade(ctx, now + d, 0.22);
+        });
+
+      } else if (type === 'reach') {
+        playLotterySound('snap');
       }
     } catch (e) {
       console.warn('Audio playback error:', e);
     }
   }
 
-  /* --- 初期リール描画 --- */
+  /* --- 初期単一ルーレット描画 --- */
   function renderReelsInitialState(members) {
     const list = members.length > 0 ? members : [{ name: 'REvoメンバー', category: 'チャプター', profession: 'BNI' }];
-    for (let r = 1; r <= 3; r++) {
-      const strip = document.getElementById(`reel-strip-${r}`);
-      if (!strip) continue;
-      strip.innerHTML = '';
-      strip.style.transform = 'translateY(0px)';
-      strip.style.transition = 'none';
+    const strip = document.getElementById('reel-strip-1');
+    if (!strip) return;
 
-      // 最初の表示用アイテム
-      const item = list[(r - 1) % list.length];
-      strip.appendChild(createReelItemElement(item));
-    }
+    strip.innerHTML = '';
+    strip.style.transform = 'translateY(0px)';
+    strip.style.transition = 'none';
+
+    const prevItem = list[list.length - 1];
+    const centerItem = list[0];
+    const nextItem = list[1 % list.length];
+
+    strip.appendChild(createReelItemElement(prevItem));
+    const centerEl = createReelItemElement(centerItem);
+    strip.appendChild(centerEl);
+    strip.appendChild(createReelItemElement(nextItem));
+
+    requestAnimationFrame(() => {
+      const centerY = getCenterTranslateY(centerEl);
+      strip.style.transform = `translateY(${centerY}px)`;
+    });
   }
 
-  function createReelItemElement(member) {
+  function createReelItemElement(member, isWinner = false) {
     const el = document.createElement('div');
-    el.className = 'reel-item flex flex-col items-center justify-center p-2 text-center select-none';
+    el.className = 'single-reel-item';
+    if (isWinner) {
+      el.id = 'winner-reel-item';
+      el.setAttribute('data-member-id', String(member.id));
+      el.setAttribute('data-is-winner', 'true');
+    }
+
+    const initial = (member.name || '').trim().substring(0, 1) || 'R';
     el.innerHTML = `
-      <span class="reel-item-cat text-[9px] sm:text-[11px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-1 max-w-[90%] truncate">
-        ${escapeHtml(member.category || 'メンバー')}
-      </span>
-      <span class="reel-item-name text-base sm:text-2xl md:text-3xl font-black text-white tracking-wide truncate max-w-[95%] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-        ${escapeHtml(member.name || '')}
-      </span>
-      <span class="reel-item-prof text-[10px] sm:text-xs text-slate-400 font-medium truncate max-w-[90%] mt-0.5">
-        ${escapeHtml(member.profession || '')}
-      </span>
+      <div class="flex items-center justify-center gap-3 sm:gap-6 max-w-xl mx-auto w-full px-4 select-none">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-black text-lg sm:text-2xl shadow-lg shadow-amber-500/30 shrink-0 border-2 border-amber-200">
+          ${escapeHtml(initial)}
+        </div>
+        <div class="flex-1 min-w-0 text-left">
+          <div class="flex items-center gap-2 mb-0.5 sm:mb-1">
+            <span class="text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/50 truncate">
+              ${escapeHtml(member.category || 'メンバー')}
+            </span>
+            <span class="text-[11px] sm:text-xs text-amber-200/80 font-bold truncate">
+              ${escapeHtml(member.profession || '')}
+            </span>
+          </div>
+          <div class="text-xl sm:text-3xl md:text-4xl font-black text-white tracking-tight truncate drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+            ${escapeHtml(member.name || '')}
+          </div>
+        </div>
+      </div>
     `;
     return el;
   }
 
-  /* --- 満遍なく当たる抽選アルゴリズム --- */
+  /* --- 満遍なく当たる公平アルゴリズム --- */
   function selectLotteryWinner(candidates) {
     if (!candidates || candidates.length === 0) return null;
 
     if (lotteryAlgoMode === 'round-robin') {
-      // 1. 完全未当選優先 (Round-Robin)
-      // 候補者の中で、現在の最小当選回数を調べる
       let minWins = Infinity;
       candidates.forEach(m => {
         const count = Number(m.win_count || 0);
         if (count < minWins) minWins = count;
       });
 
-      // 最小当選回数を持つメンバー群のみを抽出
       const pool = candidates.filter(m => Number(m.win_count || 0) === minWins);
-      const chosen = pool[Math.floor(Math.random() * pool.length)];
-      return chosen;
+      return pool[Math.floor(Math.random() * pool.length)];
     } else if (lotteryAlgoMode === 'weighted') {
-      // 2. 確率ウェイト方式 (当選回数が少ないほど超高確率)
       let weightedPool = [];
       candidates.forEach(m => {
         const count = Number(m.win_count || 0);
-        // 0回: 100票, 1回: 15票, 2回以上: 3票
         const weight = count === 0 ? 100 : (count === 1 ? 15 : 3);
         for (let i = 0; i < weight; i++) {
           weightedPool.push(m);
@@ -266,12 +2060,11 @@
       });
       return weightedPool[Math.floor(Math.random() * weightedPool.length)];
     } else {
-      // 3. 完全ランダム
       return candidates[Math.floor(Math.random() * candidates.length)];
     }
   }
 
-  /* --- スロットスピン開始 (ド派手演出 & 焦らし) --- */
+  /* --- 単一ルーレット開始 ＆ ラスベガス10大ドラマ演出ディスパッチャー --- */
   async function startLotterySpin() {
     if (lotteryIsSpinning) return;
     const candidates = getActiveLotteryMembers();
@@ -285,202 +2078,1046 @@
     currentWinner = null;
     const spinBtn = document.getElementById('lottery-spin-btn');
     const statusMsg = document.getElementById('lottery-status-message');
-    const reachBanner = document.getElementById('lottery-reach-banner');
+    const cabinetBox = document.getElementById('lottery-cabinet-box');
+    const theaterWrapper = document.getElementById('lottery-theater-wrapper');
+
+    // 演出パターンの決定（ランダムモードなら10種からスピン毎に自動選出）
+    let activeDrama = null;
+    if (currentVegasDramaIndex >= VEGAS_DRAMA_PATTERNS.length) {
+      const randIdx = Math.floor(Math.random() * VEGAS_DRAMA_PATTERNS.length);
+      activeDrama = VEGAS_DRAMA_PATTERNS[randIdx];
+      const stageLabel = document.getElementById('lottery-stage-drama-label');
+      if (stageLabel) stageLabel.innerText = `🎭 演出: 🎲 ${activeDrama.shortName}`;
+    } else {
+      activeDrama = VEGAS_DRAMA_PATTERNS[currentVegasDramaIndex];
+    }
+
+    // リセット
+    if (theaterWrapper) {
+      theaterWrapper.classList.remove('vegas-blackout', 'vegas-red-alert');
+    }
+    if (cabinetBox) {
+      cabinetBox.classList.add('vegas-active-cabinet');
+      cabinetBox.classList.remove('vegas-red-alert', 'vegas-glitch');
+    }
 
     if (spinBtn) {
       spinBtn.disabled = true;
       spinBtn.classList.add('opacity-60', 'cursor-not-allowed');
+      spinBtn.innerHTML = '<span class="flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin text-base"></i><span>MEGA SPINNING...</span></span>';
     }
     if (statusMsg) {
-      statusMsg.innerText = 'スロット激闘中…！';
-      statusMsg.className = 'text-amber-400 font-black animate-pulse';
-    }
-    if (reachBanner) {
-      reachBanner.classList.remove('active');
+      statusMsg.innerText = `★ MEGA JACKPOT ルーレット超高速スピン！！ [${activeDrama.shortName}] ★`;
+      statusMsg.className = 'text-amber-300 font-extrabold tracking-widest animate-pulse';
     }
 
-    // 当選者を事前決定
     const winner = selectLotteryWinner(candidates);
     currentWinner = winner;
 
     playLotterySound('spin_start');
+    stopVegasLoungeBgm();
+    startVegasCasinoGroove();
+    setVegasBgMode('warp');
+    triggerVegasScreenShake(350);
 
-    // リールストリップを構築
-    // 各リールにダミーを多数生成し、最後（中央位置）に当選者を配置
-    const ITEM_HEIGHT = window.innerWidth < 640 ? 160 : (window.innerWidth < 768 ? 224 : 256);
-    const DUMMY_COUNT = 30; // 高速回転用のダミー数
+    const audioCtx = getAudioContext();
+    if (audioCtx) playCrowdCheer(audioCtx, 4.5, 0.75);
+    speakVegasAnnouncer('レディス・アンド・ジェントルメン！ 運命の1億円メガジャックポット！ スピン、スタート！');
 
-    const reelConfigs = [
-      { id: 'reel-strip-1', stopDelay: 2000, targetMember: winner },
-      { id: 'reel-strip-3', stopDelay: 3300, targetMember: winner }, // 右が2番目に止まりリーチ！
-      { id: 'reel-strip-2', stopDelay: 6000, targetMember: winner }  // 中が最後（超焦らしスロー）
-    ];
+    const strip = document.getElementById('reel-strip-1');
+    if (!strip) return;
 
-    // ストリップ要素の生成
-    const strips = [];
-    reelConfigs.forEach(rc => {
-      const stripEl = document.getElementById(rc.id);
-      stripEl.innerHTML = '';
-      stripEl.style.transition = 'none';
-      stripEl.style.transform = 'translateY(0px)';
+    strip.innerHTML = '';
+    strip.style.transition = 'none';
+    strip.style.transform = 'translateY(0px)';
 
-      // ダミーメンバーのシャッフル配列
-      const shuffled = [...candidates].sort(() => Math.random() - 0.5);
-      for (let i = 0; i < DUMMY_COUNT; i++) {
-        const m = shuffled[i % shuffled.length];
-        stripEl.appendChild(createReelItemElement(m));
-      }
+    // 候補者プールの準備
+    const otherCandidates = candidates.filter(m => String(m.id) !== String(winner.id));
+    const kawaguchi = lotteryMembers.find(m => m.name && m.name.includes('川口')) || {
+      id: 'kawaguchi_creator',
+      name: '川口 陽平',
+      category: 'デザイナー',
+      profession: 'Web制作 (製作者)'
+    };
+    const candPres = otherCandidates.find(m => (m.profession && (m.profession.includes('会長') || m.profession.includes('プレジ') || m.profession.includes('代表') || m.profession.includes('役員')))) || otherCandidates[0] || kawaguchi;
+    const candA = otherCandidates[0] || winner;
+    const candB = otherCandidates[1] || candA;
+    const candC = otherCandidates[2] || candB;
+    const candD = otherCandidates[3] || candC;
 
-      // 停止位置に当選者を配置
-      stripEl.appendChild(createReelItemElement(rc.targetMember));
+    const DUMMY_COUNT = 32;
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    for (let i = 0; i < DUMMY_COUNT; i++) {
+      strip.appendChild(createReelItemElement(shuffled[i % shuffled.length]));
+    }
 
-      // スベリ演出用に追加のダミーを前後に少し配置
-      for (let j = 0; j < 3; j++) {
-        const m = shuffled[(j + 5) % shuffled.length];
-        stripEl.appendChild(createReelItemElement(m));
-      }
+    // ドラマごとのアイテム配置
+    let itemFirstStop = null;
+    let itemWinner = null;
+    let dramaContext = { winner, candA, candB, candC, candD, candPres, kawaguchi };
 
-      strips.push({ el: stripEl, config: rc });
+    if (activeDrama.id === 'kawaguchi') {
+      const isWinnerKawaguchi = String(winner.id) === String(kawaguchi.id);
+      const targetFake = !isWinnerKawaguchi ? kawaguchi : candA;
+      itemFirstStop = createReelItemElement(targetFake);
+      const itemB = createReelItemElement(candB);
+      const itemC = createReelItemElement(candC);
+      const itemD = createReelItemElement(candD);
+      const itemE = createReelItemElement(otherCandidates[4] || candA);
+      const itemBack = createReelItemElement(targetFake);
+      itemWinner = createReelItemElement(winner, true);
+
+      strip.appendChild(itemFirstStop);
+      strip.appendChild(itemB);
+      strip.appendChild(itemC);
+      strip.appendChild(itemD);
+      strip.appendChild(itemE);
+      strip.appendChild(itemBack);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candA));
+
+      dramaContext.itemFirstStop = itemFirstStop;
+      dramaContext.itemB = itemB;
+      dramaContext.itemC = itemC;
+      dramaContext.itemD = itemD;
+      dramaContext.itemE = itemE;
+      dramaContext.itemBack = itemBack;
+      dramaContext.itemWinner = itemWinner;
+      dramaContext.targetFake = targetFake;
+      dramaContext.isWinnerKawaguchi = isWinnerKawaguchi;
+
+    } else if (activeDrama.id === 'president') {
+      itemFirstStop = createReelItemElement(candPres);
+      strip.appendChild(itemFirstStop);
+      for (let k = 0; k < 4; k++) strip.appendChild(createReelItemElement(shuffled[k % shuffled.length]));
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candA));
+
+      dramaContext.itemFirstStop = itemFirstStop;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'deadheat') {
+      const itemA = createReelItemElement(candA);
+      const itemB = createReelItemElement(candB);
+      itemFirstStop = itemA;
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(itemA);
+      strip.appendChild(itemB);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candC));
+
+      dramaContext.itemA = itemA;
+      dramaContext.itemB = itemB;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'overrun') {
+      itemWinner = createReelItemElement(winner, true);
+      const itemOvershoot1 = createReelItemElement(candA);
+      const itemOvershoot2 = createReelItemElement(candB);
+      strip.appendChild(itemWinner);
+      strip.appendChild(itemOvershoot1);
+      strip.appendChild(itemOvershoot2); // ここまで行き過ぎる
+      strip.appendChild(createReelItemElement(candC));
+
+      itemFirstStop = itemOvershoot2;
+      dramaContext.itemWinner = itemWinner;
+      dramaContext.itemOvershoot1 = itemOvershoot1;
+      dramaContext.itemOvershoot2 = itemOvershoot2;
+
+    } else if (activeDrama.id === 'rookie') {
+      const itemVet1 = createReelItemElement(candA);
+      const itemVet2 = createReelItemElement(candB);
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(itemVet1);
+      strip.appendChild(itemVet2);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candC));
+
+      itemFirstStop = itemVet1;
+      dramaContext.itemVet1 = itemVet1;
+      dramaContext.itemVet2 = itemVet2;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'defibrillator') {
+      const itemDummyCrack = createReelItemElement(candA);
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(itemDummyCrack);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candB));
+
+      itemFirstStop = itemDummyCrack;
+      dramaContext.itemDummyCrack = itemDummyCrack;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'triplejump') {
+      const item1 = createReelItemElement(candA);
+      const item2 = createReelItemElement(candB);
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(item1);
+      strip.appendChild(item2);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candC));
+
+      itemFirstStop = item1;
+      dramaContext.item1 = item1;
+      dramaContext.item2 = item2;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'blackhole') {
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(createReelItemElement(candA));
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candB));
+
+      itemFirstStop = itemWinner;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'instantflash') {
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candA));
+
+      itemFirstStop = itemWinner;
+      dramaContext.itemWinner = itemWinner;
+
+    } else if (activeDrama.id === 'poltergeist') {
+      itemWinner = createReelItemElement(winner, true);
+      strip.appendChild(createReelItemElement(candA));
+      strip.appendChild(itemWinner);
+      strip.appendChild(createReelItemElement(candB));
+
+      itemFirstStop = itemWinner;
+      dramaContext.itemWinner = itemWinner;
+    }
+
+    requestAnimationFrame(() => {
+      strip.classList.add('reel-spinning');
     });
 
-    // 高速回転開始アニメーション
-    strips.forEach(s => {
-      // 一瞬待ってからトランジションを有効化
-      requestAnimationFrame(() => {
-        s.el.classList.add('reel-spinning');
-      });
-    });
-
-    // 回転中の効果音ループ
-    let tickCount = 0;
-    const tickInterval = setInterval(() => {
-      if (!lotteryIsSpinning) {
-        clearInterval(tickInterval);
-        return;
-      }
-      playLotterySound('tick');
-      tickCount++;
-    }, 90);
-
-    // 1. 左リール停止 (2.0秒)
+    // 1. 【第1フェーズ：超高速ワープスピン (5.0秒間)】
     setTimeout(() => {
-      stopReel(strips[0], ITEM_HEIGHT, DUMMY_COUNT, false);
-      playLotterySound('reel_stop');
+      if (statusMsg && lotteryIsSpinning) {
+        statusMsg.innerText = `⚡ [${activeDrama.shortName}] 超高速スピン大回転中！！ ボルテージ急上昇…！！ ⚡`;
+        statusMsg.className = 'text-amber-300 font-black text-sm tracking-widest animate-pulse';
+      }
     }, 2000);
 
-    // 2. 右リール停止 (3.3秒) -> 左右同人物で「激アツ REACH!」
     setTimeout(() => {
-      stopReel(strips[1], ITEM_HEIGHT, DUMMY_COUNT, false);
-      playLotterySound('reel_stop');
+      if (statusMsg && lotteryIsSpinning) {
+        statusMsg.innerText = '🔥 まもなく減速開始…！！ 運命の候補者は誰だ！？ 🔥';
+        statusMsg.className = 'text-red-400 font-black text-sm tracking-widest animate-bounce';
+      }
+    }, 3800);
 
-      // リーチ演出発動！！
-      triggerReachEffect();
-    }, 3300);
+    // 【パターン9：電光石火一撃】のみ、減速せず10秒まで超高速のまま直撃！
+    if (activeDrama.id === 'instantflash') {
+      setTimeout(() => {
+        strip.classList.remove('reel-spinning');
+        stopVegasMusic();
+        runDramaInstantFlash(strip, dramaContext);
+      }, 10000);
+      return;
+    }
 
-    // 3. 中央リール（超焦らし減速＆スベリ戻り確定） (6.0秒)
+    // 2. 【第2フェーズ：徐々にゆっくり減速 (5.0秒間・合計10秒の究極ロングスピン！)】
     setTimeout(() => {
-      stopMiddleReelWithSuspense(strips[2], ITEM_HEIGHT, DUMMY_COUNT, () => {
-        clearInterval(tickInterval);
-        triggerJackpotWin(winner);
+      strip.classList.remove('reel-spinning');
+      speakVegasAnnouncer('スローダウン！ ここから徐々に減速！ 誰が選ばれるのか！？');
+
+      const yFirstStop = getCenterTranslateY(itemFirstStop);
+      // 5.0秒間かけて極めてリアルに滑らかに減速していくイージング
+      strip.style.transition = 'transform 5.0s cubic-bezier(0.06, 0.88, 0.18, 1)';
+      strip.style.transform = `translateY(${yFirstStop}px)`;
+
+      if (statusMsg) {
+        statusMsg.innerText = '⚡ 超高速から徐々に減速中…！！ [5秒間スローダウン] 運命の候補者が絞り込まれる…！！ ⚡';
+        statusMsg.className = 'text-amber-300 font-black text-xs sm:text-sm tracking-wide';
+      }
+
+      // 減速中のリアルなラチェット通過音
+      const clickDelays = [400, 900, 1500, 2200, 3000, 3900, 4700];
+      clickDelays.forEach(d => {
+        setTimeout(() => {
+          if (lotteryIsSpinning) playLotterySound('tick');
+        }, d);
       });
-    }, 4500);
+
+      // 5.0秒後（累計10秒後）：各ドラマ演出へ突入！
+      setTimeout(() => {
+        stopVegasMusic();
+        dispatchDramaSequence(activeDrama.id, strip, dramaContext);
+      }, 5100);
+
+    }, 5000);
   }
 
-  function stopReel(stripObj, itemHeight, targetIndex, isMiddle) {
-    const el = stripObj.el;
-    el.classList.remove('reel-spinning');
-    const targetY = -(targetIndex * itemHeight);
-    el.style.transition = 'transform 0.4s cubic-bezier(0.15, 0.9, 0.25, 1)';
-    el.style.transform = `translateY(${targetY}px)`;
+  /* --- 🎭 10大ドラマ演出ディスパッチャー --- */
+  function dispatchDramaSequence(dramaId, strip, ctx) {
+    if (dramaId === 'kawaguchi') runDramaKawaguchi(strip, ctx);
+    else if (dramaId === 'president') runDramaPresident(strip, ctx);
+    else if (dramaId === 'deadheat') runDramaDeadheat(strip, ctx);
+    else if (dramaId === 'overrun') runDramaOverrun(strip, ctx);
+    else if (dramaId === 'rookie') runDramaRookie(strip, ctx);
+    else if (dramaId === 'defibrillator') runDramaDefibrillator(strip, ctx);
+    else if (dramaId === 'triplejump') runDramaTripleJump(strip, ctx);
+    else if (dramaId === 'blackhole') runDramaBlackhole(strip, ctx);
+    else if (dramaId === 'poltergeist') runDramaPoltergeist(strip, ctx);
+    else runDramaKawaguchi(strip, ctx);
   }
 
-  function triggerReachEffect() {
-    const reachBanner = document.getElementById('lottery-reach-banner');
+  /* =========================================================================
+     【ドラマ1: 自作自演疑惑SP】 (マシン物理崩壊・枠外飛び出し・斜め大暴走)
+     ========================================================================= */
+  function runDramaKawaguchi(strip, ctx) {
+    const { winner, targetFake, isWinnerKawaguchi, itemFirstStop, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+    const theaterWrapper = document.getElementById('lottery-theater-wrapper');
+    const cabinetBox = document.getElementById('lottery-cabinet-box');
+    const reelWindow = strip.closest('.single-reel-window');
+
+    // 1. 川口陽平で一旦ストップ
+    const yStep1 = getCenterTranslateY(itemFirstStop);
+    strip.style.transition = 'transform 0.6s cubic-bezier(0.15, 0.9, 0.25, 1)';
+    strip.style.transform = `translateY(${yStep1}px)`;
+    playLotterySound('slow_creep_tick');
+
+    if (statusMsg) {
+      statusMsg.innerText = !isWinnerKawaguchi ? `「川口 陽平（製作者）」さんで決定か…！？ まさかの自作自演！？` : `「${targetFake.name}」さんで決定か…！？`;
+      statusMsg.className = 'text-amber-300 font-extrabold tracking-wide';
+    }
+
+    // 2. 偽ファンファーレ
+    setTimeout(() => {
+      playLotterySound('fake_fanfare');
+      if (!isWinnerKawaguchi) speakVegasAnnouncer('おっと！？ 川口陽平！？ まさかの製作者、自作自演かーー！？');
+      if (statusMsg) {
+        statusMsg.innerText = !isWinnerKawaguchi ? `🎉 当選決定！？ 「川口 陽平」さんおめでと…って自分で作ったアプリやろ！？` : `🎉 当選決定！！ 「${targetFake.name}」さんおめでと…！？`;
+        statusMsg.className = 'text-amber-400 font-black text-sm sm:text-base animate-pulse';
+      }
+    }, 1400);
+
+    // 3. マシン負荷限界・ブラックアウト
+    setTimeout(() => {
+      if (theaterWrapper) theaterWrapper.classList.add('vegas-blackout');
+      playLotterySound('blackout_power_down');
+      triggerVegasScreenShake(600);
+      speakVegasAnnouncer('警告！ 警告！ 自作自演の重圧でマシンが限界突破！！');
+      if (statusMsg) {
+        statusMsg.innerText = `⚠️ 自作自演検知！！ マシンの負荷が臨界突破！！ OVERHEAT!! ⚠️`;
+        statusMsg.className = 'text-red-500 font-mono tracking-widest';
+      }
+
+      // 4. ★★★ 【ド派手マシン物理崩壊！ 枠からはみ出て斜めに飛び出す！！】 ★★★
+      setTimeout(() => {
+        if (theaterWrapper) {
+          theaterWrapper.classList.remove('vegas-blackout');
+        }
+        if (cabinetBox) {
+          cabinetBox.classList.add('cabinet-exploded-skew', 'vegas-red-alert');
+        }
+        if (reelWindow) {
+          reelWindow.classList.add('machine-broken-breakout');
+        }
+
+        setVegasBgMode('red_alert');
+        playLotterySound('emergency_siren');
+        playLotterySound('glitch_burst');
+        triggerVegasScreenShake(1200);
+
+        speakVegasAnnouncer('うわあああーー！！ マシンが壊れたーー！！ 枠からはみ出て斜めに飛び出したーー！！');
+        if (statusMsg) {
+          statusMsg.innerText = `💥💥 ドガァァァン！！ マシンが物理破壊！！ 枠からはみ出て斜めに大暴走中ーー！！ 💥💥`;
+          statusMsg.className = 'text-red-500 font-black text-sm sm:text-base tracking-widest animate-bounce';
+        }
+
+        // ドラムが斜めに傾きながら枠外へ飛び出して回転し続ける！
+        strip.classList.add('reel-diagonal-rampage', 'reel-spinning');
+
+        // 5. 斜めにどこまでぶっ壊れていくんやー！実況
+        setTimeout(() => {
+          speakVegasAnnouncer('斜めにどこまでぶっ壊れていくんやーー！！ 制御不能！ ルーレットが画面全体を斜め大暴走中！！');
+          triggerVegasScreenShake(800);
+          playLotterySound('reverse_snap');
+        }, 2200);
+
+        // 6. 非常停止装置が激突！ 中央へ力づくで引き戻される！
+        setTimeout(() => {
+          speakVegasAnnouncer('非常停止装置、激突！！ ドラムが中央へ力づくで引き戻される！！');
+          if (statusMsg) {
+            statusMsg.innerText = `⚡⚡ 緊急ブレーキ激突！！ ドラムが中央へ力づくで引き戻される！！ ⚡⚡`;
+            statusMsg.className = 'text-amber-300 font-black text-sm tracking-wide animate-pulse';
+          }
+
+          strip.classList.remove('reel-diagonal-rampage', 'reel-spinning');
+          strip.style.transform = 'rotate(0deg) scale(1) translate(0, 0)';
+          triggerVegasScreenShake(1000);
+          playLotterySound('reverse_snap');
+
+          // 7. 真の勝者へクリーン着地＆大爆発ジャックポット！
+          setTimeout(() => {
+            if (cabinetBox) cabinetBox.classList.remove('cabinet-exploded-skew', 'vegas-red-alert');
+            if (reelWindow) reelWindow.classList.remove('machine-broken-breakout');
+
+            const yWinner = getCenterTranslateY(itemWinner);
+            strip.style.transition = 'transform 0.5s cubic-bezier(0.12, 1.4, 0.28, 1)';
+            strip.style.transform = `translateY(${yWinner}px)`;
+
+            speakVegasAnnouncer(`大爆発から奇跡の生還！！ 自作自演マシン破壊を阻止した真の勝者は、${winner.name} さーーん！！ おめでとうございます！！`);
+
+            setTimeout(() => {
+              finalizeJackpotWin(winner, itemWinner, `💥 自作自演のマシン破壊を打ち破った真の勝者！！ 「${winner.name}」様ーーーー！！！！ 💥`);
+            }, 600);
+
+          }, 1200);
+
+        }, 4600);
+
+      }, 1000);
+
+    }, 2800);
+  }
+
+  /* =========================================================================
+     【ドラマ2: プレジデント忖度疑惑・大逆転】 (役員・会長からの超速ロケット逆転)
+     ========================================================================= */
+  function runDramaPresident(strip, ctx) {
+    const { winner, candPres, itemFirstStop, itemWinner } = ctx;
     const statusMsg = document.getElementById('lottery-status-message');
 
-    if (reachBanner) {
-      reachBanner.classList.add('active');
-    }
+    const yPres = getCenterTranslateY(itemFirstStop);
+    strip.style.transition = 'transform 0.5s ease-out';
+    strip.style.transform = `translateY(${yPres}px)`;
+    playLotterySound('slow_creep_tick');
+
     if (statusMsg) {
-      statusMsg.innerText = '激アツ!! REACH!! 揃うか…!?';
-      statusMsg.className = 'text-red-500 font-black animate-ping text-sm sm:text-base';
+      statusMsg.innerText = `👑 おっと！？ プレジデント・役員「${candPres.name}」さんで決定か！？ 👑`;
+      statusMsg.className = 'text-amber-300 font-black text-sm tracking-wide';
     }
 
-    playLotterySound('reach');
-
-    // 心拍音演出
-    let hbCount = 0;
-    const hbInterval = setInterval(() => {
-      if (!lotteryIsSpinning) {
-        clearInterval(hbInterval);
-        return;
-      }
-      playLotterySound('heartbeat');
-      hbCount++;
-      if (hbCount > 5) clearInterval(hbInterval);
-    }, 380);
-  }
-
-  // 中央リールの超焦らし演出（一度通り過ぎそうになってからの戻り演出！）
-  function stopMiddleReelWithSuspense(stripObj, itemHeight, targetIndex, onComplete) {
-    const el = stripObj.el;
-    el.classList.remove('reel-spinning');
-
-    // ステップ1: スローダウンして、ターゲットの1つ先へ行き過ぎる演出
-    const overshootY = -((targetIndex + 0.6) * itemHeight);
-    el.style.transition = 'transform 1.4s cubic-bezier(0.2, 0.8, 0.4, 1)';
-    el.style.transform = `translateY(${overshootY}px)`;
-
-    playLotterySound('tick');
-
-    // ステップ2: 会場「ああっ、行き過ぎた！？」からの…逆回転でジャストに戻る！(神演出)
     setTimeout(() => {
-      const exactY = -(targetIndex * itemHeight);
-      el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'; // バウンド戻り
-      el.style.transform = `translateY(${exactY}px)`;
+      playLotterySound('fake_fanfare');
+      speakVegasAnnouncer(`おっと！？ 会長・役員の${candPres.name}さん決定！？ 忖度システム発動かーー！？`);
+    }, 1200);
 
-      playLotterySound('reel_stop');
+    // 忖度ブザー ＆ 超高速リバース大ジャンプ！
+    setTimeout(() => {
+      playLotterySound('emergency_siren');
+      triggerVegasScreenShake(600);
+      if (statusMsg) {
+        statusMsg.innerText = `🚨 忖度検知ブザー発動！！ 超高速リバース・大逆転スピン！！ 🚨`;
+        statusMsg.className = 'text-red-400 font-black text-sm animate-bounce';
+      }
+      speakVegasAnnouncer('忖度検知ブザー！ 超高速リバーススピン！');
 
       setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 500);
-    }, 1450);
+        const yWinner = getCenterTranslateY(itemWinner);
+        strip.style.transition = 'transform 0.4s cubic-bezier(0.12, 1.4, 0.28, 1)';
+        strip.style.transform = `translateY(${yWinner}px)`;
+        playLotterySound('reverse_snap');
+
+        setTimeout(() => {
+          finalizeJackpotWin(winner, itemWinner, `🎉 忖度回避！！ 大逆転の勝者は「${winner.name}」さーーん！！ 🎉`);
+        }, 600);
+      }, 900);
+
+    }, 2800);
+  }
+
+  /* =========================================================================
+     【ドラマ3: 2強一騎打ち・写真判定デッドヒート】 (ミリ差往復からダークホース)
+     ========================================================================= */
+  function runDramaDeadheat(strip, ctx) {
+    const { winner, candA, candB, itemA, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yA = getCenterTranslateY(itemA);
+    strip.style.transition = 'transform 0.5s ease-out';
+    strip.style.transform = `translateY(${yA}px)`;
+
+    if (statusMsg) {
+      statusMsg.innerText = `🔥 2強一騎打ち！！ 「${candA.name}」VS「${candB.name}」息を呑む写真判定！！ 🔥`;
+      statusMsg.className = 'text-red-400 font-black text-xs sm:text-sm tracking-widest';
+    }
+    speakVegasAnnouncer(`${candA.name}さんか！？ ${candB.name}さんか！？ 写真判定デッドヒート！`);
+
+    // 高速で上下に往復（写真判定）
+    let toggle = 0;
+    const interval = setInterval(() => {
+      toggle++;
+      const offset = (toggle % 2 === 0 ? 12 : -12);
+      strip.style.transition = 'transform 0.15s ease-in-out';
+      strip.style.transform = `translateY(${yA + offset}px)`;
+      playLotterySound('tug_tick');
+
+      if (toggle >= 8) {
+        clearInterval(interval);
+        // 第3の候補（Winner）が下から一気に滑り込む！
+        setTimeout(() => {
+          const yWinner = getCenterTranslateY(itemWinner);
+          strip.style.transition = 'transform 0.35s cubic-bezier(0.15, 1.4, 0.3, 1)';
+          strip.style.transform = `translateY(${yWinner}px)`;
+          playLotterySound('reverse_snap');
+          speakVegasAnnouncer(`第3の候補が下から滑り込んできたーー！！ 勝者は、${winner.name} さーーん！！`);
+
+          setTimeout(() => {
+            finalizeJackpotWin(winner, itemWinner, `⚡ 激闘を制したダークホース！！ 「${winner.name}」さんに大決定！！ ⚡`);
+          }, 500);
+        }, 400);
+      }
+    }, 180);
+  }
+
+  /* =========================================================================
+     【ドラマ4: 行き過ぎオーバーラン＆急ブレーキ逆噴射】 (通り過ぎてからの猛烈バック)
+     ========================================================================= */
+  function runDramaOverrun(strip, ctx) {
+    const { winner, itemWinner, itemOvershoot2 } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yOver = getCenterTranslateY(itemOvershoot2);
+    strip.style.transition = 'transform 0.6s ease-out';
+    strip.style.transform = `translateY(${yOver}px)`;
+
+    if (statusMsg) {
+      statusMsg.innerText = `😱 あーーっ！！ 行き過ぎたーー！！ 通り過ぎてしまったーー！！ 😱`;
+      statusMsg.className = 'text-red-500 font-black text-sm tracking-wide';
+    }
+    speakVegasAnnouncer('あーーっと行き過ぎたーー！！ 通り過ぎてしまったーー！！');
+
+    setTimeout(() => {
+      triggerVegasScreenShake(600);
+      playLotterySound('reverse_snap');
+      if (statusMsg) {
+        statusMsg.innerText = `💥 猛烈バックギア逆噴射！！ 奇跡のピタ止まり急停止！！ 💥`;
+        statusMsg.className = 'text-amber-300 font-black text-sm animate-pulse';
+      }
+      speakVegasAnnouncer('猛烈バックギア逆噴射！！ 奇跡のピタ止まり！');
+
+      const yWinner = getCenterTranslateY(itemWinner);
+      strip.style.transition = 'transform 0.35s cubic-bezier(0.1, 1.5, 0.25, 1)';
+      strip.style.transform = `translateY(${yWinner}px)`;
+
+      setTimeout(() => {
+        finalizeJackpotWin(winner, itemWinner, `🚀 奇跡のバックギア逆噴射ジャックポット！！ 「${winner.name}」様！！ 🚀`);
+      }, 600);
+    }, 1600);
+  }
+
+  /* =========================================================================
+     【ドラマ5: ルーキー下剋上・大番狂わせ】 (ベテランを蹴散らす下剋上)
+     ========================================================================= */
+  function runDramaRookie(strip, ctx) {
+    const { winner, itemVet1, itemVet2, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yVet1 = getCenterTranslateY(itemVet1);
+    strip.style.transition = 'transform 0.4s ease-out';
+    strip.style.transform = `translateY(${yVet1}px)`;
+    playLotterySound('snap');
+
+    if (statusMsg) {
+      statusMsg.innerText = `⚔️ 歴戦のベテランを蹴散らす…！ 下剋上なるか！？ ⚔️`;
+      statusMsg.className = 'text-amber-300 font-black text-sm';
+    }
+    speakVegasAnnouncer('歴戦のベテランを薙ぎ倒し、王座に迫る！ 下剋上なるか！？');
+
+    setTimeout(() => {
+      const yVet2 = getCenterTranslateY(itemVet2);
+      strip.style.transition = 'transform 0.25s ease-out';
+      strip.style.transform = `translateY(${yVet2}px)`;
+      playLotterySound('snap');
+
+      setTimeout(() => {
+        const yWinner = getCenterTranslateY(itemWinner);
+        strip.style.transition = 'transform 1.8s cubic-bezier(0.2, 0.9, 0.3, 1)';
+        strip.style.transform = `translateY(${yWinner}px)`;
+        playLotterySound('heartbeat');
+
+        setTimeout(() => {
+          finalizeJackpotWin(winner, itemWinner, `👑 歴史を塗り替える下剋上大勝利！！ 「${winner.name}」様！！ 👑`);
+        }, 2000);
+      }, 400);
+    }, 1200);
+  }
+
+  /* =========================================================================
+     【ドラマ6: 電源喪失フリーズ＆電撃ショック蘇生】 (静寂からの落雷ジャンプ)
+     ========================================================================= */
+  function runDramaDefibrillator(strip, ctx) {
+    const { winner, itemDummyCrack, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+    const theaterWrapper = document.getElementById('lottery-theater-wrapper');
+
+    const yCrack = getCenterTranslateY(itemDummyCrack) - 50; // 隙間で止まる
+    strip.style.transition = 'transform 0.4s ease-out';
+    strip.style.transform = `translateY(${yCrack}px)`;
+
+    // 完全沈黙
+    if (theaterWrapper) theaterWrapper.style.filter = 'brightness(0.3)';
+    if (statusMsg) {
+      statusMsg.innerText = `⚡ 電源喪失…！？ 隙間で完全フリーズ！？ ⚡`;
+      statusMsg.className = 'text-slate-400 font-mono tracking-widest';
+    }
+    speakVegasAnnouncer('電源ロスト！？ 故障か！？ システムダウン！');
+
+    setTimeout(() => {
+      // ドカンッ！と落雷電撃蘇生！
+      if (theaterWrapper) theaterWrapper.style.filter = 'brightness(1.5)';
+      triggerVegasScreenShake(900);
+      playLotterySound('glitch_burst');
+      playLotterySound('emergency_siren');
+
+      speakVegasAnnouncer('電撃蘇生！！ 目が覚めたルーレットが勝者を捉えた！');
+
+      const yWinner = getCenterTranslateY(itemWinner);
+      strip.style.transition = 'transform 0.15s cubic-bezier(0.1, 1.6, 0.3, 1)';
+      strip.style.transform = `translateY(${yWinner}px)`;
+
+      setTimeout(() => {
+        if (theaterWrapper) theaterWrapper.style.filter = 'none';
+        finalizeJackpotWin(winner, itemWinner, `⚡ 電撃蘇生メガジャックポット！！ 「${winner.name}」様！！ ⚡`);
+      }, 600);
+    }, 2200);
+  }
+
+  /* =========================================================================
+     【ドラマ7: 怒涛の3段跳びフェイクジャンプ】 (1人目・2人目スルーから勝者へ)
+     ========================================================================= */
+  function runDramaTripleJump(strip, ctx) {
+    const { winner, candA, candB, item1, item2, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    // 1人目
+    const y1 = getCenterTranslateY(item1);
+    strip.style.transition = 'transform 0.4s ease-out';
+    strip.style.transform = `translateY(${y1}px)`;
+    playLotterySound('snap');
+    if (statusMsg) statusMsg.innerText = `1人目「${candA.name}」さんでストップ！？ …まだ動く！！`;
+    speakVegasAnnouncer('第1候補ストップ！ …まだ動く！');
+
+    setTimeout(() => {
+      // 2人目
+      const y2 = getCenterTranslateY(item2);
+      strip.style.transition = 'transform 0.35s ease-out';
+      strip.style.transform = `translateY(${y2}px)`;
+      playLotterySound('snap');
+      if (statusMsg) statusMsg.innerText = `2人目「${candB.name}」さんでストップ！？ …ここでもない！！`;
+      speakVegasAnnouncer('第2候補ストップ！ …ここでもない！');
+
+      setTimeout(() => {
+        // 3段跳び大爆発！
+        const yWinner = getCenterTranslateY(itemWinner);
+        strip.style.transition = 'transform 0.3s cubic-bezier(0.15, 1.4, 0.3, 1)';
+        strip.style.transform = `translateY(${yWinner}px)`;
+        playLotterySound('winner_lock');
+        speakVegasAnnouncer(`三段跳びアタック成功！！ 運命の勝者は、${winner.name} さーーん！！`);
+
+        setTimeout(() => {
+          finalizeJackpotWin(winner, itemWinner, `🎯 怒涛の3段跳びを制した真の勝者！！ 「${winner.name}」様！！ 🎯`);
+        }, 500);
+      }, 1200);
+    }, 1200);
+  }
+
+  /* =========================================================================
+     【ドラマ8: 反重力ブラックホール吸引】 (沈み込んだ底からググッと浮上)
+     ========================================================================= */
+  function runDramaBlackhole(strip, ctx) {
+    const { winner, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yWinner = getCenterTranslateY(itemWinner);
+    // 35px下に沈んで落選に見える
+    strip.style.transition = 'transform 0.6s ease-out';
+    strip.style.transform = `translateY(${yWinner - 35}px)`;
+
+    if (statusMsg) {
+      statusMsg.innerText = `😱 ああっ… 下に沈み込んでしまったか…！？ 😱`;
+      statusMsg.className = 'text-red-400 font-bold';
+    }
+    speakVegasAnnouncer('あぁーっ、惜しくも下に沈んでしまったか…！？');
+
+    setTimeout(() => {
+      if (statusMsg) {
+        statusMsg.innerText = `🌀 反重力ブラックホール作動！！ 見えない力で引き上げられる…！！ 🌀`;
+        statusMsg.className = 'text-amber-300 font-black text-sm animate-pulse';
+      }
+      speakVegasAnnouncer('重力に逆らっている！？ 下からグググッと持ち上がってくる！');
+      playLotterySound('heartbeat');
+
+      // 3秒かけてゆっくり上へ吸い上げられる
+      strip.style.transition = 'transform 3.2s cubic-bezier(0.2, 0.8, 0.25, 1)';
+      strip.style.transform = `translateY(${yWinner}px)`;
+
+      setTimeout(() => {
+        finalizeJackpotWin(winner, itemWinner, `🌀 奇跡の反重力生還メガジャックポット！！ 「${winner.name}」様！！ 🌀`);
+      }, 3400);
+    }, 1500);
+  }
+
+  /* =========================================================================
+     【ドラマ9: 電光石火・超音速一撃スラム】 (ノー減速！トップスピードから直撃即死)
+     ========================================================================= */
+  function runDramaInstantFlash(strip, ctx) {
+    const { winner, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yWinner = getCenterTranslateY(itemWinner);
+    strip.style.transition = 'transform 0.05s linear';
+    strip.style.transform = `translateY(${yWinner}px)`;
+
+    triggerVegasScreenShake(1200);
+    playLotterySound('winner_lock');
+    playLotterySound('reverse_snap');
+
+    if (statusMsg) {
+      statusMsg.innerText = `⚡⚡⚡ 電光石火の一撃！！ 超音速ショックロック！！ ⚡⚡⚡`;
+      statusMsg.className = 'text-amber-400 font-black text-base animate-pulse';
+    }
+    speakVegasAnnouncer(`減速なしの電光石火ショックロック！！ 勝者は、${winner.name} さーーん！！`);
+
+    setTimeout(() => {
+      finalizeJackpotWin(winner, itemWinner, `⚡⚡ 電光石火のメガジャックポット！！ 「${winner.name}」様！！ ⚡⚡`);
+    }, 500);
+  }
+
+  /* =========================================================================
+     【ドラマ10: カジノゴースト・ポルターガイスト】 (ドラムが勝手にフワフワ浮遊)
+     ========================================================================= */
+  function runDramaPoltergeist(strip, ctx) {
+    const { winner, itemWinner } = ctx;
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    const yWinner = getCenterTranslateY(itemWinner);
+    // 静寂の中、ふわふわと上下に浮遊
+    if (statusMsg) {
+      statusMsg.innerText = `👻 奇怪なポルターガイスト現象…！？ ドラムがひとりでに浮遊している…！？ 👻`;
+      statusMsg.className = 'text-purple-300 font-mono tracking-widest';
+    }
+    speakVegasAnnouncer('何かが憑依した！？ ドラムが勝手に動いている…！');
+
+    strip.style.transition = 'transform 0.8s ease-in-out';
+    strip.style.transform = `translateY(${yWinner - 25}px)`;
+
+    setTimeout(() => {
+      strip.style.transition = 'transform 0.8s ease-in-out';
+      strip.style.transform = `translateY(${yWinner + 18}px)`;
+
+      setTimeout(() => {
+        // ドカンッ！と急降下着地！
+        strip.style.transition = 'transform 0.15s cubic-bezier(0.1, 1.8, 0.3, 1)';
+        strip.style.transform = `translateY(${yWinner}px)`;
+        triggerVegasScreenShake(800);
+        playLotterySound('winner_lock');
+        speakVegasAnnouncer(`神のみぞ知る運命の着地！！ 勝者は、${winner.name} さーーん！！`);
+
+        setTimeout(() => {
+          finalizeJackpotWin(winner, itemWinner, `👻 運命が導いた奇跡のゴーストジャックポット！！ 「${winner.name}」様！！ 👻`);
+        }, 500);
+      }, 900);
+    }, 900);
+  }
+
+  /* --- 🏆 ジャックポット最終確定共通フィニッシュ (エヴァ覚醒演出へ分岐) --- */
+  function finalizeJackpotWin(winner, itemWinner, messageText) {
+    playSecondImpactGsapSequence(winner, itemWinner, messageText);
+  }
+
+  /* --- 💥 エヴァンゲリオン 10大GSAP極限覚醒シークエンス --- */
+  function playSecondImpactGsapSequence(winner, itemWinner, messageText) {
+    const theaterWrapper = document.getElementById('lottery-theater-wrapper');
+    const evaLayer = document.getElementById('eva-second-impact-layer');
+    const statusMsg = document.getElementById('lottery-status-message');
+    const strip = document.getElementById('reel-strip-1');
+
+    if (!evaLayer) {
+      finalizeJackpotWinDirect(winner, itemWinner, messageText);
+      return;
+    }
+
+    // 発動する覚醒演出の決定（ランダムまたは指定）
+    let activePattern = null;
+    if (currentVegasImpactIndex < EVA_IMPACT_PATTERNS.length) {
+      activePattern = EVA_IMPACT_PATTERNS[currentVegasImpactIndex];
+    } else {
+      const rIdx = Math.floor(Math.random() * EVA_IMPACT_PATTERNS.length);
+      activePattern = EVA_IMPACT_PATTERNS[rIdx];
+    }
+
+    // 1. 【極限イライラ焦らしフェーズ】 (寸前で停止し、心拍音のみが響く)
+    if (statusMsg) {
+      statusMsg.innerText = `⚡ [${activePattern.shortName}] 境界線上0.5mmで寸止め停止…！？ 息を呑む静寂… まさかここで止まるのか…！？ ⚡`;
+      statusMsg.className = 'text-red-400 font-black text-sm tracking-widest animate-pulse';
+    }
+    playLotterySound('heartbeat');
+    triggerVegasScreenShake(300);
+
+    // 2. 1.2秒後：覚醒インパクト発動！
+    setTimeout(() => {
+      evaLayer.style.opacity = '1';
+      if (theaterWrapper) theaterWrapper.classList.add('eva-stage-blood-sea');
+      playLotterySound('emergency_siren');
+      triggerVegasScreenShake(900);
+
+      const audioCtx = getAudioContext();
+      if (audioCtx) {
+        playHollywoodSiren(audioCtx, audioCtx.currentTime);
+        playCinemaBraam(audioCtx, audioCtx.currentTime);
+      }
+
+      if (typeof window !== 'undefined' && window.gsap) {
+        const tl = window.gsap.timeline();
+
+        // 共通：警報バナー突入
+        tl.to('#eva-emergency-top-banner', { y: 0, duration: 0.35, ease: 'power3.out' }, 0);
+        tl.to('#eva-emergency-bottom-banner', { y: 0, duration: 0.35, ease: 'power3.out' }, 0);
+
+        // 各パターンの個別アニメーション分岐
+        if (activePattern.id === 'second_impact') {
+          // 1. 第二次接触 (光の十字架 ＆ ATフィールド粉砕)
+          tl.to('#eva-center-alert-card', { scale: 1, duration: 0.45, ease: 'back.out(2)' }, 0.1);
+          tl.to('#eva-cross-container', { opacity: 1, duration: 0.3 }, 0.2);
+          tl.fromTo('.eva-cross-pillar', { scaleY: 0, transformOrigin: 'bottom center' }, { scaleY: 1, duration: 1.4, stagger: 0.15, ease: 'power4.out' }, 0.3);
+          tl.to('#eva-atfield-svg', { opacity: 1, duration: 0.3 }, 0.4);
+          tl.fromTo('.eva-atfield-poly', { scale: 0.1, rotation: -45, transformOrigin: '50% 50%' }, { scale: 1, rotation: 0, duration: 2.0, stagger: 0.2, ease: 'elastic.out(1, 0.4)' }, 0.5);
+
+        } else if (activePattern.id === 'yashima') {
+          // 2. ヤシマ作戦 (超長距離陽電子狙撃)
+          tl.to('#eva-yashima-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.fromTo('#eva-yashima-reticle', { scale: 2.2, opacity: 0, rotation: 90 }, { scale: 1, opacity: 1, rotation: 0, duration: 1.2, ease: 'back.out(1.5)' }, 0.2);
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '⚡ 【ヤシマ作戦】日本全土送電完了！ 1億8000万kW臨界チャージ…！！ ⚡';
+          }, null, 0.8);
+          tl.fromTo('#eva-positron-beam', { scaleY: 0, opacity: 0 }, { scaleY: 1, opacity: 1, duration: 0.2, ease: 'power4.in' }, 2.0);
+
+        } else if (activePattern.id === 'awakening') {
+          // 3. 初号機神化 (神の輪 ＆ 光の巨翼)
+          tl.to('#eva-awakening-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.fromTo('#eva-angel-halo', { scale: 0, opacity: 0, rotation: -45 }, { scale: 1, opacity: 1, rotation: 0, duration: 1.0, ease: 'elastic.out(1, 0.5)' }, 0.2);
+          tl.fromTo('#eva-wings-container', { scale: 0.3, opacity: 0 }, { scale: 1.2, opacity: 1, duration: 1.6, ease: 'power3.out' }, 0.5);
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '🔥 初号機が神に近い存在へと覚醒！！ 光の翼が天を覆う…！！ 🔥';
+          }, null, 0.9);
+
+        } else if (activePattern.id === 'ramiel') {
+          // 4. 第5使徒ラミエル (正八面体幾何学変形)
+          tl.to('#eva-ramiel-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.fromTo('#eva-ramiel-svg', { scale: 0, opacity: 0, rotation: -90 }, { scale: 1.3, opacity: 1, rotation: 45, duration: 1.2, ease: 'back.out(2)' }, 0.2);
+          tl.to('.eva-ramiel-poly', { scale: 1.4, transformOrigin: '50% 50%', duration: 0.8, yoyo: true, repeat: 1 }, 0.8);
+          tl.fromTo('#eva-ramiel-laser', { scaleY: 0, opacity: 0 }, { scaleY: 1, opacity: 1, duration: 0.2 }, 2.0);
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '💎 使徒ラミエルが4次元多面体へ変形！！ 加粒子砲照射…！！ 💎';
+          }, null, 0.8);
+
+        } else if (activePattern.id === 'instrumentality') {
+          // 5. 人類補完計画 (LCL還元 ＆ 光の魂飛翔)
+          tl.to('#eva-instrumentality-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.call(() => {
+            const group = document.getElementById('eva-soul-orbs-group');
+            if (group) {
+              group.innerHTML = '';
+              for (let i = 0; i < 22; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'absolute rounded-full bg-amber-300 shadow-[0_0_25px_rgba(253,224,71,0.9)]';
+                const s = Math.floor(Math.random() * 16) + 12;
+                orb.style.width = s + 'px';
+                orb.style.height = s + 'px';
+                orb.style.left = (Math.random() * 85 + 7) + '%';
+                orb.style.bottom = '-40px';
+                group.appendChild(orb);
+                window.gsap.to(orb, { y: -(Math.random() * 450 + 200), opacity: 0.9, duration: Math.random() * 1.5 + 1.2, ease: 'power2.out', delay: Math.random() * 0.5 });
+              }
+            }
+            if (statusMsg) statusMsg.innerText = '🕊️ すべての生命が一つへと還る… 人類補完計画の光臨…！！ 🕊️';
+          }, null, 0.3);
+
+        } else if (activePattern.id === 'longinus') {
+          // 6. ロンギヌスの槍 (成層圏超音速投擲撃墜)
+          tl.to('#eva-longinus-container', { opacity: 1, duration: 0.2 }, 0.1);
+          tl.fromTo('#eva-longinus-spear',
+            { x: 350, y: -350, scale: 0.2, opacity: 0 },
+            { x: 0, y: 0, scale: 1.15, opacity: 1, duration: 0.85, ease: 'power4.in' },
+            0.4
+          );
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '⚡ 成層圏よりロンギヌスの槍が飛来！！ ペイラインへマッハ50で直撃！！ ⚡';
+          }, null, 0.6);
+
+        } else if (activePattern.id === 'timer_defib') {
+          // 7. 活動限界00:00:00 (電源喪失 ＆ 電撃再始動)
+          tl.to('#eva-timer-container', { opacity: 1, duration: 0.2 }, 0.1);
+          tl.to('#eva-timer-card', { scale: 1, duration: 0.4, ease: 'back.out' }, 0.2);
+          const digits = document.getElementById('eva-timer-digits');
+          tl.call(() => { if (digits) digits.innerText = '00:00:02'; }, null, 0.7);
+          tl.call(() => { if (digits) digits.innerText = '00:00:01'; }, null, 1.4);
+          tl.call(() => {
+            if (digits) {
+              digits.innerText = '00:00:00';
+              digits.classList.add('text-red-600', 'animate-ping');
+            }
+            if (statusMsg) statusMsg.innerText = '⚠️ 【活動限界】内蔵電源喪失…！！ 沈黙からの電撃AED蘇生…！！ ⚠️';
+          }, null, 2.0);
+
+        } else if (activePattern.id === 'geofront') {
+          // 8. ジオフロント開帳 (要塞都市地下格納)
+          tl.to('#eva-geofront-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.fromTo('#eva-geofront-skyline', { y: '100%' }, { y: '0%', duration: 1.2, ease: 'power3.out' }, 0.3);
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '🏢 第3新東京市・要塞ビル群が地下格納！！ ジオフロント全貌開帳！！ 🏢';
+          }, null, 0.7);
+
+        } else if (activePattern.id === 'core_breaker') {
+          // 9. 使徒コア粉砕 (連続打撃 ＆ 真紅のコア破壊)
+          tl.to('#eva-core-container', { opacity: 1, duration: 0.2 }, 0.1);
+          tl.fromTo('#eva-angel-core', { scale: 0, opacity: 0 }, { scale: 1.15, opacity: 1, duration: 0.8, ease: 'back.out(2)' }, 0.3);
+          // 連続パンチ打撃
+          [0.9, 1.2, 1.5, 1.8].forEach(tPunch => {
+            tl.call(() => {
+              triggerVegasScreenShake(400);
+              playLotterySound('snap');
+            }, null, tPunch);
+          });
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '💥 使徒コアに亀裂発生！！ 渾身のストレート打撃でコア粉砕！！ 💥';
+          }, null, 1.1);
+
+        } else if (activePattern.id === 'door_of_guf') {
+          // 10. ガフの扉 (サードインパクト・次元特異点)
+          tl.to('#eva-guf-container', { opacity: 1, duration: 0.3 }, 0.1);
+          tl.fromTo('#eva-guf-vortex', { scale: 0, opacity: 0, rotation: 0 }, { scale: 1.25, opacity: 1, rotation: 360, duration: 1.6, ease: 'power2.out' }, 0.3);
+          tl.call(() => {
+            if (statusMsg) statusMsg.innerText = '🌌 天の裂け目・ガフの扉が開放！！ 次元特異点から奇跡の光臨！！ 🌌';
+          }, null, 0.8);
+        }
+
+        // 焦らしのミリ揺れ (さらに1ミリ進む…！)
+        tl.call(() => {
+          if (strip && itemWinner) {
+            const yCurrent = parseFloat((strip.style.transform || '').replace(/[^0-9.-]/g, '')) || 0;
+            strip.style.transition = 'transform 0.8s ease-in-out';
+            strip.style.transform = `translateY(${yCurrent + 3}px)`;
+            playLotterySound('slow_creep_tick');
+          }
+        }, null, 1.8);
+
+        // 3. 【超カタストロフィ大爆発フィニッシュ】 (3.0秒時点)
+        tl.fromTo('#eva-shockwave-ring',
+          { scale: 0.2, opacity: 1 },
+          { scale: 20, opacity: 0, duration: 0.85, ease: 'expo.out' },
+          3.0
+        );
+        tl.to('#eva-center-alert-card', { scale: 1.5, opacity: 0, duration: 0.35 }, 3.0);
+        tl.to('#eva-emergency-top-banner', { y: '-100%', duration: 0.4 }, 3.1);
+        tl.to('#eva-emergency-bottom-banner', { y: '100%', duration: 0.4 }, 3.1);
+
+        tl.call(() => {
+          finalizeJackpotWinDirect(winner, itemWinner, messageText);
+        }, null, 3.15);
+
+      } else {
+        // GSAP未読込時のフォールバック
+        setTimeout(() => {
+          finalizeJackpotWinDirect(winner, itemWinner, messageText);
+        }, 2500);
+      }
+
+    }, 1400);
+  }
+
+  /* --- 🏆 セカンドインパクト爆発後のジャックポット直結フィニッシュ --- */
+  function finalizeJackpotWinDirect(winner, itemWinner, messageText) {
+    const theaterWrapper = document.getElementById('lottery-theater-wrapper');
+    const evaLayer = document.getElementById('eva-second-impact-layer');
+
+    if (evaLayer) evaLayer.style.opacity = '0';
+    if (theaterWrapper) theaterWrapper.classList.remove('eva-stage-blood-sea');
+
+    if (typeof window !== 'undefined' && window.gsap) {
+      window.gsap.set('#eva-emergency-top-banner', { y: '-100%' });
+      window.gsap.set('#eva-emergency-bottom-banner', { y: '100%' });
+      window.gsap.set('#eva-center-alert-card', { scale: 0, opacity: 1 });
+      window.gsap.set('#eva-atfield-svg', { opacity: 0, scale: 1 });
+      window.gsap.set('#eva-cross-container', { opacity: 0 });
+      window.gsap.set('#eva-yashima-container', { opacity: 0 });
+      window.gsap.set('#eva-awakening-container', { opacity: 0 });
+      window.gsap.set('#eva-ramiel-container', { opacity: 0 });
+      window.gsap.set('#eva-instrumentality-container', { opacity: 0 });
+      window.gsap.set('#eva-longinus-container', { opacity: 0 });
+      window.gsap.set('#eva-timer-container', { opacity: 0 });
+      window.gsap.set('#eva-geofront-container', { opacity: 0 });
+      window.gsap.set('#eva-core-container', { opacity: 0 });
+      window.gsap.set('#eva-guf-container', { opacity: 0 });
+    }
+
+    setVegasBgMode('supernova');
+    playLotterySound('winner_lock');
+    playLotterySound('jackpot_bells');
+    triggerVegasScreenShake(900);
+    spawn3DGoldCoinPhysicsExplosion(150);
+
+    const cheerCtx = getAudioContext();
+    if (cheerCtx) playCrowdCheer(cheerCtx, 8.0, 1.0);
+
+    if (itemWinner) {
+      itemWinner.classList.add('winner-spotlight', 'vegas-gold-card-foil');
+    }
+
+    const statusMsg = document.getElementById('lottery-status-message');
+    if (statusMsg) {
+      statusMsg.innerText = messageText;
+      statusMsg.className = 'text-amber-400 font-black text-sm sm:text-base tracking-wide';
+    }
+
+    setTimeout(() => {
+      triggerJackpotWin(winner);
+    }, 700);
   }
 
   /* --- 大当たり確定 & 祝賀演出 --- */
   async function triggerJackpotWin(winner) {
     lotteryIsSpinning = false;
-    const reachBanner = document.getElementById('lottery-reach-banner');
+    currentWinner = winner;
     const spinBtn = document.getElementById('lottery-spin-btn');
     const statusMsg = document.getElementById('lottery-status-message');
+    const cabinetBox = document.getElementById('lottery-cabinet-box');
 
-    if (reachBanner) reachBanner.classList.remove('active');
+    if (cabinetBox) cabinetBox.classList.remove('vegas-active-cabinet');
+
     if (spinBtn) {
       spinBtn.disabled = false;
       spinBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+      spinBtn.innerHTML = '<span class="flex items-center gap-2.5 sm:gap-3 drop-shadow-sm"><i class="fa-solid fa-play text-red-600 text-sm sm:text-base"></i><span>もう一度回す</span></span>';
     }
     if (statusMsg) {
-      statusMsg.innerText = `🎉 当選: ${winner.name} 様 🎉`;
-      statusMsg.className = 'text-amber-300 font-black text-sm sm:text-base';
+      statusMsg.innerText = `🎉 1億円MEGA JACKPOT 当選: ${winner.name} 様 🎉`;
+      statusMsg.className = 'text-amber-400 font-black text-sm sm:text-base';
     }
 
-    // 画面全体フラッシュ & ファンファーレ
     playLotterySound('fanfare');
     startConfetti();
+    spawn3DGoldCoinPhysicsExplosion(120);
 
-    // 当選ポップアップ表示
+    const winnerItem = document.getElementById('winner-reel-item');
+    if (winnerItem) winnerItem.classList.add('vegas-gold-card-foil');
+
     setTimeout(() => {
       openWinnerModal(winner);
-    }, 600);
-
-    // DBへ当選記録を保存
-    await recordWinnerToDb(winner);
+    }, 2800);
   }
 
-  async function recordWinnerToDb(winner) {
+  async function recordWinnerToDb() {
+    if (!currentWinner) return;
+    const winner = currentWinner;
     const awardInput = document.getElementById('lottery-award-input');
-    const awardTitle = awardInput ? (awardInput.value.trim() || '定例会スペシャル賞') : '定例会スペシャル賞';
+    const awardTitle = awardInput ? (awardInput.value.trim() || '商品抽選') : '商品抽選';
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+    const recordBtn = document.getElementById('winner-record-btn');
+
+    if (recordBtn) {
+      recordBtn.disabled = true;
+      recordBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> 記録中...';
+    }
 
     try {
       const res = await ApiService.call('recordLotteryWinnerApi', {
@@ -491,7 +3128,6 @@
       });
 
       if (res && res.success !== false) {
-        // ローカル状態更新
         winner.win_count = (Number(winner.win_count) || 0) + 1;
         winner.last_won_at = todayStr;
         lotteryHistory.unshift({
@@ -502,30 +3138,50 @@
           won_at: todayStr
         });
 
-        const winnerWinsEl = document.getElementById('winner-total-wins');
-        if (winnerWinsEl) winnerWinsEl.innerText = winner.win_count;
-
         const histBadge = document.getElementById('lottery-history-count-badge');
         if (histBadge) histBadge.innerText = lotteryHistory.length;
+
+        showToast(`${winner.name} 様の当選を記録しました！`, 'success');
+        if (recordBtn) {
+          recordBtn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> 記録完了';
+          recordBtn.className = 'px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-md transition-all flex items-center gap-2';
+        }
       }
     } catch (e) {
       console.error('Failed to record lottery winner:', e);
+      showToast('記録に失敗しました', 'error');
+      if (recordBtn) {
+        recordBtn.disabled = false;
+        recordBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> 再試行';
+      }
     }
   }
 
   /* --- 当選モーダル --- */
   function openWinnerModal(winner) {
-    const modal = document.getElementById('lottery-winner-modal');
-    const nameEl = document.getElementById('winner-name-display');
-    const catEl = document.getElementById('winner-category-display');
-    const profEl = document.getElementById('winner-profession-display');
-    const awardEl = document.getElementById('winner-award-badge');
-    const awardInput = document.getElementById('lottery-award-input');
+    const finalWinner = winner || currentWinner;
+    if (!finalWinner) return;
 
-    if (nameEl) nameEl.innerText = winner.name || '';
-    if (catEl) catEl.innerText = winner.category || 'メンバー';
-    if (profEl) profEl.innerText = winner.profession || '';
-    if (awardEl) awardEl.innerText = awardInput ? (awardInput.value.trim() || '定例会スペシャル賞') : '定例会スペシャル賞';
+    const modal = document.getElementById('lottery-winner-modal');
+    const nameEl = document.getElementById('winner-modal-name');
+    const catEl = document.getElementById('winner-modal-category');
+    const profEl = document.getElementById('winner-modal-profession');
+    const awardEl = document.getElementById('winner-modal-award-name');
+    const initialEl = document.getElementById('winner-modal-avatar-initial');
+    const awardInput = document.getElementById('lottery-award-input');
+    const recordBtn = document.getElementById('winner-record-btn');
+
+    if (nameEl) nameEl.innerText = finalWinner.name || '';
+    if (catEl) catEl.innerText = finalWinner.category || 'メンバー';
+    if (profEl) profEl.innerText = finalWinner.profession || '';
+    if (awardEl) awardEl.innerText = awardInput ? (awardInput.value.trim() || '商品抽選') : '商品抽選';
+    if (initialEl) initialEl.innerText = (finalWinner.name || '').trim().substring(0, 1) || 'R';
+
+    if (recordBtn) {
+      recordBtn.disabled = false;
+      recordBtn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-1"></i> 当選を記録する';
+      recordBtn.className = 'px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 transition-all flex items-center gap-2 cursor-pointer';
+    }
 
     if (modal) {
       modal.classList.remove('hidden');
@@ -550,7 +3206,11 @@
       setTimeout(() => {
         modal.classList.add('hidden');
         stopConfetti();
+        setVegasBgMode('idle');
         updateLotteryUI();
+        if (lotterySoundEnabled && !lotteryIsSpinning) {
+          startVegasLoungeBgm();
+        }
       }, 250);
     }
   }
@@ -564,18 +3224,18 @@
     canvas.height = canvas.offsetHeight;
 
     const particles = [];
-    const colors = ['#f59e0b', '#fbbf24', '#ef4444', '#3b82f6', '#10b981', '#ec4899', '#ffffff', '#ffd700'];
+    const colors = ['#f59e0b', '#fbbf24', '#fde047', '#ffd700', '#ef4444', '#dc2626', '#10b981', '#ffffff'];
 
-    for (let i = 0; i < 180; i++) {
+    for (let i = 0; i < 240; i++) {
       particles.push({
-        x: canvas.width * 0.5 + (Math.random() - 0.5) * 200,
-        y: canvas.height * 0.4 + (Math.random() - 0.5) * 100,
-        vx: (Math.random() - 0.5) * 18,
-        vy: -Math.random() * 16 - 4,
-        size: Math.random() * 8 + 6,
+        x: canvas.width * 0.5 + (Math.random() - 0.5) * 260,
+        y: canvas.height * 0.4 + (Math.random() - 0.5) * 130,
+        vx: (Math.random() - 0.5) * 22,
+        vy: -Math.random() * 20 - 5,
+        size: Math.random() * 9 + 6,
         color: colors[Math.floor(Math.random() * colors.length)],
         rotation: Math.random() * 360,
-        vrot: (Math.random() - 0.5) * 12,
+        vrot: (Math.random() - 0.5) * 14,
         gravity: 0.35,
         drag: 0.96
       });
@@ -599,7 +3259,7 @@
           ctx.translate(p.x, p.y);
           ctx.rotate((p.rotation * Math.PI) / 180);
           ctx.fillStyle = p.color;
-          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
           ctx.restore();
         }
       });
@@ -685,11 +3345,11 @@
     if (!display) return;
 
     if (mode === 'round-robin') {
-      display.innerHTML = '<i class="fa-solid fa-scale-balanced text-emerald-400"></i><span class="text-emerald-400">完全未当選者優先 (Round-Robin)</span>';
+      display.innerHTML = '<i class="fa-solid fa-scale-balanced text-amber-400"></i><span class="text-amber-400">未当選者優先 (Round-Robin)</span>';
     } else if (mode === 'weighted') {
-      display.innerHTML = '<i class="fa-solid fa-chart-simple text-blue-400"></i><span class="text-blue-400">確率ウェイト (未当選者超高確率)</span>';
+      display.innerHTML = '<i class="fa-solid fa-chart-simple text-amber-400"></i><span class="text-amber-400">確率ウェイト (未当選者高確率)</span>';
     } else {
-      display.innerHTML = '<i class="fa-solid fa-shuffle text-purple-400"></i><span class="text-purple-400">完全ランダム抽選</span>';
+      display.innerHTML = '<i class="fa-solid fa-shuffle text-amber-300"></i><span class="text-amber-300">完全ランダム抽選</span>';
     }
   }
 
@@ -709,16 +3369,8 @@
 
   function renderLotteryMemberConfigList() {
     const container = document.getElementById('lottery-member-config-list');
-    const activeCountEl = document.getElementById('lottery-modal-active-count');
-    const totalCountEl = document.getElementById('lottery-modal-total-count');
     if (!container) return;
 
-    const total = lotteryMembers.length;
-    const active = getActiveLotteryMembers().length;
-    if (activeCountEl) activeCountEl.innerText = active;
-    if (totalCountEl) totalCountEl.innerText = total;
-
-    // カテゴリーごとにグループ化
     const byCategory = {};
     lotteryMembers.forEach(m => {
       const cat = m.category || 'その他';
@@ -728,9 +3380,9 @@
 
     let html = '';
     for (const [cat, list] of Object.entries(byCategory)) {
-      html += `<div class="mb-3">
-        <div class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 px-1">${escapeHtml(cat)}</div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">`;
+      html += `<div class="mb-4">
+        <div class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2 px-1">${escapeHtml(cat)}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
 
       list.forEach(m => {
         const mId = String(m.id);
@@ -738,19 +3390,19 @@
         const wins = Number(m.win_count || 0);
 
         html += `
-          <div class="flex items-center justify-between p-2 rounded-xl border ${isExcluded ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-blue-200/80 shadow-xs'} transition-all">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${wins === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+          <div class="flex items-center justify-between p-2.5 rounded-xl border ${isExcluded ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-amber-200/80 shadow-xs'} transition-all">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black ${wins === 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
                 ${wins}勝
               </span>
               <div class="min-w-0">
-                <div class="text-xs font-bold text-slate-800 truncate">${escapeHtml(m.name)}</div>
+                <div class="text-xs font-bold text-slate-900 truncate">${escapeHtml(m.name)}</div>
                 <div class="text-[10px] text-slate-400 truncate">${escapeHtml(m.profession || '')}</div>
               </div>
             </div>
             <label class="relative inline-flex items-center cursor-pointer ml-2">
               <input type="checkbox" ${!isExcluded ? 'checked' : ''} onchange="toggleLotteryMemberActive('${mId}', this.checked)" class="sr-only peer">
-              <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+              <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500"></div>
             </label>
           </div>
         `;
@@ -768,8 +3420,11 @@
     } else {
       lotteryExcludedMemberIds.add(String(memberId));
     }
-    const activeCountEl = document.getElementById('lottery-modal-active-count');
-    if (activeCountEl) activeCountEl.innerText = getActiveLotteryMembers().length;
+    const activeBadge = document.getElementById('lottery-active-count-badge');
+    const poolText = document.getElementById('lottery-target-pool-text');
+    const activeCount = getActiveLotteryMembers().length;
+    if (activeBadge) activeBadge.innerText = activeCount;
+    if (poolText) poolText.innerText = `候補: ${activeCount} 名`;
   }
 
   function setAllLotteryMembersActive(active) {
@@ -779,6 +3434,11 @@
       lotteryMembers.forEach(m => lotteryExcludedMemberIds.add(String(m.id)));
     }
     renderLotteryMemberConfigList();
+    const activeBadge = document.getElementById('lottery-active-count-badge');
+    const poolText = document.getElementById('lottery-target-pool-text');
+    const activeCount = getActiveLotteryMembers().length;
+    if (activeBadge) activeBadge.innerText = activeCount;
+    if (poolText) poolText.innerText = `候補: ${activeCount} 名`;
   }
 
   /* --- 当選履歴モーダル --- */
@@ -795,50 +3455,41 @@
   }
 
   function renderLotteryHistoryList() {
-    const container = document.getElementById('lottery-history-list');
-    const totalCountEl = document.getElementById('lottery-history-total-count');
-    if (!container) return;
-
-    if (totalCountEl) totalCountEl.innerText = lotteryHistory.length;
+    const tbody = document.getElementById('lottery-history-table-body');
+    if (!tbody) return;
 
     if (lotteryHistory.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-8 text-slate-400">
-          <i class="fa-solid fa-trophy text-3xl mb-2 text-slate-300"></i>
-          <p class="text-xs">まだ当選履歴がありません</p>
-        </div>
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center py-8 text-slate-400 text-xs">
+            まだ当選履歴がありません
+          </td>
+        </tr>
       `;
       return;
     }
 
     let html = '';
-    lotteryHistory.forEach((h, idx) => {
+    lotteryHistory.forEach((h) => {
       html += `
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-white transition-all">
-          <div class="flex items-center gap-3">
-            <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/30 flex items-center justify-center font-mono font-black text-xs">
-              ${idx + 1}
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-2.5 px-3 font-mono text-slate-500">${escapeHtml(h.won_at)}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-900">${escapeHtml(h.member_name)} 様</td>
+          <td class="py-2.5 px-3">
+            <span class="inline-block px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold">
+              ${escapeHtml(h.award_title || '商品抽選')}
             </span>
-            <div>
-              <div class="text-xs font-black text-slate-800 flex items-center gap-2">
-                <span>${escapeHtml(h.member_name)} 様</span>
-                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
-                  ${escapeHtml(h.award_title || '定例会賞')}
-                </span>
-              </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">
-                <i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(h.won_at)}
-              </div>
-            </div>
-          </div>
-          <button onclick="deleteSingleLotteryHistory('${h.id}')" class="text-slate-400 hover:text-red-500 p-2 text-xs transition-colors" title="この履歴を削除">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
-        </div>
+          </td>
+          <td class="py-2.5 px-3 text-right">
+            <button onclick="deleteSingleLotteryHistory('${h.id}')" class="text-slate-400 hover:text-red-500 p-1.5 transition-colors" title="削除">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        </tr>
       `;
     });
 
-    container.innerHTML = html;
+    tbody.innerHTML = html;
   }
 
   async function deleteSingleLotteryHistory(historyId) {
@@ -854,7 +3505,7 @@
     }
   }
 
-  async function confirmResetLotteryHistory() {
+  async function resetAllLotteryHistory() {
     if (!confirm('本当に全ての当選履歴をリセットしますか？\n（新期スタート時などに実行してください）')) return;
     try {
       await ApiService.call('resetLotteryHistoryApi');
@@ -873,7 +3524,6 @@
       const lotteryView = document.getElementById('view-lottery');
       if (!lotteryView || !lotteryView.classList.contains('active')) return;
 
-      // 入力フォームフォーカス中は無視
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
 
       if (e.code === 'Space') {

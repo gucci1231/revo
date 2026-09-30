@@ -90,6 +90,10 @@ describe('🎰 Regular Meeting Lottery Slot Machine & 16:9 Stage Feature Tests',
     assert.match(indexHtml, /reel_stop/, 'Sound engine should handle reel_stop');
     assert.match(indexHtml, /reach/, 'Sound engine should handle reach');
     assert.match(indexHtml, /fanfare/, 'Sound engine should handle fanfare');
+    assert.match(indexHtml, /startVegasLoungeBgm/, 'Script should contain startVegasLoungeBgm for ambient casino music');
+    assert.match(indexHtml, /setupVegasAudioAutoUnlock/, 'Script should contain setupVegasAudioAutoUnlock for browser autoplay');
+    assert.match(indexHtml, /playLoungeRhodesChord/, 'Script should contain lounge Rhodes chord synthesizer');
+    assert.match(indexHtml, /playVegasBgmStylePreview/, 'Script should contain BGM style preview function');
   });
 
   it('verifies winner recording and modal controls exist', () => {
