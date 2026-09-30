@@ -335,12 +335,16 @@ class BniConnectService {
                     ':updated_at' => $now
                 ]);
 
-                // Ensure member exists in members table
-                $memberStmt->execute([
-                    ':id' => $r['member_id'],
-                    ':name' => $r['member_name'],
-                    ':updated_at' => $now
-                ]);
+                // Ensure member exists in members table (avoid duplicate if exists by name)
+                $checkStmt = $pdo->prepare("SELECT id FROM members WHERE name = :name");
+                $checkStmt->execute([':name' => $r['member_name']]);
+                if (!$checkStmt->fetch()) {
+                    $memberStmt->execute([
+                        ':id' => $r['member_id'],
+                        ':name' => $r['member_name'],
+                        ':updated_at' => $now
+                    ]);
+                }
 
                 $count++;
             }

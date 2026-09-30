@@ -238,6 +238,12 @@ const ApiService = {
       }
       case 'getPalmsPeriodsApi':
         return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'getPalmsMemberHistoryApi': {
+        const mName = args[0] ? encodeURIComponent(args[0]) : '';
+        return { url: `/api/palms.php?action=member&name=${mName}`, method: 'GET' };
+      }
+      case 'getPalmsChapterTrendsApi':
+        return { url: '/api/palms.php?action=chapter_trends', method: 'GET' };
       case 'syncPalmsApi':
       case 'syncPalmsFromBniConnectApi':
         return {
@@ -247,6 +253,9 @@ const ApiService = {
         };
       case 'getScheduledEmailsApi':
         return null;
+      case 'getLotteryDataApi':
+      case 'getLotteryHistoryApi':
+        return { url: '/api/lottery.php?action=list', method: 'GET' };
       default:
         return null;
     }

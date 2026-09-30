@@ -34,7 +34,7 @@ try {
                 m.category as member_category,
                 m.profession as member_profession
             FROM palms_reports p
-            LEFT JOIN members m ON p.member_id = m.id
+            LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
             WHERE {$where}
             ORDER BY p.end_date DESC
         ";
@@ -285,7 +285,7 @@ try {
                 m.category as member_category,
                 m.profession as member_profession
             FROM palms_reports p
-            LEFT JOIN members m ON p.member_id = m.id
+            LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
             {$whereClause}
             ORDER BY (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) DESC, p.one_to_ones DESC, p.v_visitors DESC
         ";

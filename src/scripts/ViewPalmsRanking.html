@@ -972,10 +972,19 @@ function getPalmsScoreColorClass(score, maxScore) {
   return 'text-rose-600 font-bold';
 }
 
+let activePalmsFetchPromise = null;
+
 /**
  * Fetch PALMS records for specified or latest period
  */
 function fetchPalmsRankingData(startDate = null, endDate = null) {
+  if (!startDate && !endDate && typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
+    return Promise.resolve(currentPalmsRecords);
+  }
+  if (!startDate && !endDate && activePalmsFetchPromise) {
+    return activePalmsFetchPromise;
+  }
+
   const podiumContainer = document.getElementById('palms-podium-container');
   const tableBody = document.getElementById('palms-table-body');
   
@@ -998,8 +1007,9 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
     `;
   }
 
-  ApiService.call('getPalmsListApi', startDate, endDate)
+  activePalmsFetchPromise = ApiService.call('getPalmsListApi', startDate, endDate)
     .then(res => {
+      activePalmsFetchPromise = null;
       if (res && res.success) {
         currentPalmsPeriod = res.period || { startDate, endDate };
         
@@ -1101,14 +1111,20 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
         renderPalmsKpiCards();
         renderPalmsCharts();
         renderPalmsRankingView();
+        return currentPalmsRecords;
       } else {
         renderPalmsEmptyState(res ? res.error : 'データ取得に失敗しました');
+        return [];
       }
     })
     .catch(err => {
+      activePalmsFetchPromise = null;
       console.error('Failed to fetch PALMS ranking:', err);
       renderPalmsEmptyState('サーバー通信エラーが発生しました');
+      return [];
     });
+
+  return activePalmsFetchPromise;
 }
 
 /**

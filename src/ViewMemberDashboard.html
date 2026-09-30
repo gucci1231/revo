@@ -114,8 +114,13 @@
               <span id="member-tl-total-score" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
               <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
             </div>
-            <div id="member-tl-score-desc" class="text-2xs font-semibold text-slate-500 mt-2">
-              --
+            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100">
+              <div id="member-tl-score-desc" class="text-2xs font-semibold text-slate-500">
+                --
+              </div>
+              <div id="member-tl-score-avg" class="text-3xs font-bold text-slate-400">
+                全体平均: -- pt
+              </div>
             </div>
           </div>
 
@@ -129,8 +134,13 @@
               <span id="member-tl-ppw-value" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
               <span class="text-xs font-bold text-slate-400">pt/週</span>
             </div>
-            <div id="member-tl-ppw-status" class="text-2xs font-semibold text-slate-600 mt-2">
-              --
+            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100">
+              <div id="member-tl-ppw-status" class="text-2xs font-semibold text-slate-600 truncate mr-1">
+                --
+              </div>
+              <div id="member-tl-ppw-avg" class="text-3xs font-bold text-slate-400 shrink-0">
+                全体平均: --
+              </div>
             </div>
           </div>
 
@@ -144,8 +154,13 @@
               <span id="member-tl-rpw-value" class="text-3xl font-black text-slate-900 tabular-nums">--</span>
               <span class="text-xs font-bold text-slate-400">件/週</span>
             </div>
-            <div id="member-tl-rpw-status" class="text-2xs font-semibold text-slate-600 mt-2">
-              総提供: --件
+            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-100">
+              <div id="member-tl-rpw-status" class="text-2xs font-semibold text-slate-600 truncate mr-1">
+                総提供: --件
+              </div>
+              <div id="member-tl-rpw-avg" class="text-3xs font-bold text-slate-400 shrink-0">
+                全体平均: --
+              </div>
             </div>
           </div>
         </div>
@@ -171,8 +186,8 @@
               <div class="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square flex items-center justify-center">
                 <canvas id="member-chart-palms-radar"></canvas>
               </div>
-              <p class="text-3xs text-slate-400 mt-2 text-center">
-                ※ 青枠: 本人実績比率 / 点線: 目標クリア基準 (70%水準)
+              <p class="text-3xs text-slate-400 mt-2 text-center" id="member-radar-legend-text">
+                ※ 青: 本人実績 / 灰: チャプター平均 (みんなの統計) / 緑: 目標基準 (70%水準)
               </p>
             </div>
 

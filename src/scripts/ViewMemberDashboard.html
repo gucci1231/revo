@@ -1,6 +1,7 @@
 <script>
   /* --- 👤 Member Personal Dashboard Logic (Radical Minimalism & Apple-Style Clean Slate) --- */
   let currentSelectedMemberName = '';
+  let currentSelectedMemberId = null;
   let currentMemberRoleView = 'invited'; // 'invited' | 'oriented'
   let currentMemberVisitorsFilter = 'all'; // 'all' | 'active' | 'joined'
   let currentMemberActionFilter = 'pending'; // 'pending' | 'completed' | 'all'
@@ -70,17 +71,20 @@
     
     // メンバーマスターデータのキャッシュ確認
     if ((!cachedFlatMembers || cachedFlatMembers.length === 0) && typeof fetchMembersMasterData === 'function') {
-      promises.push(fetchMembersMasterData(false));
+      const pm = fetchMembersMasterData(false);
+      if (pm && typeof pm.then === 'function') promises.push(pm);
     }
 
     // 全ビジターデータのキャッシュ確認
     if ((!cachedAllVisitors || cachedAllVisitors.length === 0) && typeof fetchAllVisitorsData === 'function') {
-      promises.push(fetchAllVisitorsData(false));
+      const pv = fetchAllVisitorsData(false);
+      if (pv && typeof pv.then === 'function') promises.push(pv);
     }
 
     // PALMS個人成績データのキャッシュ確認
     if ((typeof currentPalmsRecords === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) && typeof fetchPalmsRankingData === 'function') {
-      promises.push(fetchPalmsRankingData());
+      const pp = fetchPalmsRankingData();
+      if (pp && typeof pp.then === 'function') promises.push(pp);
     }
 
     if (promises.length > 0) {
@@ -144,6 +148,24 @@
       if (fuzzy) {
         const exact = members.find(m => (m.name || '').trim() === fuzzy.name);
         return exact || fuzzy;
+      }
+    }
+
+    // 4. PALMS レコードからの検索 (member_id または member_name)
+    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords)) {
+      const palmsMatch = currentPalmsRecords.find(r => 
+        String(r.member_id) === cleanParam || 
+        String(r.id) === cleanParam || 
+        (r.member_name || '').trim() === cleanParam ||
+        normalizeNameKey(r.member_name || '') === cleanKey
+      );
+      if (palmsMatch) {
+        return {
+          id: palmsMatch.member_id || palmsMatch.id,
+          name: palmsMatch.member_name,
+          category: palmsMatch.member_category || 'メンバー',
+          profession: palmsMatch.member_profession || ''
+        };
       }
     }
 
@@ -237,6 +259,7 @@
     const memberId = memberObj && memberObj.id !== undefined && memberObj.id !== null ? memberObj.id : null;
 
     currentSelectedMemberName = memberName;
+    currentSelectedMemberId = memberId;
 
     try {
       if (memberId !== null) {
@@ -733,20 +756,23 @@
     renderMemberVisitorCards(activeList);
 
     // メンバーのPALMS個人成績（トラフィックライト100点スコア等）を描画
-    renderMemberPalmsPersonalScores(memberName);
+    renderMemberPalmsPersonalScores(memberName, currentSelectedMemberId);
   }
 
   /**
    * Render Member PALMS & Traffic Lights Personal Scores into Dashboard
    */
-  function renderMemberPalmsPersonalScores(memberName) {
+  function renderMemberPalmsPersonalScores(memberName, targetMemberId = null) {
     if (!memberName) return;
     const cleanName = String(memberName).trim();
 
     // currentPalmsRecordsから検索
     let record = null;
     if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords)) {
-      record = currentPalmsRecords.find(r => (r.member_name || '').trim() === cleanName);
+      record = currentPalmsRecords.find(r => 
+        (r.member_name || '').trim() === cleanName ||
+        (targetMemberId && (String(r.member_id) === String(targetMemberId) || String(r.id) === String(targetMemberId)))
+      );
       if (!record && typeof findMemberByName === 'function') {
         const fuzzy = findMemberByName(cleanName);
         if (fuzzy && fuzzy.name) {
@@ -756,10 +782,13 @@
     }
 
     if (!record) {
-      if (typeof fetchPalmsRankingData === 'function' && (!currentPalmsRecords || currentPalmsRecords.length === 0)) {
-        fetchPalmsRankingData().then(() => {
-          renderMemberPalmsPersonalScores(memberName);
-        });
+      if (typeof fetchPalmsRankingData === 'function') {
+        const p = fetchPalmsRankingData();
+        if (p && typeof p.then === 'function') {
+          p.then(() => {
+            renderMemberPalmsPersonalScores(memberName, targetMemberId);
+          });
+        }
       }
       return;
     }
@@ -795,6 +824,24 @@
       if (currentScore >= 70) elScoreDesc.innerHTML = '<span class="text-emerald-700 font-bold">目標クリア (70点以上)</span>';
       else if (currentScore >= 50) elScoreDesc.innerHTML = '<span class="text-amber-700 font-bold">標準ライン (50-69点)</span>';
       else elScoreDesc.innerHTML = '<span class="text-rose-700 font-bold">改善・注力ライン (&lt;50点)</span>';
+    }
+
+    // チャプター全体の平均スコア・PPW・RPW (みんなの統計)
+    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
+      const cnt = currentPalmsRecords.length;
+      const sumS = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.total_score) || 0), 0);
+      const sumP = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.ppw) || 0), 0);
+      const sumR = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
+      const avgScore = (sumS / cnt).toFixed(1);
+      const avgPpw = (sumP / cnt).toFixed(2);
+      const avgRpw = (sumR / cnt).toFixed(2);
+
+      const elScoreAvg = document.getElementById('member-tl-score-avg');
+      const elPpwAvg = document.getElementById('member-tl-ppw-avg');
+      const elRpwAvg = document.getElementById('member-tl-rpw-avg');
+      if (elScoreAvg) elScoreAvg.textContent = `全体平均: ${avgScore} pt`;
+      if (elPpwAvg) elPpwAvg.textContent = `全体平均: ${avgPpw}`;
+      if (elRpwAvg) elRpwAvg.textContent = `全体平均: ${avgRpw}`;
     }
 
     const elPpw = document.getElementById('member-tl-ppw-value');
@@ -891,8 +938,33 @@
       it.pct = Math.min(100, Math.round((it.score / it.maxScore) * 100));
     });
 
+    // チャプター全体の各項目平均達成率 (みんなの統計 %)
+    let chapterAvgPcts = [0, 0, 0, 0, 0, 0, 0];
+    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
+      const totalMembers = currentPalmsRecords.length;
+      chapterAvgPcts = items.map(it => {
+        let sum = 0;
+        currentPalmsRecords.forEach(rec => {
+          const sc = (rec.trafficLight && rec.trafficLight.scores) ? rec.trafficLight.scores : {};
+          if (it.shortTitle === 'ビジター') sum += (Number(sc.visitor) || 0);
+          else if (it.shortTitle === 'リファーラル') sum += (Number(sc.referral) || 0);
+          else if (it.shortTitle === '1to1') sum += (Number(sc.one_to_ones) || 0);
+          else if (it.shortTitle === '出席率') sum += (Number(sc.attendance) || 0);
+          else if (it.shortTitle === 'CEU') sum += (Number(sc.ceu) || 0);
+          else if (it.shortTitle === 'TYFCB') sum += (Number(sc.tyfcb) || 0);
+          else if (it.shortTitle === 'スポンサー') sum += (Number(sc.sponsor) || 0);
+        });
+        const avgScore = sum / totalMembers;
+        return Math.min(100, Math.round((avgScore / it.maxScore) * 100));
+      });
+    }
+
+    items.forEach((it, idx) => {
+      it.chapterAvgPct = chapterAvgPcts[idx] || 0;
+    });
+
     renderMemberPalmsScoresGrid(items);
-    renderMemberPalmsRadarChart(record, items);
+    renderMemberPalmsRadarChart(record, items, chapterAvgPcts);
 
     // 3. PALMS 原票データ完全内訳
     renderMemberPalmsRawBreakdown(record, r);
@@ -901,7 +973,7 @@
     fetchMemberPalmsWeeklySubmissions(record.member_name);
   }
 
-  function renderMemberPalmsRadarChart(record, items) {
+  function renderMemberPalmsRadarChart(record, items, chapterAvgPcts = null) {
     if (typeof Chart === 'undefined') return;
     const canvas = document.getElementById('member-chart-palms-radar');
     if (!canvas) return;
@@ -913,6 +985,9 @@
 
     const labels = items.map(it => `${it.shortTitle} (${it.maxScore}点)`);
     const userScores = items.map(it => it.pct);
+    const avgScores = chapterAvgPcts && chapterAvgPcts.length === items.length 
+      ? chapterAvgPcts 
+      : items.map(it => it.chapterAvgPct || 0);
     const targetScores = [70, 70, 70, 70, 70, 70, 70];
 
     const ctx = canvas.getContext('2d');
@@ -922,7 +997,7 @@
         labels: labels,
         datasets: [
           {
-            label: '本人実績 (%)',
+            label: '本人達成率 (%)',
             data: userScores,
             backgroundColor: 'rgba(0, 113, 227, 0.18)',
             borderColor: '#0071e3',
@@ -934,7 +1009,20 @@
             pointHoverRadius: 6
           },
           {
-            label: '目標基準 (70%)',
+            label: 'チャプター平均 (%)',
+            data: avgScores,
+            backgroundColor: 'rgba(100, 116, 139, 0.12)',
+            borderColor: '#64748b',
+            borderWidth: 2,
+            borderDash: [3, 3],
+            pointBackgroundColor: '#64748b',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1,
+            pointRadius: 3,
+            pointHoverRadius: 5
+          },
+          {
+            label: '目標基準 (70%ライン)',
             data: targetScores,
             backgroundColor: 'transparent',
             borderColor: 'rgba(16, 185, 129, 0.75)',
@@ -947,7 +1035,7 @@
       },
       options: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         animation: { duration: 300 },
         scales: {
           r: {
@@ -981,11 +1069,13 @@
             padding: 8,
             callbacks: {
               label: function(item) {
+                const it = items[item.dataIndex];
                 if (item.datasetIndex === 0) {
-                  const it = items[item.dataIndex];
-                  return ` ${it.title}: ${it.score}/${it.maxScore}pt (${it.pct}%) - ${it.actual}`;
+                  return ` 本人実績: ${it.score}/${it.maxScore}pt (${it.pct}%) - ${it.actual}`;
+                } else if (item.datasetIndex === 1) {
+                  return ` チャプター平均: ${avgScores[item.dataIndex]}% (${it.shortTitle})`;
                 }
-                return ` ${item.dataset.label}: 70% (グリーン基準)`;
+                return ` 目標基準: 70% (グリーン基準ライン)`;
               }
             }
           }
@@ -1030,9 +1120,14 @@
             <div class="text-sm font-black font-tabular ${scoreColor}">
               ${it.score} <span class="text-3xs font-bold text-slate-400">/ ${it.maxScore} pt</span>
             </div>
-            <span class="inline-block text-3xs font-black px-1.5 py-0.2 rounded-md border ${badgeClass}">
-              ${it.pct}%
-            </span>
+            <div class="flex items-center justify-end gap-1.5 mt-0.5">
+              <span class="inline-block text-3xs font-black px-1.5 py-0.2 rounded-md border ${badgeClass}">
+                ${it.pct}%
+              </span>
+              <span class="text-3xs font-bold text-slate-400">
+                (平均 ${it.chapterAvgPct || 0}%)
+              </span>
+            </div>
           </div>
         </div>
       `;

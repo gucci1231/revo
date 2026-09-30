@@ -83,5 +83,20 @@ describe('Member Personal Dashboard Feature Tests', () => {
     // Traffic light card click navigates to dashboard instead of standalone modal
     assert.strictEqual(indexHtml.includes('navigateToMemberPersonalDashboard'), true);
   });
+
+  it('verifies chapter average (みんなの統計) indicators and 3-dataset radar chart in Member Dashboard', () => {
+    // 3-KPI card chapter averages
+    assert.strictEqual(indexHtml.includes('id="member-tl-score-avg"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-tl-ppw-avg"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-tl-rpw-avg"'), true);
+
+    // Radar chart legend & datasets
+    assert.strictEqual(indexHtml.includes('チャプター平均 (%)'), true);
+    assert.strictEqual(indexHtml.includes('member-radar-legend-text'), true);
+    assert.strictEqual(indexHtml.includes('みんなの統計'), true);
+
+    // fetchPalmsRankingData returns Promise
+    assert.strictEqual(indexHtml.includes('return activePalmsFetchPromise;'), true);
+  });
 });
 
