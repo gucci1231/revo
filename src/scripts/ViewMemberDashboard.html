@@ -800,7 +800,13 @@
     const elPpw = document.getElementById('member-tl-ppw-value');
     const elPpwStatus = document.getElementById('member-tl-ppw-status');
     if (elPpw) elPpw.textContent = (Number(record.ppw) || 0).toFixed(2);
-    if (elPpwStatus) elPpwStatus.textContent = `${tl.ppwDot || ''} ${tl.ppwTierLabel || ''}`;
+    if (elPpwStatus) {
+      const totalRef = Number(record.total_referrals_given != null ? record.total_referrals_given : ((Number(record.rgi) || 0) + (Number(record.rgo) || 0)));
+      const vis = Number(record.visitors ?? record.v_visitors ?? 0);
+      const test = Number(record.testimonials ?? record.sponsors ?? 0);
+      elPpwStatus.textContent = `${tl.ppwDot || ''} 内訳: 紹介${totalRef}件 + 招待${vis}名 + 推薦${test}件`;
+      elPpwStatus.title = `${tl.ppwTierLabel || ''} (リファーラル${totalRef}件 ＋ ビジター${vis}名 ＋ 推薦の言葉${test}件)`;
+    }
 
     const elRpw = document.getElementById('member-tl-rpw-value');
     const elRpwStatus = document.getElementById('member-tl-rpw-status');

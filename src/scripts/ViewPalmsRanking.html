@@ -2117,7 +2117,13 @@ function renderPalmsDetailModalContent(m) {
   const elPpw = document.getElementById('palms-detail-ppw-value');
   const elPpwStatus = document.getElementById('palms-detail-ppw-status');
   if (elPpw) elPpw.textContent = m.ppw.toFixed(2);
-  if (elPpwStatus) elPpwStatus.textContent = `${tl.ppwDot} ${tl.ppwTierLabel}`;
+  if (elPpwStatus) {
+    const totalRef = Number(m.total_referrals_given != null ? m.total_referrals_given : ((Number(m.rgi) || 0) + (Number(m.rgo) || 0)));
+    const vis = Number(m.visitors ?? m.v_visitors ?? 0);
+    const test = Number(m.testimonials ?? m.sponsors ?? 0);
+    elPpwStatus.textContent = `${tl.ppwDot} 内訳: 紹介${totalRef}件 + 招待${vis}名 + 推薦${test}件`;
+    elPpwStatus.title = `${tl.ppwTierLabel} (リファーラル${totalRef}件 ＋ ビジター${vis}名 ＋ 推薦の言葉${test}件)`;
+  }
 
   const elRpw = document.getElementById('palms-detail-rpw-value');
   const elRpwStatus = document.getElementById('palms-detail-rpw-status');
@@ -2776,6 +2782,7 @@ function renderPalmsHistoryChart(canvasId, records, periodKey) {
 
   const refData = chrono.map(r => Number(r.total_referrals_given != null ? r.total_referrals_given : (Number(r.rgi || r.rgi_referrals_given_internal || 0) + Number(r.rgo || r.rgo_referrals_given_external || 0))));
   const visitorData = chrono.map(r => Number(r.v_visitors != null ? r.v_visitors : (r.visitors || 0)));
+  const testimonialData = chrono.map(r => Number(r.testimonials ?? r.sponsors ?? 0));
   const otoData = chrono.map(r => Number(r.one_to_ones || 0));
   const ppwData = chrono.map(r => {
     if (r.ppw != null) return Number(Number(r.ppw).toFixed(2));
@@ -2804,6 +2811,15 @@ function renderPalmsHistoryChart(canvasId, records, periodKey) {
           label: 'ビジター',
           data: visitorData,
           backgroundColor: 'rgba(16, 185, 129, 0.85)',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 24,
+          yAxisID: 'y'
+        },
+        {
+          label: '推薦の言葉',
+          data: testimonialData,
+          backgroundColor: 'rgba(13, 148, 136, 0.85)',
           borderRadius: 4,
           borderSkipped: false,
           maxBarThickness: 24,
@@ -3526,7 +3542,7 @@ function renderPpwFollowMemberGrid(tier) {
             </div>
           </div>
 
-          <!-- Quick Metrics (4 items) -->
+          <!-- Quick Metrics (4 items: RPW, リファーラル, ビジター, 推薦の言葉) -->
           <div class="grid grid-cols-4 gap-1 text-center bg-slate-50 rounded-xl p-2 mb-3 text-3xs">
             <div>
               <div class="text-slate-400 font-bold">RPW</div>
@@ -3541,8 +3557,8 @@ function renderPpwFollowMemberGrid(tier) {
               <div class="font-black text-emerald-600 tabular-nums">${m.v_visitors || 0}</div>
             </div>
             <div>
-              <div class="text-slate-400 font-bold">1to1</div>
-              <div class="font-black text-amber-600 tabular-nums">${m.one_to_ones || 0}</div>
+              <div class="text-slate-400 font-bold">推薦の言葉</div>
+              <div class="font-black text-teal-600 tabular-nums">${Number(m.testimonials ?? m.sponsors ?? 0)}</div>
             </div>
           </div>
 
@@ -3613,13 +3629,13 @@ function runPpwGoalSimulation() {
   const currentPoints = currentPpw * weeks;
   const gapPoints = Math.max(0, totalPointsNeeded - currentPoints);
 
-  // Recommended Action Mix:
+  // Recommended Action Mix (PPW = (リファーラル + ビジター + 推薦の言葉) ÷ 週数):
   // 1 Referral = 1.0 pt
   // 1 Visitor = 1.0 pt
-  // 1 One-to-One = 0.5 pt
-  const reqReferrals = Math.ceil(gapPoints * 0.5); // 50% from referrals
-  const reqVisitors = Math.ceil(gapPoints * 0.25); // 25% from visitors
-  const reqOto = Math.ceil((gapPoints - reqReferrals - reqVisitors) / 0.5); // balance from 1to1
+  // 1 Testimonial = 1.0 pt
+  const reqReferrals = Math.max(1, Math.ceil(gapPoints * 0.6)); // 60% from referrals
+  const reqVisitors = Math.max(1, Math.ceil(gapPoints * 0.25)); // 25% from visitors
+  const reqTestimonials = Math.max(0, Math.ceil(gapPoints - reqReferrals - reqVisitors)); // balance from testimonials
 
   const isAchieved = currentPpw >= targetPpw;
 
@@ -3656,18 +3672,18 @@ function runPpwGoalSimulation() {
         <div class="grid grid-cols-3 gap-2 text-center text-xs">
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
             <div class="text-3xs font-bold text-slate-400">リファーラル</div>
-            <div class="text-base font-black text-indigo-600 tabular-nums">+${Math.max(1, reqReferrals)} 件</div>
-            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(1, reqReferrals) / weeks).toFixed(1)} 件</div>
+            <div class="text-base font-black text-indigo-600 tabular-nums">+${reqReferrals} 件</div>
+            <div class="text-3xs text-slate-400 mt-0.5">週 ${(reqReferrals / weeks).toFixed(1)} 件</div>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
             <div class="text-3xs font-bold text-slate-400">ビジター</div>
-            <div class="text-base font-black text-emerald-600 tabular-nums">+${Math.max(1, reqVisitors)} 名</div>
+            <div class="text-base font-black text-emerald-600 tabular-nums">+${reqVisitors} 名</div>
             <div class="text-3xs text-slate-400 mt-0.5">同行</div>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
-            <div class="text-3xs font-bold text-slate-400">1to1</div>
-            <div class="text-base font-black text-amber-600 tabular-nums">+${Math.max(2, reqOto)} 回</div>
-            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(2, reqOto) / weeks).toFixed(1)} 回</div>
+            <div class="text-3xs font-bold text-slate-400">推薦の言葉</div>
+            <div class="text-base font-black text-teal-600 tabular-nums">+${reqTestimonials} 件</div>
+            <div class="text-3xs text-slate-400 mt-0.5">推薦状・証言</div>
           </div>
         </div>
       </div>
@@ -3694,21 +3710,22 @@ function copyPpwGoalPlanText() {
   const currentPpw = (Number(m.ppw) || 0).toFixed(2);
   const weeks = Math.max(1, m.weeks_count || 1);
   const gapPoints = Math.max(0, (2.0 - Number(m.ppw)) * weeks);
-  const reqRef = Math.max(1, Math.ceil(gapPoints * 0.5));
+  const reqRef = Math.max(1, Math.ceil(gapPoints * 0.6));
   const reqVis = Math.max(1, Math.ceil(gapPoints * 0.25));
-  const reqOto = Math.max(2, Math.ceil((gapPoints - reqRef - reqVis) / 0.5));
+  const reqTest = Math.max(0, Math.ceil(gapPoints - reqRef - reqVis));
 
   const text = `【PPW 2.0000 達成伴走プラン】
 対象メンバー: ${memberName} 様
 現在PPW: ${currentPpw} pt/週 (目標: 2.0000)
 算出基準: 出席 ${weeks} 週間${m.is_new_member ? ' (新会員・出席開始週よりカウント)' : ''}
 
-【推奨アクション】
-・リファーラル提供: +${reqRef} 件
+【推奨アクション (リファーラル＋ビジター＋推薦の言葉)】
+・リファーラル提供: +${reqRef} 件 (週 ${(reqRef / weeks).toFixed(1)} 件ペース)
 ・ビジター招待: +${reqVis} 名
-・1to1実施: +${reqOto} 回 (週 ${(reqOto / weeks).toFixed(1)} 回ペース)
+・推薦の言葉: +${reqTest} 件
 
-※数字は評価ではなく、全員で豊かになるための改善目標です。一緒にクリアしていきましょう！`;
+※ PPW（Points Per Week）= (リファーラル提供 ＋ ビジター招待 ＋ 推薦の言葉) ÷ 出席週数
+※ 数字は評価ではなく、全員で豊かになるための改善目標です。一緒にクリアしていきましょう！`;
 
   navigator.clipboard.writeText(text).then(() => {
     if (typeof showToast === 'function') showToast('目標プランをクリップボードにコピーしました！', 'success');

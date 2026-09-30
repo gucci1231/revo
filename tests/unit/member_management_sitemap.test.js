@@ -133,5 +133,23 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     // Script functions for formatting TYFCB yen
     assert.strictEqual(indexHtml.includes('function formatTyfcbYenDisplay('), true);
   });
+
+  it('verifies PPW consists of referrals + visitors + testimonials in member dashboard and PPW-RPW subview', () => {
+    // Member Dashboard PPW card breakdown includes referrals, visitors, and testimonials
+    assert.strictEqual(indexHtml.includes('内訳: 紹介'), true);
+    assert.strictEqual(indexHtml.includes('推薦'), true);
+
+    // Activity slip chart legend includes 推薦の言葉
+    assert.strictEqual(indexHtml.includes('>推薦の言葉</span>'), true);
+
+    // PPW member follow grid quick metrics include 推薦の言葉 (not 1to1)
+    assert.strictEqual(indexHtml.includes('Quick Metrics (4 items: RPW, リファーラル, ビジター, 推薦の言葉)'), true);
+
+    // Goal simulator has 推薦の言葉 action card
+    assert.strictEqual(indexHtml.includes('推薦状・証言'), true);
+
+    // Copy plan text mentions referrals + visitors + testimonials
+    assert.strictEqual(indexHtml.includes('【推奨アクション (リファーラル＋ビジター＋推薦の言葉)】'), true);
+  });
 });
 
