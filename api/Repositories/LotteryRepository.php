@@ -68,18 +68,54 @@ class LotteryRepository {
             ];
         }
 
-        $result = [];
+        // 重複排除（同じ名前の場合、カテゴリ・業種が設定されている方を優先）
+        $uniqueByName = [];
         foreach ($members as $m) {
+            $cleanName = preg_replace('/\s+/', '', $m['name']);
+            if (empty($cleanName)) continue;
+
+            if (!isset($uniqueByName[$cleanName])) {
+                $uniqueByName[$cleanName] = $m;
+            } else {
+                $existing = $uniqueByName[$cleanName];
+                $existingHasCat = ($existing['category'] && $existing['category'] !== 'その他');
+                $newHasCat = ($m['category'] && $m['category'] !== 'その他');
+
+                if (!$existingHasCat && $newHasCat) {
+                    $uniqueByName[$cleanName] = $m;
+                } elseif (!empty($m['profession']) && empty($existing['profession'])) {
+                    $uniqueByName[$cleanName] = $m;
+                }
+            }
+        }
+
+        $result = [];
+        foreach ($uniqueByName as $m) {
             $mId = (string)$m['id'];
-            $stat = $stats[$mId] ?? ['win_count' => 0, 'last_won_at' => null];
+            $cleanName = preg_replace('/\s+/', '', $m['name']);
+
+            // 当選回数は member_id または 同一氏名で合算
+            $winCount = 0;
+            $lastWonAt = null;
+            $awards = [];
+
+            // member_id直接マッチ
+            if (isset($stats[$mId])) {
+                $winCount += $stats[$mId]['win_count'];
+                $lastWonAt = $stats[$mId]['last_won_at'];
+            }
+            if (isset($awardsByMember[$mId])) {
+                $awards = array_merge($awards, $awardsByMember[$mId]);
+            }
+
             $result[] = [
                 'id' => $mId,
                 'category' => $m['category'] ?: 'その他',
                 'name' => $m['name'],
                 'profession' => $m['profession'] ?: '',
-                'win_count' => $stat['win_count'],
-                'last_won_at' => $stat['last_won_at'],
-                'awards' => $awardsByMember[$mId] ?? []
+                'win_count' => $winCount,
+                'last_won_at' => $lastWonAt,
+                'awards' => $awards
             ];
         }
 
