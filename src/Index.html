@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>REvo 定例会ビジター管理 2.0 (完全Web運用システム)</title>
+  <title>REvo OS (BNI REvoチャプター総合管理システム)</title>
   <!-- SEO / Bot Index Prevention -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
@@ -89,7 +89,7 @@
     <div class="drawer-header">
       <div class="drawer-brand">
         <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
-        <span class="drawer-brand-text">REvo ビジター管理</span>
+        <span class="drawer-brand-text">REvo OS</span>
       </div>
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
@@ -100,31 +100,57 @@
     </div>
 
     <div class="drawer-nav-list">
+      <!-- ビジター管理セクション -->
+      <div class="drawer-section-title">ビジター管理</div>
       <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')" title="ダッシュボード" data-tooltip="ダッシュボード">
         <i class="fa-solid fa-chart-pie"></i> <span class="nav-label">ダッシュボード</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="要対応フォロー" data-tooltip="要対応フォロー">
+        <i class="fa-solid fa-fire"></i> <span class="nav-label">要対応フォロー</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="ビジター・ゲスト名簿" data-tooltip="ビジター・ゲスト名簿">
+        <i class="fa-solid fa-users"></i> <span class="nav-label">ビジター・ゲスト名簿</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="全アクション管理" data-tooltip="全アクション管理">
         <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
-        <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定" data-tooltip="メール送信予定">
+        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="全ビジター統合管理名簿" data-tooltip="全ビジター統合管理名簿">
-        <i class="fa-solid fa-users"></i> <span class="nav-label">全ビジター統合管理名簿</span>
+
+      <!-- メンバー・PALMSセクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">メンバー・PALMS</div>
+      <button class="drawer-nav-item" id="drawer-item-palms-ranking" onclick="switchTab('palms-ranking')" title="PALMSランキング" data-tooltip="PALMSランキング">
+        <i class="fa-solid fa-trophy"></i> <span class="nav-label">PALMSランキング</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
-        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
+
+      <!-- 研修・イベントセクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">研修・イベント</div>
+      <button class="drawer-nav-item" id="drawer-item-training" onclick="switchTab('training')" title="トレーニング日程" data-tooltip="トレーニング日程">
+        <i class="fa-solid fa-graduation-cap"></i> <span class="nav-label">トレーニング日程</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
+      <button class="drawer-nav-item" id="drawer-item-schedules" onclick="switchTab('schedules')" title="イベント・出欠" data-tooltip="イベント・出欠">
+        <i class="fa-solid fa-calendar-days"></i> <span class="nav-label">イベント・出欠</span>
+      </button>
+
+      <!-- 公式リンク集セクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">リンク・設定</div>
+      <button class="drawer-nav-item" id="drawer-item-links" onclick="switchTab('links')" title="チャプター公式リンク" data-tooltip="チャプター公式リンク">
+        <i class="fa-solid fa-link"></i> <span class="nav-label">公式リンク集</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メール文面テンプレート" data-tooltip="メール文面テンプレート">
         <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
-        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・目標" data-tooltip="各種設定・目標">
+        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・目標</span>
       </button>
     </div>
 
     <div class="drawer-footer">
-      <div class="drawer-footer-text">REvo Chapter Visitor Host v2.0</div>
+      <div class="drawer-footer-text">BNI REvo Chapter OS v2.1</div>
     </div>
   </aside>
 
@@ -141,7 +167,7 @@
         <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <a href="#dashboard" onclick="switchTab('dashboard')" class="logo-title text-sm sm:text-base font-extrabold text-slate-900 tracking-tight hover:text-blue-600 transition-colors shrink-0 flex items-center gap-1.5 no-underline">
             <i class="fa-solid fa-layer-group text-blue-600"></i>
-            <span>REvo</span>
+            <span>REvo OS</span>
           </a>
           <span class="text-slate-300 font-bold shrink-0 text-xs sm:text-sm">/</span>
           <div id="header-current-page" class="flex items-center gap-1.5 min-w-0 bg-slate-100/80 border border-slate-200/80 px-2 py-0.5 rounded-lg">
@@ -166,6 +192,9 @@
       <button class="tab-btn" id="tab-btn-visitors" onclick="switchTab('visitors')">
         <i class="fa-solid fa-users"></i> ビジター全一覧
       </button>
+      <button class="tab-btn" id="tab-btn-links" onclick="switchTab('links')">
+        <i class="fa-solid fa-link"></i> 公式リンク集
+      </button>
       <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
         <i class="fa-solid fa-clock"></i> メール送信予定一覧
       </button>
@@ -189,6 +218,7 @@
     <?!= include('ViewEmailSchedule'); ?>
     <?!= include('ViewReportManager'); ?>
     <?!= include('ViewEmailTemplates'); ?>
+    <?!= include('ViewLinks'); ?>
     <?!= include('ModalFollowPendingReminder'); ?>
 
   </div>

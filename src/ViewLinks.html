@@ -1,0 +1,115 @@
+<!-- Chapter Links Management View -->
+<div id="view-links" class="view-content" style="display: none;">
+  <!-- Header / Action Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <i class="fa-solid fa-link text-blue-600"></i>
+        <span>チャプター公式リンク集</span>
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        BNI Connect、Business Builder、各種研修や定例会運営に必要な公式リンク一覧
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openLinkModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+        <i class="fa-solid fa-plus"></i>
+        <span>リンクを追加</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="links-category-filter">
+    <button onclick="filterLinksCategory('ALL')" class="category-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-sm" data-category="ALL">
+      すべて
+    </button>
+    <button onclick="filterLinksCategory('公式システム')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="公式システム">
+      公式システム
+    </button>
+    <button onclick="filterLinksCategory('リージョン')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="リージョン">
+      リージョン
+    </button>
+    <button onclick="filterLinksCategory('定例会・運営')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="定例会・運営">
+      定例会・運営
+    </button>
+  </div>
+
+  <!-- Links Grid Container -->
+  <div id="links-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Populated by JavaScript -->
+    <div class="col-span-full py-12 text-center text-slate-400">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <p class="text-xs">リンク情報を取得中...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Link Modal (Add / Edit) -->
+<div id="modal-link-crud" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs transition-opacity duration-200" style="display: none;">
+  <div class="bg-white rounded-2xl max-w-lg w-full mx-4 shadow-xl border border-slate-200 overflow-hidden transform transition-transform duration-200 scale-95" id="modal-link-container">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 id="modal-link-title" class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-link text-blue-600"></i>
+        <span>リンクを追加</span>
+      </h3>
+      <button type="button" onclick="closeLinkModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+    <form id="form-link-crud" onsubmit="handleLinkSubmit(event)" class="p-6 space-y-4">
+      <input type="hidden" id="link-field-id" value="">
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">タイトル <span class="text-red-500">*</span></label>
+        <input type="text" id="link-field-title" required placeholder="例: BNI Connect Global" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">URL <span class="text-red-500">*</span></label>
+        <input type="url" id="link-field-url" required placeholder="https://..." class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">カテゴリ</label>
+          <select id="link-field-category" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+            <option value="公式システム">公式システム</option>
+            <option value="リージョン">リージョン</option>
+            <option value="定例会・運営">定例会・運営</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">表示順 (小さい順)</label>
+          <input type="number" id="link-field-sort" value="0" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
+          <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i class="fa-solid fa-link"></i>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">説明・メモ</label>
+        <textarea id="link-field-description" rows="2" placeholder="用途や注意事項など" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeLinkModal()" class="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          キャンセル
+        </button>
+        <button type="submit" id="btn-save-link" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-check"></i>
+          <span>保存する</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

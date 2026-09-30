@@ -1,0 +1,277 @@
+<script>
+/**
+ * Chapter Links Module - View & CRUD Controller
+ */
+let chapterLinksData = [];
+let currentLinkCategory = 'ALL';
+
+function fetchChapterLinks() {
+  const container = document.getElementById('links-grid-container');
+  if (container) {
+    container.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+        <p class="text-xs font-bold">リンク情報を取得中...</p>
+      </div>
+    `;
+  }
+
+  ApiService.call('getChapterLinksApi')
+    .then(res => {
+      if (res && res.links) {
+        chapterLinksData = res.links;
+        renderChapterLinks();
+      } else {
+        showToast('リンク情報の取得に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Fetch chapter links error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+function filterLinksCategory(category) {
+  currentLinkCategory = category;
+  
+  // Update category pill styles
+  const pills = document.querySelectorAll('#links-category-filter .category-pill');
+  pills.forEach(pill => {
+    if (pill.getAttribute('data-category') === category) {
+      pill.className = 'category-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-sm';
+    } else {
+      pill.className = 'category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300';
+    }
+  });
+
+  renderChapterLinks();
+}
+
+function renderChapterLinks() {
+  const container = document.getElementById('links-grid-container');
+  if (!container) return;
+
+  const filtered = chapterLinksData.filter(item => {
+    if (currentLinkCategory === 'ALL') return true;
+    return item.category === currentLinkCategory;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+          <i class="fa-solid fa-link-slash text-xl"></i>
+        </div>
+        <p class="text-sm font-bold text-slate-600">登録されているリンクはありません</p>
+        <p class="text-xs text-slate-400 mt-1">「リンクを追加」ボタンから公式リンクを登録してください</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(link => {
+    const escapedTitle = Utils.escapeHtml(link.title || '');
+    const escapedUrl = Utils.escapeHtml(link.url || '');
+    const escapedDesc = Utils.escapeHtml(link.description || '');
+    const escapedCategory = Utils.escapeHtml(link.category || 'その他');
+    const iconClass = link.icon ? Utils.escapeHtml(link.icon) : 'fa-solid fa-link';
+    const linkId = Utils.escapeHtml(link.id || '');
+
+    // Display host name for clean aesthetics
+    let displayHost = '';
+    try {
+      const u = new URL(link.url);
+      displayHost = u.hostname;
+    } catch(e) {
+      displayHost = link.url;
+    }
+
+    html += `
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-slate-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+              <i class="${iconClass}"></i>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                ${escapedCategory}
+              </span>
+              <button onclick="openLinkModal('${linkId}')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors" title="編集">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+              <button onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" class="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors" title="削除">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 mb-1">
+            <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">
+              ${escapedTitle}
+            </a>
+          </h3>
+
+          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
+            ${escapedDesc || '説明なし'}
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+          <span class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[180px]">
+            <i class="fa-solid fa-globe text-[10px] mr-1"></i>${displayHost}
+          </span>
+          <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+            <span>開く</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function updateLinkIconPreview(val) {
+  const previewEl = document.getElementById('link-icon-preview');
+  if (previewEl) {
+    const iconClass = val.trim() || 'fa-solid fa-link';
+    previewEl.innerHTML = `<i class="${Utils.escapeHtml(iconClass)}"></i>`;
+  }
+}
+
+function openLinkModal(linkId = null) {
+  const modal = document.getElementById('modal-link-crud');
+  const container = document.getElementById('modal-link-container');
+  const titleEl = document.getElementById('modal-link-title');
+  const form = document.getElementById('form-link-crud');
+
+  if (!modal || !container || !form) return;
+
+  form.reset();
+  document.getElementById('link-field-id').value = '';
+  document.getElementById('link-field-sort').value = '0';
+  document.getElementById('link-field-icon').value = 'fa-solid fa-link';
+  updateLinkIconPreview('fa-solid fa-link');
+
+  if (linkId) {
+    const target = chapterLinksData.find(l => l.id === linkId);
+    if (target) {
+      if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>リンクを編集</span>`;
+      document.getElementById('link-field-id').value = target.id;
+      document.getElementById('link-field-title').value = target.title || '';
+      document.getElementById('link-field-url').value = target.url || '';
+      document.getElementById('link-field-category').value = target.category || '定例会・運営';
+      document.getElementById('link-field-description').value = target.description || '';
+      document.getElementById('link-field-icon').value = target.icon || 'fa-solid fa-link';
+      document.getElementById('link-field-sort').value = target.sort_order || '0';
+      updateLinkIconPreview(target.icon || 'fa-solid fa-link');
+    }
+  } else {
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
+  }
+
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    container.classList.remove('scale-95');
+    container.classList.add('scale-100');
+  }, 10);
+}
+
+function closeLinkModal() {
+  const modal = document.getElementById('modal-link-crud');
+  const container = document.getElementById('modal-link-container');
+  if (modal && container) {
+    container.classList.remove('scale-100');
+    container.classList.add('scale-95');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 150);
+  }
+}
+
+function handleLinkSubmit(event) {
+  event.preventDefault();
+  const id = document.getElementById('link-field-id').value.trim();
+  const title = document.getElementById('link-field-title').value.trim();
+  const url = document.getElementById('link-field-url').value.trim();
+  const category = document.getElementById('link-field-category').value;
+  const description = document.getElementById('link-field-description').value.trim();
+  const icon = document.getElementById('link-field-icon').value.trim() || 'fa-solid fa-link';
+  const sort_order = parseInt(document.getElementById('link-field-sort').value, 10) || 0;
+
+  if (!title || !url) {
+    showToast('タイトルとURLは必須です', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-link');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
+  }
+
+  const payload = {
+    id: id || null,
+    title,
+    url,
+    category,
+    description,
+    icon,
+    sort_order
+  };
+
+  ApiService.call('saveChapterLinkApi', payload)
+    .then(res => {
+      if (res && res.success !== false) {
+        showToast(res.message || 'リンクを保存しました', 'success');
+        closeLinkModal();
+        if (res.links) {
+          chapterLinksData = res.links;
+          renderChapterLinks();
+        } else {
+          fetchChapterLinks();
+        }
+      } else {
+        showToast(res.error || '保存に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Save link error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    })
+    .finally(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+    });
+}
+
+function deleteChapterLink(linkId, title) {
+  if (!confirm(`「${title}」を削除してもよろしいですか？`)) {
+    return;
+  }
+
+  ApiService.call('deleteChapterLinkApi', { id: linkId })
+    .then(res => {
+      if (res && res.success !== false) {
+        showToast('リンクを削除しました', 'success');
+        if (res.links) {
+          chapterLinksData = res.links;
+          renderChapterLinks();
+        } else {
+          fetchChapterLinks();
+        }
+      } else {
+        showToast(res.error || '削除に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Delete link error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+</script>

@@ -217,12 +217,30 @@ const ApiService = {
         };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getChapterLinksApi':
+      case 'getLinksApi':
+        return { url: '/api/links.php?action=list', method: 'GET' };
+      case 'saveChapterLinkApi':
+      case 'saveLinkApi':
+        return {
+          url: '/api/links.php?action=save',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterLinkApi':
+      case 'deleteLinkApi':
+        return {
+          url: '/api/links.php?action=delete',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getScheduledEmailsApi':
         return null;
       default:
         return null;
+
     }
   },
 

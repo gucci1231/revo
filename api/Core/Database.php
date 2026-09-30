@@ -126,10 +126,23 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS chapter_links (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                url TEXT NOT NULL,
+                category TEXT DEFAULT '定例会・運営',
+                description TEXT DEFAULT '',
+                icon TEXT DEFAULT 'fa-solid fa-link',
+                sort_order INTEGER DEFAULT 0,
+                created_at TEXT,
+                updated_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
         ");
 
         $this->seedDefaultEmailTemplates();
+        $this->seedDefaultLinks();
 
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN action_type TEXT DEFAULT ''");
@@ -389,6 +402,65 @@ class Database {
         }
     }
 
+    private function seedDefaultLinks(): void {
+        $now = date('Y/m/d H:i');
+        $defaults = [
+            [
+                'id' => 'LINK_BNI_CONNECT',
+                'title' => 'BNI Connect Global',
+                'url' => 'https://www.bniconnectglobal.com/login/',
+                'category' => '公式システム',
+                'description' => 'PALMSレポート、リファーラル入力、メンバープロフィール管理',
+                'icon' => 'fa-solid fa-globe',
+                'sort_order' => 1
+            ],
+            [
+                'id' => 'LINK_BNI_BUILDER',
+                'title' => 'BNI Business Builder',
+                'url' => 'https://www.bnibusinessbuilder.com/',
+                'category' => '公式システム',
+                'description' => '公式オンライントレーニング・CEU学習プラットフォーム',
+                'icon' => 'fa-solid fa-graduation-cap',
+                'sort_order' => 2
+            ],
+            [
+                'id' => 'LINK_KYOTO_EVENTS',
+                'title' => '京都シティセントラル イベント・研修',
+                'url' => 'https://bni-ck.com/ja/events',
+                'category' => 'リージョン',
+                'description' => 'リージョン主催のトレーニング・イベント日程一覧',
+                'icon' => 'fa-solid fa-calendar-check',
+                'sort_order' => 3
+            ],
+            [
+                'id' => 'LINK_KYOTO_OFFICIAL',
+                'title' => 'BNI京都シティセントラル 公式',
+                'url' => 'https://bni-ck.com/ja/index',
+                'category' => 'リージョン',
+                'description' => 'リージョン公式サイト・チャプター一覧',
+                'icon' => 'fa-solid fa-building-columns',
+                'sort_order' => 4
+            ]
+        ];
+
+        foreach ($defaults as $link) {
+            $exists = $this->fetchColumn("SELECT COUNT(*) FROM chapter_links WHERE id = ?", [$link['id']]);
+            if ((int)$exists === 0) {
+                $this->insert('chapter_links', [
+                    'id' => $link['id'],
+                    'title' => $link['title'],
+                    'url' => $link['url'],
+                    'category' => $link['category'],
+                    'description' => $link['description'],
+                    'icon' => $link['icon'],
+                    'sort_order' => $link['sort_order'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+            }
+        }
+    }
+
     public function transaction(callable $callback): mixed {
         $this->pdo->beginTransaction();
         try {
@@ -401,3 +473,4 @@ class Database {
         }
     }
 }
+

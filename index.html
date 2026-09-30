@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>REvo 定例会ビジター管理 2.0 (完全Web運用システム)</title>
+  <title>REvo OS (BNI REvoチャプター総合管理システム)</title>
   <!-- SEO / Bot Index Prevention -->
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
   <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
@@ -342,6 +342,23 @@ body {
   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
 }
 
+.drawer-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  padding: 8px 14px 4px 14px;
+  margin-top: 6px;
+  white-space: nowrap;
+  user-select: none;
+}
+.drawer-section-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 6px 8px;
+}
+
 .drawer-nav-item {
   position: relative;
   display: flex;
@@ -465,6 +482,12 @@ body {
   }
   body.sidebar-collapsed .drawer-action-btn i {
     margin: 0 !important;
+  }
+  body.sidebar-collapsed .drawer-section-title {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-section-divider {
+    margin: 6px 4px;
   }
   body.sidebar-collapsed .drawer-nav-list {
     padding: 12px 8px;
@@ -6264,7 +6287,7 @@ select.form-input, select.form-select {
     <div class="drawer-header">
       <div class="drawer-brand">
         <i class="fa-solid fa-layer-group" style="color: var(--primary-accent);"></i>
-        <span class="drawer-brand-text">REvo ビジター管理</span>
+        <span class="drawer-brand-text">REvo OS</span>
       </div>
       <button class="btn-drawer-close" onclick="closeLeftDrawer()" title="閉じる">
         <i class="fa-solid fa-xmark"></i>
@@ -6275,31 +6298,57 @@ select.form-input, select.form-select {
     </div>
 
     <div class="drawer-nav-list">
+      <!-- ビジター管理セクション -->
+      <div class="drawer-section-title">ビジター管理</div>
       <button class="drawer-nav-item active" id="drawer-item-dashboard" onclick="switchTab('dashboard')" title="ダッシュボード" data-tooltip="ダッシュボード">
         <i class="fa-solid fa-chart-pie"></i> <span class="nav-label">ダッシュボード</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="アクション管理" data-tooltip="アクション管理">
+      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="要対応フォロー" data-tooltip="要対応フォロー">
+        <i class="fa-solid fa-fire"></i> <span class="nav-label">要対応フォロー</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="ビジター・ゲスト名簿" data-tooltip="ビジター・ゲスト名簿">
+        <i class="fa-solid fa-users"></i> <span class="nav-label">ビジター・ゲスト名簿</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-actions" onclick="switchTab('actions')" title="全アクション管理" data-tooltip="全アクション管理">
         <i class="fa-solid fa-bullseye"></i> <span class="nav-label">アクション管理</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-priority-follow" onclick="switchTab('priority-follow')" title="最優先フォロー" data-tooltip="最優先フォロー">
-        <i class="fa-solid fa-fire"></i> <span class="nav-label">最優先フォロー</span>
+      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定" data-tooltip="メール送信予定">
+        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-visitors" onclick="switchTab('visitors')" title="全ビジター統合管理名簿" data-tooltip="全ビジター統合管理名簿">
-        <i class="fa-solid fa-users"></i> <span class="nav-label">全ビジター統合管理名簿</span>
+
+      <!-- メンバー・PALMSセクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">メンバー・PALMS</div>
+      <button class="drawer-nav-item" id="drawer-item-palms-ranking" onclick="switchTab('palms-ranking')" title="PALMSランキング" data-tooltip="PALMSランキング">
+        <i class="fa-solid fa-trophy"></i> <span class="nav-label">PALMSランキング</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定一覧" data-tooltip="メール送信予定一覧">
-        <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定一覧</span>
+
+      <!-- 研修・イベントセクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">研修・イベント</div>
+      <button class="drawer-nav-item" id="drawer-item-training" onclick="switchTab('training')" title="トレーニング日程" data-tooltip="トレーニング日程">
+        <i class="fa-solid fa-graduation-cap"></i> <span class="nav-label">トレーニング日程</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メールテンプレート" data-tooltip="メールテンプレート">
+      <button class="drawer-nav-item" id="drawer-item-schedules" onclick="switchTab('schedules')" title="イベント・出欠" data-tooltip="イベント・出欠">
+        <i class="fa-solid fa-calendar-days"></i> <span class="nav-label">イベント・出欠</span>
+      </button>
+
+      <!-- 公式リンク集セクション -->
+      <div class="drawer-section-divider"></div>
+      <div class="drawer-section-title">リンク・設定</div>
+      <button class="drawer-nav-item" id="drawer-item-links" onclick="switchTab('links')" title="チャプター公式リンク" data-tooltip="チャプター公式リンク">
+        <i class="fa-solid fa-link"></i> <span class="nav-label">公式リンク集</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-email-templates" onclick="switchTab('email-templates')" title="メール文面テンプレート" data-tooltip="メール文面テンプレート">
         <i class="fa-solid fa-envelope-open-text"></i> <span class="nav-label">メールテンプレート</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・メンバー管理" data-tooltip="各種設定・メンバー管理">
-        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・メンバー管理</span>
+      <button class="drawer-nav-item" id="drawer-item-settings" onclick="switchTab('settings')" title="各種設定・目標" data-tooltip="各種設定・目標">
+        <i class="fa-solid fa-gear"></i> <span class="nav-label">各種設定・目標</span>
       </button>
     </div>
 
     <div class="drawer-footer">
-      <div class="drawer-footer-text">REvo Chapter Visitor Host v2.0</div>
+      <div class="drawer-footer-text">BNI REvo Chapter OS v2.1</div>
     </div>
   </aside>
 
@@ -6316,7 +6365,7 @@ select.form-input, select.form-select {
         <div class="flex items-center gap-1.5 sm:gap-2 min-w-0">
           <a href="#dashboard" onclick="switchTab('dashboard')" class="logo-title text-sm sm:text-base font-extrabold text-slate-900 tracking-tight hover:text-blue-600 transition-colors shrink-0 flex items-center gap-1.5 no-underline">
             <i class="fa-solid fa-layer-group text-blue-600"></i>
-            <span>REvo</span>
+            <span>REvo OS</span>
           </a>
           <span class="text-slate-300 font-bold shrink-0 text-xs sm:text-sm">/</span>
           <div id="header-current-page" class="flex items-center gap-1.5 min-w-0 bg-slate-100/80 border border-slate-200/80 px-2 py-0.5 rounded-lg">
@@ -6340,6 +6389,9 @@ select.form-input, select.form-select {
       </button>
       <button class="tab-btn" id="tab-btn-visitors" onclick="switchTab('visitors')">
         <i class="fa-solid fa-users"></i> ビジター全一覧
+      </button>
+      <button class="tab-btn" id="tab-btn-links" onclick="switchTab('links')">
+        <i class="fa-solid fa-link"></i> 公式リンク集
       </button>
       <button class="tab-btn" id="tab-btn-email-schedule" onclick="switchTab('email-schedule')">
         <i class="fa-solid fa-clock"></i> メール送信予定一覧
@@ -9367,6 +9419,122 @@ select.form-input, select.form-select {
 
 </div>
 
+    <!-- Chapter Links Management View -->
+<div id="view-links" class="view-content" style="display: none;">
+  <!-- Header / Action Bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+    <div>
+      <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+        <i class="fa-solid fa-link text-blue-600"></i>
+        <span>チャプター公式リンク集</span>
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1">
+        BNI Connect、Business Builder、各種研修や定例会運営に必要な公式リンク一覧
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openLinkModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer">
+        <i class="fa-solid fa-plus"></i>
+        <span>リンクを追加</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="links-category-filter">
+    <button onclick="filterLinksCategory('ALL')" class="category-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-sm" data-category="ALL">
+      すべて
+    </button>
+    <button onclick="filterLinksCategory('公式システム')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="公式システム">
+      公式システム
+    </button>
+    <button onclick="filterLinksCategory('リージョン')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="リージョン">
+      リージョン
+    </button>
+    <button onclick="filterLinksCategory('定例会・運営')" class="category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300" data-category="定例会・運営">
+      定例会・運営
+    </button>
+  </div>
+
+  <!-- Links Grid Container -->
+  <div id="links-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Populated by JavaScript -->
+    <div class="col-span-full py-12 text-center text-slate-400">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <p class="text-xs">リンク情報を取得中...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Link Modal (Add / Edit) -->
+<div id="modal-link-crud" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs transition-opacity duration-200" style="display: none;">
+  <div class="bg-white rounded-2xl max-w-lg w-full mx-4 shadow-xl border border-slate-200 overflow-hidden transform transition-transform duration-200 scale-95" id="modal-link-container">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 id="modal-link-title" class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-link text-blue-600"></i>
+        <span>リンクを追加</span>
+      </h3>
+      <button type="button" onclick="closeLinkModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+    <form id="form-link-crud" onsubmit="handleLinkSubmit(event)" class="p-6 space-y-4">
+      <input type="hidden" id="link-field-id" value="">
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">タイトル <span class="text-red-500">*</span></label>
+        <input type="text" id="link-field-title" required placeholder="例: BNI Connect Global" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">URL <span class="text-red-500">*</span></label>
+        <input type="url" id="link-field-url" required placeholder="https://..." class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">カテゴリ</label>
+          <select id="link-field-category" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+            <option value="公式システム">公式システム</option>
+            <option value="リージョン">リージョン</option>
+            <option value="定例会・運営">定例会・運営</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">表示順 (小さい順)</label>
+          <input type="number" id="link-field-sort" value="0" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
+          <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i class="fa-solid fa-link"></i>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">説明・メモ</label>
+        <textarea id="link-field-description" rows="2" placeholder="用途や注意事項など" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeLinkModal()" class="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+          キャンセル
+        </button>
+        <button type="submit" id="btn-save-link" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-sm transition-all flex items-center gap-2">
+          <i class="fa-solid fa-check"></i>
+          <span>保存する</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
     <!-- Modal: フォロー方針（時期尚早 / 関係維持）リマインド設定モーダル -->
 <div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
   <div class="modal-card" style="max-width: 480px;">
@@ -9706,12 +9874,30 @@ const ApiService = {
         };
       case 'getPriorityFollowDataApi':
         return { url: '/api/visitors.php?action=list', method: 'GET' };
+      case 'getChapterLinksApi':
+      case 'getLinksApi':
+        return { url: '/api/links.php?action=list', method: 'GET' };
+      case 'saveChapterLinkApi':
+      case 'saveLinkApi':
+        return {
+          url: '/api/links.php?action=save',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterLinkApi':
+      case 'deleteLinkApi':
+        return {
+          url: '/api/links.php?action=delete',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getScheduledEmailsApi':
         return null;
       default:
         return null;
+
     }
   },
 
@@ -11602,7 +11788,7 @@ window.CelebrationEffect = (function() {
       } else if (hash.includes('period') || hash.includes('term')) {
         setTimeout(() => { if (typeof switchSettingsSubTab === 'function') switchSettingsSubTab('period'); }, 50);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports'].includes(hash)) {
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'palms-ranking', 'training', 'schedules'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
     }
   }
@@ -11692,6 +11878,10 @@ window.CelebrationEffect = (function() {
     'member-dashboard': { title: 'メンバー別ダッシュボード', icon: 'fa-solid fa-id-badge' },
     'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
+    'links': { title: 'チャプター公式リンク集', icon: 'fa-solid fa-link' },
+    'palms-ranking': { title: 'PALMSランキング (開発中)', icon: 'fa-solid fa-trophy' },
+    'training': { title: 'トレーニング・研修日程 (開発中)', icon: 'fa-solid fa-graduation-cap' },
+    'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
     'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
@@ -11701,7 +11891,7 @@ window.CelebrationEffect = (function() {
   };
 
   function updateHeaderCurrentPage(tabName, customTitle = null, customIcon = null) {
-    const info = PAGE_NAV_INFO[tabName] || { title: 'ビジター管理', icon: 'fa-solid fa-layer-group' };
+    const info = PAGE_NAV_INFO[tabName] || { title: 'REvo OS', icon: 'fa-solid fa-layer-group' };
     const titleEl = document.getElementById('header-page-title');
     const iconEl = document.getElementById('header-page-icon');
     const badgeEl = document.getElementById('header-current-page');
@@ -11716,6 +11906,16 @@ window.CelebrationEffect = (function() {
 
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
+    if (['palms-ranking', 'training', 'schedules'].includes(tabName)) {
+      const labels = {
+        'palms-ranking': 'メンバーPALMSランキング機能（BNI Connect自動集計）',
+        'training': '京都シティセントラル トレーニング・イベント自動取得',
+        'schedules': '定期イベント出欠＆調整さん自動リマインダー'
+      };
+      showToast(`「${labels[tabName]}」は次フェーズにてリリース予定です`, 'info');
+      return;
+    }
+
     if (tabName !== 'visitor-detail') {
       previousTabBeforeDetail = tabName;
       currentVdVisitorId = null;
@@ -11723,7 +11923,7 @@ window.CelebrationEffect = (function() {
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -11759,6 +11959,8 @@ window.CelebrationEffect = (function() {
       fetchPriorityFollowData(true);
     } else if (tabName === 'visitors') {
       fetchAllVisitorsData(true);
+    } else if (tabName === 'links') {
+      if (typeof fetchChapterLinks === 'function') fetchChapterLinks();
     } else if (tabName === 'hearings') {
       fetchHearingListData(true);
     } else if (tabName === 'email-schedule') {
@@ -21354,6 +21556,284 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
   });
 </script>
 
+<script>
+/**
+ * Chapter Links Module - View & CRUD Controller
+ */
+let chapterLinksData = [];
+let currentLinkCategory = 'ALL';
+
+function fetchChapterLinks() {
+  const container = document.getElementById('links-grid-container');
+  if (container) {
+    container.innerHTML = `
+      <div class="col-span-full py-12 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+        <p class="text-xs font-bold">リンク情報を取得中...</p>
+      </div>
+    `;
+  }
+
+  ApiService.call('getChapterLinksApi')
+    .then(res => {
+      if (res && res.links) {
+        chapterLinksData = res.links;
+        renderChapterLinks();
+      } else {
+        showToast('リンク情報の取得に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Fetch chapter links error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+function filterLinksCategory(category) {
+  currentLinkCategory = category;
+  
+  // Update category pill styles
+  const pills = document.querySelectorAll('#links-category-filter .category-pill');
+  pills.forEach(pill => {
+    if (pill.getAttribute('data-category') === category) {
+      pill.className = 'category-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-sm';
+    } else {
+      pill.className = 'category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300';
+    }
+  });
+
+  renderChapterLinks();
+}
+
+function renderChapterLinks() {
+  const container = document.getElementById('links-grid-container');
+  if (!container) return;
+
+  const filtered = chapterLinksData.filter(item => {
+    if (currentLinkCategory === 'ALL') return true;
+    return item.category === currentLinkCategory;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+          <i class="fa-solid fa-link-slash text-xl"></i>
+        </div>
+        <p class="text-sm font-bold text-slate-600">登録されているリンクはありません</p>
+        <p class="text-xs text-slate-400 mt-1">「リンクを追加」ボタンから公式リンクを登録してください</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(link => {
+    const escapedTitle = Utils.escapeHtml(link.title || '');
+    const escapedUrl = Utils.escapeHtml(link.url || '');
+    const escapedDesc = Utils.escapeHtml(link.description || '');
+    const escapedCategory = Utils.escapeHtml(link.category || 'その他');
+    const iconClass = link.icon ? Utils.escapeHtml(link.icon) : 'fa-solid fa-link';
+    const linkId = Utils.escapeHtml(link.id || '');
+
+    // Display host name for clean aesthetics
+    let displayHost = '';
+    try {
+      const u = new URL(link.url);
+      displayHost = u.hostname;
+    } catch(e) {
+      displayHost = link.url;
+    }
+
+    html += `
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-slate-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+        <div>
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+              <i class="${iconClass}"></i>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                ${escapedCategory}
+              </span>
+              <button onclick="openLinkModal('${linkId}')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors" title="編集">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+              <button onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" class="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors" title="削除">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 mb-1">
+            <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">
+              ${escapedTitle}
+            </a>
+          </h3>
+
+          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
+            ${escapedDesc || '説明なし'}
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+          <span class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[180px]">
+            <i class="fa-solid fa-globe text-[10px] mr-1"></i>${displayHost}
+          </span>
+          <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+            <span>開く</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function updateLinkIconPreview(val) {
+  const previewEl = document.getElementById('link-icon-preview');
+  if (previewEl) {
+    const iconClass = val.trim() || 'fa-solid fa-link';
+    previewEl.innerHTML = `<i class="${Utils.escapeHtml(iconClass)}"></i>`;
+  }
+}
+
+function openLinkModal(linkId = null) {
+  const modal = document.getElementById('modal-link-crud');
+  const container = document.getElementById('modal-link-container');
+  const titleEl = document.getElementById('modal-link-title');
+  const form = document.getElementById('form-link-crud');
+
+  if (!modal || !container || !form) return;
+
+  form.reset();
+  document.getElementById('link-field-id').value = '';
+  document.getElementById('link-field-sort').value = '0';
+  document.getElementById('link-field-icon').value = 'fa-solid fa-link';
+  updateLinkIconPreview('fa-solid fa-link');
+
+  if (linkId) {
+    const target = chapterLinksData.find(l => l.id === linkId);
+    if (target) {
+      if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>リンクを編集</span>`;
+      document.getElementById('link-field-id').value = target.id;
+      document.getElementById('link-field-title').value = target.title || '';
+      document.getElementById('link-field-url').value = target.url || '';
+      document.getElementById('link-field-category').value = target.category || '定例会・運営';
+      document.getElementById('link-field-description').value = target.description || '';
+      document.getElementById('link-field-icon').value = target.icon || 'fa-solid fa-link';
+      document.getElementById('link-field-sort').value = target.sort_order || '0';
+      updateLinkIconPreview(target.icon || 'fa-solid fa-link');
+    }
+  } else {
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
+  }
+
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    container.classList.remove('scale-95');
+    container.classList.add('scale-100');
+  }, 10);
+}
+
+function closeLinkModal() {
+  const modal = document.getElementById('modal-link-crud');
+  const container = document.getElementById('modal-link-container');
+  if (modal && container) {
+    container.classList.remove('scale-100');
+    container.classList.add('scale-95');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 150);
+  }
+}
+
+function handleLinkSubmit(event) {
+  event.preventDefault();
+  const id = document.getElementById('link-field-id').value.trim();
+  const title = document.getElementById('link-field-title').value.trim();
+  const url = document.getElementById('link-field-url').value.trim();
+  const category = document.getElementById('link-field-category').value;
+  const description = document.getElementById('link-field-description').value.trim();
+  const icon = document.getElementById('link-field-icon').value.trim() || 'fa-solid fa-link';
+  const sort_order = parseInt(document.getElementById('link-field-sort').value, 10) || 0;
+
+  if (!title || !url) {
+    showToast('タイトルとURLは必須です', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-link');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
+  }
+
+  const payload = {
+    id: id || null,
+    title,
+    url,
+    category,
+    description,
+    icon,
+    sort_order
+  };
+
+  ApiService.call('saveChapterLinkApi', payload)
+    .then(res => {
+      if (res && res.success !== false) {
+        showToast(res.message || 'リンクを保存しました', 'success');
+        closeLinkModal();
+        if (res.links) {
+          chapterLinksData = res.links;
+          renderChapterLinks();
+        } else {
+          fetchChapterLinks();
+        }
+      } else {
+        showToast(res.error || '保存に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Save link error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    })
+    .finally(() => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+    });
+}
+
+function deleteChapterLink(linkId, title) {
+  if (!confirm(`「${title}」を削除してもよろしいですか？`)) {
+    return;
+  }
+
+  ApiService.call('deleteChapterLinkApi', { id: linkId })
+    .then(res => {
+      if (res && res.success !== false) {
+        showToast('リンクを削除しました', 'success');
+        if (res.links) {
+          chapterLinksData = res.links;
+          renderChapterLinks();
+        } else {
+          fetchChapterLinks();
+        }
+      } else {
+        showToast(res.error || '削除に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Delete link error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+</script>
+
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
@@ -21427,7 +21907,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       setTimeout(() => {
         if (typeof initMemberDashboard === 'function') initMemberDashboard(targetMember);
       }, 50);
-    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings'].includes(hash)) {
+    } else if (hash && ['dashboard', 'actions', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'palms-ranking', 'training', 'schedules'].includes(hash)) {
       switchTab(hash, false);
     } else if (typeof initialVisitorId !== 'undefined' && initialVisitorId) {
       openVisitorDetailView(initialVisitorId, true);

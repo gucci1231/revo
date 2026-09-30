@@ -282,6 +282,23 @@ body {
   box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2);
 }
 
+.drawer-section-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  padding: 8px 14px 4px 14px;
+  margin-top: 6px;
+  white-space: nowrap;
+  user-select: none;
+}
+.drawer-section-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 6px 8px;
+}
+
 .drawer-nav-item {
   position: relative;
   display: flex;
@@ -405,6 +422,12 @@ body {
   }
   body.sidebar-collapsed .drawer-action-btn i {
     margin: 0 !important;
+  }
+  body.sidebar-collapsed .drawer-section-title {
+    display: none;
+  }
+  body.sidebar-collapsed .drawer-section-divider {
+    margin: 6px 4px;
   }
   body.sidebar-collapsed .drawer-nav-list {
     padding: 12px 8px;
