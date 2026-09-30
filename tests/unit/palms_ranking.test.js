@@ -298,6 +298,8 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('data-preset-key="1month"'), true);
     assert.strictEqual(indexHtml.includes('data-preset-key="2months"'), true);
     assert.strictEqual(indexHtml.includes('data-preset-key="3months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="term_2months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="term_3months"'), true);
     assert.strictEqual(indexHtml.includes('data-preset-key="6months"'), true);
     assert.strictEqual(indexHtml.includes('data-preset-key="custom"'), true);
 

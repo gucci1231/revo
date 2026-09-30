@@ -12914,6 +12914,14 @@ select.form-input, select.form-select {
 
           <div class="hidden md:block my-1.5 border-t border-slate-200/70"></div>
           <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider hidden md:block">期別・通算</div>
+          <button type="button" onclick="selectPalmsDatePreset('term_2months')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="term_2months">
+            <span>2ヶ月</span>
+            <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
+          </button>
+          <button type="button" onclick="selectPalmsDatePreset('term_3months')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="term_3months">
+            <span>3ヶ月</span>
+            <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
+          </button>
           <button type="button" onclick="selectPalmsDatePreset('6months')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="6months">
             <span>半年 (直近期)</span>
             <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -26666,6 +26674,10 @@ function updatePalmsPeriodDisplayLabel(s, e) {
     labelEl.textContent = `5月 (${sFmt}〜${eFmt})`;
   } else if (s === '2026-04-01' && e === '2026-04-30') {
     labelEl.textContent = `4月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-08-01' && e === '2026-09-30') {
+    labelEl.textContent = `2ヶ月 (${sFmt}〜${eFmt})`;
+  } else if (s === '2026-07-01' && e === '2026-09-30') {
+    labelEl.textContent = `3ヶ月 (${sFmt}〜${eFmt})`;
   } else if (s === '2026-04-01' && e === '2026-09-30') {
     labelEl.textContent = `半年: 直近第2期 (${sFmt}〜${eFmt})`;
   } else if (s === '2024-10-01' && e === '2026-09-30') {
@@ -26681,6 +26693,8 @@ function updatePalmsPeriodDisplayLabel(s, e) {
     if (preset === '1month') labelEl.textContent = `先月: 9月 (${sFmt}〜${eFmt})`;
     else if (preset === '2months') labelEl.textContent = `先々月: 8月 (${sFmt}〜${eFmt})`;
     else if (preset === '3months') labelEl.textContent = `7月 (${sFmt}〜${eFmt})`;
+    else if (preset === 'term_2months') labelEl.textContent = `2ヶ月 (${sFmt}〜${eFmt})`;
+    else if (preset === 'term_3months') labelEl.textContent = `3ヶ月 (${sFmt}〜${eFmt})`;
     else if (preset === '6months') labelEl.textContent = `半年 (${sFmt}〜${eFmt})`;
     else if (preset === 'all') labelEl.textContent = `全期間 (${sFmt}〜${eFmt})`;
     else labelEl.textContent = `${sFmt} 〜 ${eFmt}`;
@@ -26714,6 +26728,10 @@ function calcPalmsPresetRange(presetKey) {
     return { start: '2026-05-01', end: '2026-05-31' };
   } else if (presetKey === 'month_4') {
     return { start: '2026-04-01', end: '2026-04-30' };
+  } else if (presetKey === 'term_2months' || presetKey === 'span_2months') {
+    return { start: '2026-08-01', end: '2026-09-30' };
+  } else if (presetKey === 'term_3months' || presetKey === 'span_3months') {
+    return { start: '2026-07-01', end: '2026-09-30' };
   } else if (presetKey === '6months') {
     return { start: '2026-04-01', end: '2026-09-30' };
   } else if (presetKey === 'all') {
@@ -26734,6 +26752,8 @@ function detectPalmsActivePreset(s, e) {
   if (s === '2026-06-01' && e === '2026-06-30') return 'month_6';
   if (s === '2026-05-01' && e === '2026-05-31') return 'month_5';
   if (s === '2026-04-01' && e === '2026-04-30') return 'month_4';
+  if (s === '2026-08-01' && e === '2026-09-30') return 'term_2months';
+  if (s === '2026-07-01' && e === '2026-09-30') return 'term_3months';
   if (s === '2026-04-01' && e === '2026-09-30') return '6months';
   if (s === '2024-10-01' && e === '2026-09-30') return 'all';
 
