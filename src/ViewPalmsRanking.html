@@ -7,7 +7,7 @@
         <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
           <i class="fa-solid fa-users-viewfinder text-sm"></i>
         </div>
-        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+        <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
           メンバー成長 & PALMS管理
         </h2>
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
@@ -17,7 +17,7 @@
           全員PPW 2.0へ
         </span>
       </div>
-      <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
+      <p id="palms-view-subtitle" class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
         評価ではなく改善のための指標。伴走フォロー・適切な目標設定・行動共有でチャプター全員の成長を推進
       </p>
     </div>
@@ -38,31 +38,7 @@
     </div>
   </div>
 
-  <!-- Member Management Sitemap Sub-Navigation Tabs (Apple Minimal Segmented Tabs) -->
-  <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-6 border-b border-slate-200/80 scrollbar-none" id="palms-subnav-tabs">
-    <button type="button" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs" data-subtab="growth-dashboard">
-      <i class="fa-solid fa-chart-line text-blue-400"></i>
-      <span>成長ダッシュボード</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="ppw-rpw">
-      <i class="fa-solid fa-fire text-amber-500"></i>
-      <span>RPW & PPW改善</span>
-      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-black">全員2.0へ</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('traffic-lights')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="traffic-lights">
-      <i class="fa-solid fa-traffic-light text-emerald-500"></i>
-      <span>個人トラフィックライト</span>
-      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-black">100点</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('palms-ranking')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="palms-ranking">
-      <i class="fa-solid fa-trophy text-amber-500"></i>
-      <span>PALMSランキング</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="chapter-traffic">
-      <i class="fa-solid fa-earth-americas text-indigo-500"></i>
-      <span>チャプタートラフィックライト</span>
-    </button>
-  </div>
+
 
   <!-- Legacy Compatibility Controls (Preserved for tests & fallback) -->
   <div class="hidden" aria-hidden="true">

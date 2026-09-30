@@ -2489,17 +2489,17 @@ let currentPpwFilterTier = 'urgent';
 function switchPalmsSubTab(subTabName) {
   currentPalmsSubTab = subTabName;
 
-  // 1. Update Sub-Nav Buttons
+  // 1. Update Drawer Navigation Items & Subview Visibility
   const subNavTabs = ['growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic'];
   subNavTabs.forEach(t => {
-    const btn = document.querySelector(`.palms-subnav-tab[data-subtab="${t}"]`);
+    const drawerItem = document.getElementById('drawer-item-' + t);
     const view = document.getElementById(`palms-subview-${t}`);
 
-    if (btn) {
+    if (drawerItem) {
       if (t === subTabName) {
-        btn.className = 'palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs';
+        drawerItem.classList.add('active');
       } else {
-        btn.className = 'palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300';
+        drawerItem.classList.remove('active');
       }
     }
 
@@ -2511,6 +2511,37 @@ function switchPalmsSubTab(subTabName) {
       }
     }
   });
+
+  // 2. Dynamic Title & Subtitle updates
+  const metaInfo = {
+    'growth-dashboard': {
+      title: '成長ダッシュボード',
+      subtitle: 'チャプター全体の成長トレンド・期別推移・主要KPIのリアルタイム集計'
+    },
+    'ppw-rpw': {
+      title: 'RPW & PPW改善ハブ',
+      subtitle: '数字を評価ではなく改善に使い、全員でPPW 2.0000のラインへ伴走支援'
+    },
+    'traffic-lights': {
+      title: '個人トラフィックライト',
+      subtitle: 'BNI公式新基準（100点満点）による健全度診断・7大指標の内訳と処方箋'
+    },
+    'palms-ranking': {
+      title: 'PALMSランキング',
+      subtitle: '定例会スライド発表・表彰に向けた詳細実績集計と週次提出データ'
+    },
+    'chapter-traffic': {
+      title: 'チャプタートラフィックライト',
+      subtitle: 'チャプター規模・更新率・出席率・RPW・ビジター比率の総合健全度'
+    }
+  };
+
+  const titleEl = document.getElementById('palms-view-title');
+  const subtitleEl = document.getElementById('palms-view-subtitle');
+  if (metaInfo[subTabName]) {
+    if (titleEl) titleEl.textContent = metaInfo[subTabName].title;
+    if (subtitleEl) subtitleEl.textContent = metaInfo[subTabName].subtitle;
+  }
 
   // 2. Trigger view-specific re-renders & Chart.js resizes
   if (subTabName === 'growth-dashboard') {

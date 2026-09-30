@@ -6,14 +6,15 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
   const rootDir = path.resolve(__dirname, '../../');
   const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
-  it('verifies all 5 Member Management Sitemap Subviews and navigation tabs exist in index.html', () => {
-    // Sub-navigation tabs container
-    assert.strictEqual(indexHtml.includes('id="palms-subnav-tabs"'), true);
-    assert.strictEqual(indexHtml.includes('data-subtab="growth-dashboard"'), true);
-    assert.strictEqual(indexHtml.includes('data-subtab="ppw-rpw"'), true);
-    assert.strictEqual(indexHtml.includes('data-subtab="traffic-lights"'), true);
-    assert.strictEqual(indexHtml.includes('data-subtab="palms-ranking"'), true);
-    assert.strictEqual(indexHtml.includes('data-subtab="chapter-traffic"'), true);
+  it('verifies all 5 Member Management items exist in side drawer menu and subviews exist in index.html', () => {
+    // Side drawer navigation items requested by user
+    assert.strictEqual(indexHtml.includes('id="drawer-item-growth-dashboard"'), true);
+    assert.strictEqual(indexHtml.includes('id="drawer-item-ppw-rpw"'), true);
+    assert.strictEqual(indexHtml.includes('全員2.0へ'), true);
+    assert.strictEqual(indexHtml.includes('id="drawer-item-traffic-lights"'), true);
+    assert.strictEqual(indexHtml.includes('100点'), true);
+    assert.strictEqual(indexHtml.includes('id="drawer-item-palms-ranking"'), true);
+    assert.strictEqual(indexHtml.includes('id="drawer-item-chapter-traffic"'), true);
 
     // 5 Subviews HTML containers
     assert.strictEqual(indexHtml.includes('id="palms-subview-growth-dashboard"'), true);

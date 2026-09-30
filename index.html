@@ -8257,11 +8257,31 @@ select.form-input, select.form-select {
         <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定</span>
       </button>
 
-      <!-- メンバー管理・PALMSセクション -->
+      <!-- メンバー管理セクション -->
       <div class="drawer-section-divider"></div>
       <div class="drawer-section-title">メンバー管理</div>
-      <button class="drawer-nav-item" id="drawer-item-palms-ranking" onclick="switchTab('palms-ranking')" title="PALMSランキング・メンバー成長" data-tooltip="PALMSランキング・メンバー成長">
-        <i class="fa-solid fa-trophy"></i> <span class="nav-label">メンバー成長・PALMS</span>
+      <button class="drawer-nav-item" id="drawer-item-growth-dashboard" onclick="switchTab('growth-dashboard')" title="成長ダッシュボード" data-tooltip="成長ダッシュボード">
+        <i class="fa-solid fa-chart-line text-blue-500"></i> <span class="nav-label">成長ダッシュボード</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-ppw-rpw" onclick="switchTab('ppw-rpw')" title="RPW & PPW改善" data-tooltip="RPW & PPW改善">
+        <i class="fa-solid fa-fire text-amber-500"></i>
+        <span class="nav-label flex items-center justify-between flex-1 gap-1">
+          <span>RPW & PPW改善</span>
+          <span class="text-3xs px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-black shrink-0">全員2.0へ</span>
+        </span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-traffic-lights" onclick="switchTab('traffic-lights')" title="個人トラフィックライト" data-tooltip="個人トラフィックライト">
+        <i class="fa-solid fa-traffic-light text-emerald-500"></i>
+        <span class="nav-label flex items-center justify-between flex-1 gap-1">
+          <span>個人トラフィックライト</span>
+          <span class="text-3xs px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-black shrink-0">100点</span>
+        </span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-palms-ranking" onclick="switchTab('palms-ranking')" title="PALMSランキング" data-tooltip="PALMSランキング">
+        <i class="fa-solid fa-trophy"></i> <span class="nav-label">PALMSランキング</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-chapter-traffic" onclick="switchTab('chapter-traffic')" title="チャプタートラフィックライト" data-tooltip="チャプタートラフィックライト">
+        <i class="fa-solid fa-earth-americas text-indigo-500"></i> <span class="nav-label">チャプタートラフィックライト</span>
       </button>
 
       <!-- 研修・イベント・定例会セクション -->
@@ -11488,7 +11508,7 @@ select.form-input, select.form-select {
         <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
           <i class="fa-solid fa-users-viewfinder text-sm"></i>
         </div>
-        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+        <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
           メンバー成長 & PALMS管理
         </h2>
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
@@ -11498,7 +11518,7 @@ select.form-input, select.form-select {
           全員PPW 2.0へ
         </span>
       </div>
-      <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
+      <p id="palms-view-subtitle" class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
         評価ではなく改善のための指標。伴走フォロー・適切な目標設定・行動共有でチャプター全員の成長を推進
       </p>
     </div>
@@ -11519,31 +11539,7 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- Member Management Sitemap Sub-Navigation Tabs (Apple Minimal Segmented Tabs) -->
-  <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-6 border-b border-slate-200/80 scrollbar-none" id="palms-subnav-tabs">
-    <button type="button" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs" data-subtab="growth-dashboard">
-      <i class="fa-solid fa-chart-line text-blue-400"></i>
-      <span>成長ダッシュボード</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="ppw-rpw">
-      <i class="fa-solid fa-fire text-amber-500"></i>
-      <span>RPW & PPW改善</span>
-      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-black">全員2.0へ</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('traffic-lights')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="traffic-lights">
-      <i class="fa-solid fa-traffic-light text-emerald-500"></i>
-      <span>個人トラフィックライト</span>
-      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-black">100点</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('palms-ranking')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="palms-ranking">
-      <i class="fa-solid fa-trophy text-amber-500"></i>
-      <span>PALMSランキング</span>
-    </button>
-    <button type="button" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="chapter-traffic">
-      <i class="fa-solid fa-earth-americas text-indigo-500"></i>
-      <span>チャプタートラフィックライト</span>
-    </button>
-  </div>
+
 
   <!-- Legacy Compatibility Controls (Preserved for tests & fallback) -->
   <div class="hidden" aria-hidden="true">
@@ -15494,7 +15490,7 @@ window.CelebrationEffect = (function() {
           }
         }, 300);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'palms-ranking', 'lottery', 'training', 'schedules'].includes(hash)) {
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'schedules'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
     }
   }
@@ -15585,7 +15581,11 @@ window.CelebrationEffect = (function() {
     'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'links': { title: 'チャプター公式リンク集', icon: 'fa-solid fa-link' },
+    'growth-dashboard': { title: '成長ダッシュボード', icon: 'fa-solid fa-chart-line' },
+    'ppw-rpw': { title: 'RPW & PPW改善 (全員2.0へ)', icon: 'fa-solid fa-fire' },
+    'traffic-lights': { title: '個人トラフィックライト (100点)', icon: 'fa-solid fa-traffic-light' },
     'palms-ranking': { title: 'PALMSランキング', icon: 'fa-solid fa-trophy' },
+    'chapter-traffic': { title: 'チャプタートラフィックライト', icon: 'fa-solid fa-earth-americas' },
     'lottery': { title: '定例会スロット抽選', icon: 'fa-solid fa-dice' },
     'training': { title: 'トレーニング・研修日程 (開発中)', icon: 'fa-solid fa-graduation-cap' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
@@ -15629,7 +15629,14 @@ window.CelebrationEffect = (function() {
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'palms-ranking', 'lottery', 'visitor-detail'].forEach(t => {
+    const allTabs = [
+      'dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 
+      'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 
+      'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic',
+      'lottery', 'visitor-detail'
+    ];
+
+    allTabs.forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -15640,14 +15647,21 @@ window.CelebrationEffect = (function() {
       if (view) view.classList.remove('active');
     });
 
+    const isMemberSubTab = ['growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic'].includes(tabName);
     const targetBtn = document.getElementById('tab-btn-' + tabName);
     const targetDrawerItem = document.getElementById('drawer-item-' + tabName);
     const targetMobileBtn = document.getElementById('mobile-nav-' + tabName);
-    const targetView = document.getElementById('view-' + tabName);
+    const targetView = isMemberSubTab ? document.getElementById('view-palms-ranking') : document.getElementById('view-' + tabName);
+
     if (targetBtn) targetBtn.classList.add('active');
     if (targetDrawerItem) targetDrawerItem.classList.add('active');
     if (targetMobileBtn) targetMobileBtn.classList.add('active');
     if (targetView) targetView.classList.add('active');
+
+    // Switch inner subview if member subtab
+    if (isMemberSubTab && typeof switchPalmsSubTab === 'function') {
+      switchPalmsSubTab(tabName);
+    }
 
     if (tabName === 'lottery' && typeof initLotteryView === 'function') {
       initLotteryView();
@@ -15673,7 +15687,7 @@ window.CelebrationEffect = (function() {
       fetchAllVisitorsData(true);
     } else if (tabName === 'links') {
       if (typeof fetchChapterLinks === 'function') fetchChapterLinks();
-    } else if (tabName === 'palms-ranking') {
+    } else if (isMemberSubTab) {
       if (typeof fetchPalmsPeriods === 'function') fetchPalmsPeriods();
     } else if (tabName === 'hearings') {
       fetchHearingListData(true);
@@ -28039,17 +28053,17 @@ let currentPpwFilterTier = 'urgent';
 function switchPalmsSubTab(subTabName) {
   currentPalmsSubTab = subTabName;
 
-  // 1. Update Sub-Nav Buttons
+  // 1. Update Drawer Navigation Items & Subview Visibility
   const subNavTabs = ['growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic'];
   subNavTabs.forEach(t => {
-    const btn = document.querySelector(`.palms-subnav-tab[data-subtab="${t}"]`);
+    const drawerItem = document.getElementById('drawer-item-' + t);
     const view = document.getElementById(`palms-subview-${t}`);
 
-    if (btn) {
+    if (drawerItem) {
       if (t === subTabName) {
-        btn.className = 'palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs';
+        drawerItem.classList.add('active');
       } else {
-        btn.className = 'palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300';
+        drawerItem.classList.remove('active');
       }
     }
 
@@ -28061,6 +28075,37 @@ function switchPalmsSubTab(subTabName) {
       }
     }
   });
+
+  // 2. Dynamic Title & Subtitle updates
+  const metaInfo = {
+    'growth-dashboard': {
+      title: '成長ダッシュボード',
+      subtitle: 'チャプター全体の成長トレンド・期別推移・主要KPIのリアルタイム集計'
+    },
+    'ppw-rpw': {
+      title: 'RPW & PPW改善ハブ',
+      subtitle: '数字を評価ではなく改善に使い、全員でPPW 2.0000のラインへ伴走支援'
+    },
+    'traffic-lights': {
+      title: '個人トラフィックライト',
+      subtitle: 'BNI公式新基準（100点満点）による健全度診断・7大指標の内訳と処方箋'
+    },
+    'palms-ranking': {
+      title: 'PALMSランキング',
+      subtitle: '定例会スライド発表・表彰に向けた詳細実績集計と週次提出データ'
+    },
+    'chapter-traffic': {
+      title: 'チャプタートラフィックライト',
+      subtitle: 'チャプター規模・更新率・出席率・RPW・ビジター比率の総合健全度'
+    }
+  };
+
+  const titleEl = document.getElementById('palms-view-title');
+  const subtitleEl = document.getElementById('palms-view-subtitle');
+  if (metaInfo[subTabName]) {
+    if (titleEl) titleEl.textContent = metaInfo[subTabName].title;
+    if (subtitleEl) subtitleEl.textContent = metaInfo[subTabName].subtitle;
+  }
 
   // 2. Trigger view-specific re-renders & Chart.js resizes
   if (subTabName === 'growth-dashboard') {
