@@ -7929,9 +7929,9 @@ select.form-input, select.form-select {
             <h3 id="palms-detail-name" class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight truncate">
               --
             </h3>
-            <span id="palms-detail-tier-badge" class="text-2xs font-black px-2.5 py-0.5 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center gap-1 shrink-0">
+            <span id="palms-detail-tier-badge" class="text-xs px-2 py-0.5 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center justify-center shrink-0 cursor-default">
               <span id="palms-detail-tier-dot">⚪</span>
-              <span id="palms-detail-tier-name">--</span>
+              <span id="palms-detail-tier-name" class="hidden"></span>
             </span>
             <span id="palms-detail-rank-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
               第--位
@@ -11582,9 +11582,8 @@ select.form-input, select.form-select {
       <!-- 4. Green Tier -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-3xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>グリーン</span>
+          <span class="flex items-center gap-1.5" title="グリーン (70点以上)">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs shadow-emerald-500/50"></span>
           </span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">70+ pt</span>
         </div>
@@ -11600,9 +11599,8 @@ select.form-input, select.form-select {
       <!-- 5. Yellow / Red Tier -->
       <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-3xs font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span>要注力</span>
+          <span class="flex items-center gap-1.5" title="要注力 (<70点)">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-2xs shadow-amber-500/50"></span>
           </span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">&lt; 70 pt</span>
         </div>
@@ -26128,6 +26126,7 @@ function calcBniTrafficLightScore(r, weeks) {
   let tierBg = '#f1f5f9';
   let tierBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
   let tierDot = '⚪';
+  let dotBg = 'bg-slate-400';
 
   if (totalScore >= 70) {
     tier = 'green';
@@ -26136,6 +26135,7 @@ function calcBniTrafficLightScore(r, weeks) {
     tierBg = '#d1fae5';
     tierBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
     tierDot = '🟢';
+    dotBg = 'bg-emerald-500';
   } else if (totalScore >= 50) {
     tier = 'yellow';
     tierName = 'イエロー';
@@ -26143,6 +26143,7 @@ function calcBniTrafficLightScore(r, weeks) {
     tierBg = '#fef3c7';
     tierBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
     tierDot = '🟡';
+    dotBg = 'bg-amber-500';
   } else if (totalScore >= 30) {
     tier = 'red';
     tierName = 'レッド';
@@ -26150,6 +26151,7 @@ function calcBniTrafficLightScore(r, weeks) {
     tierBg = '#fee2e2';
     tierBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
     tierDot = '🔴';
+    dotBg = 'bg-rose-500';
   }
 
   return {
@@ -26160,6 +26162,7 @@ function calcBniTrafficLightScore(r, weeks) {
     tierBg,
     tierBadgeClass,
     tierDot,
+    dotBg,
     rpw,
     ppw,
     ppwTier,
@@ -26374,11 +26377,11 @@ function renderPalmsKpiCards() {
   if (elAvgScore) elAvgScore.textContent = avgScore;
   if (elAvgTier) {
     if (avgScore >= 70) {
-      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700">🟢 GREEN ZONE (優秀)</span>';
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700" title="グリーン (70点以上)">🟢 70+ pt (優秀)</span>';
     } else if (avgScore >= 50) {
-      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-amber-700">🟡 YELLOW ZONE (標準)</span>';
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-amber-700" title="イエロー (50-69点)">🟡 50-69 pt (標準)</span>';
     } else {
-      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-rose-700">🔴 RED ZONE (要改善)</span>';
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-rose-700" title="レッド (<50点)">🔴 &lt;50 pt (要注力)</span>';
     }
   }
 
@@ -27025,9 +27028,8 @@ function renderPalmsPodium(records) {
             </span>
             <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">${badgeLabel}</span>
           </div>
-          <span class="text-2xs font-extrabold px-2.5 py-1 rounded-full border ${tl.tierBadgeClass} flex items-center gap-1">
+          <span class="text-xs px-2 py-0.5 rounded-full border ${tl.tierBadgeClass} flex items-center justify-center shrink-0 cursor-default" title="${tl.tierName} (${m.total_score}pt)">
             <span>${tl.tierDot}</span>
-            <span>${tl.tierName}</span>
           </span>
         </div>
 
@@ -27152,9 +27154,8 @@ function renderPalmsTable(records) {
         </td>
         <!-- 3. 判定 -->
         <td class="py-3 px-3 text-center align-middle">
-          <span class="inline-flex items-center gap-1 text-2xs font-black px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
+          <span class="inline-flex items-center justify-center text-xs px-1.5 py-0.5 rounded-full border ${tl.tierBadgeClass} cursor-default" title="${tl.tierName} (${m.total_score}pt)">
             <span>${tl.tierDot}</span>
-            <span>${tl.tierName}</span>
           </span>
         </td>
         <!-- 4. 総合点 -->
@@ -27311,10 +27312,14 @@ function renderPalmsDetailModalContent(m) {
   const tierBadge = document.getElementById('palms-detail-tier-badge');
   const tierDot = document.getElementById('palms-detail-tier-dot');
   const tierName = document.getElementById('palms-detail-tier-name');
-  if (tierBadge && tierDot && tierName) {
-    tierBadge.className = `text-2xs font-black px-2.5 py-0.5 rounded-full border ${tl.tierBadgeClass} flex items-center gap-1 shrink-0`;
+  if (tierBadge && tierDot) {
+    tierBadge.className = `text-xs px-2 py-0.5 rounded-full border ${tl.tierBadgeClass} flex items-center justify-center shrink-0 cursor-default`;
+    tierBadge.title = `${tl.tierName} (${tl.totalScore}pt)`;
     tierDot.textContent = tl.tierDot;
-    tierName.textContent = tl.tierName + ' ZONE';
+    if (tierName) {
+      tierName.textContent = '';
+      tierName.classList.add('hidden');
+    }
   }
 
   const rankBadge = document.getElementById('palms-detail-rank-badge');
@@ -27344,11 +27349,15 @@ function renderPalmsDetailModalContent(m) {
   const elStatusPill = document.getElementById('palms-detail-status-pill');
   if (elTotalScore) elTotalScore.textContent = m.total_score;
   if (elScoreDesc) {
-    if (m.total_score >= 70) elScoreDesc.innerHTML = '<span class="text-emerald-700 font-bold">🟢 目標クリア (70点以上・高活動)</span>';
-    else if (m.total_score >= 50) elScoreDesc.innerHTML = '<span class="text-amber-700 font-bold">🟡 標準ライン (50-69点・育成中)</span>';
-    else elScoreDesc.innerHTML = '<span class="text-rose-700 font-bold">🔴 改善・注力ライン (50点未満)</span>';
+    if (m.total_score >= 70) elScoreDesc.innerHTML = '<span class="text-emerald-700 font-bold">目標クリア (70点以上)</span>';
+    else if (m.total_score >= 50) elScoreDesc.innerHTML = '<span class="text-amber-700 font-bold">標準ライン (50-69点)</span>';
+    else elScoreDesc.innerHTML = '<span class="text-rose-700 font-bold">改善・注力ライン (&lt;50点)</span>';
   }
-  if (elStatusPill) elStatusPill.textContent = tl.tierName;
+  if (elStatusPill) {
+    elStatusPill.className = `text-3xs font-black px-1.5 py-0.2 rounded border ${tl.tierBadgeClass} cursor-default`;
+    elStatusPill.textContent = tl.tierDot;
+    elStatusPill.title = `${tl.tierName} (${tl.totalScore}pt)`;
+  }
 
   const elPpw = document.getElementById('palms-detail-ppw-value');
   const elPpwStatus = document.getElementById('palms-detail-ppw-status');
