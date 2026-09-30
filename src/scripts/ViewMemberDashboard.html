@@ -115,7 +115,9 @@
     members.forEach(m => {
       const mName = (m.name || '').trim();
       const mId = m.id !== undefined && m.id !== null ? String(m.id) : mName;
-      const cat = m.category ? ` (${m.category})` : '';
+      const isResigned = (m.status || '在籍') === '退会';
+      const statusNote = isResigned ? ' [退会]' : '';
+      const cat = m.category ? ` (${m.category}${statusNote})` : (statusNote ? ` (${statusNote.trim()})` : '');
       html += `<option value="${escapeHtml(mId)}">${escapeHtml(mName)}${escapeHtml(cat)}</option>`;
     });
 
@@ -314,12 +316,22 @@
 
     const nameEl = document.getElementById('member-dash-name');
     const catEl = document.getElementById('member-dash-category-badge');
+    const statusEl = document.getElementById('member-dash-status-badge');
     const profEl = document.getElementById('member-dash-profession');
     const avatarEl = document.getElementById('member-dash-avatar');
 
     const mName = memberObj.name || 'メンバー';
+    const isResigned = (memberObj.status || '在籍') === '退会';
+
     if (nameEl) nameEl.innerText = mName;
     if (catEl) catEl.innerText = memberObj.category || 'メンバー';
+    if (statusEl) {
+      if (isResigned) {
+        statusEl.classList.remove('hidden');
+      } else {
+        statusEl.classList.add('hidden');
+      }
+    }
     if (profEl) profEl.innerText = memberObj.profession || '';
     if (avatarEl) avatarEl.innerText = mName.slice(0, 1) || '名';
   }

@@ -62,7 +62,9 @@
           catObj.members.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.name;
-            opt.textContent = `${m.name} (${m.profession || ''})`;
+            const isResigned = (m.status || '在籍') === '退会';
+            const statusNote = isResigned ? ' [退会]' : '';
+            opt.textContent = `${m.name}${statusNote} (${m.profession || ''})`;
             if (m.name === selectedVal) {
               opt.selected = true;
               found = true;

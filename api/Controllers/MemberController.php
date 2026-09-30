@@ -48,6 +48,7 @@ class MemberController extends Controller {
             'category' => $this->getParam('category', 'その他'),
             'name' => $this->getParam('name', ''),
             'profession' => $this->getParam('profession', ''),
+            'status' => $this->getParam('status', '在籍'),
             'updated_at' => $now
         ]);
 
@@ -62,6 +63,7 @@ class MemberController extends Controller {
             'category' => $this->getParam('category', 'その他'),
             'name' => $this->getParam('name', ''),
             'profession' => $this->getParam('profession', ''),
+            'status' => $this->getParam('status', '在籍'),
             'updated_at' => $now
         ]);
 

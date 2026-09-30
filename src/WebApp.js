@@ -135,16 +135,20 @@ function getMemberListApi() {
     const cat = String(r[1] || "その他").trim();
     const name = String(r[2] || "").trim();
     const prof = String(r[3] || "").trim();
+    let status = "在籍";
+    if (r.length > 5 && r[4] && typeof r[4] === "string" && (r[4] === "退会" || r[4] === "在籍")) {
+      status = r[4];
+    }
 
     if (!name) continue;
 
-    flatMembersList.push({ id: mId, category: cat, name: name, profession: prof });
+    flatMembersList.push({ id: mId, category: cat, name: name, profession: prof, status: status });
 
     if (!categoriesMap[cat]) {
       categoriesMap[cat] = [];
       categoryOrder.push(cat);
     }
-    categoriesMap[cat].push({ id: mId, name: name, profession: prof });
+    categoriesMap[cat].push({ id: mId, name: name, profession: prof, status: status });
   }
 
   const result = categoryOrder.map(cat => ({
@@ -172,6 +176,7 @@ function addMemberApi(mObj) {
     mObj.category || "その他",
     mObj.name || "",
     mObj.profession || "",
+    mObj.status || "在籍",
     now
   ]);
 
@@ -201,7 +206,8 @@ function updateMemberApi(mObj) {
   membersSheet.getRange(targetRow, 2).setValue(mObj.category || "その他");
   membersSheet.getRange(targetRow, 3).setValue(mObj.name || "");
   membersSheet.getRange(targetRow, 4).setValue(mObj.profession || "");
-  membersSheet.getRange(targetRow, 5).setValue(now);
+  membersSheet.getRange(targetRow, 5).setValue(mObj.status || "在籍");
+  membersSheet.getRange(targetRow, 6).setValue(now);
 
   return getMemberListApi();
 }

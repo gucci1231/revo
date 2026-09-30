@@ -26,22 +26,70 @@
       });
   }
 
+  let currentMembersFilter = 'all'; // 'all' | 'active' | 'resigned'
+
+  function filterMembersMasterTable(filter) {
+    currentMembersFilter = filter || 'all';
+    ['all', 'active', 'resigned'].forEach(f => {
+      const btn = document.getElementById(`tab-member-filter-${f}`);
+      if (!btn) return;
+      if (f === currentMembersFilter) {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center gap-1.5';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5';
+      }
+    });
+    renderMembersMasterTable(cachedFlatMembers);
+  }
+  window.filterMembersMasterTable = filterMembersMasterTable;
+
   function renderMembersMasterTable(members) {
     const tbody = document.getElementById('table-members-master');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    if (!members || members.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 20px;">登録されているメンバーはありません</td></tr>`;
+    const allMembers = members || [];
+    const activeCount = allMembers.filter(m => (m.status || '在籍') !== '退会').length;
+    const resignedCount = allMembers.filter(m => (m.status || '在籍') === '退会').length;
+
+    const countAllEl = document.getElementById('count-members-all');
+    const countActiveEl = document.getElementById('count-members-active');
+    const countResignedEl = document.getElementById('count-members-resigned');
+    if (countAllEl) countAllEl.innerText = allMembers.length;
+    if (countActiveEl) countActiveEl.innerText = activeCount;
+    if (countResignedEl) countResignedEl.innerText = resignedCount;
+
+    let filtered = allMembers;
+    if (currentMembersFilter === 'active') {
+      filtered = allMembers.filter(m => (m.status || '在籍') !== '退会');
+    } else if (currentMembersFilter === 'resigned') {
+      filtered = allMembers.filter(m => (m.status || '在籍') === '退会');
+    }
+
+    if (!filtered || filtered.length === 0) {
+      const emptyMsg = currentMembersFilter === 'active' ? '在籍中のメンバーはありません'
+        : currentMembersFilter === 'resigned' ? '退会したメンバーはありません'
+        : '登録されているメンバーはありません';
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
       return;
     }
 
-    members.forEach((m, idx) => {
+    filtered.forEach((m, idx) => {
+      const isResigned = (m.status || '在籍') === '退会';
       const tr = document.createElement('tr');
+      if (isResigned) {
+        tr.className = 'opacity-70 bg-slate-50/50';
+      }
+
+      const statusBadge = isResigned
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>退会</span>`
+        : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>在籍</span>`;
+
       tr.innerHTML = `
         <td style="font-weight: 700;">${idx + 1}</td>
+        <td class="text-center">${statusBadge}</td>
         <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
-        <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
+        <td style="font-weight: 800; font-size:14px; color:${isResigned ? '#495057' : '#212529'};">${escapeHtml(m.name)}${isResigned ? ' <span class="text-[11px] text-slate-400 font-normal">(退会)</span>' : ''}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
         <td>
           <button class="btn-icon-action text-blue-600 hover:text-blue-800" onclick="openMemberPersonalDashboard('${escapeJsParam(m.name)}')" title="活動ダッシュボードを開く"><i class="fa-solid fa-id-badge"></i></button>
@@ -68,6 +116,8 @@
     document.getElementById('crud-m-category').value = '';
     document.getElementById('crud-m-name').value = '';
     document.getElementById('crud-m-profession').value = '';
+    const activeRadio = document.getElementById('crud-m-status-active');
+    if (activeRadio) activeRadio.checked = true;
     document.getElementById('modal-member-crud').style.display = 'flex';
   }
 
@@ -79,6 +129,14 @@
     document.getElementById('crud-m-category').value = m.category || '';
     document.getElementById('crud-m-name').value = m.name || '';
     document.getElementById('crud-m-profession').value = m.profession || '';
+    const isResigned = (m.status || '在籍') === '退会';
+    const resignedRadio = document.getElementById('crud-m-status-resigned');
+    const activeRadio = document.getElementById('crud-m-status-active');
+    if (isResigned && resignedRadio) {
+      resignedRadio.checked = true;
+    } else if (activeRadio) {
+      activeRadio.checked = true;
+    }
     document.getElementById('modal-member-crud').style.display = 'flex';
   }
 
@@ -91,13 +149,14 @@
     const category = document.getElementById('crud-m-category').value.trim();
     const name = document.getElementById('crud-m-name').value.trim();
     const profession = document.getElementById('crud-m-profession').value.trim();
+    const status = document.getElementById('crud-m-status-resigned')?.checked ? '退会' : '在籍';
 
     if (!category || !name || !profession) {
       alert('全ての必須項目を入力してください');
       return;
     }
 
-    const mObj = { id, category, name, profession };
+    const mObj = { id, category, name, profession, status };
     showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
     document.getElementById('loading').style.display = 'flex';
 

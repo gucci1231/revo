@@ -7831,6 +7831,20 @@ select.form-input, select.form-select {
         <input type="text" id="crud-m-profession" class="form-input" placeholder="例：社長の孤独をなくす専属AI" required>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">ステータス <span class="required">*</span></label>
+        <div class="flex items-center gap-3 mt-1.5">
+          <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800 transition-colors has-checked:border-blue-600 has-checked:bg-blue-50/40 has-checked:text-blue-700">
+            <input type="radio" name="crud-m-status" id="crud-m-status-active" value="在籍" checked class="text-blue-600 focus:ring-0">
+            <span>在籍中</span>
+          </label>
+          <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800 transition-colors has-checked:border-slate-400 has-checked:bg-slate-100 has-checked:text-slate-700">
+            <input type="radio" name="crud-m-status" id="crud-m-status-resigned" value="退会" class="text-slate-500 focus:ring-0">
+            <span class="text-slate-600">退会</span>
+          </label>
+        </div>
+      </div>
+
       <div class="modal-footer-btns">
         <button type="button" class="btn-cancel" onclick="closeMemberCrudModal()">キャンセル</button>
         <button type="button" class="btn-save" onclick="submitMemberCrudForm()">保存する</button>
@@ -8903,6 +8917,7 @@ select.form-input, select.form-select {
           <div class="min-w-0">
             <div class="flex items-center gap-2 mb-0.5">
               <span id="member-dash-category-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200/60">カテゴリ</span>
+              <span id="member-dash-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80 hidden">退会</span>
               <span id="member-dash-profession" class="text-xs text-slate-400 font-bold truncate">専門分野</span>
             </div>
             <h2 id="member-dash-name" class="text-lg sm:text-xl font-black text-slate-900 tracking-tight m-0 truncate">メンバー氏名</h2>
@@ -10569,20 +10584,43 @@ select.form-input, select.form-select {
     </div>
 
     <div class="section-card">
-      <div class="section-header">
+      <div class="section-header flex justify-between items-center flex-wrap gap-3">
         <div>
           <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
-          <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
+          <div class="section-sub">在籍メンバーおよび退会メンバーを登録・編集・管理できます。</div>
         </div>
         <button class="btn-action-primary" onclick="openAddMemberModal()">
           <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
         </button>
       </div>
+
+      <!-- ステータス絞り込みタブバー (Radical Minimalism / Apple Segmented Control) -->
+      <div class="flex items-center justify-between gap-3 px-4 md:px-5 py-2.5 bg-slate-50/70 border-y border-slate-100 flex-wrap">
+        <div class="inline-flex p-1 bg-slate-200/70 rounded-xl gap-1" role="tablist">
+          <button type="button" id="tab-member-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('all')">
+            <span>すべて</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-extrabold" id="count-members-all">0</span>
+          </button>
+          <button type="button" id="tab-member-filter-active" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('active')">
+            <span>在籍中</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-50 text-blue-700 font-extrabold" id="count-members-active">0</span>
+          </button>
+          <button type="button" id="tab-member-filter-resigned" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('resigned')">
+            <span>退会済</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-600 font-extrabold" id="count-members-resigned">0</span>
+          </button>
+        </div>
+        <div class="text-[11px] text-slate-400 font-medium">
+          ※ 過去の紹介実績やビジター情報との紐付けを保持するため退会メンバーも管理できます
+        </div>
+      </div>
+
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th class="col-w-sm">No.</th>
+              <th style="width: 80px;" class="text-center">状態</th>
               <th>カテゴリ / 専門領域</th>
               <th>メンバー氏名</th>
               <th>専門分野</th>
@@ -18107,7 +18145,9 @@ window.CelebrationEffect = (function() {
     members.forEach(m => {
       const mName = (m.name || '').trim();
       const mId = m.id !== undefined && m.id !== null ? String(m.id) : mName;
-      const cat = m.category ? ` (${m.category})` : '';
+      const isResigned = (m.status || '在籍') === '退会';
+      const statusNote = isResigned ? ' [退会]' : '';
+      const cat = m.category ? ` (${m.category}${statusNote})` : (statusNote ? ` (${statusNote.trim()})` : '');
       html += `<option value="${escapeHtml(mId)}">${escapeHtml(mName)}${escapeHtml(cat)}</option>`;
     });
 
@@ -18306,12 +18346,22 @@ window.CelebrationEffect = (function() {
 
     const nameEl = document.getElementById('member-dash-name');
     const catEl = document.getElementById('member-dash-category-badge');
+    const statusEl = document.getElementById('member-dash-status-badge');
     const profEl = document.getElementById('member-dash-profession');
     const avatarEl = document.getElementById('member-dash-avatar');
 
     const mName = memberObj.name || 'メンバー';
+    const isResigned = (memberObj.status || '在籍') === '退会';
+
     if (nameEl) nameEl.innerText = mName;
     if (catEl) catEl.innerText = memberObj.category || 'メンバー';
+    if (statusEl) {
+      if (isResigned) {
+        statusEl.classList.remove('hidden');
+      } else {
+        statusEl.classList.add('hidden');
+      }
+    }
     if (profEl) profEl.innerText = memberObj.profession || '';
     if (avatarEl) avatarEl.innerText = mName.slice(0, 1) || '名';
   }
@@ -25277,7 +25327,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
           catObj.members.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.name;
-            opt.textContent = `${m.name} (${m.profession || ''})`;
+            const isResigned = (m.status || '在籍') === '退会';
+            const statusNote = isResigned ? ' [退会]' : '';
+            opt.textContent = `${m.name}${statusNote} (${m.profession || ''})`;
             if (m.name === selectedVal) {
               opt.selected = true;
               found = true;
@@ -25381,22 +25433,70 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       });
   }
 
+  let currentMembersFilter = 'all'; // 'all' | 'active' | 'resigned'
+
+  function filterMembersMasterTable(filter) {
+    currentMembersFilter = filter || 'all';
+    ['all', 'active', 'resigned'].forEach(f => {
+      const btn = document.getElementById(`tab-member-filter-${f}`);
+      if (!btn) return;
+      if (f === currentMembersFilter) {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center gap-1.5';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5';
+      }
+    });
+    renderMembersMasterTable(cachedFlatMembers);
+  }
+  window.filterMembersMasterTable = filterMembersMasterTable;
+
   function renderMembersMasterTable(members) {
     const tbody = document.getElementById('table-members-master');
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    if (!members || members.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #868e96; padding: 20px;">登録されているメンバーはありません</td></tr>`;
+    const allMembers = members || [];
+    const activeCount = allMembers.filter(m => (m.status || '在籍') !== '退会').length;
+    const resignedCount = allMembers.filter(m => (m.status || '在籍') === '退会').length;
+
+    const countAllEl = document.getElementById('count-members-all');
+    const countActiveEl = document.getElementById('count-members-active');
+    const countResignedEl = document.getElementById('count-members-resigned');
+    if (countAllEl) countAllEl.innerText = allMembers.length;
+    if (countActiveEl) countActiveEl.innerText = activeCount;
+    if (countResignedEl) countResignedEl.innerText = resignedCount;
+
+    let filtered = allMembers;
+    if (currentMembersFilter === 'active') {
+      filtered = allMembers.filter(m => (m.status || '在籍') !== '退会');
+    } else if (currentMembersFilter === 'resigned') {
+      filtered = allMembers.filter(m => (m.status || '在籍') === '退会');
+    }
+
+    if (!filtered || filtered.length === 0) {
+      const emptyMsg = currentMembersFilter === 'active' ? '在籍中のメンバーはありません'
+        : currentMembersFilter === 'resigned' ? '退会したメンバーはありません'
+        : '登録されているメンバーはありません';
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
       return;
     }
 
-    members.forEach((m, idx) => {
+    filtered.forEach((m, idx) => {
+      const isResigned = (m.status || '在籍') === '退会';
       const tr = document.createElement('tr');
+      if (isResigned) {
+        tr.className = 'opacity-70 bg-slate-50/50';
+      }
+
+      const statusBadge = isResigned
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>退会</span>`
+        : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>在籍</span>`;
+
       tr.innerHTML = `
         <td style="font-weight: 700;">${idx + 1}</td>
+        <td class="text-center">${statusBadge}</td>
         <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
-        <td style="font-weight: 800; font-size:14px; color:#212529;">${escapeHtml(m.name)}</td>
+        <td style="font-weight: 800; font-size:14px; color:${isResigned ? '#495057' : '#212529'};">${escapeHtml(m.name)}${isResigned ? ' <span class="text-[11px] text-slate-400 font-normal">(退会)</span>' : ''}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
         <td>
           <button class="btn-icon-action text-blue-600 hover:text-blue-800" onclick="openMemberPersonalDashboard('${escapeJsParam(m.name)}')" title="活動ダッシュボードを開く"><i class="fa-solid fa-id-badge"></i></button>
@@ -25423,6 +25523,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-category').value = '';
     document.getElementById('crud-m-name').value = '';
     document.getElementById('crud-m-profession').value = '';
+    const activeRadio = document.getElementById('crud-m-status-active');
+    if (activeRadio) activeRadio.checked = true;
     document.getElementById('modal-member-crud').style.display = 'flex';
   }
 
@@ -25434,6 +25536,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-category').value = m.category || '';
     document.getElementById('crud-m-name').value = m.name || '';
     document.getElementById('crud-m-profession').value = m.profession || '';
+    const isResigned = (m.status || '在籍') === '退会';
+    const resignedRadio = document.getElementById('crud-m-status-resigned');
+    const activeRadio = document.getElementById('crud-m-status-active');
+    if (isResigned && resignedRadio) {
+      resignedRadio.checked = true;
+    } else if (activeRadio) {
+      activeRadio.checked = true;
+    }
     document.getElementById('modal-member-crud').style.display = 'flex';
   }
 
@@ -25446,13 +25556,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     const category = document.getElementById('crud-m-category').value.trim();
     const name = document.getElementById('crud-m-name').value.trim();
     const profession = document.getElementById('crud-m-profession').value.trim();
+    const status = document.getElementById('crud-m-status-resigned')?.checked ? '退会' : '在籍';
 
     if (!category || !name || !profession) {
       alert('全ての必須項目を入力してください');
       return;
     }
 
-    const mObj = { id, category, name, profession };
+    const mObj = { id, category, name, profession, status };
     showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
     document.getElementById('loading').style.display = 'flex';
 

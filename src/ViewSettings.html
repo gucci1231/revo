@@ -205,20 +205,43 @@
     </div>
 
     <div class="section-card">
-      <div class="section-header">
+      <div class="section-header flex justify-between items-center flex-wrap gap-3">
         <div>
           <h2 class="section-title"><i class="fa-solid fa-user-gear"></i> BNI REvo & DNA メンバーマスター管理 (CRUD)</h2>
-          <div class="section-sub">オリエン担当者ドロップダウンに使われるメンバーリストを登録・編集できます。</div>
+          <div class="section-sub">在籍メンバーおよび退会メンバーを登録・編集・管理できます。</div>
         </div>
         <button class="btn-action-primary" onclick="openAddMemberModal()">
           <i class="fa-solid fa-user-plus"></i> 新規メンバー追加
         </button>
       </div>
+
+      <!-- ステータス絞り込みタブバー (Radical Minimalism / Apple Segmented Control) -->
+      <div class="flex items-center justify-between gap-3 px-4 md:px-5 py-2.5 bg-slate-50/70 border-y border-slate-100 flex-wrap">
+        <div class="inline-flex p-1 bg-slate-200/70 rounded-xl gap-1" role="tablist">
+          <button type="button" id="tab-member-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-slate-900 shadow-2xs cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('all')">
+            <span>すべて</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600 font-extrabold" id="count-members-all">0</span>
+          </button>
+          <button type="button" id="tab-member-filter-active" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('active')">
+            <span>在籍中</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-50 text-blue-700 font-extrabold" id="count-members-active">0</span>
+          </button>
+          <button type="button" id="tab-member-filter-resigned" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer flex items-center gap-1.5" onclick="filterMembersMasterTable('resigned')">
+            <span>退会済</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-600 font-extrabold" id="count-members-resigned">0</span>
+          </button>
+        </div>
+        <div class="text-[11px] text-slate-400 font-medium">
+          ※ 過去の紹介実績やビジター情報との紐付けを保持するため退会メンバーも管理できます
+        </div>
+      </div>
+
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th class="col-w-sm">No.</th>
+              <th style="width: 80px;" class="text-center">状態</th>
               <th>カテゴリ / 専門領域</th>
               <th>メンバー氏名</th>
               <th>専門分野</th>

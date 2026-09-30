@@ -90,6 +90,7 @@ class Database {
                 category TEXT DEFAULT 'その他',
                 name TEXT,
                 profession TEXT DEFAULT '',
+                status TEXT DEFAULT '在籍',
                 updated_at TEXT
             );
 
@@ -199,6 +200,9 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE visitors ADD COLUMN category TEXT DEFAULT 'ビジター'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN status TEXT DEFAULT '在籍'");
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("
