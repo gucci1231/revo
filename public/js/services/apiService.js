@@ -212,6 +212,39 @@ const ApiService = {
           method: 'POST',
           body: { to: args[0], subject: args[1], body: args[2] }
         };
+      case 'getChapterLinksApi':
+      case 'getLinksApi':
+        return { url: '/api/links.php?action=list', method: 'GET' };
+      case 'saveChapterLinkApi':
+      case 'saveLinkApi':
+        return {
+          url: '/api/links.php?action=save',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterLinkApi':
+      case 'deleteLinkApi':
+        return {
+          url: '/api/links.php?action=delete',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
+      case 'getPalmsListApi':
+      case 'getPalmsRankingApi': {
+        const pStart = args[0] ? encodeURIComponent(args[0]) : '';
+        const pEnd = args[1] ? encodeURIComponent(args[1]) : '';
+        const q = (pStart && pEnd) ? `&startDate=${pStart}&endDate=${pEnd}` : '';
+        return { url: `/api/palms.php?action=list${q}`, method: 'GET' };
+      }
+      case 'getPalmsPeriodsApi':
+        return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'syncPalmsApi':
+      case 'syncPalmsFromBniConnectApi':
+        return {
+          url: '/api/palms.php?action=sync',
+          method: 'POST',
+          body: (args[0] && typeof args[0] === 'object') ? args[0] : (args[0] && args[1] ? { startDate: args[0], endDate: args[1] } : {})
+        };
       case 'getScheduledEmailsApi':
         return null;
       default:

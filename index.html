@@ -9535,6 +9535,153 @@ select.form-input, select.form-select {
   </div>
 </div>
 
+    <!-- PALMS Ranking View (REvo OS Phase 2) -->
+<div id="view-palms-ranking" class="view-content" style="display: none;">
+  <!-- Header / Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+    <div>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
+          <i class="fa-solid fa-trophy text-sm"></i>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+          PALMS ランキング
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
+        BNI Connect PALMSレポートに基づくメンバー活動成果・貢献ランキング
+      </p>
+    </div>
+
+    <!-- Actions: Period Selector & Sync Button -->
+    <div class="flex items-center gap-2 flex-wrap self-end md:self-auto">
+      <div class="relative">
+        <label for="palms-period-select" class="sr-only">集計期間</label>
+        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none">
+          <option value="">期間を読込中...</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+          <i class="fa-solid fa-chevron-down text-2xs"></i>
+        </div>
+      </div>
+
+      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="BNI Connectから最新PALMSを取得">
+        <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
+        <span class="btn-text">Connect同期</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Filter Segmented Controls (Pills) -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="palms-metric-tabs">
+    <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
+      <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
+      <span>総合スコア</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
+      <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
+      <span>リファーラル提供</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
+      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
+      <span>1to1</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
+      <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
+      <span>ビジター招待</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
+      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
+      <span>売上貢献 (TYFCB)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
+      <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
+      <span>PALMS出欠</span>
+    </button>
+  </div>
+
+  <!-- Metric Description & Formula Hint -->
+  <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-circle-info text-blue-500"></i>
+      <span id="palms-hint-text">総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU</span>
+    </div>
+    <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
+  </div>
+
+  <!-- Apple Style Podium Cards (Top 3) -->
+  <div id="palms-podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <!-- Populated by JavaScript -->
+    <div class="col-span-full py-8 text-center text-slate-400">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <p class="text-xs">ランキングを集計中...</p>
+    </div>
+  </div>
+
+  <!-- Comprehensive Member PALMS Ranking Table -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden" id="palms-table-container">
+    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-list-ol text-blue-600"></i>
+        <span>メンバー別 詳細実績一覧</span>
+        <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
+      </h3>
+      <div class="text-2xs text-slate-400">
+        氏名クリックで個別ダッシュボードへ移動
+      </div>
+    </div>
+
+    <!-- Table Responsive Wrap -->
+    <div class="overflow-x-auto scrollbar-thin">
+      <table class="w-full text-left border-collapse min-w-[760px]">
+        <thead>
+          <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
+            <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
+              順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 min-w-[160px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+              メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
+              総合スコア <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
+              リファーラル提供 <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_received')">
+              受取 <span id="sort-icon-referrals_received"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
+              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
+              ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
+              売上貢献 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-center">
+              出欠 (P/A/L/M/S)
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
+              CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
+          <!-- Populated by JavaScript -->
+          <tr>
+            <td colspan="10" class="py-12 text-center text-slate-400">
+              <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+              <p class="text-xs">データを読込中...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
     <!-- Modal: フォロー方針（時期尚早 / 関係維持）リマインド設定モーダル -->
 <div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
   <div class="modal-card" style="max-width: 480px;">
@@ -9893,6 +10040,22 @@ const ApiService = {
         };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
+      case 'getPalmsListApi':
+      case 'getPalmsRankingApi': {
+        const pStart = args[0] ? encodeURIComponent(args[0]) : '';
+        const pEnd = args[1] ? encodeURIComponent(args[1]) : '';
+        const q = (pStart && pEnd) ? `&startDate=${pStart}&endDate=${pEnd}` : '';
+        return { url: `/api/palms.php?action=list${q}`, method: 'GET' };
+      }
+      case 'getPalmsPeriodsApi':
+        return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'syncPalmsApi':
+      case 'syncPalmsFromBniConnectApi':
+        return {
+          url: '/api/palms.php?action=sync',
+          method: 'POST',
+          body: (args[0] && typeof args[0] === 'object') ? args[0] : (args[0] && args[1] ? { startDate: args[0], endDate: args[1] } : {})
+        };
       case 'getScheduledEmailsApi':
         return null;
       default:
@@ -11879,7 +12042,7 @@ window.CelebrationEffect = (function() {
     'priority-follow': { title: '最優先フォロー', icon: 'fa-solid fa-fire' },
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'links': { title: 'チャプター公式リンク集', icon: 'fa-solid fa-link' },
-    'palms-ranking': { title: 'PALMSランキング (開発中)', icon: 'fa-solid fa-trophy' },
+    'palms-ranking': { title: 'PALMSランキング', icon: 'fa-solid fa-trophy' },
     'training': { title: 'トレーニング・研修日程 (開発中)', icon: 'fa-solid fa-graduation-cap' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
@@ -11906,9 +12069,8 @@ window.CelebrationEffect = (function() {
 
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
-    if (['palms-ranking', 'training', 'schedules'].includes(tabName)) {
+    if (['training', 'schedules'].includes(tabName)) {
       const labels = {
-        'palms-ranking': 'メンバーPALMSランキング機能（BNI Connect自動集計）',
         'training': '京都シティセントラル トレーニング・イベント自動取得',
         'schedules': '定期イベント出欠＆調整さん自動リマインダー'
       };
@@ -11923,7 +12085,7 @@ window.CelebrationEffect = (function() {
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'palms-ranking', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -11961,6 +12123,8 @@ window.CelebrationEffect = (function() {
       fetchAllVisitorsData(true);
     } else if (tabName === 'links') {
       if (typeof fetchChapterLinks === 'function') fetchChapterLinks();
+    } else if (tabName === 'palms-ranking') {
+      if (typeof fetchPalmsPeriods === 'function') fetchPalmsPeriods();
     } else if (tabName === 'hearings') {
       fetchHearingListData(true);
     } else if (tabName === 'email-schedule') {
@@ -21831,6 +21995,615 @@ function deleteChapterLink(linkId, title) {
       console.error('Delete link error:', err);
       showToast('通信エラーが発生しました', 'error');
     });
+}
+</script>
+
+<script>
+/**
+ * PALMS Ranking View Controller (REvo OS Phase 2)
+ */
+
+let currentPalmsRecords = [];
+let currentPalmsMetric = 'total';
+let currentPalmsSort = { field: 'total_score', asc: false };
+let currentPalmsPeriod = { startDate: null, endDate: null };
+let isPalmsSyncing = false;
+
+/**
+ * Fetch list of available PALMS periods
+ */
+function fetchPalmsPeriods() {
+  const selectEl = document.getElementById('palms-period-select');
+  if (!selectEl) return;
+
+  ApiService.call('getPalmsPeriodsApi')
+    .then(res => {
+      if (res && res.success && Array.isArray(res.periods) && res.periods.length > 0) {
+        selectEl.innerHTML = '';
+        res.periods.forEach((p, idx) => {
+          const opt = document.createElement('option');
+          opt.value = `${p.start_date}_${p.end_date}`;
+          const sDate = p.start_date.replace(/-/g, '/');
+          const eDate = p.end_date.replace(/-/g, '/');
+          opt.textContent = `${sDate} 〜 ${eDate} (${p.member_count}名)`;
+          if (idx === 0 && !currentPalmsPeriod.startDate) {
+            opt.selected = true;
+          }
+          selectEl.appendChild(opt);
+        });
+
+        // Trigger load for the selected period
+        if (selectEl.value) {
+          const [s, e] = selectEl.value.split('_');
+          fetchPalmsRankingData(s, e);
+        }
+      } else {
+        selectEl.innerHTML = '<option value="">登録期間なし</option>';
+        fetchPalmsRankingData();
+      }
+    })
+    .catch(err => {
+      console.error('Failed to fetch PALMS periods:', err);
+      selectEl.innerHTML = '<option value="">期間取得失敗</option>';
+      fetchPalmsRankingData();
+    });
+}
+
+/**
+ * Change selected PALMS period
+ */
+function changePalmsPeriod(val) {
+  if (!val) return;
+  const [s, e] = val.split('_');
+  fetchPalmsRankingData(s, e);
+}
+
+/**
+ * Fetch PALMS records for specified or latest period
+ */
+function fetchPalmsRankingData(startDate = null, endDate = null) {
+  const podiumContainer = document.getElementById('palms-podium-container');
+  const tableBody = document.getElementById('palms-table-body');
+  
+  if (podiumContainer) {
+    podiumContainer.innerHTML = `
+      <div class="col-span-full py-8 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+        <p class="text-xs">ランキングを集計中...</p>
+      </div>
+    `;
+  }
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="10" class="py-12 text-center text-slate-400">
+          <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+          <p class="text-xs">データを読込中...</p>
+        </td>
+      </tr>
+    `;
+  }
+
+  ApiService.call('getPalmsListApi', startDate, endDate)
+    .then(res => {
+      if (res && res.success) {
+        currentPalmsPeriod = res.period || { startDate, endDate };
+        
+        // Update period badge
+        const periodBadge = document.getElementById('palms-data-period-badge');
+        if (periodBadge && currentPalmsPeriod.startDate && currentPalmsPeriod.endDate) {
+          const s = currentPalmsPeriod.startDate.replace(/-/g, '/');
+          const e = currentPalmsPeriod.endDate.replace(/-/g, '/');
+          periodBadge.textContent = `集計期間: ${s} 〜 ${e}`;
+        }
+
+        // Process and enrich records with total score
+        const rawRecords = res.records || [];
+        currentPalmsRecords = rawRecords.map(r => {
+          const p = Number(r.p_present || 0);
+          const a = Number(r.a_absent || 0);
+          const l = Number(r.l_late || 0);
+          const m = Number(r.m_medical || 0);
+          const s = Number(r.s_substitute || 0);
+          const rgi = Number(r.rgi_referrals_given_internal || 0);
+          const rgo = Number(r.rgo_referrals_given_external || 0);
+          const totalRefGiven = Number(r.total_referrals_given != null ? r.total_referrals_given : (rgi + rgo));
+          const rri = Number(r.rri_referrals_received_internal || 0);
+          const rro = Number(r.rro_referrals_received_external || 0);
+          const totalRefReceived = Number(r.total_referrals_received != null ? r.total_referrals_received : (rri + rro));
+          const visitors = Number(r.v_visitors || 0);
+          const oto = Number(r.one_to_ones || 0);
+          const tyfcbYen = Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
+          const ceu = Number(r.ceu || r.ceu_credits || 0);
+
+          // Total Score Formula:
+          // (Referrals Given * 5) + (Visitors * 10) + (1to1 * 3) + (P*5 + S*5 - A*5) + CEU
+          const totalScore = (totalRefGiven * 5) + (visitors * 10) + (oto * 3) + (p * 5 + s * 5 - a * 5) + ceu;
+
+          return {
+            ...r,
+            p, a, l, m, s,
+            rgi, rgo,
+            total_referrals_given: totalRefGiven,
+            rri, rro,
+            total_referrals_received: totalRefReceived,
+            visitors,
+            one_to_ones: oto,
+            tyfcb_yen: tyfcbYen,
+            ceu,
+            total_score: totalScore
+          };
+        });
+
+        // Update member count badge
+        const countBadge = document.getElementById('palms-member-count-badge');
+        if (countBadge) countBadge.textContent = `${currentPalmsRecords.length}名`;
+
+        // Render View
+        renderPalmsRankingView();
+      } else {
+        renderPalmsEmptyState(res ? res.error : 'データ取得に失敗しました');
+      }
+    })
+    .catch(err => {
+      console.error('Failed to fetch PALMS ranking:', err);
+      renderPalmsEmptyState('サーバー通信エラーが発生しました');
+    });
+}
+
+/**
+ * Trigger manual sync from BNI Connect
+ */
+function syncPalmsFromBniConnect() {
+  if (isPalmsSyncing) return;
+  isPalmsSyncing = true;
+
+  const btn = document.getElementById('btn-sync-palms');
+  const btnText = btn ? btn.querySelector('.btn-text') : null;
+  const btnIcon = btn ? btn.querySelector('i') : null;
+
+  if (btn) btn.disabled = true;
+  if (btnIcon) btnIcon.classList.add('fa-spin');
+  if (btnText) btnText.textContent = '同期中...';
+
+  showToast('BNI Connectから最新PALMSデータを取得しています...', 'info');
+
+  ApiService.call('syncPalmsApi')
+    .then(res => {
+      if (res && res.success) {
+        showToast(res.message || 'PALMSデータを正常に更新しました', 'success');
+        fetchPalmsPeriods();
+      } else {
+        showToast('同期に失敗しました: ' + (res ? res.error : '不明なエラー'), 'error');
+      }
+    })
+    .catch(err => {
+      console.error('BNI Connect Sync error:', err);
+      showToast('BNI Connect同期中にエラーが発生しました', 'error');
+    })
+    .finally(() => {
+      isPalmsSyncing = false;
+      if (btn) btn.disabled = false;
+      if (btnIcon) btnIcon.classList.remove('fa-spin');
+      if (btnText) btnText.textContent = 'Connect同期';
+    });
+}
+
+/**
+ * Switch metric filter
+ */
+function switchPalmsMetric(metric) {
+  currentPalmsMetric = metric;
+
+  // Update tabs active state
+  const tabs = document.querySelectorAll('#palms-metric-tabs .palms-metric-tab');
+  tabs.forEach(tab => {
+    if (tab.getAttribute('data-metric') === metric) {
+      tab.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-2xs');
+      tab.classList.remove('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+    } else {
+      tab.classList.remove('active', 'bg-blue-600', 'text-white', 'shadow-2xs');
+      tab.classList.add('bg-white', 'text-slate-600', 'border', 'border-slate-200');
+    }
+  });
+
+  // Update formula/hint text
+  const hintEl = document.getElementById('palms-hint-text');
+  if (hintEl) {
+    const hints = {
+      'total': '総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU',
+      'referrals': 'リファーラル提供数（内部リファーラル ＋ 外部リファーラル）の順位です',
+      'one_to_ones': 'メンバー同士の1to1実施回数の順位です',
+      'visitors': 'チャプター定例会へ招待したビジター人数の順位です',
+      'tyfcb': '感謝状売上（Thank You For Closed Business）の総額順位です',
+      'attendance': '定例会出席実績（P:出席, A:欠席, L:遅刻, M:医療等, S:代理出席）'
+    };
+    hintEl.textContent = hints[metric] || '';
+  }
+
+  // Set default sort for metric
+  if (metric === 'total') currentPalmsSort = { field: 'total_score', asc: false };
+  else if (metric === 'referrals') currentPalmsSort = { field: 'referrals_given', asc: false };
+  else if (metric === 'one_to_ones') currentPalmsSort = { field: 'one_to_ones', asc: false };
+  else if (metric === 'visitors') currentPalmsSort = { field: 'visitors', asc: false };
+  else if (metric === 'tyfcb') currentPalmsSort = { field: 'tyfcb', asc: false };
+  else if (metric === 'attendance') currentPalmsSort = { field: 'attendance', asc: false };
+
+  renderPalmsRankingView();
+}
+
+/**
+ * Render the entire PALMS Ranking View
+ */
+function renderPalmsRankingView() {
+  if (!currentPalmsRecords || currentPalmsRecords.length === 0) {
+    renderPalmsEmptyState();
+    return;
+  }
+
+  // Sort records according to current metric / sort setting
+  const sortedRecords = [...currentPalmsRecords].sort((a, b) => {
+    let valA = 0;
+    let valB = 0;
+
+    switch (currentPalmsSort.field) {
+      case 'name':
+        valA = a.member_name || '';
+        valB = b.member_name || '';
+        return currentPalmsSort.asc ? valA.localeCompare(valB, 'ja') : valB.localeCompare(valA, 'ja');
+      case 'rank':
+      case 'total_score':
+        valA = a.total_score;
+        valB = b.total_score;
+        break;
+      case 'referrals_given':
+        valA = a.total_referrals_given;
+        valB = b.total_referrals_given;
+        break;
+      case 'referrals_received':
+        valA = a.total_referrals_received;
+        valB = b.total_referrals_received;
+        break;
+      case 'one_to_ones':
+        valA = a.one_to_ones;
+        valB = b.one_to_ones;
+        break;
+      case 'visitors':
+        valA = a.visitors;
+        valB = b.visitors;
+        break;
+      case 'tyfcb':
+        valA = a.tyfcb_yen;
+        valB = b.tyfcb_yen;
+        break;
+      case 'attendance':
+        valA = (a.p * 5 + a.s * 5) - (a.a * 5);
+        valB = (b.p * 5 + b.s * 5) - (b.a * 5);
+        break;
+      case 'ceu':
+        valA = a.ceu;
+        valB = b.ceu;
+        break;
+      default:
+        valA = a.total_score;
+        valB = b.total_score;
+    }
+
+    if (valA !== valB) {
+      return currentPalmsSort.asc ? (valA - valB) : (valB - valA);
+    }
+    // Secondary tie-breaker: referrals then 1to1
+    return b.total_referrals_given - a.total_referrals_given;
+  });
+
+  // Assign ranking numbers (1-indexed)
+  sortedRecords.forEach((r, idx) => {
+    r.display_rank = idx + 1;
+  });
+
+  renderPalmsPodium(sortedRecords);
+  renderPalmsTable(sortedRecords);
+}
+
+/**
+ * Render Apple Style Podium Cards (Top 3)
+ */
+function renderPalmsPodium(records) {
+  const container = document.getElementById('palms-podium-container');
+  if (!container) return;
+
+  if (records.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const top3 = records.slice(0, 3);
+  let html = '';
+
+  top3.forEach((m, idx) => {
+    const rank = idx + 1;
+    let badgeClass = '';
+    let badgeLabel = '';
+    let iconClass = '';
+    let rankColor = '';
+    let borderAccent = '';
+
+    if (rank === 1) {
+      badgeClass = 'bg-amber-400 text-amber-950 font-black';
+      badgeLabel = '1st Place';
+      iconClass = 'fa-solid fa-crown text-amber-500';
+      rankColor = 'text-amber-500';
+      borderAccent = 'border-amber-200/90 shadow-sm';
+    } else if (rank === 2) {
+      badgeClass = 'bg-slate-300 text-slate-800 font-bold';
+      badgeLabel = '2nd Place';
+      iconClass = 'fa-solid fa-medal text-slate-400';
+      rankColor = 'text-slate-400';
+      borderAccent = 'border-slate-200';
+    } else {
+      badgeClass = 'bg-amber-700/20 text-amber-800 font-bold';
+      badgeLabel = '3rd Place';
+      iconClass = 'fa-solid fa-award text-amber-700';
+      rankColor = 'text-amber-700';
+      borderAccent = 'border-slate-200';
+    }
+
+    // Dynamic Primary Metric Display based on active tab
+    let primaryMetricVal = '';
+    let primaryMetricLabel = '';
+
+    if (currentPalmsMetric === 'total') {
+      primaryMetricVal = m.total_score.toLocaleString();
+      primaryMetricLabel = '総合スコア';
+    } else if (currentPalmsMetric === 'referrals') {
+      primaryMetricVal = `${m.total_referrals_given}件`;
+      primaryMetricLabel = `リファーラル提供 (内${m.rgi}/外${m.rgo})`;
+    } else if (currentPalmsMetric === 'one_to_ones') {
+      primaryMetricVal = `${m.one_to_ones}回`;
+      primaryMetricLabel = '1to1 実施';
+    } else if (currentPalmsMetric === 'visitors') {
+      primaryMetricVal = `${m.visitors}名`;
+      primaryMetricLabel = 'ビジター招待';
+    } else if (currentPalmsMetric === 'tyfcb') {
+      primaryMetricVal = '¥' + m.tyfcb_yen.toLocaleString();
+      primaryMetricLabel = '売上貢献額';
+    } else if (currentPalmsMetric === 'attendance') {
+      primaryMetricVal = `P:${m.p} / A:${m.a}`;
+      primaryMetricLabel = '出欠 (出席/欠席)';
+    }
+
+    const memberCategory = m.member_category || m.member_profession || 'メンバー';
+    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+
+    html += `
+      <div class="bg-white rounded-2xl ${borderAccent} p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
+        <!-- Top Meta: Badge & Icon -->
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${badgeClass}">
+              ${rank}
+            </span>
+            <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">${badgeLabel}</span>
+          </div>
+          <i class="${iconClass} text-lg"></i>
+        </div>
+
+        <!-- Member Info -->
+        <div class="mb-4">
+          <h4 class="text-base sm:text-lg font-black text-slate-800 tracking-tight cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2" onclick="navigateToMemberDetail('${memberNameSafe}')">
+            <span>${m.member_name}</span>
+            <i class="fa-solid fa-chevron-right text-3xs text-slate-300"></i>
+          </h4>
+          <p class="text-2xs text-slate-400 mt-0.5 font-medium truncate">${memberCategory}</p>
+        </div>
+
+        <!-- Primary Highlight Stat -->
+        <div class="mb-4 pt-2 border-t border-slate-100">
+          <div class="text-2xs font-bold text-slate-500 mb-0.5">${primaryMetricLabel}</div>
+          <div class="text-2xl sm:text-3xl font-black font-tabular tracking-tight ${rank === 1 ? 'text-blue-600' : 'text-slate-800'}">
+            ${primaryMetricVal}
+          </div>
+        </div>
+
+        <!-- Mini Stats Grid -->
+        <div class="grid grid-cols-4 gap-1.5 pt-3 border-t border-slate-100 text-center">
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">リファーラル</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${m.total_referrals_given}</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">1to1</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${m.one_to_ones}</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">ビジター</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${m.visitors}</div>
+          </div>
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">売上 (千円)</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${Number(m.tyfcb_amount || 0).toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Render Comprehensive PALMS Ranking Table
+ */
+function renderPalmsTable(records) {
+  const tableBody = document.getElementById('palms-table-body');
+  if (!tableBody) return;
+
+  if (records.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="10" class="py-12 text-center text-slate-400 text-xs">
+          表示対象のデータがありません
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = '';
+
+  records.forEach(m => {
+    const rank = m.display_rank;
+    let rankBadge = '';
+
+    if (rank === 1) {
+      rankBadge = '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-amber-950 font-black text-2xs shadow-2xs">1</span>';
+    } else if (rank === 2) {
+      rankBadge = '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-300 text-slate-800 font-black text-2xs shadow-2xs">2</span>';
+    } else if (rank === 3) {
+      rankBadge = '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-700/20 text-amber-800 font-black text-2xs">3</span>';
+    } else {
+      rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-2xs font-tabular">${rank}</span>`;
+    }
+
+    const memberCategory = m.member_category || m.member_profession || '-';
+    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+
+    // Determine highlight column styling based on active metric
+    const isTotalActive = currentPalmsMetric === 'total';
+    const isRefActive = currentPalmsMetric === 'referrals';
+    const isOtoActive = currentPalmsMetric === 'one_to_ones';
+    const isVisActive = currentPalmsMetric === 'visitors';
+    const isTyfcbActive = currentPalmsMetric === 'tyfcb';
+
+    const colHighlightClass = 'bg-blue-50/40 font-bold text-blue-700';
+
+    html += `
+      <tr class="hover:bg-slate-50/80 transition-colors">
+        <td class="py-3 px-3 text-center align-middle">
+          ${rankBadge}
+        </td>
+        <td class="py-3 px-4 align-middle">
+          <div class="font-bold text-slate-800 hover:text-blue-600 cursor-pointer flex items-center gap-1.5 transition-colors" onclick="navigateToMemberDetail('${memberNameSafe}')">
+            <span>${m.member_name}</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-3xs text-slate-300"></i>
+          </div>
+          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[180px]">${memberCategory}</div>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular font-bold ${isTotalActive ? colHighlightClass : 'text-slate-800'}">
+          ${m.total_score.toLocaleString()}
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRefActive ? colHighlightClass : 'text-slate-700'}">
+          <span class="font-bold text-slate-800">${m.total_referrals_given}</span>
+          <span class="text-3xs text-slate-400 ml-1 font-normal">(内${m.rgi}/外${m.rgo})</span>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-600">
+          ${m.total_referrals_received}
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
+          ${m.one_to_ones}
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
+          ${m.visitors}
+        </td>
+        <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
+          ¥${m.tyfcb_yen.toLocaleString()}
+        </td>
+        <td class="py-3 px-4 text-center align-middle">
+          <div class="inline-flex items-center gap-1 text-3xs font-tabular">
+            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold" title="出席: ${m.p}">P:${m.p}</span>
+            <span class="px-1.5 py-0.5 rounded ${m.a > 0 ? 'bg-red-50 text-red-700 font-bold' : 'bg-slate-100 text-slate-500'}" title="欠席: ${m.a}">A:${m.a}</span>
+            <span class="px-1.5 py-0.5 rounded ${m.l > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-400'}" title="遅刻: ${m.l}">L:${m.l}</span>
+            <span class="px-1.5 py-0.5 rounded ${m.m > 0 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-400'}" title="医療: ${m.m}">M:${m.m}</span>
+            <span class="px-1.5 py-0.5 rounded ${m.s > 0 ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-slate-100 text-slate-400'}" title="代理: ${m.s}">S:${m.s}</span>
+          </div>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-600">
+          ${m.ceu}
+        </td>
+      </tr>
+    `;
+  });
+
+  tableBody.innerHTML = html;
+}
+
+/**
+ * Navigate to Member Personal Dashboard
+ */
+function navigateToMemberDetail(memberName) {
+  if (!memberName) return;
+  if (typeof switchTab === 'function') {
+    switchTab('member-dashboard', false);
+    setTimeout(() => {
+      if (typeof initMemberDashboard === 'function') {
+        initMemberDashboard(memberName);
+      }
+    }, 50);
+  }
+}
+
+/**
+ * Sort PALMS Table by column
+ */
+function sortPalmsTable(field) {
+  if (currentPalmsSort.field === field) {
+    currentPalmsSort.asc = !currentPalmsSort.asc;
+  } else {
+    currentPalmsSort.field = field;
+    // Numbers sort descending by default, name sorts ascending
+    currentPalmsSort.asc = (field === 'name');
+  }
+
+  // Update table sort header icons
+  ['rank', 'name', 'total_score', 'referrals_given', 'referrals_received', 'one_to_ones', 'visitors', 'tyfcb', 'ceu'].forEach(f => {
+    const iconEl = document.getElementById('sort-icon-' + f);
+    if (!iconEl) return;
+    if (f === currentPalmsSort.field) {
+      iconEl.innerHTML = currentPalmsSort.asc 
+        ? '<i class="fa-solid fa-sort-up text-blue-600 text-3xs"></i>' 
+        : '<i class="fa-solid fa-sort-down text-blue-600 text-3xs"></i>';
+    } else {
+      iconEl.innerHTML = '<i class="fa-solid fa-sort text-slate-300 text-3xs"></i>';
+    }
+  });
+
+  renderPalmsRankingView();
+}
+
+/**
+ * Render empty state when no data exists
+ */
+function renderPalmsEmptyState(customMessage = null) {
+  const podiumContainer = document.getElementById('palms-podium-container');
+  const tableBody = document.getElementById('palms-table-body');
+
+  const msg = customMessage || 'PALMSデータがまだ登録されていません。「Connect同期」ボタンを押してBNI Connectから取得してください。';
+
+  if (podiumContainer) {
+    podiumContainer.innerHTML = `
+      <div class="col-span-full bg-white rounded-2xl border border-dashed border-slate-300 p-8 text-center text-slate-500 shadow-2xs">
+        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
+          <i class="fa-solid fa-cloud-arrow-down text-xl"></i>
+        </div>
+        <h4 class="text-sm font-bold text-slate-700 mb-1">PALMSデータがありません</h4>
+        <p class="text-xs text-slate-400 max-w-md mx-auto mb-4">${msg}</p>
+        <button onclick="syncPalmsFromBniConnect()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-2xs transition-all inline-flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>BNI Connectから今すぐ同期</span>
+        </button>
+      </div>
+    `;
+  }
+
+  if (tableBody) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="10" class="py-12 text-center text-slate-400 text-xs">
+          表示可能なデータがありません
+        </td>
+      </tr>
+    `;
+  }
 }
 </script>
 

@@ -236,6 +236,22 @@ const ApiService = {
         };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
+      case 'getPalmsListApi':
+      case 'getPalmsRankingApi': {
+        const pStart = args[0] ? encodeURIComponent(args[0]) : '';
+        const pEnd = args[1] ? encodeURIComponent(args[1]) : '';
+        const q = (pStart && pEnd) ? `&startDate=${pStart}&endDate=${pEnd}` : '';
+        return { url: `/api/palms.php?action=list${q}`, method: 'GET' };
+      }
+      case 'getPalmsPeriodsApi':
+        return { url: '/api/palms.php?action=periods', method: 'GET' };
+      case 'syncPalmsApi':
+      case 'syncPalmsFromBniConnectApi':
+        return {
+          url: '/api/palms.php?action=sync',
+          method: 'POST',
+          body: (args[0] && typeof args[0] === 'object') ? args[0] : (args[0] && args[1] ? { startDate: args[0], endDate: args[1] } : {})
+        };
       case 'getScheduledEmailsApi':
         return null;
       default:

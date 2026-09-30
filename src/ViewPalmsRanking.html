@@ -1,0 +1,146 @@
+<!-- PALMS Ranking View (REvo OS Phase 2) -->
+<div id="view-palms-ranking" class="view-content" style="display: none;">
+  <!-- Header / Action Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+    <div>
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
+          <i class="fa-solid fa-trophy text-sm"></i>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
+          PALMS ランキング
+        </h2>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
+        BNI Connect PALMSレポートに基づくメンバー活動成果・貢献ランキング
+      </p>
+    </div>
+
+    <!-- Actions: Period Selector & Sync Button -->
+    <div class="flex items-center gap-2 flex-wrap self-end md:self-auto">
+      <div class="relative">
+        <label for="palms-period-select" class="sr-only">集計期間</label>
+        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none">
+          <option value="">期間を読込中...</option>
+        </select>
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+          <i class="fa-solid fa-chevron-down text-2xs"></i>
+        </div>
+      </div>
+
+      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="BNI Connectから最新PALMSを取得">
+        <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
+        <span class="btn-text">Connect同期</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metric Filter Segmented Controls (Pills) -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="palms-metric-tabs">
+    <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
+      <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
+      <span>総合スコア</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
+      <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
+      <span>リファーラル提供</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
+      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
+      <span>1to1</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
+      <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
+      <span>ビジター招待</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
+      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
+      <span>売上貢献 (TYFCB)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
+      <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
+      <span>PALMS出欠</span>
+    </button>
+  </div>
+
+  <!-- Metric Description & Formula Hint -->
+  <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-circle-info text-blue-500"></i>
+      <span id="palms-hint-text">総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU</span>
+    </div>
+    <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
+  </div>
+
+  <!-- Apple Style Podium Cards (Top 3) -->
+  <div id="palms-podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <!-- Populated by JavaScript -->
+    <div class="col-span-full py-8 text-center text-slate-400">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <p class="text-xs">ランキングを集計中...</p>
+    </div>
+  </div>
+
+  <!-- Comprehensive Member PALMS Ranking Table -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden" id="palms-table-container">
+    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-list-ol text-blue-600"></i>
+        <span>メンバー別 詳細実績一覧</span>
+        <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
+      </h3>
+      <div class="text-2xs text-slate-400">
+        氏名クリックで個別ダッシュボードへ移動
+      </div>
+    </div>
+
+    <!-- Table Responsive Wrap -->
+    <div class="overflow-x-auto scrollbar-thin">
+      <table class="w-full text-left border-collapse min-w-[760px]">
+        <thead>
+          <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
+            <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
+              順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 min-w-[160px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+              メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
+              総合スコア <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
+              リファーラル提供 <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_received')">
+              受取 <span id="sort-icon-referrals_received"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
+              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
+              ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
+              売上貢献 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-center">
+              出欠 (P/A/L/M/S)
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
+              CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
+          <!-- Populated by JavaScript -->
+          <tr>
+            <td colspan="10" class="py-12 text-center text-slate-400">
+              <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+              <p class="text-xs">データを読込中...</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
