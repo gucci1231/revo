@@ -230,7 +230,13 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('id="palms-detail-ppw-value"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-detail-rpw-value"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-detail-scores-grid"'), true);
-    assert.strictEqual(indexHtml.includes('id="palms-detail-history-tbody"'), true);
+    
+    // 7 Indicators Radar Chart (New Feature)
+    assert.strictEqual(indexHtml.includes('id="chart-palms-detail-radar"'), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsDetailRadar('), true);
+
+    // Multi-period comparison table is removed per user request
+    assert.strictEqual(indexHtml.includes('id="palms-detail-history-tbody"'), false);
 
     // Raw numbers
     assert.strictEqual(indexHtml.includes('id="palms-raw-p"'), true);
@@ -243,7 +249,6 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('function renderPalmsDetailScores('), true);
     assert.strictEqual(indexHtml.includes('function renderPalmsDetailRawBreakdown('), true);
     assert.strictEqual(indexHtml.includes('function fetchPalmsMemberHistory('), true);
-    assert.strictEqual(indexHtml.includes('function renderPalmsDetailHistory('), true);
 
     // ApiService mapping
     assert.strictEqual(indexHtml.includes('getPalmsMemberHistoryApi'), true);
@@ -252,11 +257,11 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes("openPalmsDetailModal('${memberNameSafe}')"), true);
   });
 
-  it('verifies weekly PALMS submissions table and rendering function exist in compiled index.html', () => {
-    // Weekly table container & badge
+  it('verifies half-year PALMS submissions table and rendering function exist in compiled index.html', () => {
+    // Half-Year table container & badge
     assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-tbody"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-badge"'), true);
-    assert.strictEqual(indexHtml.includes('週別の入力状況・スリップ活動推移'), true);
+    assert.strictEqual(indexHtml.includes('半年間活動実績・スリップ推移'), true);
 
     // Script functions
     assert.strictEqual(indexHtml.includes('function renderPalmsDetailWeeklySubmissions('), true);

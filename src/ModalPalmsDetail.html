@@ -99,18 +99,36 @@
         </div>
       </div>
 
-      <!-- 7 Traffic Light Scoring Indicators Breakdown -->
+      <!-- 7 Traffic Light Scoring Indicators Balance (Radar Chart + Details) -->
       <div>
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
           <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-list-check text-slate-600"></i>
-            <span>公式100点基準 7大採点項目の詳細内訳</span>
+            <i class="fa-solid fa-chart-pie text-slate-600"></i>
+            <span>公式100点基準 7大採点項目バランス</span>
           </h4>
-          <span class="text-2xs text-slate-400">BNI公式トラフィックライト採点基準</span>
+          <span class="text-2xs text-slate-400">得意・不得意の直感ビジュアライズ</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="palms-detail-scores-grid">
-          <!-- Dynamically populated by renderPalmsDetailScores -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+          <!-- Left: Radar Chart Container -->
+          <div class="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col items-center justify-center">
+            <div class="w-full text-center mb-2">
+              <span class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                レーダー診断 (100%基準)
+              </span>
+            </div>
+            <div class="relative w-full max-w-[280px] sm:max-w-[320px] aspect-square flex items-center justify-center">
+              <canvas id="chart-palms-detail-radar"></canvas>
+            </div>
+            <p class="text-3xs text-slate-400 mt-2 text-center">
+              ※ 青枠: 本人実績比率 / 点線: 目標クリア基準 (70%水準)
+            </p>
+          </div>
+
+          <!-- Right: Detailed Scores List -->
+          <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="palms-detail-scores-grid">
+            <!-- Dynamically populated by renderPalmsDetailScores -->
+          </div>
         </div>
       </div>
 
@@ -210,28 +228,28 @@
         </div>
       </div>
 
-      <!-- Weekly Submissions & Slip Activity Status (New Section) -->
+      <!-- Half-Year Submissions & Activity Status Table -->
       <div>
         <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
           <div class="flex items-center gap-2">
             <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-calendar-week text-blue-600"></i>
-              <span>週別の入力状況・スリップ活動推移</span>
+              <i class="fa-solid fa-calendar-check text-blue-600"></i>
+              <span>半年間活動実績・スリップ推移</span>
             </h4>
             <span id="palms-detail-weekly-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              直近--週
+              半年間 (26週)
             </span>
           </div>
-          <span class="text-2xs text-slate-400">定例会ごとの出席・スリップ入力実績</span>
+          <span class="text-2xs text-slate-400">直近半年間の期間・月別スリップ実績推移</span>
         </div>
 
         <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-2">
           <table class="w-full text-left text-xs border-collapse min-w-[700px]">
             <thead>
               <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                <th class="py-2.5 px-3">開催日 (週)</th>
-                <th class="py-2.5 px-3 text-center">出席判定</th>
-                <th class="py-2.5 px-3 text-center">スリップ状況</th>
+                <th class="py-2.5 px-3">対象期間 / 月</th>
+                <th class="py-2.5 px-3 text-center">出席状況</th>
+                <th class="py-2.5 px-3 text-center">活動ステータス</th>
                 <th class="py-2.5 px-3 text-right">週貢献 (PPW)</th>
                 <th class="py-2.5 px-3 text-right">リファーラル</th>
                 <th class="py-2.5 px-3 text-right">ビジター</th>
@@ -244,43 +262,7 @@
               <tr>
                 <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
                   <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
-                  <p>週別データを読込中...</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Multi-Period History Comparison Table -->
-      <div>
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-          <h4 class="text-sm font-black text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
-            <span>期別ヒストリー推移・期間別比較</span>
-          </h4>
-          <span class="text-2xs text-slate-400">過去期間のスコア・マクロ活動比較</span>
-        </div>
-
-        <div class="overflow-x-auto rounded-2xl border border-slate-200">
-          <table class="w-full text-left text-xs border-collapse min-w-[640px]">
-            <thead>
-              <tr class="bg-slate-50 text-2xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200">
-                <th class="py-2.5 px-3">対象期間</th>
-                <th class="py-2.5 px-3 text-center">判定</th>
-                <th class="py-2.5 px-3 text-right">総合スコア</th>
-                <th class="py-2.5 px-3 text-right">PPW (週貢献)</th>
-                <th class="py-2.5 px-3 text-right">RPW (週リファ)</th>
-                <th class="py-2.5 px-3 text-right">ビジター</th>
-                <th class="py-2.5 px-3 text-right">1to1</th>
-                <th class="py-2.5 px-3 text-right">TYFCB売上</th>
-              </tr>
-            </thead>
-            <tbody id="palms-detail-history-tbody" class="divide-y divide-slate-100 font-tabular">
-              <tr>
-                <td colspan="8" class="py-6 text-center text-slate-400 text-xs">
-                  <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
-                  <p>期間別履歴を読込中...</p>
+                  <p>半年間データを読込中...</p>
                 </td>
               </tr>
             </tbody>
