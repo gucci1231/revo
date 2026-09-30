@@ -1,0 +1,888 @@
+<!-- 定例会スロット抽選ロジック & Web Audio API & 16:9演出エンジン -->
+<script>
+  let lotteryMembers = [];
+  let lotteryExcludedMemberIds = new Set();
+  let lotteryHistory = [];
+  let lotteryAlgoMode = 'round-robin'; // 'round-robin' | 'weighted' | 'pure-random'
+  let lotteryIsSpinning = false;
+  let lotterySoundEnabled = true;
+  let lotteryAudioCtx = null;
+  let currentWinner = null;
+  let confettiAnimationId = null;
+
+  const AWARD_PRESETS = [
+    '定例会スペシャル賞',
+    '豪華グルメカタログ賞',
+    '感謝のAmazonギフト賞',
+    'ベストプレゼンター賞',
+    'ビジター招待サンクス賞',
+    'チャプター貢献アワード',
+    '本日のサプライズプレゼント'
+  ];
+  let awardPresetIndex = 0;
+
+  /* --- 初期化・データ取得 --- */
+  function initLotteryView() {
+    loadLotteryData();
+    setupLotteryShortcuts();
+  }
+
+  async function loadLotteryData() {
+    try {
+      const res = await ApiService.call('getLotteryDataApi');
+      if (res && res.success !== false) {
+        lotteryMembers = res.members || [];
+        lotteryHistory = res.history || [];
+        updateLotteryUI();
+      }
+    } catch (e) {
+      console.error('Failed to load lottery data:', e);
+      // フォールバック: membersテーブルから取得を試みる
+      if (typeof rawInitialData !== 'undefined' && rawInitialData.members) {
+        lotteryMembers = rawInitialData.members.map(m => ({
+          id: m.id,
+          name: m.name,
+          category: m.category || 'その他',
+          profession: m.profession || '',
+          win_count: 0,
+          last_won_at: null
+        }));
+        updateLotteryUI();
+      }
+    }
+  }
+
+  function updateLotteryUI() {
+    const activeMembers = getActiveLotteryMembers();
+    const activeBadge = document.getElementById('lottery-active-count-badge');
+    const poolText = document.getElementById('lottery-target-pool-text');
+    const histBadge = document.getElementById('lottery-history-count-badge');
+
+    if (activeBadge) activeBadge.innerText = activeMembers.length;
+    if (poolText) poolText.innerText = `候補: ${activeMembers.length} 名`;
+    if (histBadge) histBadge.innerText = lotteryHistory.length;
+
+    renderReelsInitialState(activeMembers);
+  }
+
+  function getActiveLotteryMembers() {
+    return lotteryMembers.filter(m => !lotteryExcludedMemberIds.has(String(m.id)));
+  }
+
+  /* --- Web Audio API 効果音エンジン --- */
+  function getAudioContext() {
+    if (!lotteryAudioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        lotteryAudioCtx = new AudioContextClass();
+      }
+    }
+    if (lotteryAudioCtx && lotteryAudioCtx.state === 'suspended') {
+      lotteryAudioCtx.resume();
+    }
+    return lotteryAudioCtx;
+  }
+
+  function toggleLotterySound() {
+    lotterySoundEnabled = !lotterySoundEnabled;
+    const icon = document.getElementById('lottery-sound-icon');
+    const label = document.getElementById('lottery-sound-label');
+    if (lotterySoundEnabled) {
+      if (icon) icon.className = 'fa-solid fa-volume-high text-amber-500';
+      if (label) label.innerText = 'サウンド ON';
+      playLotterySound('tick');
+    } else {
+      if (icon) icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+      if (label) label.innerText = 'サウンド OFF';
+    }
+  }
+
+  function playLotterySound(type) {
+    if (!lotterySoundEnabled) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+
+      if (type === 'spin_start') {
+        // スピン始動音: 上昇グリッサンド
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(700, now + 0.35);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'tick') {
+        // リール回転音: 短いクリック
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, now);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } else if (type === 'reel_stop') {
+        // リール停止音: ドスンという低音打撃
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.18);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      } else if (type === 'reach') {
+        // 激アツリーチアラート音 (サイレン)
+        const notes = [600, 800, 600, 800, 1000];
+        notes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.25, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.07);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.07);
+        });
+      } else if (type === 'heartbeat') {
+        // 心拍音 (ドクン…ドクン…)
+        [0, 0.12].forEach(delay => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(80, now + delay);
+          osc.frequency.exponentialRampToValueAtTime(40, now + delay + 0.1);
+          gain.gain.setValueAtTime(0.4, now + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + 0.1);
+        });
+      } else if (type === 'fanfare') {
+        // 豪華祝賀ファンファーレ (C-E-G-C メロディ＋和音)
+        const chords = [
+          { time: 0.0, freqs: [261.63, 329.63, 392.00] }, // C major
+          { time: 0.2, freqs: [329.63, 392.00, 523.25] }, // E-G-C
+          { time: 0.4, freqs: [392.00, 493.88, 587.33] }, // G major
+          { time: 0.6, freqs: [523.25, 659.25, 783.99] }, // High C major
+          { time: 0.9, freqs: [523.25, 659.25, 783.99, 1046.50] } // Grand Final Chord
+        ];
+
+        chords.forEach(c => {
+          c.freqs.forEach(freq => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + c.time);
+            gain.gain.setValueAtTime(0.18, now + c.time);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + c.time + (c.time === 0.9 ? 1.5 : 0.22));
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + c.time);
+            osc.stop(now + c.time + (c.time === 0.9 ? 1.5 : 0.22));
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('Audio playback error:', e);
+    }
+  }
+
+  /* --- 初期リール描画 --- */
+  function renderReelsInitialState(members) {
+    const list = members.length > 0 ? members : [{ name: 'REvoメンバー', category: 'チャプター', profession: 'BNI' }];
+    for (let r = 1; r <= 3; r++) {
+      const strip = document.getElementById(`reel-strip-${r}`);
+      if (!strip) continue;
+      strip.innerHTML = '';
+      strip.style.transform = 'translateY(0px)';
+      strip.style.transition = 'none';
+
+      // 最初の表示用アイテム
+      const item = list[(r - 1) % list.length];
+      strip.appendChild(createReelItemElement(item));
+    }
+  }
+
+  function createReelItemElement(member) {
+    const el = document.createElement('div');
+    el.className = 'reel-item flex flex-col items-center justify-center p-2 text-center select-none';
+    el.innerHTML = `
+      <span class="reel-item-cat text-[9px] sm:text-[11px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-1 max-w-[90%] truncate">
+        ${escapeHtml(member.category || 'メンバー')}
+      </span>
+      <span class="reel-item-name text-base sm:text-2xl md:text-3xl font-black text-white tracking-wide truncate max-w-[95%] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        ${escapeHtml(member.name || '')}
+      </span>
+      <span class="reel-item-prof text-[10px] sm:text-xs text-slate-400 font-medium truncate max-w-[90%] mt-0.5">
+        ${escapeHtml(member.profession || '')}
+      </span>
+    `;
+    return el;
+  }
+
+  /* --- 満遍なく当たる抽選アルゴリズム --- */
+  function selectLotteryWinner(candidates) {
+    if (!candidates || candidates.length === 0) return null;
+
+    if (lotteryAlgoMode === 'round-robin') {
+      // 1. 完全未当選優先 (Round-Robin)
+      // 候補者の中で、現在の最小当選回数を調べる
+      let minWins = Infinity;
+      candidates.forEach(m => {
+        const count = Number(m.win_count || 0);
+        if (count < minWins) minWins = count;
+      });
+
+      // 最小当選回数を持つメンバー群のみを抽出
+      const pool = candidates.filter(m => Number(m.win_count || 0) === minWins);
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      return chosen;
+    } else if (lotteryAlgoMode === 'weighted') {
+      // 2. 確率ウェイト方式 (当選回数が少ないほど超高確率)
+      let weightedPool = [];
+      candidates.forEach(m => {
+        const count = Number(m.win_count || 0);
+        // 0回: 100票, 1回: 15票, 2回以上: 3票
+        const weight = count === 0 ? 100 : (count === 1 ? 15 : 3);
+        for (let i = 0; i < weight; i++) {
+          weightedPool.push(m);
+        }
+      });
+      return weightedPool[Math.floor(Math.random() * weightedPool.length)];
+    } else {
+      // 3. 完全ランダム
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+  }
+
+  /* --- スロットスピン開始 (ド派手演出 & 焦らし) --- */
+  async function startLotterySpin() {
+    if (lotteryIsSpinning) return;
+    const candidates = getActiveLotteryMembers();
+
+    if (candidates.length === 0) {
+      showToast('抽選対象のメンバーがいません。出欠設定を確認してください。', 'warning');
+      return;
+    }
+
+    lotteryIsSpinning = true;
+    currentWinner = null;
+    const spinBtn = document.getElementById('lottery-spin-btn');
+    const statusMsg = document.getElementById('lottery-status-message');
+    const reachBanner = document.getElementById('lottery-reach-banner');
+
+    if (spinBtn) {
+      spinBtn.disabled = true;
+      spinBtn.classList.add('opacity-60', 'cursor-not-allowed');
+    }
+    if (statusMsg) {
+      statusMsg.innerText = 'スロット激闘中…！';
+      statusMsg.className = 'text-amber-400 font-black animate-pulse';
+    }
+    if (reachBanner) {
+      reachBanner.classList.remove('active');
+    }
+
+    // 当選者を事前決定
+    const winner = selectLotteryWinner(candidates);
+    currentWinner = winner;
+
+    playLotterySound('spin_start');
+
+    // リールストリップを構築
+    // 各リールにダミーを多数生成し、最後（中央位置）に当選者を配置
+    const ITEM_HEIGHT = window.innerWidth < 640 ? 160 : (window.innerWidth < 768 ? 224 : 256);
+    const DUMMY_COUNT = 30; // 高速回転用のダミー数
+
+    const reelConfigs = [
+      { id: 'reel-strip-1', stopDelay: 2000, targetMember: winner },
+      { id: 'reel-strip-3', stopDelay: 3300, targetMember: winner }, // 右が2番目に止まりリーチ！
+      { id: 'reel-strip-2', stopDelay: 6000, targetMember: winner }  // 中が最後（超焦らしスロー）
+    ];
+
+    // ストリップ要素の生成
+    const strips = [];
+    reelConfigs.forEach(rc => {
+      const stripEl = document.getElementById(rc.id);
+      stripEl.innerHTML = '';
+      stripEl.style.transition = 'none';
+      stripEl.style.transform = 'translateY(0px)';
+
+      // ダミーメンバーのシャッフル配列
+      const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < DUMMY_COUNT; i++) {
+        const m = shuffled[i % shuffled.length];
+        stripEl.appendChild(createReelItemElement(m));
+      }
+
+      // 停止位置に当選者を配置
+      stripEl.appendChild(createReelItemElement(rc.targetMember));
+
+      // スベリ演出用に追加のダミーを前後に少し配置
+      for (let j = 0; j < 3; j++) {
+        const m = shuffled[(j + 5) % shuffled.length];
+        stripEl.appendChild(createReelItemElement(m));
+      }
+
+      strips.push({ el: stripEl, config: rc });
+    });
+
+    // 高速回転開始アニメーション
+    strips.forEach(s => {
+      // 一瞬待ってからトランジションを有効化
+      requestAnimationFrame(() => {
+        s.el.classList.add('reel-spinning');
+      });
+    });
+
+    // 回転中の効果音ループ
+    let tickCount = 0;
+    const tickInterval = setInterval(() => {
+      if (!lotteryIsSpinning) {
+        clearInterval(tickInterval);
+        return;
+      }
+      playLotterySound('tick');
+      tickCount++;
+    }, 90);
+
+    // 1. 左リール停止 (2.0秒)
+    setTimeout(() => {
+      stopReel(strips[0], ITEM_HEIGHT, DUMMY_COUNT, false);
+      playLotterySound('reel_stop');
+    }, 2000);
+
+    // 2. 右リール停止 (3.3秒) -> 左右同人物で「激アツ REACH!」
+    setTimeout(() => {
+      stopReel(strips[1], ITEM_HEIGHT, DUMMY_COUNT, false);
+      playLotterySound('reel_stop');
+
+      // リーチ演出発動！！
+      triggerReachEffect();
+    }, 3300);
+
+    // 3. 中央リール（超焦らし減速＆スベリ戻り確定） (6.0秒)
+    setTimeout(() => {
+      stopMiddleReelWithSuspense(strips[2], ITEM_HEIGHT, DUMMY_COUNT, () => {
+        clearInterval(tickInterval);
+        triggerJackpotWin(winner);
+      });
+    }, 4500);
+  }
+
+  function stopReel(stripObj, itemHeight, targetIndex, isMiddle) {
+    const el = stripObj.el;
+    el.classList.remove('reel-spinning');
+    const targetY = -(targetIndex * itemHeight);
+    el.style.transition = 'transform 0.4s cubic-bezier(0.15, 0.9, 0.25, 1)';
+    el.style.transform = `translateY(${targetY}px)`;
+  }
+
+  function triggerReachEffect() {
+    const reachBanner = document.getElementById('lottery-reach-banner');
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    if (reachBanner) {
+      reachBanner.classList.add('active');
+    }
+    if (statusMsg) {
+      statusMsg.innerText = '激アツ!! REACH!! 揃うか…!?';
+      statusMsg.className = 'text-red-500 font-black animate-ping text-sm sm:text-base';
+    }
+
+    playLotterySound('reach');
+
+    // 心拍音演出
+    let hbCount = 0;
+    const hbInterval = setInterval(() => {
+      if (!lotteryIsSpinning) {
+        clearInterval(hbInterval);
+        return;
+      }
+      playLotterySound('heartbeat');
+      hbCount++;
+      if (hbCount > 5) clearInterval(hbInterval);
+    }, 380);
+  }
+
+  // 中央リールの超焦らし演出（一度通り過ぎそうになってからの戻り演出！）
+  function stopMiddleReelWithSuspense(stripObj, itemHeight, targetIndex, onComplete) {
+    const el = stripObj.el;
+    el.classList.remove('reel-spinning');
+
+    // ステップ1: スローダウンして、ターゲットの1つ先へ行き過ぎる演出
+    const overshootY = -((targetIndex + 0.6) * itemHeight);
+    el.style.transition = 'transform 1.4s cubic-bezier(0.2, 0.8, 0.4, 1)';
+    el.style.transform = `translateY(${overshootY}px)`;
+
+    playLotterySound('tick');
+
+    // ステップ2: 会場「ああっ、行き過ぎた！？」からの…逆回転でジャストに戻る！(神演出)
+    setTimeout(() => {
+      const exactY = -(targetIndex * itemHeight);
+      el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'; // バウンド戻り
+      el.style.transform = `translateY(${exactY}px)`;
+
+      playLotterySound('reel_stop');
+
+      setTimeout(() => {
+        if (onComplete) onComplete();
+      }, 500);
+    }, 1450);
+  }
+
+  /* --- 大当たり確定 & 祝賀演出 --- */
+  async function triggerJackpotWin(winner) {
+    lotteryIsSpinning = false;
+    const reachBanner = document.getElementById('lottery-reach-banner');
+    const spinBtn = document.getElementById('lottery-spin-btn');
+    const statusMsg = document.getElementById('lottery-status-message');
+
+    if (reachBanner) reachBanner.classList.remove('active');
+    if (spinBtn) {
+      spinBtn.disabled = false;
+      spinBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+    }
+    if (statusMsg) {
+      statusMsg.innerText = `🎉 当選: ${winner.name} 様 🎉`;
+      statusMsg.className = 'text-amber-300 font-black text-sm sm:text-base';
+    }
+
+    // 画面全体フラッシュ & ファンファーレ
+    playLotterySound('fanfare');
+    startConfetti();
+
+    // 当選ポップアップ表示
+    setTimeout(() => {
+      openWinnerModal(winner);
+    }, 600);
+
+    // DBへ当選記録を保存
+    await recordWinnerToDb(winner);
+  }
+
+  async function recordWinnerToDb(winner) {
+    const awardInput = document.getElementById('lottery-award-input');
+    const awardTitle = awardInput ? (awardInput.value.trim() || '定例会スペシャル賞') : '定例会スペシャル賞';
+    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+
+    try {
+      const res = await ApiService.call('recordLotteryWinnerApi', {
+        member_id: String(winner.id),
+        member_name: winner.name,
+        award_title: awardTitle,
+        won_at: todayStr
+      });
+
+      if (res && res.success !== false) {
+        // ローカル状態更新
+        winner.win_count = (Number(winner.win_count) || 0) + 1;
+        winner.last_won_at = todayStr;
+        lotteryHistory.unshift({
+          id: res.id || String(Date.now()),
+          member_id: String(winner.id),
+          member_name: winner.name,
+          award_title: awardTitle,
+          won_at: todayStr
+        });
+
+        const winnerWinsEl = document.getElementById('winner-total-wins');
+        if (winnerWinsEl) winnerWinsEl.innerText = winner.win_count;
+
+        const histBadge = document.getElementById('lottery-history-count-badge');
+        if (histBadge) histBadge.innerText = lotteryHistory.length;
+      }
+    } catch (e) {
+      console.error('Failed to record lottery winner:', e);
+    }
+  }
+
+  /* --- 当選モーダル --- */
+  function openWinnerModal(winner) {
+    const modal = document.getElementById('lottery-winner-modal');
+    const nameEl = document.getElementById('winner-name-display');
+    const catEl = document.getElementById('winner-category-display');
+    const profEl = document.getElementById('winner-profession-display');
+    const awardEl = document.getElementById('winner-award-badge');
+    const awardInput = document.getElementById('lottery-award-input');
+
+    if (nameEl) nameEl.innerText = winner.name || '';
+    if (catEl) catEl.innerText = winner.category || 'メンバー';
+    if (profEl) profEl.innerText = winner.profession || '';
+    if (awardEl) awardEl.innerText = awardInput ? (awardInput.value.trim() || '定例会スペシャル賞') : '定例会スペシャル賞';
+
+    if (modal) {
+      modal.classList.remove('hidden');
+      const card = modal.querySelector('.winner-card');
+      if (card) {
+        setTimeout(() => {
+          card.classList.remove('scale-90', 'opacity-0');
+          card.classList.add('scale-100', 'opacity-100');
+        }, 50);
+      }
+    }
+  }
+
+  function closeWinnerModal() {
+    const modal = document.getElementById('lottery-winner-modal');
+    if (modal) {
+      const card = modal.querySelector('.winner-card');
+      if (card) {
+        card.classList.remove('scale-100', 'opacity-100');
+        card.classList.add('scale-90', 'opacity-0');
+      }
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        stopConfetti();
+        updateLotteryUI();
+      }, 250);
+    }
+  }
+
+  /* --- 紙吹雪 (Confetti) アニメーションエンジン --- */
+  function startConfetti() {
+    const canvas = document.getElementById('lottery-confetti-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    const particles = [];
+    const colors = ['#f59e0b', '#fbbf24', '#ef4444', '#3b82f6', '#10b981', '#ec4899', '#ffffff', '#ffd700'];
+
+    for (let i = 0; i < 180; i++) {
+      particles.push({
+        x: canvas.width * 0.5 + (Math.random() - 0.5) * 200,
+        y: canvas.height * 0.4 + (Math.random() - 0.5) * 100,
+        vx: (Math.random() - 0.5) * 18,
+        vy: -Math.random() * 16 - 4,
+        size: Math.random() * 8 + 6,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rotation: Math.random() * 360,
+        vrot: (Math.random() - 0.5) * 12,
+        gravity: 0.35,
+        drag: 0.96
+      });
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = 0;
+
+      particles.forEach(p => {
+        p.vx *= p.drag;
+        p.vy *= p.drag;
+        p.vy += p.gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.vrot;
+
+        if (p.y < canvas.height + 20) {
+          alive++;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          ctx.restore();
+        }
+      });
+
+      if (alive > 0) {
+        confettiAnimationId = requestAnimationFrame(render);
+      }
+    }
+
+    if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+    render();
+  }
+
+  function stopConfetti() {
+    if (confettiAnimationId) {
+      cancelAnimationFrame(confettiAnimationId);
+      confettiAnimationId = null;
+    }
+    const canvas = document.getElementById('lottery-confetti-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  /* --- 16:9 フルスクリーン切替 --- */
+  function toggleLotteryFullscreen() {
+    const wrapper = document.getElementById('lottery-theater-wrapper');
+    if (!wrapper) return;
+
+    if (!document.fullscreenElement) {
+      if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen();
+      } else if (wrapper.webkitRequestFullscreen) {
+        wrapper.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  function exitLotteryFullscreen() {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('fullscreenchange', () => {
+    const wrapper = document.getElementById('lottery-theater-wrapper');
+    const closeBtn = document.querySelector('.lottery-fs-close-btn');
+    const btnText = document.getElementById('lottery-fullscreen-btn-text');
+    const isFs = !!document.fullscreenElement;
+
+    if (wrapper) {
+      if (isFs) {
+        wrapper.classList.add('is-fullscreen');
+        if (closeBtn) closeBtn.classList.remove('hidden');
+        if (btnText) btnText.innerText = '全画面解除';
+      } else {
+        wrapper.classList.remove('is-fullscreen');
+        if (closeBtn) closeBtn.classList.add('hidden');
+        if (btnText) btnText.innerText = '16:9 全画面';
+      }
+    }
+  });
+
+  /* --- 賞名プリセット切替 --- */
+  function cycleAwardPreset() {
+    awardPresetIndex = (awardPresetIndex + 1) % AWARD_PRESETS.length;
+    const input = document.getElementById('lottery-award-input');
+    if (input) {
+      input.value = AWARD_PRESETS[awardPresetIndex];
+      input.focus();
+    }
+  }
+
+  /* --- アルゴリズム切替 --- */
+  function changeLotteryAlgoMode(mode) {
+    lotteryAlgoMode = mode;
+    const display = document.getElementById('lottery-mode-display');
+    if (!display) return;
+
+    if (mode === 'round-robin') {
+      display.innerHTML = '<i class="fa-solid fa-scale-balanced text-emerald-400"></i><span class="text-emerald-400">完全未当選者優先 (Round-Robin)</span>';
+    } else if (mode === 'weighted') {
+      display.innerHTML = '<i class="fa-solid fa-chart-simple text-blue-400"></i><span class="text-blue-400">確率ウェイト (未当選者超高確率)</span>';
+    } else {
+      display.innerHTML = '<i class="fa-solid fa-shuffle text-purple-400"></i><span class="text-purple-400">完全ランダム抽選</span>';
+    }
+  }
+
+  /* --- メンバー抽選対象・出欠モーダル --- */
+  function openLotteryMemberConfigModal() {
+    const modal = document.getElementById('lottery-member-config-modal');
+    if (!modal) return;
+    renderLotteryMemberConfigList();
+    modal.classList.remove('hidden');
+  }
+
+  function closeLotteryMemberConfigModal() {
+    const modal = document.getElementById('lottery-member-config-modal');
+    if (modal) modal.classList.add('hidden');
+    updateLotteryUI();
+  }
+
+  function renderLotteryMemberConfigList() {
+    const container = document.getElementById('lottery-member-config-list');
+    const activeCountEl = document.getElementById('lottery-modal-active-count');
+    const totalCountEl = document.getElementById('lottery-modal-total-count');
+    if (!container) return;
+
+    const total = lotteryMembers.length;
+    const active = getActiveLotteryMembers().length;
+    if (activeCountEl) activeCountEl.innerText = active;
+    if (totalCountEl) totalCountEl.innerText = total;
+
+    // カテゴリーごとにグループ化
+    const byCategory = {};
+    lotteryMembers.forEach(m => {
+      const cat = m.category || 'その他';
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(m);
+    });
+
+    let html = '';
+    for (const [cat, list] of Object.entries(byCategory)) {
+      html += `<div class="mb-3">
+        <div class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 px-1">${escapeHtml(cat)}</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">`;
+
+      list.forEach(m => {
+        const mId = String(m.id);
+        const isExcluded = lotteryExcludedMemberIds.has(mId);
+        const wins = Number(m.win_count || 0);
+
+        html += `
+          <div class="flex items-center justify-between p-2 rounded-xl border ${isExcluded ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-blue-200/80 shadow-xs'} transition-all">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${wins === 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                ${wins}勝
+              </span>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-slate-800 truncate">${escapeHtml(m.name)}</div>
+                <div class="text-[10px] text-slate-400 truncate">${escapeHtml(m.profession || '')}</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer ml-2">
+              <input type="checkbox" ${!isExcluded ? 'checked' : ''} onchange="toggleLotteryMemberActive('${mId}', this.checked)" class="sr-only peer">
+              <div class="w-8 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        `;
+      });
+
+      html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  function toggleLotteryMemberActive(memberId, isActive) {
+    if (isActive) {
+      lotteryExcludedMemberIds.delete(String(memberId));
+    } else {
+      lotteryExcludedMemberIds.add(String(memberId));
+    }
+    const activeCountEl = document.getElementById('lottery-modal-active-count');
+    if (activeCountEl) activeCountEl.innerText = getActiveLotteryMembers().length;
+  }
+
+  function setAllLotteryMembersActive(active) {
+    if (active) {
+      lotteryExcludedMemberIds.clear();
+    } else {
+      lotteryMembers.forEach(m => lotteryExcludedMemberIds.add(String(m.id)));
+    }
+    renderLotteryMemberConfigList();
+  }
+
+  /* --- 当選履歴モーダル --- */
+  function openLotteryHistoryModal() {
+    const modal = document.getElementById('lottery-history-modal');
+    if (!modal) return;
+    renderLotteryHistoryList();
+    modal.classList.remove('hidden');
+  }
+
+  function closeLotteryHistoryModal() {
+    const modal = document.getElementById('lottery-history-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function renderLotteryHistoryList() {
+    const container = document.getElementById('lottery-history-list');
+    const totalCountEl = document.getElementById('lottery-history-total-count');
+    if (!container) return;
+
+    if (totalCountEl) totalCountEl.innerText = lotteryHistory.length;
+
+    if (lotteryHistory.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-8 text-slate-400">
+          <i class="fa-solid fa-trophy text-3xl mb-2 text-slate-300"></i>
+          <p class="text-xs">まだ当選履歴がありません</p>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    lotteryHistory.forEach((h, idx) => {
+      html += `
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-white transition-all">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/30 flex items-center justify-center font-mono font-black text-xs">
+              ${idx + 1}
+            </span>
+            <div>
+              <div class="text-xs font-black text-slate-800 flex items-center gap-2">
+                <span>${escapeHtml(h.member_name)} 様</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                  ${escapeHtml(h.award_title || '定例会賞')}
+                </span>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                <i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(h.won_at)}
+              </div>
+            </div>
+          </div>
+          <button onclick="deleteSingleLotteryHistory('${h.id}')" class="text-slate-400 hover:text-red-500 p-2 text-xs transition-colors" title="この履歴を削除">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  async function deleteSingleLotteryHistory(historyId) {
+    if (!confirm('この当選履歴を削除しますか？')) return;
+    try {
+      await ApiService.call('deleteLotteryHistoryApi', { id: historyId });
+      lotteryHistory = lotteryHistory.filter(h => String(h.id) !== String(historyId));
+      showToast('当選履歴を1件削除しました', 'info');
+      await loadLotteryData();
+      renderLotteryHistoryList();
+    } catch (e) {
+      showToast('削除に失敗しました', 'error');
+    }
+  }
+
+  async function confirmResetLotteryHistory() {
+    if (!confirm('本当に全ての当選履歴をリセットしますか？\n（新期スタート時などに実行してください）')) return;
+    try {
+      await ApiService.call('resetLotteryHistoryApi');
+      lotteryHistory = [];
+      showToast('全当選履歴をリセットしました', 'info');
+      await loadLotteryData();
+      renderLotteryHistoryList();
+    } catch (e) {
+      showToast('リセットに失敗しました', 'error');
+    }
+  }
+
+  /* --- キーボードショートカット --- */
+  function setupLotteryShortcuts() {
+    window.addEventListener('keydown', (e) => {
+      const lotteryView = document.getElementById('view-lottery');
+      if (!lotteryView || lotteryView.style.display === 'none') return;
+
+      // 入力フォームフォーカス中は無視
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        startLotterySpin();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleLotteryFullscreen();
+      }
+    });
+  }
+</script>

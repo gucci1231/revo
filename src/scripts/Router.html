@@ -108,7 +108,7 @@
           }
         }, 300);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'palms-ranking', 'training', 'schedules'].includes(hash)) {
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'palms-ranking', 'lottery', 'training', 'schedules'].includes(hash)) {
       switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
     }
   }
@@ -200,6 +200,7 @@
     'visitors': { title: '全ビジター統合管理名簿', icon: 'fa-solid fa-users' },
     'links': { title: 'チャプター公式リンク集', icon: 'fa-solid fa-link' },
     'palms-ranking': { title: 'PALMSランキング', icon: 'fa-solid fa-trophy' },
+    'lottery': { title: '定例会スロット抽選', icon: 'fa-solid fa-dice' },
     'training': { title: 'トレーニング・研修日程 (開発中)', icon: 'fa-solid fa-graduation-cap' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
@@ -242,7 +243,7 @@
 
     updateHeaderCurrentPage(tabName);
 
-    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'palms-ranking', 'visitor-detail'].forEach(t => {
+    ['dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 'palms-ranking', 'lottery', 'visitor-detail'].forEach(t => {
       const btn = document.getElementById('tab-btn-' + t);
       const drawerItem = document.getElementById('drawer-item-' + t);
       const mobileNavBtn = document.getElementById('mobile-nav-' + t);
@@ -261,6 +262,10 @@
     if (targetDrawerItem) targetDrawerItem.classList.add('active');
     if (targetMobileBtn) targetMobileBtn.classList.add('active');
     if (targetView) targetView.classList.add('active');
+
+    if (tabName === 'lottery' && typeof initLotteryView === 'function') {
+      initLotteryView();
+    }
 
     if (window.innerWidth < 1024) {
       closeLeftDrawer();

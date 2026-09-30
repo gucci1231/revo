@@ -163,9 +163,20 @@ class Database {
                 UNIQUE(member_id, start_date, end_date)
             );
 
+            CREATE TABLE IF NOT EXISTS lottery_history (
+                id TEXT PRIMARY KEY,
+                member_id TEXT NOT NULL,
+                member_name TEXT NOT NULL,
+                award_title TEXT DEFAULT '',
+                won_at TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_member ON palms_reports(member_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_dates ON palms_reports(start_date, end_date);
+            CREATE INDEX IF NOT EXISTS idx_lottery_history_member ON lottery_history(member_id);
+            CREATE INDEX IF NOT EXISTS idx_lottery_history_date ON lottery_history(won_at);
         ");
 
         $this->seedDefaultEmailTemplates();

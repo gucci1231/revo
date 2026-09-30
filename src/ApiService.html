@@ -258,6 +258,27 @@ const ApiService = {
         };
       case 'getScheduledEmailsApi':
         return null;
+      case 'getLotteryDataApi':
+      case 'getLotteryHistoryApi':
+        return { url: '/api/lottery.php?action=list', method: 'GET' };
+      case 'recordLotteryWinnerApi':
+        return {
+          url: '/api/lottery.php?action=record',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteLotteryHistoryApi':
+        return {
+          url: '/api/lottery.php?action=delete',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
+      case 'resetLotteryHistoryApi':
+        return {
+          url: '/api/lottery.php?action=reset',
+          method: 'POST',
+          body: {}
+        };
       default:
         return null;
 

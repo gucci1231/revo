@@ -4278,6 +4278,228 @@
   color: #ffffff !important;
 }
 
+/* ============================================================
+   🎰 LOTTERY SLOT THEATER & 16:9 FULLSCREEN STAGE STYLES
+   ============================================================ */
+
+.lottery-theater-wrapper {
+  background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 520px;
+}
+
+/* 16:9 Fullscreen Mode */
+.lottery-theater-wrapper.is-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 99999 !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: #020617 !important;
+}
+
+.lottery-stage-16-9 {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  margin: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Neon Backlight & Grid */
+.lottery-bg-glow {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 50%;
+  background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.18) 0%, rgba(239, 68, 68, 0.08) 50%, transparent 80%);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.lottery-grid-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: 
+    linear-gradient(to top, rgba(15, 23, 42, 0.95), transparent),
+    repeating-linear-gradient(90deg, rgba(245, 158, 11, 0.05) 0px, rgba(245, 158, 11, 0.05) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(0deg, rgba(245, 158, 11, 0.05) 0px, rgba(245, 158, 11, 0.05) 1px, transparent 1px, transparent 40px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Top Marquee Input */
+.lottery-award-input {
+  text-shadow: 0 0 15px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.3);
+}
+
+/* Slot LED dots */
+.slot-led-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.slot-led-dot.green { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.slot-led-dot.yellow { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+.slot-led-dot.red { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+/* Reel Windows */
+.reel-window {
+  box-shadow: inset 0 10px 25px rgba(0,0,0,0.9), inset 0 -10px 25px rgba(0,0,0,0.9);
+}
+
+.reel-shadow-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(2, 6, 23, 0.95), transparent);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.reel-shadow-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.95), transparent);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Central Payline Highlight */
+.lottery-payline {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.9) 20%, rgba(245, 158, 11, 1) 50%, rgba(239, 68, 68, 0.9) 80%, transparent);
+  transform: translateY(-50%);
+  z-index: 15;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.9);
+}
+
+.lottery-payline::before, .lottery-payline::after {
+  content: '▶';
+  position: absolute;
+  top: -9px;
+  color: #ef4444;
+  font-size: 14px;
+  text-shadow: 0 0 8px #ef4444;
+}
+.lottery-payline::before { left: 4px; }
+.lottery-payline::after { right: 4px; content: '◀'; }
+
+/* Reel Strip & Items */
+.reel-strip {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.reel-item {
+  height: 256px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .reel-item { height: 224px; }
+}
+@media (max-width: 640px) {
+  .reel-item { height: 160px; }
+}
+
+@keyframes reel-blur-spin-anim {
+  0% { transform: translateY(0); filter: blur(0px); }
+  50% { filter: blur(2px); }
+  100% { transform: translateY(-5000px); filter: blur(3px); }
+}
+
+.reel-strip.reel-spinning {
+  animation: reel-blur-spin-anim 0.35s linear infinite;
+}
+
+/* 激アツ REACH Cut-in Banner */
+.lottery-reach-banner {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.92) 0%, rgba(153, 27, 27, 0.95) 100%);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.1) skewY(-3deg);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.8);
+}
+
+.lottery-reach-banner.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1) skewY(0deg);
+  animation: reach-pulse 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes reach-pulse {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.25) drop-shadow(0 0 25px rgba(255, 255, 255, 0.6)); }
+}
+
+.reach-text-glitch {
+  font-size: 38px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 20px #fbbf24, 0 4px 8px rgba(0,0,0,0.8);
+  text-transform: uppercase;
+}
+@media (min-width: 640px) {
+  .reach-text-glitch { font-size: 54px; }
+}
+
+.reach-subtext {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fef08a;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+@media (min-width: 640px) {
+  .reach-subtext { font-size: 18px; }
+}
+
+/* Winner Card Animation */
+.winner-card {
+  will-change: transform, opacity;
+}
+
+
 
 
 

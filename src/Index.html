@@ -126,9 +126,12 @@
         <i class="fa-solid fa-trophy"></i> <span class="nav-label">PALMSランキング</span>
       </button>
 
-      <!-- 研修・イベントセクション -->
+      <!-- 研修・イベント・定例会セクション -->
       <div class="drawer-section-divider"></div>
-      <div class="drawer-section-title">研修・イベント</div>
+      <div class="drawer-section-title">定例会・イベント</div>
+      <button class="drawer-nav-item" id="drawer-item-lottery" onclick="switchTab('lottery')" title="定例会スロット抽選 (16:9)" data-tooltip="定例会スロット抽選">
+        <i class="fa-solid fa-dice text-amber-500"></i> <span class="nav-label font-bold text-amber-600">定例会スロット抽選</span>
+      </button>
       <button class="drawer-nav-item" id="drawer-item-training" onclick="switchTab('training')" title="トレーニング日程" data-tooltip="トレーニング日程">
         <i class="fa-solid fa-graduation-cap"></i> <span class="nav-label">トレーニング日程</span>
       </button>
@@ -221,6 +224,7 @@
     <?!= include('ViewEmailTemplates'); ?>
     <?!= include('ViewLinks'); ?>
     <?!= include('ViewPalmsRanking'); ?>
+    <?!= include('ViewLottery'); ?>
     <?!= include('ModalFollowPendingReminder'); ?>
 
   </div>
