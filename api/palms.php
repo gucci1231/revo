@@ -294,6 +294,16 @@ try {
                 (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) as total_referrals_given,
                 (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
                 (p.tyfcb_amount * 1000) as tyfcb_yen,
+                (SELECT COUNT(DISTINCT v.id) 
+                 FROM visitors v 
+                 JOIN visitors_status vs ON v.id = vs.visitor_id 
+                 WHERE vs.is_joined IN ('入会', '入会済') 
+                   AND (
+                       TRIM(v.inviter) = TRIM(p.member_name) 
+                       OR TRIM(v.inviter) LIKE '%' || TRIM(p.member_name) || '%' 
+                       OR TRIM(p.member_name) LIKE '%' || TRIM(v.inviter) || '%'
+                   )
+                ) as sponsors_count,
                 m.category as member_category,
                 m.profession as member_profession,
                 COALESCE(m.status, '在籍') as member_status
@@ -333,6 +343,16 @@ try {
                     (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) as total_referrals_given,
                     (SUM(p.rri_referrals_received_internal) + SUM(p.rro_referrals_received_external)) as total_referrals_received,
                     (SUM(p.tyfcb_amount) * 1000) as tyfcb_yen,
+                    (SELECT COUNT(DISTINCT v.id) 
+                     FROM visitors v 
+                     JOIN visitors_status vs ON v.id = vs.visitor_id 
+                     WHERE vs.is_joined IN ('入会', '入会済') 
+                       AND (
+                           TRIM(v.inviter) = TRIM(p.member_name) 
+                           OR TRIM(v.inviter) LIKE '%' || TRIM(p.member_name) || '%' 
+                           OR TRIM(p.member_name) LIKE '%' || TRIM(v.inviter) || '%'
+                       )
+                    ) as sponsors_count,
                     m.category as member_category,
                     m.profession as member_profession,
                     COALESCE(m.status, '在籍') as member_status

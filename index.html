@@ -27764,16 +27764,21 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
   if (!Array.isArray(rawRecords)) return [];
   let chapterMaxMeetings = 0;
   rawRecords.forEach(r => {
-    const mCount = Number(r.p_present || 0) + Number(r.a_absent || 0) + Number(r.l_late || 0) + Number(r.m_medical || 0) + Number(r.s_substitute || 0);
+    const pVal = Number(r.p_present != null ? r.p_present : (r.p || 0));
+    const aVal = Number(r.a_absent != null ? r.a_absent : (r.a || 0));
+    const lVal = Number(r.l_late != null ? r.l_late : (r.l || 0));
+    const mVal = Number(r.m_medical != null ? r.m_medical : (r.m || 0));
+    const sVal = Number(r.s_substitute != null ? r.s_substitute : (r.s || 0));
+    const mCount = pVal + aVal + lVal + mVal + sVal;
     if (mCount > chapterMaxMeetings) chapterMaxMeetings = mCount;
   });
 
   return rawRecords.map(r => {
-    const p = Number(r.p_present || 0);
-    const a = Number(r.a_absent || 0);
-    const l = Number(r.l_late || 0);
-    const m = Number(r.m_medical || 0);
-    const s = Number(r.s_substitute || 0);
+    const p = Number(r.p_present != null ? r.p_present : (r.p || 0));
+    const a = Number(r.a_absent != null ? r.a_absent : (r.a || 0));
+    const l = Number(r.l_late != null ? r.l_late : (r.l || 0));
+    const m = Number(r.m_medical != null ? r.m_medical : (r.m || 0));
+    const s = Number(r.s_substitute != null ? r.s_substitute : (r.s || 0));
     const rgi = Number(r.rgi_referrals_given_internal || 0);
     const rgo = Number(r.rgo_referrals_given_external || 0);
     const totalRefGiven = Number(r.total_referrals_given != null ? r.total_referrals_given : (rgi + rgo));
