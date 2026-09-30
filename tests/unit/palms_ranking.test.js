@@ -33,6 +33,8 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('function renderPalmsTable'), true);
     assert.strictEqual(indexHtml.includes('function switchPalmsMetric'), true);
     assert.strictEqual(indexHtml.includes('function sortPalmsTable'), true);
+    assert.strictEqual(indexHtml.includes('function calcBniTrafficLightScore'), true);
+    assert.strictEqual(indexHtml.includes('function renderPalmsCharts'), true);
   });
 
   it('verifies ApiService mappings exist for PALMS endpoints', () => {
@@ -55,31 +57,60 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     );
   });
 
-  it('verifies score calculation formula correctly weighs referrals, visitors, 1to1, attendance, and CEU', () => {
-    // Simulate score formula logic
-    const calcScore = (r) => {
-      const totalRefGiven = (r.rgi || 0) + (r.rgo || 0);
-      const visitors = r.visitors || 0;
-      const oto = r.one_to_ones || 0;
-      const p = r.p || 0;
-      const s = r.s || 0;
-      const a = r.a || 0;
-      const ceu = r.ceu || 0;
-      return (totalRefGiven * 5) + (visitors * 10) + (oto * 3) + (p * 5 + s * 5 - a * 5) + ceu;
+  it('verifies BNI Traffic Lights official 100-point scoring system and color tiers according to CSV', () => {
+    // Extract calcBniTrafficLightScore from indexHtml or evaluate
+    const calcFnMatch = indexHtml.match(/function calcBniTrafficLightScore\(r,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(calcFnMatch, 'calcBniTrafficLightScore function must exist in indexHtml');
+
+    const calcBniTrafficLightScore = new Function('r', 'weeks', calcFnMatch[1]);
+
+    // 1. High Performer: All top tiers -> 100 pt (GREEN)
+    // 26 weeks (6 months)
+    // vis: 5 (25pt), tyfcb: 6,000,000 (5pt), oto: 26 (1/wk = 20pt), ref: 33 (1.26/wk = 25pt), sponsors: 1 (5pt), ceu: 14 (0.53/wk = 10pt), att: 25/25 (100% = 10pt)
+    const memberGreen = {
+      visitors: 5,
+      tyfcb_yen: 6000000,
+      one_to_ones: 26,
+      total_referrals_given: 33,
+      testimonials: 1,
+      ceu: 14,
+      p: 25, a: 0, l: 0, m: 0, s: 0
     };
+    const resGreen = calcBniTrafficLightScore(memberGreen, 26);
+    assert.strictEqual(resGreen.totalScore, 100);
+    assert.strictEqual(resGreen.tier, 'green');
 
-    const memberA = { rgi: 2, rgo: 1, visitors: 1, one_to_ones: 3, p: 2, s: 0, a: 0, ceu: 2 };
-    // Ref: 3*5 = 15
-    // Vis: 1*10 = 10
-    // 1to1: 3*3 = 9
-    // Att: 2*5 = 10
-    // CEU: 2
-    // Total: 15 + 10 + 9 + 10 + 2 = 46
-    assert.strictEqual(calcScore(memberA), 46);
+    // 2. Medium Performer (YELLOW): 50-69 pt
+    // vis: 2 (10pt), tyfcb: 400,000 (2pt), oto: 13 (0.5/wk = 10pt), ref: 20 (0.76/wk = 15pt), sponsors: 0 (0pt), ceu: 8 (0.3/wk = 5pt), att: 23/25 (92% = 5pt)
+    // total = 10 + 2 + 10 + 15 + 0 + 5 + 5 = 47 (Wait, let's bump ref to 1.0/wk = 20pt -> 52pt)
+    const memberYellow = {
+      visitors: 2,
+      tyfcb_yen: 400000,
+      one_to_ones: 13,
+      total_referrals_given: 26, // 1.0/wk -> 20pt
+      testimonials: 0,
+      ceu: 8, // 5pt
+      p: 23, a: 2, l: 0, m: 0, s: 0 // 92% -> 5pt
+    };
+    // 10 + 2 + 10 + 20 + 0 + 5 + 5 = 52
+    const resYellow = calcBniTrafficLightScore(memberYellow, 26);
+    assert.strictEqual(resYellow.totalScore, 52);
+    assert.strictEqual(resYellow.tier, 'yellow');
 
-    const memberBWithAbsence = { rgi: 0, rgo: 0, visitors: 0, one_to_ones: 0, p: 1, s: 0, a: 1, ceu: 0 };
-    // Att: 1*5 - 1*5 = 0
-    assert.strictEqual(calcScore(memberBWithAbsence), 0);
+    // 3. Low Performer (RED / GREY): < 50 pt
+    const memberRed = {
+      visitors: 1, // 5pt
+      tyfcb_yen: 0, // 0pt
+      one_to_ones: 7, // 0.26/wk -> 5pt
+      total_referrals_given: 13, // 0.5/wk -> 10pt
+      testimonials: 0, // 0pt
+      ceu: 0, // 0pt
+      p: 20, a: 5, l: 0, m: 0, s: 0 // 80% -> 0pt
+    };
+    // 5 + 0 + 5 + 10 + 0 + 0 + 0 = 20 (GREY)
+    const resRed = calcBniTrafficLightScore(memberRed, 26);
+    assert.strictEqual(resRed.totalScore, 20);
+    assert.strictEqual(resRed.tier, 'grey');
   });
 });
 

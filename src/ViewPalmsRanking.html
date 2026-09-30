@@ -1,4 +1,4 @@
-<!-- PALMS Ranking View (REvo OS Phase 2) -->
+<!-- PALMS & Traffic Lights View (REvo OS Phase 2) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Header / Action Bar -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
@@ -8,11 +8,14 @@
           <i class="fa-solid fa-trophy text-sm"></i>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-          PALMS ランキング
+          PALMS & トラフィックライト
         </h2>
+        <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
+          公式100点新基準
+        </span>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
-        BNI Connect PALMSレポートに基づくメンバー活動成果・貢献ランキング
+        BNI Connect PALMS実績に基づく公式トラフィックライト（Traffic Lights: 100点満点）評価
       </p>
     </div>
 
@@ -35,31 +38,159 @@
     </div>
   </div>
 
+  <!-- Traffic Lights 4 KPI Overview Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <!-- Chapter Avg Score -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-slate-500">チャプター平均</span>
+        <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+      </div>
+      <div class="mt-2 text-2xs" id="palms-kpi-avg-tier">
+        <span class="inline-flex items-center gap-1 font-bold text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-slate-300"></span> 集計中
+        </span>
+      </div>
+    </div>
+
+    <!-- Green Tier (70+ pt) -->
+    <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-green-pct">
+        構成比: 0%
+      </div>
+    </div>
+
+    <!-- Yellow Tier (50-69 pt) -->
+    <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー (標準)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">50〜69点</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
+        構成比: 0%
+      </div>
+    </div>
+
+    <!-- Red & Grey Tier (<50 pt) -->
+    <div class="bg-white border border-rose-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-rose-700">🔴 要注力 / ⚪ 改善</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">50点未満</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-red-count" class="text-2xl sm:text-3xl font-black text-rose-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-red-pct">
+        構成比: 0%
+      </div>
+    </div>
+  </div>
+
+  <!-- Rich Charts Section (4 Interactive Chart.js Cards) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+    <!-- Chart 1: Traffic Lights Color Distribution (Doughnut) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">トラフィックライト ゾーン分布</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
+      </div>
+      <div class="relative flex items-center justify-center h-56 sm:h-64">
+        <canvas id="chart-palms-donut"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: 7-Metric Radar Analysis (Radar) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
+      </div>
+      <div class="relative flex items-center justify-center h-56 sm:h-64">
+        <canvas id="chart-palms-radar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 3: Member Ranking Score Bar Chart -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-simple text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">メンバー別 総合スコア (100点満点)</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">緑線: 70pt / 黄線: 50pt</span>
+      </div>
+      <div class="relative w-full h-64 sm:h-72">
+        <canvas id="chart-palms-ranking-bar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 4: Multi-Period 2-Year Trend (Line Chart) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">期別・2年間推移トレンド</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">リファーラル・1to1・ビジター</span>
+      </div>
+      <div class="relative w-full h-64 sm:h-72">
+        <canvas id="chart-palms-trend-line"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Metric Filter Segmented Controls (Pills) -->
-  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="palms-metric-tabs">
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none" id="palms-metric-tabs">
     <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
       <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
-      <span>総合スコア</span>
+      <span>総合点 (100点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
       <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
-      <span>リファーラル提供</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
-      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
-      <span>1to1</span>
+      <span>リファーラル (25点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
       <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
-      <span>ビジター招待</span>
+      <span>ビジター (25点)</span>
     </button>
-    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
-      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
-      <span>売上貢献 (TYFCB)</span>
+    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
+      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
+      <span>1to1 (20点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('ceu')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ceu">
+      <i class="fa-solid fa-graduation-cap text-purple-500 text-2xs"></i>
+      <span>CEU (10点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
       <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
-      <span>PALMS出欠</span>
+      <span>出席率 (10点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
+      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
+      <span>TYFCB売上 (5点)</span>
     </button>
   </div>
 
@@ -67,7 +198,9 @@
   <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
     <div class="flex items-center gap-2">
       <i class="fa-solid fa-circle-info text-blue-500"></i>
-      <span id="palms-hint-text">総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU</span>
+      <span id="palms-hint-text">
+        公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)
+      </span>
     </div>
     <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
   </div>
@@ -86,7 +219,7 @@
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-list-ol text-blue-600"></i>
-        <span>メンバー別 詳細実績一覧</span>
+        <span>メンバー別 トラフィックライト詳細実績一覧</span>
         <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
       </h3>
       <div class="text-2xs text-slate-400">
@@ -96,45 +229,48 @@
 
     <!-- Table Responsive Wrap -->
     <div class="overflow-x-auto scrollbar-thin">
-      <table class="w-full text-left border-collapse min-w-[760px]">
+      <table class="w-full text-left border-collapse min-w-[880px]">
         <thead>
           <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
             <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
               順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 min-w-[160px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+            <th class="py-3 px-4 min-w-[150px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
               メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
+            <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
+              判定 <span id="sort-icon-traffic_light"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
-              総合スコア <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
-              リファーラル提供 <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_received')">
-              受取 <span id="sort-icon-referrals_received"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
-              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
               ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
-              売上貢献 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
+              リファーラル <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 text-center">
-              出欠 (P/A/L/M/S)
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
+              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
               CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('attendance')">
+              出席率 <span id="sort-icon-attendance"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
+              TYFCB売上 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('sponsors')">
+              スポンサー <span id="sort-icon-sponsors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
           </tr>
         </thead>
         <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
           <!-- Populated by JavaScript -->
           <tr>
-            <td colspan="10" class="py-12 text-center text-slate-400">
+            <td colspan="11" class="py-12 text-center text-slate-400">
               <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
               <p class="text-xs">データを読込中...</p>
             </td>
@@ -144,3 +280,4 @@
     </div>
   </div>
 </div>
+

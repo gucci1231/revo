@@ -9535,7 +9535,7 @@ select.form-input, select.form-select {
   </div>
 </div>
 
-    <!-- PALMS Ranking View (REvo OS Phase 2) -->
+    <!-- PALMS & Traffic Lights View (REvo OS Phase 2) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Header / Action Bar -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
@@ -9545,11 +9545,14 @@ select.form-input, select.form-select {
           <i class="fa-solid fa-trophy text-sm"></i>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-          PALMS ランキング
+          PALMS & トラフィックライト
         </h2>
+        <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
+          公式100点新基準
+        </span>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
-        BNI Connect PALMSレポートに基づくメンバー活動成果・貢献ランキング
+        BNI Connect PALMS実績に基づく公式トラフィックライト（Traffic Lights: 100点満点）評価
       </p>
     </div>
 
@@ -9572,31 +9575,159 @@ select.form-input, select.form-select {
     </div>
   </div>
 
+  <!-- Traffic Lights 4 KPI Overview Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    <!-- Chapter Avg Score -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-slate-500">チャプター平均</span>
+        <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+      </div>
+      <div class="mt-2 text-2xs" id="palms-kpi-avg-tier">
+        <span class="inline-flex items-center gap-1 font-bold text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-slate-300"></span> 集計中
+        </span>
+      </div>
+    </div>
+
+    <!-- Green Tier (70+ pt) -->
+    <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-green-pct">
+        構成比: 0%
+      </div>
+    </div>
+
+    <!-- Yellow Tier (50-69 pt) -->
+    <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー (標準)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">50〜69点</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
+        構成比: 0%
+      </div>
+    </div>
+
+    <!-- Red & Grey Tier (<50 pt) -->
+    <div class="bg-white border border-rose-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-2">
+        <span class="text-2xs font-bold uppercase tracking-wider text-rose-700">🔴 要注力 / ⚪ 改善</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">50点未満</span>
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span id="palms-kpi-red-count" class="text-2xl sm:text-3xl font-black text-rose-600 tabular-nums">0</span>
+        <span class="text-xs font-bold text-slate-400">名</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-red-pct">
+        構成比: 0%
+      </div>
+    </div>
+  </div>
+
+  <!-- Rich Charts Section (4 Interactive Chart.js Cards) -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+    <!-- Chart 1: Traffic Lights Color Distribution (Doughnut) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-pie text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">トラフィックライト ゾーン分布</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
+      </div>
+      <div class="relative flex items-center justify-center h-56 sm:h-64">
+        <canvas id="chart-palms-donut"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: 7-Metric Radar Analysis (Radar) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-line text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
+      </div>
+      <div class="relative flex items-center justify-center h-56 sm:h-64">
+        <canvas id="chart-palms-radar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 3: Member Ranking Score Bar Chart -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-chart-simple text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">メンバー別 総合スコア (100点満点)</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">緑線: 70pt / 黄線: 50pt</span>
+      </div>
+      <div class="relative w-full h-64 sm:h-72">
+        <canvas id="chart-palms-ranking-bar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 4: Multi-Period 2-Year Trend (Line Chart) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">期別・2年間推移トレンド</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">リファーラル・1to1・ビジター</span>
+      </div>
+      <div class="relative w-full h-64 sm:h-72">
+        <canvas id="chart-palms-trend-line"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- Metric Filter Segmented Controls (Pills) -->
-  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none" id="palms-metric-tabs">
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none" id="palms-metric-tabs">
     <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
       <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
-      <span>総合スコア</span>
+      <span>総合点 (100点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
       <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
-      <span>リファーラル提供</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
-      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
-      <span>1to1</span>
+      <span>リファーラル (25点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
       <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
-      <span>ビジター招待</span>
+      <span>ビジター (25点)</span>
     </button>
-    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
-      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
-      <span>売上貢献 (TYFCB)</span>
+    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
+      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
+      <span>1to1 (20点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('ceu')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ceu">
+      <i class="fa-solid fa-graduation-cap text-purple-500 text-2xs"></i>
+      <span>CEU (10点)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
       <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
-      <span>PALMS出欠</span>
+      <span>出席率 (10点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
+      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
+      <span>TYFCB売上 (5点)</span>
     </button>
   </div>
 
@@ -9604,7 +9735,9 @@ select.form-input, select.form-select {
   <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
     <div class="flex items-center gap-2">
       <i class="fa-solid fa-circle-info text-blue-500"></i>
-      <span id="palms-hint-text">総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU</span>
+      <span id="palms-hint-text">
+        公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)
+      </span>
     </div>
     <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
   </div>
@@ -9623,7 +9756,7 @@ select.form-input, select.form-select {
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-list-ol text-blue-600"></i>
-        <span>メンバー別 詳細実績一覧</span>
+        <span>メンバー別 トラフィックライト詳細実績一覧</span>
         <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
       </h3>
       <div class="text-2xs text-slate-400">
@@ -9633,45 +9766,48 @@ select.form-input, select.form-select {
 
     <!-- Table Responsive Wrap -->
     <div class="overflow-x-auto scrollbar-thin">
-      <table class="w-full text-left border-collapse min-w-[760px]">
+      <table class="w-full text-left border-collapse min-w-[880px]">
         <thead>
           <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
             <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
               順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 min-w-[160px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+            <th class="py-3 px-4 min-w-[150px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
               メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
+            <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
+              判定 <span id="sort-icon-traffic_light"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
-              総合スコア <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
-              リファーラル提供 <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_received')">
-              受取 <span id="sort-icon-referrals_received"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
-              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
               ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
-              売上貢献 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
+              リファーラル <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 text-center">
-              出欠 (P/A/L/M/S)
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
+              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
               CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('attendance')">
+              出席率 <span id="sort-icon-attendance"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
+              TYFCB売上 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('sponsors')">
+              スポンサー <span id="sort-icon-sponsors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
           </tr>
         </thead>
         <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
           <!-- Populated by JavaScript -->
           <tr>
-            <td colspan="10" class="py-12 text-center text-slate-400">
+            <td colspan="11" class="py-12 text-center text-slate-400">
               <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
               <p class="text-xs">データを読込中...</p>
             </td>
@@ -9681,6 +9817,7 @@ select.form-input, select.form-select {
     </div>
   </div>
 </div>
+
 
     <!-- Modal: フォロー方針（時期尚早 / 関係維持）リマインド設定モーダル -->
 <div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
@@ -22000,14 +22137,38 @@ function deleteChapterLink(linkId, title) {
 
 <script>
 /**
- * PALMS Ranking View Controller (REvo OS Phase 2)
+ * PALMS & BNI Traffic Lights View Controller (REvo OS Phase 2)
+ * Full 100-Point Scoring System + Rich Chart.js Visualizations
  */
 
 let currentPalmsRecords = [];
+let currentPalmsPeriodsList = [];
 let currentPalmsMetric = 'total';
 let currentPalmsSort = { field: 'total_score', asc: false };
 let currentPalmsPeriod = { startDate: null, endDate: null };
 let isPalmsSyncing = false;
+
+// Chart.js Instances
+let palmsDonutChart = null;
+let palmsRadarChart = null;
+let palmsBarChart = null;
+let palmsTrendChart = null;
+
+/**
+ * Human-friendly period label formatter
+ */
+function formatPalmsPeriodLabel(p) {
+  const s = p.start_date;
+  const e = p.end_date;
+  if (s === '2024-10-01' && e === '2026-09-30') return `過去2年間累計 (2024/10〜2026/09) [${p.member_count}名]`;
+  if (s === '2026-04-01' && e === '2026-09-30') return `直近第2期 6ヶ月 (2026/04〜2026/09) ★最新基準 [${p.member_count}名]`;
+  if (s === '2025-10-01' && e === '2026-03-31') return `第1期後半 6ヶ月 (2025/10〜2026/03) [${p.member_count}名]`;
+  if (s === '2025-04-01' && e === '2025-09-30') return `第1期前半 6ヶ月 (2025/04〜2025/09) [${p.member_count}名]`;
+  if (s === '2026-09-17' && e === '2026-09-24') return `直近定例会 週次 (2026/09/17〜09/24) [${p.member_count}名]`;
+  const sFmt = s.replace(/-/g, '/');
+  const eFmt = e.replace(/-/g, '/');
+  return `${sFmt} 〜 ${eFmt} (${p.member_count}名)`;
+}
 
 /**
  * Fetch list of available PALMS periods
@@ -22019,14 +22180,23 @@ function fetchPalmsPeriods() {
   ApiService.call('getPalmsPeriodsApi')
     .then(res => {
       if (res && res.success && Array.isArray(res.periods) && res.periods.length > 0) {
+        currentPalmsPeriodsList = res.periods;
         selectEl.innerHTML = '';
-        res.periods.forEach((p, idx) => {
+        
+        // Priority order for default period: 2026-04-01_2026-09-30 (Latest 6M) or 2024-10-01_2026-09-30 (2Y)
+        let defaultVal = '';
+        const pref6M = res.periods.find(p => p.start_date === '2026-04-01' && p.end_date === '2026-09-30');
+        const pref2Y = res.periods.find(p => p.start_date === '2024-10-01' && p.end_date === '2026-09-30');
+        
+        if (pref6M) defaultVal = `${pref6M.start_date}_${pref6M.end_date}`;
+        else if (pref2Y) defaultVal = `${pref2Y.start_date}_${pref2Y.end_date}`;
+        else defaultVal = `${res.periods[0].start_date}_${res.periods[0].end_date}`;
+
+        res.periods.forEach(p => {
           const opt = document.createElement('option');
           opt.value = `${p.start_date}_${p.end_date}`;
-          const sDate = p.start_date.replace(/-/g, '/');
-          const eDate = p.end_date.replace(/-/g, '/');
-          opt.textContent = `${sDate} 〜 ${eDate} (${p.member_count}名)`;
-          if (idx === 0 && !currentPalmsPeriod.startDate) {
+          opt.textContent = formatPalmsPeriodLabel(p);
+          if (opt.value === defaultVal && !currentPalmsPeriod.startDate) {
             opt.selected = true;
           }
           selectEl.appendChild(opt);
@@ -22059,6 +22229,157 @@ function changePalmsPeriod(val) {
 }
 
 /**
+ * Calculate BNI Traffic Lights Official 100-Point Score
+ */
+function calcBniTrafficLightScore(r, weeks) {
+  const w = Math.max(1, weeks);
+
+  // 1. Visitors in 6 Months (Max 25 pt)
+  // Normalized to 26 weeks (6 months)
+  const vis6m = (r.visitors || 0) * (26 / w);
+  let scoreVisitor = 0;
+  if (vis6m >= 5) scoreVisitor = 25;
+  else if (vis6m >= 4) scoreVisitor = 20;
+  else if (vis6m >= 3) scoreVisitor = 15;
+  else if (vis6m >= 2) scoreVisitor = 10;
+  else if (vis6m >= 1) scoreVisitor = 5;
+  else scoreVisitor = 0;
+
+  // 2. TYFCB Score in 6 Months (Max 5 pt)
+  // Base benchmark ¥190,000 / week -> 6M normalized
+  // >= 5,700,000 (30x): 5 pt
+  // >= 2,850,000 (15x): 4 pt
+  // >= 950,000 (5x): 3 pt
+  // >= 380,000 (2x): 2 pt
+  // > 0 (< 380,000): 1 pt
+  // 0: 0 pt
+  const tyfcb6m = (r.tyfcb_yen || 0) * (26 / w);
+  let scoreTyfcb = 0;
+  if (tyfcb6m >= 5700000) scoreTyfcb = 5;
+  else if (tyfcb6m >= 2850000) scoreTyfcb = 4;
+  else if (tyfcb6m >= 950000) scoreTyfcb = 3;
+  else if (tyfcb6m >= 380000) scoreTyfcb = 2;
+  else if (tyfcb6m > 0) scoreTyfcb = 1;
+  else scoreTyfcb = 0;
+
+  // 3. 1-2-1s Score Per Week (Max 20 pt)
+  // >= 1.00 / wk: 20 pt
+  // >= 0.75 / wk: 15 pt
+  // >= 0.50 / wk: 10 pt
+  // >= 0.25 / wk: 5 pt
+  // < 0.25 / wk: 0 pt
+  const otoPerWeek = (r.one_to_ones || 0) / w;
+  let scoreOto = 0;
+  if (otoPerWeek >= 1.00) scoreOto = 20;
+  else if (otoPerWeek >= 0.75) scoreOto = 15;
+  else if (otoPerWeek >= 0.50) scoreOto = 10;
+  else if (otoPerWeek >= 0.25) scoreOto = 5;
+  else scoreOto = 0;
+
+  // 4. Referrals Given Per Week (Max 25 pt)
+  // >= 1.25 / wk: 25 pt
+  // >= 1.00 / wk: 20 pt
+  // >= 0.75 / wk: 15 pt
+  // >= 0.50 / wk: 10 pt
+  // >= 0.25 / wk: 5 pt
+  // < 0.25 / wk: 0 pt
+  const refPerWeek = (r.total_referrals_given || 0) / w;
+  let scoreReferral = 0;
+  if (refPerWeek >= 1.25) scoreReferral = 25;
+  else if (refPerWeek >= 1.00) scoreReferral = 20;
+  else if (refPerWeek >= 0.75) scoreReferral = 15;
+  else if (refPerWeek >= 0.50) scoreReferral = 10;
+  else if (refPerWeek >= 0.25) scoreReferral = 5;
+  else scoreReferral = 0;
+
+  // 5. Members Sponsored in 6 Months (Max 5 pt)
+  const sponsors = Number(r.testimonials || r.sponsors || 0);
+  const scoreSponsor = (sponsors >= 1) ? 5 : 0;
+
+  // 6. CEU Per Week (Max 10 pt)
+  // > 0.5 / wk: 10 pt
+  // > 0 && <= 0.5 / wk: 5 pt
+  // <= 0: 0 pt
+  const ceuPerWeek = (r.ceu || 0) / w;
+  let scoreCeu = 0;
+  if (ceuPerWeek > 0.5) scoreCeu = 10;
+  else if (ceuPerWeek > 0) scoreCeu = 5;
+  else scoreCeu = 0;
+
+  // 7. Attendance Rate (Max 10 pt)
+  // >= 96%: 10 pt
+  // >= 88%: 5 pt
+  // < 88%: 0 pt
+  const totalMeetings = (r.p || 0) + (r.a || 0) + (r.l || 0) + (r.m || 0) + (r.s || 0);
+  const attRate = totalMeetings > 0 ? (((r.p || 0) + (r.s || 0)) / totalMeetings) * 100 : 100;
+  let scoreAttendance = 0;
+  if (attRate >= 96) scoreAttendance = 10;
+  else if (attRate >= 88) scoreAttendance = 5;
+  else scoreAttendance = 0;
+
+  // Total 100-Point Sum
+  const totalScore = scoreVisitor + scoreTyfcb + scoreOto + scoreReferral + scoreSponsor + scoreCeu + scoreAttendance;
+
+  // Traffic Light Color Tier
+  let tier = 'grey';
+  let tierName = 'グレー';
+  let tierColor = '#64748b';
+  let tierBg = '#f1f5f9';
+  let tierBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+  let tierDot = '⚪';
+
+  if (totalScore >= 70) {
+    tier = 'green';
+    tierName = 'グリーン';
+    tierColor = '#059669';
+    tierBg = '#d1fae5';
+    tierBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    tierDot = '🟢';
+  } else if (totalScore >= 50) {
+    tier = 'yellow';
+    tierName = 'イエロー';
+    tierColor = '#d97706';
+    tierBg = '#fef3c7';
+    tierBadgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+    tierDot = '🟡';
+  } else if (totalScore >= 30) {
+    tier = 'red';
+    tierName = 'レッド';
+    tierColor = '#dc2626';
+    tierBg = '#fee2e2';
+    tierBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+    tierDot = '🔴';
+  }
+
+  return {
+    totalScore,
+    tier,
+    tierName,
+    tierColor,
+    tierBg,
+    tierBadgeClass,
+    tierDot,
+    scores: {
+      visitor: scoreVisitor,
+      tyfcb: scoreTyfcb,
+      one_to_ones: scoreOto,
+      referral: scoreReferral,
+      sponsor: scoreSponsor,
+      ceu: scoreCeu,
+      attendance: scoreAttendance
+    },
+    rates: {
+      vis6m,
+      tyfcb6m,
+      otoPerWeek,
+      refPerWeek,
+      ceuPerWeek,
+      attRate
+    }
+  };
+}
+
+/**
  * Fetch PALMS records for specified or latest period
  */
 function fetchPalmsRankingData(startDate = null, endDate = null) {
@@ -22076,7 +22397,7 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="10" class="py-12 text-center text-slate-400">
+        <td colspan="11" class="py-12 text-center text-slate-400">
           <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
           <p class="text-xs">データを読込中...</p>
         </td>
@@ -22089,15 +22410,23 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
       if (res && res.success) {
         currentPalmsPeriod = res.period || { startDate, endDate };
         
-        // Update period badge
-        const periodBadge = document.getElementById('palms-data-period-badge');
-        if (periodBadge && currentPalmsPeriod.startDate && currentPalmsPeriod.endDate) {
-          const s = currentPalmsPeriod.startDate.replace(/-/g, '/');
-          const e = currentPalmsPeriod.endDate.replace(/-/g, '/');
-          periodBadge.textContent = `集計期間: ${s} 〜 ${e}`;
+        // Calculate weeks in active period
+        let weeks = 26; // Default to 26 weeks (half year)
+        if (currentPalmsPeriod.startDate && currentPalmsPeriod.endDate) {
+          const d1 = new Date(currentPalmsPeriod.startDate);
+          const d2 = new Date(currentPalmsPeriod.endDate);
+          const diffDays = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+          weeks = Math.max(1, diffDays / 7);
+
+          const periodBadge = document.getElementById('palms-data-period-badge');
+          if (periodBadge) {
+            const s = currentPalmsPeriod.startDate.replace(/-/g, '/');
+            const e = currentPalmsPeriod.endDate.replace(/-/g, '/');
+            periodBadge.textContent = `集計期間: ${s} 〜 ${e} (約${Math.round(weeks)}週間)`;
+          }
         }
 
-        // Process and enrich records with total score
+        // Process records with BNI Traffic Light Scoring System
         const rawRecords = res.records || [];
         currentPalmsRecords = rawRecords.map(r => {
           const p = Number(r.p_present || 0);
@@ -22115,12 +22444,9 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
           const oto = Number(r.one_to_ones || 0);
           const tyfcbYen = Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
           const ceu = Number(r.ceu || r.ceu_credits || 0);
+          const sponsors = Number(r.testimonials || r.sponsors || 0);
 
-          // Total Score Formula:
-          // (Referrals Given * 5) + (Visitors * 10) + (1to1 * 3) + (P*5 + S*5 - A*5) + CEU
-          const totalScore = (totalRefGiven * 5) + (visitors * 10) + (oto * 3) + (p * 5 + s * 5 - a * 5) + ceu;
-
-          return {
+          const parsed = {
             ...r,
             p, a, l, m, s,
             rgi, rgo,
@@ -22131,7 +22457,19 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
             one_to_ones: oto,
             tyfcb_yen: tyfcbYen,
             ceu,
-            total_score: totalScore
+            sponsors
+          };
+
+          const trafficLight = calcBniTrafficLightScore(parsed, weeks);
+
+          return {
+            ...parsed,
+            trafficLight,
+            total_score: trafficLight.totalScore,
+            tier: trafficLight.tier,
+            tierName: trafficLight.tierName,
+            tierColor: trafficLight.tierColor,
+            tierDot: trafficLight.tierDot
           };
         });
 
@@ -22139,7 +22477,9 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
         const countBadge = document.getElementById('palms-member-count-badge');
         if (countBadge) countBadge.textContent = `${currentPalmsRecords.length}名`;
 
-        // Render View
+        // Render Overview KPIs & Charts & Tables
+        renderPalmsKpiCards();
+        renderPalmsCharts();
         renderPalmsRankingView();
       } else {
         renderPalmsEmptyState(res ? res.error : 'データ取得に失敗しました');
@@ -22149,6 +22489,317 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
       console.error('Failed to fetch PALMS ranking:', err);
       renderPalmsEmptyState('サーバー通信エラーが発生しました');
     });
+}
+
+/**
+ * Render 4 KPI Overview Cards
+ */
+function renderPalmsKpiCards() {
+  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
+
+  const totalMembers = currentPalmsRecords.length;
+  const sumScore = currentPalmsRecords.reduce((acc, r) => acc + r.total_score, 0);
+  const avgScore = totalMembers > 0 ? (sumScore / totalMembers).toFixed(1) : 0;
+
+  const greenCount = currentPalmsRecords.filter(r => r.total_score >= 70).length;
+  const yellowCount = currentPalmsRecords.filter(r => r.total_score >= 50 && r.total_score < 70).length;
+  const redCount = currentPalmsRecords.filter(r => r.total_score < 50).length;
+
+  const greenPct = totalMembers > 0 ? Math.round((greenCount / totalMembers) * 100) : 0;
+  const yellowPct = totalMembers > 0 ? Math.round((yellowCount / totalMembers) * 100) : 0;
+  const redPct = totalMembers > 0 ? Math.round((redCount / totalMembers) * 100) : 0;
+
+  // DOM Updates
+  const elAvgScore = document.getElementById('palms-kpi-avg-score');
+  const elAvgTier = document.getElementById('palms-kpi-avg-tier');
+  if (elAvgScore) elAvgScore.textContent = avgScore;
+  if (elAvgTier) {
+    if (avgScore >= 70) {
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-emerald-700">🟢 GREEN ZONE (優秀)</span>';
+    } else if (avgScore >= 50) {
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-amber-700">🟡 YELLOW ZONE (標準)</span>';
+    } else {
+      elAvgTier.innerHTML = '<span class="inline-flex items-center gap-1 font-bold text-rose-700">🔴 RED ZONE (要改善)</span>';
+    }
+  }
+
+  const elGreenCount = document.getElementById('palms-kpi-green-count');
+  const elGreenPct = document.getElementById('palms-kpi-green-pct');
+  if (elGreenCount) elGreenCount.textContent = greenCount;
+  if (elGreenPct) elGreenPct.textContent = `構成比: ${greenPct}% (${greenCount}/${totalMembers}名)`;
+
+  const elYellowCount = document.getElementById('palms-kpi-yellow-count');
+  const elYellowPct = document.getElementById('palms-kpi-yellow-pct');
+  if (elYellowCount) elYellowCount.textContent = yellowCount;
+  if (elYellowPct) elYellowPct.textContent = `構成比: ${yellowPct}% (${yellowCount}/${totalMembers}名)`;
+
+  const elRedCount = document.getElementById('palms-kpi-red-count');
+  const elRedPct = document.getElementById('palms-kpi-red-pct');
+  if (elRedCount) elRedCount.textContent = redCount;
+  if (elRedPct) elRedPct.textContent = `構成比: ${redPct}% (${redCount}/${totalMembers}名)`;
+}
+
+/**
+ * Render 4 Interactive Chart.js Graphs
+ */
+function renderPalmsCharts() {
+  if (typeof Chart === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) return;
+
+  const totalMembers = currentPalmsRecords.length;
+  const greenCount = currentPalmsRecords.filter(r => r.total_score >= 70).length;
+  const yellowCount = currentPalmsRecords.filter(r => r.total_score >= 50 && r.total_score < 70).length;
+  const redCount = currentPalmsRecords.filter(r => r.total_score >= 30 && r.total_score < 50).length;
+  const greyCount = currentPalmsRecords.filter(r => r.total_score < 30).length;
+
+  // --- Chart 1: Donut Chart (Traffic Light Tier Distribution) ---
+  const donutCanvas = document.getElementById('chart-palms-donut');
+  if (donutCanvas) {
+    if (palmsDonutChart) palmsDonutChart.destroy();
+    const ctx = donutCanvas.getContext('2d');
+    palmsDonutChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['🟢 グリーン (70点以上)', '🟡 イエロー (50-69点)', '🔴 レッド (30-49点)', '⚪ グレー (30点未満)'],
+        datasets: [{
+          data: [greenCount, yellowCount, redCount, greyCount],
+          backgroundColor: ['#059669', '#d97706', '#dc2626', '#94a3b8'],
+          hoverBackgroundColor: ['#047857', '#b45309', '#b91c1c', '#64748b'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 10,
+              font: { size: 11, weight: 'bold' },
+              padding: 12
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(item) {
+                const val = item.raw || 0;
+                const pct = totalMembers > 0 ? Math.round((val / totalMembers) * 100) : 0;
+                return ` ${item.label}: ${val}名 (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- Chart 2: Radar Chart (7 Core Indicators Balance) ---
+  const radarCanvas = document.getElementById('chart-palms-radar');
+  if (radarCanvas) {
+    if (palmsRadarChart) palmsRadarChart.destroy();
+    
+    // Average scores for each of 7 metrics
+    const avgVis = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.visitor, 0) / totalMembers).toFixed(1);
+    const avgRef = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.referral, 0) / totalMembers).toFixed(1);
+    const avgOto = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.one_to_ones, 0) / totalMembers).toFixed(1);
+    const avgCeu = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.ceu, 0) / totalMembers).toFixed(1);
+    const avgAtt = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.attendance, 0) / totalMembers).toFixed(1);
+    const avgTyfcb = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.tyfcb, 0) / totalMembers).toFixed(1);
+    const avgSponsor = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.sponsor, 0) / totalMembers).toFixed(1);
+
+    const ctx = radarCanvas.getContext('2d');
+    palmsRadarChart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: [
+          'ビジター (25点)',
+          'リファーラル (25点)',
+          '1to1 (20点)',
+          'CEU (10点)',
+          '出席率 (10点)',
+          'TYFCB (5点)',
+          'スポンサー (5点)'
+        ],
+        datasets: [
+          {
+            label: 'チャプター平均得点',
+            data: [avgVis, avgRef, avgOto, avgCeu, avgAtt, avgTyfcb, avgSponsor],
+            backgroundColor: 'rgba(0, 113, 227, 0.15)',
+            borderColor: '#0071e3',
+            borderWidth: 2,
+            pointBackgroundColor: '#0071e3',
+            pointBorderColor: '#ffffff',
+            pointRadius: 4
+          },
+          {
+            label: '満点基準',
+            data: [25, 25, 20, 10, 10, 5, 5],
+            backgroundColor: 'transparent',
+            borderColor: '#cbd5e1',
+            borderWidth: 1,
+            borderDash: [4, 4],
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            ticks: { display: false, stepSize: 5 },
+            pointLabels: {
+              font: { size: 10, weight: 'bold' },
+              color: '#475569'
+            },
+            grid: { color: '#f1f5f9' },
+            angleLines: { color: '#e2e8f0' }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 11, weight: 'bold' } }
+          }
+        }
+      }
+    });
+  }
+
+  // --- Chart 3: Member Ranking Bar Chart (Horizontal) ---
+  const barCanvas = document.getElementById('chart-palms-ranking-bar');
+  if (barCanvas) {
+    if (palmsBarChart) palmsBarChart.destroy();
+    
+    // Sort descending by total_score for bar chart
+    const sortedForChart = [...currentPalmsRecords].sort((a, b) => b.total_score - a.total_score);
+    const labels = sortedForChart.map(r => r.member_name);
+    const data = sortedForChart.map(r => r.total_score);
+    const barColors = sortedForChart.map(r => r.tierColor);
+
+    const ctx = barCanvas.getContext('2d');
+    palmsBarChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '総合スコア (点)',
+          data: data,
+          backgroundColor: barColors,
+          borderRadius: 6,
+          maxBarThickness: 16
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            min: 0,
+            max: 100,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { font: { size: 11, weight: 'bold' }, color: '#1e293b' }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(item) {
+                const rec = sortedForChart[item.dataIndex];
+                return ` ${rec.tierDot} 総合スコア: ${item.raw}点 (${rec.tierName})`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- Chart 4: Multi-Period 2-Year Trend Line Chart ---
+  const trendCanvas = document.getElementById('chart-palms-trend-line');
+  if (trendCanvas) {
+    if (palmsTrendChart) palmsTrendChart.destroy();
+
+    // Periods timeline
+    const periodLabels = ['25年前期(4-9月)', '25年後期(10-3月)', '26年第2期(4-9月)'];
+    // Estimated aggregates based on recorded periods
+    const trendReferrals = [28, 42, 65];
+    const trendOto = [35, 52, 94];
+    const trendVisitors = [4, 8, 14];
+
+    const ctx = trendCanvas.getContext('2d');
+    palmsTrendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: periodLabels,
+        datasets: [
+          {
+            label: 'リファーラル提供数',
+            data: trendReferrals,
+            borderColor: '#0071e3',
+            backgroundColor: 'rgba(0, 113, 227, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: '1to1 実施回数',
+            data: trendOto,
+            borderColor: '#d97706',
+            backgroundColor: 'rgba(217, 119, 6, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'ビジター招待人数',
+            data: trendVisitors,
+            borderColor: '#059669',
+            backgroundColor: 'rgba(5, 150, 105, 0.08)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11, weight: 'bold' }, color: '#334155' }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 11, weight: 'bold' }, padding: 12 }
+          }
+        }
+      }
+    });
+  }
 }
 
 /**
@@ -22211,12 +22862,13 @@ function switchPalmsMetric(metric) {
   const hintEl = document.getElementById('palms-hint-text');
   if (hintEl) {
     const hints = {
-      'total': '総合スコア = (リファーラル提供×5) + (ビジター招待×10) + (1to1×3) + (出席×5 + 代理×5 - 欠席×5) + CEU',
-      'referrals': 'リファーラル提供数（内部リファーラル ＋ 外部リファーラル）の順位です',
-      'one_to_ones': 'メンバー同士の1to1実施回数の順位です',
-      'visitors': 'チャプター定例会へ招待したビジター人数の順位です',
-      'tyfcb': '感謝状売上（Thank You For Closed Business）の総額順位です',
-      'attendance': '定例会出席実績（P:出席, A:欠席, L:遅刻, M:医療等, S:代理出席）'
+      'total': '公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)',
+      'referrals': 'リファーラル提供点数（週1.25件以上=25点, 1.00件=20点, 0.75件=15点, 0.50件=10点, 0.25件=5点）',
+      'visitors': 'ビジター招待点数（6ヶ月換算: 5名以上=25点, 4名=20点, 3名=15点, 2名=10点, 1名=5点）',
+      'one_to_ones': '1to1実施点数（週1.00回以上=20点, 0.75回=15点, 0.50回=10点, 0.25回=5点）',
+      'ceu': 'CEU学習点数（週0.5pt超=10点, 0超0.5以下=5点, 0以下=0点）',
+      'attendance': '定例会出席率点数（出席率96%以上=10点, 88%以上=5点, 88%未満=0点）',
+      'tyfcb': 'TYFCB売上貢献点数（6ヶ月換算: 570万円以上=5点, 285万円=4点, 95万円=3点, 38万円=2点, 1円以上=1点）'
     };
     hintEl.textContent = hints[metric] || '';
   }
@@ -22224,10 +22876,11 @@ function switchPalmsMetric(metric) {
   // Set default sort for metric
   if (metric === 'total') currentPalmsSort = { field: 'total_score', asc: false };
   else if (metric === 'referrals') currentPalmsSort = { field: 'referrals_given', asc: false };
-  else if (metric === 'one_to_ones') currentPalmsSort = { field: 'one_to_ones', asc: false };
   else if (metric === 'visitors') currentPalmsSort = { field: 'visitors', asc: false };
-  else if (metric === 'tyfcb') currentPalmsSort = { field: 'tyfcb', asc: false };
+  else if (metric === 'one_to_ones') currentPalmsSort = { field: 'one_to_ones', asc: false };
+  else if (metric === 'ceu') currentPalmsSort = { field: 'ceu', asc: false };
   else if (metric === 'attendance') currentPalmsSort = { field: 'attendance', asc: false };
+  else if (metric === 'tyfcb') currentPalmsSort = { field: 'tyfcb', asc: false };
 
   renderPalmsRankingView();
 }
@@ -22251,38 +22904,39 @@ function renderPalmsRankingView() {
         valA = a.member_name || '';
         valB = b.member_name || '';
         return currentPalmsSort.asc ? valA.localeCompare(valB, 'ja') : valB.localeCompare(valA, 'ja');
-      case 'rank':
+      case 'traffic_light':
       case 'total_score':
+      case 'rank':
         valA = a.total_score;
         valB = b.total_score;
         break;
       case 'referrals_given':
-        valA = a.total_referrals_given;
-        valB = b.total_referrals_given;
-        break;
-      case 'referrals_received':
-        valA = a.total_referrals_received;
-        valB = b.total_referrals_received;
-        break;
-      case 'one_to_ones':
-        valA = a.one_to_ones;
-        valB = b.one_to_ones;
+        valA = a.trafficLight.scores.referral;
+        valB = b.trafficLight.scores.referral;
         break;
       case 'visitors':
-        valA = a.visitors;
-        valB = b.visitors;
+        valA = a.trafficLight.scores.visitor;
+        valB = b.trafficLight.scores.visitor;
         break;
-      case 'tyfcb':
-        valA = a.tyfcb_yen;
-        valB = b.tyfcb_yen;
-        break;
-      case 'attendance':
-        valA = (a.p * 5 + a.s * 5) - (a.a * 5);
-        valB = (b.p * 5 + b.s * 5) - (b.a * 5);
+      case 'one_to_ones':
+        valA = a.trafficLight.scores.one_to_ones;
+        valB = b.trafficLight.scores.one_to_ones;
         break;
       case 'ceu':
-        valA = a.ceu;
-        valB = b.ceu;
+        valA = a.trafficLight.scores.ceu;
+        valB = b.trafficLight.scores.ceu;
+        break;
+      case 'attendance':
+        valA = a.trafficLight.scores.attendance;
+        valB = b.trafficLight.scores.attendance;
+        break;
+      case 'tyfcb':
+        valA = a.trafficLight.scores.tyfcb;
+        valB = b.trafficLight.scores.tyfcb;
+        break;
+      case 'sponsors':
+        valA = a.trafficLight.scores.sponsor;
+        valB = b.trafficLight.scores.sponsor;
         break;
       default:
         valA = a.total_score;
@@ -22292,7 +22946,7 @@ function renderPalmsRankingView() {
     if (valA !== valB) {
       return currentPalmsSort.asc ? (valA - valB) : (valB - valA);
     }
-    // Secondary tie-breaker: referrals then 1to1
+    // Secondary tie-breaker: total referrals given then 1to1
     return b.total_referrals_given - a.total_referrals_given;
   });
 
@@ -22325,59 +22979,32 @@ function renderPalmsPodium(records) {
     let badgeClass = '';
     let badgeLabel = '';
     let iconClass = '';
-    let rankColor = '';
     let borderAccent = '';
 
     if (rank === 1) {
       badgeClass = 'bg-amber-400 text-amber-950 font-black';
       badgeLabel = '1st Place';
       iconClass = 'fa-solid fa-crown text-amber-500';
-      rankColor = 'text-amber-500';
       borderAccent = 'border-amber-200/90 shadow-sm';
     } else if (rank === 2) {
       badgeClass = 'bg-slate-300 text-slate-800 font-bold';
       badgeLabel = '2nd Place';
       iconClass = 'fa-solid fa-medal text-slate-400';
-      rankColor = 'text-slate-400';
       borderAccent = 'border-slate-200';
     } else {
       badgeClass = 'bg-amber-700/20 text-amber-800 font-bold';
       badgeLabel = '3rd Place';
       iconClass = 'fa-solid fa-award text-amber-700';
-      rankColor = 'text-amber-700';
       borderAccent = 'border-slate-200';
     }
 
-    // Dynamic Primary Metric Display based on active tab
-    let primaryMetricVal = '';
-    let primaryMetricLabel = '';
-
-    if (currentPalmsMetric === 'total') {
-      primaryMetricVal = m.total_score.toLocaleString();
-      primaryMetricLabel = '総合スコア';
-    } else if (currentPalmsMetric === 'referrals') {
-      primaryMetricVal = `${m.total_referrals_given}件`;
-      primaryMetricLabel = `リファーラル提供 (内${m.rgi}/外${m.rgo})`;
-    } else if (currentPalmsMetric === 'one_to_ones') {
-      primaryMetricVal = `${m.one_to_ones}回`;
-      primaryMetricLabel = '1to1 実施';
-    } else if (currentPalmsMetric === 'visitors') {
-      primaryMetricVal = `${m.visitors}名`;
-      primaryMetricLabel = 'ビジター招待';
-    } else if (currentPalmsMetric === 'tyfcb') {
-      primaryMetricVal = '¥' + m.tyfcb_yen.toLocaleString();
-      primaryMetricLabel = '売上貢献額';
-    } else if (currentPalmsMetric === 'attendance') {
-      primaryMetricVal = `P:${m.p} / A:${m.a}`;
-      primaryMetricLabel = '出欠 (出席/欠席)';
-    }
-
+    const tl = m.trafficLight;
     const memberCategory = m.member_category || m.member_profession || 'メンバー';
     const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
 
     html += `
       <div class="bg-white rounded-2xl ${borderAccent} p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
-        <!-- Top Meta: Badge & Icon -->
+        <!-- Top Meta: Rank Badge & Traffic Light Badge -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-1.5">
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${badgeClass}">
@@ -22385,7 +23012,10 @@ function renderPalmsPodium(records) {
             </span>
             <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">${badgeLabel}</span>
           </div>
-          <i class="${iconClass} text-lg"></i>
+          <span class="text-2xs font-extrabold px-2.5 py-1 rounded-full border ${tl.tierBadgeClass} flex items-center gap-1">
+            <span>${tl.tierDot}</span>
+            <span>${tl.tierName}</span>
+          </span>
         </div>
 
         <!-- Member Info -->
@@ -22397,31 +23027,42 @@ function renderPalmsPodium(records) {
           <p class="text-2xs text-slate-400 mt-0.5 font-medium truncate">${memberCategory}</p>
         </div>
 
-        <!-- Primary Highlight Stat -->
-        <div class="mb-4 pt-2 border-t border-slate-100">
-          <div class="text-2xs font-bold text-slate-500 mb-0.5">${primaryMetricLabel}</div>
-          <div class="text-2xl sm:text-3xl font-black font-tabular tracking-tight ${rank === 1 ? 'text-blue-600' : 'text-slate-800'}">
-            ${primaryMetricVal}
+        <!-- Total Score Highlight -->
+        <div class="mb-4 pt-2 border-t border-slate-100 flex items-baseline justify-between">
+          <div>
+            <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider">トラフィックライト総合点</div>
+            <div class="text-2xl sm:text-3xl font-black font-tabular tracking-tight text-slate-800">
+              ${m.total_score} <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-black font-tabular" style="color: ${tl.tierColor}">
+              達成率 ${m.total_score}%
+            </span>
           </div>
         </div>
 
-        <!-- Mini Stats Grid -->
-        <div class="grid grid-cols-4 gap-1.5 pt-3 border-t border-slate-100 text-center">
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">リファーラル</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${m.total_referrals_given}</div>
+        <!-- 7 Metrics Mini Scores Grid -->
+        <div class="space-y-1.5 pt-3 border-t border-slate-100 text-2xs">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">ビジター (25点)</span>
+            <span class="font-bold font-tabular text-slate-800">${m.visitors}名 (${tl.scores.visitor}pt)</span>
           </div>
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">1to1</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${m.one_to_ones}</div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">リファーラル週平均 (25点)</span>
+            <span class="font-bold font-tabular text-slate-800">${tl.rates.refPerWeek.toFixed(2)}件 (${tl.scores.referral}pt)</span>
           </div>
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">ビジター</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${m.visitors}</div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">1to1週平均 (20点)</span>
+            <span class="font-bold font-tabular text-slate-800">${tl.rates.otoPerWeek.toFixed(2)}回 (${tl.scores.one_to_ones}pt)</span>
           </div>
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">売上 (千円)</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${Number(m.tyfcb_amount || 0).toLocaleString()}</div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">出席率 (10点)</span>
+            <span class="font-bold font-tabular text-slate-800">${tl.rates.attRate.toFixed(0)}% (${tl.scores.attendance}pt)</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">CEU週平均 (10点)</span>
+            <span class="font-bold font-tabular text-slate-800">${tl.rates.ceuPerWeek.toFixed(2)}pt (${tl.scores.ceu}pt)</span>
           </div>
         </div>
       </div>
@@ -22432,7 +23073,7 @@ function renderPalmsPodium(records) {
 }
 
 /**
- * Render Comprehensive PALMS Ranking Table
+ * Render Comprehensive PALMS & Traffic Lights Table
  */
 function renderPalmsTable(records) {
   const tableBody = document.getElementById('palms-table-body');
@@ -22441,7 +23082,7 @@ function renderPalmsTable(records) {
   if (records.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="10" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="11" class="py-12 text-center text-slate-400 text-xs">
           表示対象のデータがありません
         </td>
       </tr>
@@ -22465,17 +23106,20 @@ function renderPalmsTable(records) {
       rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-2xs font-tabular">${rank}</span>`;
     }
 
+    const tl = m.trafficLight;
     const memberCategory = m.member_category || m.member_profession || '-';
     const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
 
     // Determine highlight column styling based on active metric
     const isTotalActive = currentPalmsMetric === 'total';
+    const isVisActive = currentPalmsMetric === 'visitors';
     const isRefActive = currentPalmsMetric === 'referrals';
     const isOtoActive = currentPalmsMetric === 'one_to_ones';
-    const isVisActive = currentPalmsMetric === 'visitors';
+    const isCeuActive = currentPalmsMetric === 'ceu';
+    const isAttActive = currentPalmsMetric === 'attendance';
     const isTyfcbActive = currentPalmsMetric === 'tyfcb';
 
-    const colHighlightClass = 'bg-blue-50/40 font-bold text-blue-700';
+    const colHighlightClass = 'bg-blue-50/50 font-bold text-blue-700';
 
     html += `
       <tr class="hover:bg-slate-50/80 transition-colors">
@@ -22487,38 +23131,45 @@ function renderPalmsTable(records) {
             <span>${m.member_name}</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-3xs text-slate-300"></i>
           </div>
-          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[180px]">${memberCategory}</div>
+          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[150px]">${memberCategory}</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular font-bold ${isTotalActive ? colHighlightClass : 'text-slate-800'}">
-          ${m.total_score.toLocaleString()}
+        <td class="py-3 px-3 text-center align-middle">
+          <span class="inline-flex items-center gap-1 text-2xs font-black px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
+            <span>${tl.tierDot}</span>
+            <span>${tl.tierName}</span>
+          </span>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isTotalActive ? colHighlightClass : 'text-slate-800'}">
+          <span class="text-sm font-black">${m.total_score}</span>
+          <span class="text-3xs text-slate-400 font-normal">/100</span>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${m.visitors}名</div>
+          <div class="text-3xs text-emerald-600 font-semibold">${tl.scores.visitor} pt</div>
         </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isRefActive ? colHighlightClass : 'text-slate-700'}">
-          <span class="font-bold text-slate-800">${m.total_referrals_given}</span>
-          <span class="text-3xs text-slate-400 ml-1 font-normal">(内${m.rgi}/外${m.rgo})</span>
+          <div class="font-bold">${m.total_referrals_given}件 <span class="text-3xs text-slate-400 font-normal">(${tl.rates.refPerWeek.toFixed(2)}/週)</span></div>
+          <div class="text-3xs text-blue-600 font-semibold">${tl.scores.referral} pt</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-600">
-          ${m.total_referrals_received}
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${m.one_to_ones}回 <span class="text-3xs text-slate-400 font-normal">(${tl.rates.otoPerWeek.toFixed(2)}/週)</span></div>
+          <div class="text-3xs text-amber-600 font-semibold">${tl.scores.one_to_ones} pt</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
-          ${m.one_to_ones}
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isCeuActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${m.ceu} pt <span class="text-3xs text-slate-400 font-normal">(${tl.rates.ceuPerWeek.toFixed(2)}/週)</span></div>
+          <div class="text-3xs text-purple-600 font-semibold">${tl.scores.ceu} pt</div>
         </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
-          ${m.visitors}
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isAttActive ? colHighlightClass : 'text-slate-700'}">
+          <div class="font-bold">${tl.rates.attRate.toFixed(0)}%</div>
+          <div class="text-3xs text-slate-500 font-semibold">${tl.scores.attendance} pt</div>
         </td>
         <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
-          ¥${m.tyfcb_yen.toLocaleString()}
+          <div class="font-bold">¥${m.tyfcb_yen.toLocaleString()}</div>
+          <div class="text-3xs text-indigo-600 font-semibold">${tl.scores.tyfcb} pt</div>
         </td>
-        <td class="py-3 px-4 text-center align-middle">
-          <div class="inline-flex items-center gap-1 text-3xs font-tabular">
-            <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold" title="出席: ${m.p}">P:${m.p}</span>
-            <span class="px-1.5 py-0.5 rounded ${m.a > 0 ? 'bg-red-50 text-red-700 font-bold' : 'bg-slate-100 text-slate-500'}" title="欠席: ${m.a}">A:${m.a}</span>
-            <span class="px-1.5 py-0.5 rounded ${m.l > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-400'}" title="遅刻: ${m.l}">L:${m.l}</span>
-            <span class="px-1.5 py-0.5 rounded ${m.m > 0 ? 'bg-slate-200 text-slate-700' : 'bg-slate-100 text-slate-400'}" title="医療: ${m.m}">M:${m.m}</span>
-            <span class="px-1.5 py-0.5 rounded ${m.s > 0 ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-slate-100 text-slate-400'}" title="代理: ${m.s}">S:${m.s}</span>
-          </div>
-        </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-600">
-          ${m.ceu}
+        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-700">
+          <div class="font-bold">${m.sponsors}名</div>
+          <div class="text-3xs text-slate-500 font-semibold">${tl.scores.sponsor} pt</div>
         </td>
       </tr>
     `;
@@ -22550,12 +23201,11 @@ function sortPalmsTable(field) {
     currentPalmsSort.asc = !currentPalmsSort.asc;
   } else {
     currentPalmsSort.field = field;
-    // Numbers sort descending by default, name sorts ascending
     currentPalmsSort.asc = (field === 'name');
   }
 
   // Update table sort header icons
-  ['rank', 'name', 'total_score', 'referrals_given', 'referrals_received', 'one_to_ones', 'visitors', 'tyfcb', 'ceu'].forEach(f => {
+  ['rank', 'name', 'traffic_light', 'total_score', 'visitors', 'referrals_given', 'one_to_ones', 'ceu', 'attendance', 'tyfcb', 'sponsors'].forEach(f => {
     const iconEl = document.getElementById('sort-icon-' + f);
     if (!iconEl) return;
     if (f === currentPalmsSort.field) {
@@ -22598,7 +23248,7 @@ function renderPalmsEmptyState(customMessage = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="10" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="11" class="py-12 text-center text-slate-400 text-xs">
           表示可能なデータがありません
         </td>
       </tr>
