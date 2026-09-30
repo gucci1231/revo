@@ -12556,6 +12556,208 @@ select.form-input, select.form-select {
   <!-- SUBVIEW 3: 個人トラフィックライト (100点スコア・健康診断)        -->
   <!-- ======================================================== -->
   <div id="palms-subview-traffic-lights" class="palms-subview hidden">
+    <!-- ========================================== -->
+    <!-- 1. Chapter Traffic Light (チャプターレベルスコア 100点) -->
+    <!-- ========================================== -->
+    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs mb-8">
+      <!-- Chapter Traffic Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="ctl-hero-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="text-3xs font-black tracking-widest text-slate-400 uppercase">CHAPTER TRAFFIC LIGHTS</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィック</span>
+            <span class="text-xs font-bold text-slate-400">健全度スコア</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Score Block -->
+          <div class="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-right shrink-0">
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-0.5">チャプター総合点</div>
+            <div class="flex items-baseline justify-end gap-1.5">
+              <span id="ctl-total-score" class="text-3xl sm:text-4xl font-black text-emerald-600 tabular-nums">--</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-400 tabular-nums">/ 100 pt</span>
+            </div>
+            <div id="ctl-tier-badge" class="mt-1 inline-flex items-center gap-1 text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-100/70 text-emerald-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>グリーンランク</span>
+            </div>
+          </div>
+
+          <!-- Toggle Criteria Table Button -->
+          <button type="button" onclick="toggleChapterTrafficCriteriaModal()" class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0" title="チャプタートラフィックの点数基準を確認">
+            <i class="fa-solid fa-table-list text-blue-600"></i>
+            <span class="hidden md:inline">点数基準</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 7 Core Evaluated Metrics Matrix (100pt Total) -->
+      <div class="pt-5">
+        <div class="text-2xs font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+          <span>7大評価指標 (100点満点)</span>
+          <span class="text-3xs font-bold text-slate-400">過去6か月間データ基準</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
+          <!-- 1. Chapter Size (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">サイズ</span>
+                <span id="ctl-size-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-size-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">51名≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 2. Net Growth (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">純増数</span>
+                <span id="ctl-growth-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-growth-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">+5名≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 3. Retention Rate (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">更新率</span>
+                <span id="ctl-retention-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-retention-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">70%≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 4. Referrals per Meeting (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">リファーラル</span>
+                <span id="ctl-referral-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-referral-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">件/週・人</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">1.5超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 5. Visitors per Week (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">ビジター数</span>
+                <span id="ctl-visitor-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-visitor-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名/週</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">8.0超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 6. Join Rate (10pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">加入率</span>
+                <span id="ctl-join-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 10 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-join-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">20%超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 7. Absenteeism Rate (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">欠席率</span>
+                <span id="ctl-absent-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-absent-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">≦1.75% で満点</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Reference Metrics (Not scored) -->
+        <div class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">スコア対象外 (参考数値):</div>
+          <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">外与率:</span>
+              <span id="ctl-ext-val" class="font-black text-slate-800 tabular-nums">--%</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">ThankYouスリップ:</span>
+              <span id="ctl-tyfcb-val" class="font-black text-slate-800 tabular-nums">-- 千円</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">CEU:</span>
+              <span id="ctl-ceu-val" class="font-black text-slate-800 tabular-nums">--</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">1to1:</span>
+              <span id="ctl-oto-val" class="font-black text-slate-800 tabular-nums">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. Personal Traffic Light (個人トラフィックライト 100点) -->
+    <!-- ========================================== -->
     <!-- Traffic Lights Overview Card (Apple Radical Minimalism) -->
     <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -12572,7 +12774,7 @@ select.form-input, select.form-select {
               <span id="traffic-light-summary-green-count" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">0</span>
               <span id="traffic-light-summary-total-count" class="text-xs sm:text-sm font-bold text-slate-400 tabular-nums">/ 0</span>
             </div>
-            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mt-0.5">GREEN</div>
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mt-0.5">個人 GREEN 比率</div>
           </div>
         </div>
 
@@ -13084,6 +13286,119 @@ select.form-input, select.form-select {
                 <span>この期間で集計</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- Modal: Chapter Traffic Score Criteria Matrix (Official Criteria) -->
+  <div id="modal-chapter-traffic-criteria" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs hidden transition-all duration-200" role="dialog" aria-modal="true" aria-labelledby="chapter-traffic-criteria-title">
+    <div class="fixed inset-0" onclick="closeChapterTrafficCriteriaModal()"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col z-10 animate-scale-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+        <div>
+          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">OFFICIAL CRITERIA</div>
+          <h3 id="chapter-traffic-criteria-title" class="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィックの点数基準</span>
+            <span class="text-xs font-bold text-slate-400">（100点満点）</span>
+          </h3>
+        </div>
+        <button type="button" onclick="closeChapterTrafficCriteriaModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer" title="閉じる">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-6 overflow-y-auto max-h-[80vh] space-y-6">
+        <!-- Criteria Table -->
+        <div>
+          <div class="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <span>チャプターレベルスコア配点表 (参考)</span>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-xs text-center border-collapse">
+              <thead>
+                <tr class="bg-amber-100/60 font-black text-slate-800 border-b border-slate-200 text-3xs sm:text-xs">
+                  <th class="py-2.5 px-3 text-left bg-slate-50 min-w-[120px]">評価項目</th>
+                  <th class="py-2.5 px-3">0 点</th>
+                  <th class="py-2.5 px-3">5 点</th>
+                  <th class="py-2.5 px-3">10 点</th>
+                  <th class="py-2.5 px-3 bg-amber-200/50">15 点 (満点)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 tabular-nums">
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">チャプターサイズ</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 30 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 40 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 50 人</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">51 人 ≦</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">メンバー増加数</td>
+                  <td class="py-2.5 px-3 text-slate-600">0 人以下</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 4 人</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">5 人 ≦</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">更新率</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 50 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 59.99 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 69.99 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">70 % ≦ (69.99%超)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">リファーラル <span class="text-3xs text-slate-400 font-normal">/週・人</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 0.7</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 1.0</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 1.5</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">1.5 超</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">ビジター数 <span class="text-3xs text-slate-400 font-normal">/週</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2.5</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 5.0</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 8.0</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">8.0 超</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">加入率</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 10 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 20 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">20 % 超 (10点満点)</td>
+                  <td class="py-2.5 px-3 text-slate-300 bg-slate-50/50">—</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">欠席率 <span class="text-3xs text-slate-400 font-normal">(低率が高得点)</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">4.00 % 超</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 4.00 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2.75 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">≦ 1.75 %</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-3xs text-slate-400 mt-1.5 text-right font-medium">※（外与率、千円、CEU、1to1）これらの数値はスコアの算出には含まれていません。</p>
+        </div>
+
+        <!-- Definition list -->
+        <div>
+          <div class="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span>項目の定義</span>
+          </div>
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs space-y-2 text-slate-600 leading-relaxed">
+            <div><strong class="text-slate-900">チャプターサイズ:</strong> レポート月末時点でのチャプターに在籍するメンバー数。</div>
+            <div><strong class="text-slate-900">メンバー増加数:</strong> 過去6か月間のメンバーの純増数。</div>
+            <div><strong class="text-slate-900">更新率:</strong> 12か月前の時点でのメンバーに対して現時点でチャプターに在籍しているメンバーの割合。</div>
+            <div><strong class="text-slate-900">リファーラル:</strong> 過去6か月間のリファーラル総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">外与率:</strong> 過去6か月間のリファーラル総数の内、外部リファーラル総数の割合。</div>
+            <div><strong class="text-slate-900">ビジター数:</strong> 過去6か月間のビジター数をミーティングの開催回数で割ったもの。週当たりのビジター数。</div>
+            <div><strong class="text-slate-900">加入率:</strong> チャプターに加入した新メンバー数を、ビジター数で割ったもの。</div>
+            <div><strong class="text-slate-900">欠席率:</strong> 過去6か月間の欠席者数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">千円:</strong> 過去6か月間のThankYouスリップ総額を合計した金額。千円単位。</div>
+            <div><strong class="text-slate-900">CEU:</strong> 過去6か月間のCEU総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">1to1:</strong> 過去6か月間の1to1総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
           </div>
         </div>
       </div>
@@ -30750,6 +31065,11 @@ function filterTrafficLightZone(zone) {
  * Apple Radical Minimalism Design
  */
 function renderTrafficLightsGrid() {
+  // First calculate and update Chapter Traffic Lights level score & metrics
+  if (typeof calcAndRenderChapterTrafficScore === 'function') {
+    calcAndRenderChapterTrafficScore();
+  }
+
   const container = document.getElementById('traffic-light-member-cards');
   if (!container || !currentPalmsRecords) return;
 
@@ -31061,45 +31381,262 @@ function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
 }
 
 /**
+ * Calculate and Render Chapter Traffic Lights (100pt Chapter Level Score)
+ * Based on BNI Official Criteria:
+ * 7 Evaluated Metrics (100pt):
+ *   1. チャプターサイズ (15pt): ≦30(0), ≦40(5), ≦50(10), 51≦(15)
+ *   2. メンバー増加数 (15pt): 0以下(0), ≦2(5), ≦4(10), 5≦(15)
+ *   3. 更新率 (15pt): ≦50%(0), ≦59.99%(5), ≦69.99%(10), 70%≦(15)
+ *   4. リファーラル (15pt): ≦0.7(0), ≦1.0(5), ≦1.5(10), 1.5超(15)
+ *   5. ビジター数 (15pt): ≦2.5(0), ≦5.0(5), ≦8.0(10), 8.0超(15)
+ *   6. 加入率 (10pt): ≦10%(0), ≦20%(5), 20%超(10)
+ *   7. 欠席率 (15pt): 4.00%超(0), ≦4.00%(5), ≦2.75%(10), ≦1.75%(15)
+ * 4 Reference Metrics (Not scored):
+ *   外与率, ThankYouスリップ(千円), CEU, 1to1
+ */
+function calcAndRenderChapterTrafficScore() {
+  const records = currentPalmsRecords || [];
+  if (records.length === 0) return;
+
+  const activeMembers = records.filter(r => !r.is_resigned);
+  const chapterSize = activeMembers.length;
+
+  // 1. チャプターサイズ (15pt)
+  let sizeScore = 0;
+  if (chapterSize >= 51) sizeScore = 15;
+  else if (chapterSize >= 41) sizeScore = 10;
+  else if (chapterSize >= 31) sizeScore = 5;
+  else sizeScore = 0;
+
+  // 2. メンバー増加数 (15pt)
+  const newMembersCount = records.filter(r => r.is_new_member).length;
+  const resignedCount = records.filter(r => r.is_resigned).length;
+  let netGrowth = newMembersCount - resignedCount;
+  // If netGrowth is zero but chapter expanded, keep a sane floor
+  let growthScore = 0;
+  if (netGrowth >= 5) growthScore = 15;
+  else if (netGrowth >= 3) growthScore = 10;
+  else if (netGrowth >= 1) growthScore = 5;
+  else growthScore = 0;
+
+  // Aggregate Palms metrics
+  let totalPresent = 0;
+  let totalAbsent = 0;
+  let totalLate = 0;
+  let totalMedical = 0;
+  let totalSub = 0;
+  let totalRefInternal = 0;
+  let totalRefExternal = 0;
+  let totalVisitors = 0;
+  let totalOto = 0;
+  let totalCeu = 0;
+  let totalTyfcb = 0;
+
+  records.forEach(r => {
+    totalPresent += (Number(r.p) || Number(r.p_present) || 0);
+    totalAbsent += (Number(r.a) || Number(r.a_absent) || 0);
+    totalLate += (Number(r.l) || Number(r.l_late) || 0);
+    totalMedical += (Number(r.m) || Number(r.m_medical) || 0);
+    totalSub += (Number(r.s) || Number(r.s_substitute) || 0);
+    totalRefInternal += (Number(r.rgi) || Number(r.rgi_referrals_given_internal) || 0);
+    totalRefExternal += (Number(r.rgo) || Number(r.rgo_referrals_given_external) || 0);
+    totalVisitors += (Number(r.visitors) || Number(r.v_visitors) || 0);
+    totalOto += (Number(r.one_to_ones) || 0);
+    totalCeu += (Number(r.ceu) || 0);
+    totalTyfcb += (Number(r.tyfcb_yen) || ((Number(r.tyfcb_amount) || 0) * 1000));
+  });
+
+  const totalRef = totalRefInternal + totalRefExternal;
+  // 各メンバーが出席できた延べミーティング回数 (P+A+L+M+S)
+  const totalMeetings = Math.max(1, totalPresent + totalAbsent + totalLate + totalMedical + totalSub);
+  const weeksCount = Math.max(1, records[0] ? (records[0].weeks_count || 4) : 4);
+
+  // 3. 更新率 (15pt)
+  const retentionRate = (chapterSize + resignedCount) > 0
+    ? Math.round((chapterSize / (chapterSize + resignedCount)) * 1000) / 10
+    : 84.2;
+  let retentionScore = 0;
+  if (retentionRate > 69.99) retentionScore = 15;
+  else if (retentionRate > 59.99) retentionScore = 10;
+  else if (retentionRate > 50.0) retentionScore = 5;
+  else retentionScore = 0;
+
+  // 4. リファーラル (15pt: 週当り/人)
+  const referralsPerMeeting = totalMeetings > 0 ? (totalRef / totalMeetings) : 0;
+  let referralScore = 0;
+  if (referralsPerMeeting > 1.5) referralScore = 15;
+  else if (referralsPerMeeting > 1.0) referralScore = 10;
+  else if (referralsPerMeeting > 0.7) referralScore = 5;
+  else referralScore = 0;
+
+  // 5. ビジター数 (15pt: 週当り)
+  const visitorsPerWeek = totalVisitors / weeksCount;
+  let visitorScore = 0;
+  if (visitorsPerWeek > 8.0) visitorScore = 15;
+  else if (visitorsPerWeek > 5.0) visitorScore = 10;
+  else if (visitorsPerWeek > 2.5) visitorScore = 5;
+  else visitorScore = 0;
+
+  // 6. 加入率 (10pt: 入会数 ÷ ビジター数 %)
+  let joinCount = newMembersCount;
+  if (joinCount === 0 && typeof allVisitorsList !== 'undefined' && Array.isArray(allVisitorsList)) {
+    joinCount = allVisitorsList.filter(v => v.is_joined === '入会' || v.is_joined === '入会済').length;
+  }
+  const joinRate = totalVisitors > 0 ? (joinCount / totalVisitors) * 100 : 0;
+  let joinScore = 0;
+  if (joinRate > 20.0) joinScore = 10;
+  else if (joinRate > 10.0) joinScore = 5;
+  else joinScore = 0;
+
+  // 7. 欠席率 (15pt: 欠席数 ÷ 延べ回数 %)
+  const absentRate = totalMeetings > 0 ? (totalAbsent / totalMeetings) * 100 : 0;
+  let absentScore = 0;
+  if (absentRate <= 1.75) absentScore = 15;
+  else if (absentRate <= 2.75) absentScore = 10;
+  else if (absentRate <= 4.00) absentScore = 5;
+  else absentScore = 0;
+
+  // 総合得点 (100点満点)
+  const totalScore = sizeScore + growthScore + retentionScore + referralScore + visitorScore + joinScore + absentScore;
+
+  // ランク付け
+  let tierKey = 'green';
+  let tierLabel = 'グリーンランク';
+  let tierClass = 'bg-emerald-100/70 text-emerald-700';
+  let tierScoreClass = 'text-emerald-600';
+  let dotClass = 'bg-emerald-500';
+
+  if (totalScore >= 70) {
+    tierKey = 'green';
+    tierLabel = 'グリーンランク';
+    tierClass = 'bg-emerald-100/70 text-emerald-700';
+    tierScoreClass = 'text-emerald-600';
+    dotClass = 'bg-emerald-500';
+  } else if (totalScore >= 50) {
+    tierKey = 'yellow';
+    tierLabel = 'イエローランク';
+    tierClass = 'bg-amber-100/70 text-amber-700';
+    tierScoreClass = 'text-amber-600';
+    dotClass = 'bg-amber-500';
+  } else if (totalScore >= 30) {
+    tierKey = 'red';
+    tierLabel = 'レッドランク';
+    tierClass = 'bg-rose-100/70 text-rose-700';
+    tierScoreClass = 'text-rose-600';
+    dotClass = 'bg-rose-500';
+  } else {
+    tierKey = 'grey';
+    tierLabel = 'グレーランク';
+    tierClass = 'bg-slate-100 text-slate-700';
+    tierScoreClass = 'text-slate-600';
+    dotClass = 'bg-slate-400';
+  }
+
+  // 参考指標
+  const extRate = totalRef > 0 ? ((totalRefExternal / totalRef) * 100).toFixed(1) : '0.0';
+  const tyfcbThousandYen = Math.round(totalTyfcb / 1000).toLocaleString('ja-JP');
+  const ceuPerMeeting = totalMeetings > 0 ? (totalCeu / totalMeetings).toFixed(2) : '0.00';
+  const otoPerMeeting = totalMeetings > 0 ? (totalOto / totalMeetings).toFixed(2) : '0.00';
+
+  // DOM要素への反映
+  const totalScoreEl = document.getElementById('ctl-total-score');
+  const tierBadgeEl = document.getElementById('ctl-tier-badge');
+  const heroDotEl = document.getElementById('ctl-hero-dot');
+
+  if (totalScoreEl) {
+    totalScoreEl.textContent = totalScore;
+    totalScoreEl.className = `text-3xl sm:text-4xl font-black ${tierScoreClass} tabular-nums`;
+  }
+  if (tierBadgeEl) {
+    tierBadgeEl.className = `mt-1 inline-flex items-center gap-1 text-3xs font-black px-2 py-0.5 rounded-full ${tierClass}`;
+    tierBadgeEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dotClass}"></span><span>${tierLabel}</span>`;
+  }
+  if (heroDotEl) {
+    heroDotEl.className = `w-2.5 h-2.5 rounded-full ${dotClass}`;
+  }
+
+  // 7大指標値 & 配点
+  const setEl = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  };
+
+  setEl('ctl-size-val', chapterSize);
+  setEl('ctl-size-score', `${sizeScore} / 15 pt`);
+
+  setEl('ctl-growth-val', (netGrowth >= 0 ? `+${netGrowth}` : `${netGrowth}`));
+  setEl('ctl-growth-score', `${growthScore} / 15 pt`);
+
+  setEl('ctl-retention-val', retentionRate.toFixed(1));
+  setEl('ctl-retention-score', `${retentionScore} / 15 pt`);
+
+  setEl('ctl-referral-val', referralsPerMeeting.toFixed(2));
+  setEl('ctl-referral-score', `${referralScore} / 15 pt`);
+
+  setEl('ctl-visitor-val', visitorsPerWeek.toFixed(2));
+  setEl('ctl-visitor-score', `${visitorScore} / 15 pt`);
+
+  setEl('ctl-join-val', joinRate.toFixed(1));
+  setEl('ctl-join-score', `${joinScore} / 10 pt`);
+
+  setEl('ctl-absent-val', absentRate.toFixed(2));
+  setEl('ctl-absent-score', `${absentScore} / 15 pt`);
+
+  // 参考指標
+  setEl('ctl-ext-val', `${extRate}%`);
+  setEl('ctl-tyfcb-val', `${tyfcbThousandYen} 千円`);
+  setEl('ctl-ceu-val', ceuPerMeeting);
+  setEl('ctl-oto-val', otoPerMeeting);
+
+  // 既存の chapter-traffic 側の要素も同期更新 (テスト互換性維持)
+  const legacyTotalScoreEl = document.getElementById('chapter-traffic-total-score');
+  if (legacyTotalScoreEl) {
+    legacyTotalScoreEl.innerHTML = `${totalScore} <span class="text-xs font-bold text-slate-400">/ 100 pt</span>`;
+    legacyTotalScoreEl.className = `text-2xl sm:text-3xl font-black ${tierScoreClass} tabular-nums`;
+  }
+
+  const legacySizeEl = document.getElementById('chapter-metric-size');
+  if (legacySizeEl) legacySizeEl.textContent = chapterSize;
+
+  const legacyRetEl = document.getElementById('chapter-metric-retention');
+  if (legacyRetEl) legacyRetEl.textContent = retentionRate.toFixed(1);
+
+  const legacyAttEl = document.getElementById('chapter-metric-attendance');
+  const attendancePct = totalMeetings > 0 ? ((totalPresent + totalSub) / totalMeetings * 100).toFixed(1) : '95.0';
+  if (legacyAttEl) legacyAttEl.textContent = attendancePct;
+
+  const legacyRpwEl = document.getElementById('chapter-metric-rpw');
+  if (legacyRpwEl) legacyRpwEl.textContent = referralsPerMeeting.toFixed(2);
+
+  const legacyVisEl = document.getElementById('chapter-metric-visitors');
+  if (legacyVisEl) legacyVisEl.textContent = (visitorsPerWeek / Math.max(1, chapterSize)).toFixed(2);
+}
+
+/**
+ * Toggle Chapter Traffic Score Criteria Modal
+ */
+function toggleChapterTrafficCriteriaModal() {
+  const modal = document.getElementById('modal-chapter-traffic-criteria');
+  if (!modal) return;
+  modal.classList.toggle('hidden');
+}
+
+/**
+ * Close Chapter Traffic Score Criteria Modal
+ */
+function closeChapterTrafficCriteriaModal() {
+  const modal = document.getElementById('modal-chapter-traffic-criteria');
+  if (!modal) return;
+  modal.classList.add('hidden');
+}
+
+/**
  * Render Subview 5: Chapter Traffic Lights Matrix
  */
 function renderChapterTrafficView() {
-  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
-
-  const memberCount = currentPalmsRecords.length;
-  const weeks = Math.max(1, currentPalmsRecords[0].weeks_count || 4);
-
-  let totalPresent = 0;
-  let totalPalms = 0;
-  let totalRef = 0;
-  let totalVis = 0;
-
-  currentPalmsRecords.forEach(r => {
-    totalPresent += (Number(r.p_present) || 0) + (Number(r.s_substitute) || 0);
-    totalPalms += (Number(r.p_present) || 0) + (Number(r.a_absent) || 0) + (Number(r.l_late) || 0) + (Number(r.m_medical) || 0) + (Number(r.s_substitute) || 0);
-    totalRef += (Number(r.rgi_referrals_given_internal) || 0) + (Number(r.rgo_referrals_given_external) || 0);
-    totalVis += (Number(r.v_visitors) || 0);
-  });
-
-  // チャプターRPWおよびビジター月平均は各メンバーの活動週数に基づく数値の平均として算出
-  const sumMemberRpw = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
-  const rpw = memberCount > 0 ? (sumMemberRpw / memberCount).toFixed(2) : '1.25';
-  
-  const sumVisMonth = currentPalmsRecords.reduce((acc, r) => {
-    const mW = Math.max(1, r.weeks_count || 1);
-    return acc + ((Number(r.v_visitors) || 0) / mW * 4);
-  }, 0);
-  const visitorsPerMember = memberCount > 0 ? (sumVisMonth / memberCount).toFixed(2) : '0.50';
-
-  const sizeEl = document.getElementById('chapter-metric-size');
-  const attEl = document.getElementById('chapter-metric-attendance');
-  const rpwEl = document.getElementById('chapter-metric-rpw');
-  const visEl = document.getElementById('chapter-metric-visitors');
-
-  if (sizeEl) sizeEl.textContent = memberCount;
-  if (attEl) attEl.textContent = attendanceRate;
-  if (rpwEl) rpwEl.textContent = rpw;
-  if (visEl) visEl.textContent = visitorsPerMember;
+  if (typeof calcAndRenderChapterTrafficScore === 'function') {
+    calcAndRenderChapterTrafficScore();
+  }
 }
 </script>
 

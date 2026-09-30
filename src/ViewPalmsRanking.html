@@ -712,6 +712,208 @@
   <!-- SUBVIEW 3: 個人トラフィックライト (100点スコア・健康診断)        -->
   <!-- ======================================================== -->
   <div id="palms-subview-traffic-lights" class="palms-subview hidden">
+    <!-- ========================================== -->
+    <!-- 1. Chapter Traffic Light (チャプターレベルスコア 100点) -->
+    <!-- ========================================== -->
+    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs mb-8">
+      <!-- Chapter Traffic Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="ctl-hero-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <span class="text-3xs font-black tracking-widest text-slate-400 uppercase">CHAPTER TRAFFIC LIGHTS</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィック</span>
+            <span class="text-xs font-bold text-slate-400">健全度スコア</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Score Block -->
+          <div class="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-right shrink-0">
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-0.5">チャプター総合点</div>
+            <div class="flex items-baseline justify-end gap-1.5">
+              <span id="ctl-total-score" class="text-3xl sm:text-4xl font-black text-emerald-600 tabular-nums">--</span>
+              <span class="text-xs sm:text-sm font-bold text-slate-400 tabular-nums">/ 100 pt</span>
+            </div>
+            <div id="ctl-tier-badge" class="mt-1 inline-flex items-center gap-1 text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-100/70 text-emerald-700">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>グリーンランク</span>
+            </div>
+          </div>
+
+          <!-- Toggle Criteria Table Button -->
+          <button type="button" onclick="toggleChapterTrafficCriteriaModal()" class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0" title="チャプタートラフィックの点数基準を確認">
+            <i class="fa-solid fa-table-list text-blue-600"></i>
+            <span class="hidden md:inline">点数基準</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 7 Core Evaluated Metrics Matrix (100pt Total) -->
+      <div class="pt-5">
+        <div class="text-2xs font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+          <span>7大評価指標 (100点満点)</span>
+          <span class="text-3xs font-bold text-slate-400">過去6か月間データ基準</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
+          <!-- 1. Chapter Size (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">サイズ</span>
+                <span id="ctl-size-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-size-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">51名≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 2. Net Growth (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">純増数</span>
+                <span id="ctl-growth-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-growth-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">+5名≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 3. Retention Rate (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">更新率</span>
+                <span id="ctl-retention-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-retention-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">70%≦ で満点</span>
+            </div>
+          </div>
+
+          <!-- 4. Referrals per Meeting (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">リファーラル</span>
+                <span id="ctl-referral-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-referral-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">件/週・人</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">1.5超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 5. Visitors per Week (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">ビジター数</span>
+                <span id="ctl-visitor-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-visitor-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">名/週</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">8.0超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 6. Join Rate (10pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">加入率</span>
+                <span id="ctl-join-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 10 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-join-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">20%超 で満点</span>
+            </div>
+          </div>
+
+          <!-- 7. Absenteeism Rate (15pt) -->
+          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold text-slate-700">欠席率</span>
+                <span id="ctl-absent-score" class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-100/80 text-emerald-700 tabular-nums">-- / 15 pt</span>
+              </div>
+              <div class="flex items-baseline gap-1 my-1">
+                <span id="ctl-absent-val" class="text-2xl font-black text-slate-900 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">%</span>
+              </div>
+            </div>
+            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+              <span>基準</span>
+              <span class="font-bold text-slate-600">≦1.75% で満点</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Reference Metrics (Not scored) -->
+        <div class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">スコア対象外 (参考数値):</div>
+          <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">外与率:</span>
+              <span id="ctl-ext-val" class="font-black text-slate-800 tabular-nums">--%</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">ThankYouスリップ:</span>
+              <span id="ctl-tyfcb-val" class="font-black text-slate-800 tabular-nums">-- 千円</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">CEU:</span>
+              <span id="ctl-ceu-val" class="font-black text-slate-800 tabular-nums">--</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-slate-500 font-medium">1to1:</span>
+              <span id="ctl-oto-val" class="font-black text-slate-800 tabular-nums">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. Personal Traffic Light (個人トラフィックライト 100点) -->
+    <!-- ========================================== -->
     <!-- Traffic Lights Overview Card (Apple Radical Minimalism) -->
     <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -728,7 +930,7 @@
               <span id="traffic-light-summary-green-count" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">0</span>
               <span id="traffic-light-summary-total-count" class="text-xs sm:text-sm font-bold text-slate-400 tabular-nums">/ 0</span>
             </div>
-            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mt-0.5">GREEN</div>
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mt-0.5">個人 GREEN 比率</div>
           </div>
         </div>
 
@@ -1240,6 +1442,119 @@
                 <span>この期間で集計</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- Modal: Chapter Traffic Score Criteria Matrix (Official Criteria) -->
+  <div id="modal-chapter-traffic-criteria" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs hidden transition-all duration-200" role="dialog" aria-modal="true" aria-labelledby="chapter-traffic-criteria-title">
+    <div class="fixed inset-0" onclick="closeChapterTrafficCriteriaModal()"></div>
+    <div class="relative bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col z-10 animate-scale-in">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+        <div>
+          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">OFFICIAL CRITERIA</div>
+          <h3 id="chapter-traffic-criteria-title" class="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィックの点数基準</span>
+            <span class="text-xs font-bold text-slate-400">（100点満点）</span>
+          </h3>
+        </div>
+        <button type="button" onclick="closeChapterTrafficCriteriaModal()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 flex items-center justify-center transition-colors cursor-pointer" title="閉じる">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-4 sm:p-6 overflow-y-auto max-h-[80vh] space-y-6">
+        <!-- Criteria Table -->
+        <div>
+          <div class="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+            <span>チャプターレベルスコア配点表 (参考)</span>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-xs text-center border-collapse">
+              <thead>
+                <tr class="bg-amber-100/60 font-black text-slate-800 border-b border-slate-200 text-3xs sm:text-xs">
+                  <th class="py-2.5 px-3 text-left bg-slate-50 min-w-[120px]">評価項目</th>
+                  <th class="py-2.5 px-3">0 点</th>
+                  <th class="py-2.5 px-3">5 点</th>
+                  <th class="py-2.5 px-3">10 点</th>
+                  <th class="py-2.5 px-3 bg-amber-200/50">15 点 (満点)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 tabular-nums">
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">チャプターサイズ</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 30 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 40 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 50 人</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">51 人 ≦</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">メンバー増加数</td>
+                  <td class="py-2.5 px-3 text-slate-600">0 人以下</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2 人</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 4 人</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">5 人 ≦</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">更新率</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 50 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 59.99 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 69.99 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">70 % ≦ (69.99%超)</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">リファーラル <span class="text-3xs text-slate-400 font-normal">/週・人</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 0.7</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 1.0</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 1.5</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">1.5 超</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">ビジター数 <span class="text-3xs text-slate-400 font-normal">/週</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2.5</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 5.0</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 8.0</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">8.0 超</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">加入率</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 10 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 20 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">20 % 超 (10点満点)</td>
+                  <td class="py-2.5 px-3 text-slate-300 bg-slate-50/50">—</td>
+                </tr>
+                <tr>
+                  <td class="py-2.5 px-3 text-left font-bold text-slate-900 bg-slate-50/50">欠席率 <span class="text-3xs text-slate-400 font-normal">(低率が高得点)</span></td>
+                  <td class="py-2.5 px-3 text-slate-600">4.00 % 超</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 4.00 %</td>
+                  <td class="py-2.5 px-3 text-slate-600">≦ 2.75 %</td>
+                  <td class="py-2.5 px-3 font-black text-emerald-700 bg-emerald-50/40">≦ 1.75 %</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-3xs text-slate-400 mt-1.5 text-right font-medium">※（外与率、千円、CEU、1to1）これらの数値はスコアの算出には含まれていません。</p>
+        </div>
+
+        <!-- Definition list -->
+        <div>
+          <div class="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span>項目の定義</span>
+          </div>
+          <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-xs space-y-2 text-slate-600 leading-relaxed">
+            <div><strong class="text-slate-900">チャプターサイズ:</strong> レポート月末時点でのチャプターに在籍するメンバー数。</div>
+            <div><strong class="text-slate-900">メンバー増加数:</strong> 過去6か月間のメンバーの純増数。</div>
+            <div><strong class="text-slate-900">更新率:</strong> 12か月前の時点でのメンバーに対して現時点でチャプターに在籍しているメンバーの割合。</div>
+            <div><strong class="text-slate-900">リファーラル:</strong> 過去6か月間のリファーラル総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">外与率:</strong> 過去6か月間のリファーラル総数の内、外部リファーラル総数の割合。</div>
+            <div><strong class="text-slate-900">ビジター数:</strong> 過去6か月間のビジター数をミーティングの開催回数で割ったもの。週当たりのビジター数。</div>
+            <div><strong class="text-slate-900">加入率:</strong> チャプターに加入した新メンバー数を、ビジター数で割ったもの。</div>
+            <div><strong class="text-slate-900">欠席率:</strong> 過去6か月間の欠席者数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">千円:</strong> 過去6か月間のThankYouスリップ総額を合計した金額。千円単位。</div>
+            <div><strong class="text-slate-900">CEU:</strong> 過去6か月間のCEU総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
+            <div><strong class="text-slate-900">1to1:</strong> 過去6か月間の1to1総数を各メンバーが出席できた延べミーティング回数で割ったもの。</div>
           </div>
         </div>
       </div>
