@@ -153,5 +153,48 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     // Copy plan text mentions referrals + visitors + testimonials
     assert.strictEqual(indexHtml.includes('【推奨アクション (リファーラル＋ビジター＋推薦の言葉)】'), true);
   });
+
+  it('strictly separates 推薦の言葉 (testimonials) from スポンサー (sponsors) in member dashboard and traffic light scoring', () => {
+    // Member Dashboard raw breakdown must say 推薦の言葉, not 推薦/スポンサー
+    assert.strictEqual(indexHtml.includes('id="member-palms-raw-testimonials"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-raw-testimonials"'), true);
+    assert.strictEqual(indexHtml.includes('推薦/スポンサー'), false);
+    assert.strictEqual(indexHtml.includes('推薦状・スポンサー'), false);
+
+    // Traffic light sponsor card must say 新会員スポンサー
+    assert.strictEqual(indexHtml.includes("title: '新会員スポンサー'"), true);
+
+    // Verify calcBniTrafficLightScore does NOT award sponsor points solely for testimonials
+    const calcFnMatch = indexHtml.match(/function calcBniTrafficLightScore\(r,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(calcFnMatch);
+    const calcBniTrafficLightScore = new Function('r', 'weeks', calcFnMatch[1]);
+
+    // Member has 3 testimonials (推薦の言葉), but 0 sponsors
+    const memberWithTestimonialsOnly = {
+      visitors: 0,
+      total_referrals_given: 0,
+      one_to_ones: 0,
+      testimonials: 3,
+      sponsors: 0,
+      p: 4
+    };
+    const res = calcBniTrafficLightScore(memberWithTestimonialsOnly, 4);
+    // Sponsors score must be 0!
+    assert.strictEqual(res.scores.sponsor, 0);
+    // PPW must include testimonials: (0 + 0 + 3) / 4 = 0.75
+    assert.strictEqual(res.ppw, 0.75);
+
+    // Member has 1 sponsor (新会員スポンサー) -> 5 pt
+    const memberWithSponsor = {
+      visitors: 0,
+      total_referrals_given: 0,
+      one_to_ones: 0,
+      testimonials: 0,
+      sponsors: 1,
+      p: 4
+    };
+    const resSponsor = calcBniTrafficLightScore(memberWithSponsor, 4);
+    assert.strictEqual(resSponsor.scores.sponsor, 5);
+  });
 });
 

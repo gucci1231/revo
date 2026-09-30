@@ -72,6 +72,7 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
       tyfcb_yen: 6000000,
       one_to_ones: 26,
       total_referrals_given: 33,
+      sponsors: 1,
       testimonials: 1,
       ceu: 14,
       p: 25, a: 0, l: 0, m: 0, s: 0
@@ -88,6 +89,7 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
       tyfcb_yen: 400000,
       one_to_ones: 13,
       total_referrals_given: 26, // 1.0/wk -> 20pt
+      sponsors: 0,
       testimonials: 0,
       ceu: 8, // 5pt
       p: 23, a: 2, l: 0, m: 0, s: 0 // 92% -> 5pt
@@ -103,6 +105,7 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
       tyfcb_yen: 0, // 0pt
       one_to_ones: 7, // 0.26/wk -> 5pt
       total_referrals_given: 13, // 0.5/wk -> 10pt
+      sponsors: 0,
       testimonials: 0, // 0pt
       ceu: 0, // 0pt
       p: 20, a: 5, l: 0, m: 0, s: 0 // 80% -> 0pt

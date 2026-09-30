@@ -821,6 +821,15 @@
       return;
     }
 
+    if (typeof calcBniTrafficLightScore === 'function') {
+      record.sponsors = Number(record.sponsors != null ? record.sponsors : (record.sponsors_count != null ? record.sponsors_count : 0));
+      record.testimonials = Number(record.testimonials != null ? record.testimonials : 0);
+      record.trafficLight = calcBniTrafficLightScore(record, record.weeks_count || 26);
+      record.total_score = record.trafficLight.totalScore;
+      record.ppw = record.trafficLight.ppw;
+      record.rpw = record.trafficLight.rpw;
+    }
+
     const tl = record.trafficLight || (typeof calcBniTrafficLightScore === 'function' ? calcBniTrafficLightScore(record) : {});
     const s = tl.scores || {};
     const r = tl.rates || {};
@@ -878,7 +887,7 @@
     if (elPpwStatus) {
       const totalRef = Number(record.total_referrals_given != null ? record.total_referrals_given : ((Number(record.rgi) || 0) + (Number(record.rgo) || 0)));
       const vis = Number(record.visitors ?? record.v_visitors ?? 0);
-      const test = Number(record.testimonials ?? record.sponsors ?? 0);
+      const test = Number(record.testimonials != null ? record.testimonials : 0);
       elPpwStatus.textContent = `${tl.ppwDot || ''} 内訳: 紹介${totalRef}件 + 招待${vis}名 + 推薦${test}件`;
       elPpwStatus.title = `${tl.ppwTierLabel || ''} (リファーラル${totalRef}件 ＋ ビジター${vis}名 ＋ 推薦の言葉${test}件)`;
     }
@@ -951,13 +960,13 @@
         icon: 'fa-yen-sign'
       },
       {
-        title: '推薦状・スポンサー',
+        title: '新会員スポンサー',
         shortTitle: 'スポンサー',
         maxScore: 5,
         score: s.sponsor != null ? s.sponsor : 0,
-        unit: '件',
-        actual: `${record.sponsors || 0}件`,
-        desc: '1件以上=5pt / 0件=0pt',
+        unit: '名',
+        actual: `${record.sponsors || 0}名`,
+        desc: '1名以上=5pt / 0名=0pt',
         icon: 'fa-award'
       }
     ];
@@ -1189,12 +1198,12 @@
     const elVisitors = document.getElementById('member-palms-raw-visitors');
     const elOto = document.getElementById('member-palms-raw-oto');
     const elCeu = document.getElementById('member-palms-raw-ceu');
-    const elSponsor = document.getElementById('member-palms-raw-sponsor');
+    const elTestimonials = document.getElementById('member-palms-raw-testimonials') || document.getElementById('member-palms-raw-sponsor');
     if (elTyfcbBadge) elTyfcbBadge.textContent = `¥${(m.tyfcb_yen || 0).toLocaleString()}`;
     if (elVisitors) elVisitors.textContent = `${m.visitors || 0}名`;
     if (elOto) elOto.textContent = `${m.one_to_ones || 0}回`;
     if (elCeu) elCeu.textContent = `${m.ceu || 0} pt`;
-    if (elSponsor) elSponsor.textContent = `${m.sponsors || 0}件`;
+    if (elTestimonials) elTestimonials.textContent = `${m.testimonials || 0}件`;
   }
 
   function fetchMemberPalmsWeeklySubmissions(memberName) {

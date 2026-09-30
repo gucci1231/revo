@@ -8150,8 +8150,8 @@ select.form-input, select.form-select {
                 <span class="font-black text-slate-800 tabular-nums" id="palms-raw-ceu">0 pt</span>
               </div>
               <div class="bg-slate-50 px-2 py-1.5 rounded-lg flex justify-between items-center">
-                <span class="text-3xs font-bold text-slate-500">推薦/スポンサー</span>
-                <span class="font-black text-slate-800 tabular-nums" id="palms-raw-sponsor">0件</span>
+                <span class="text-3xs font-bold text-slate-500">推薦の言葉</span>
+                <span class="font-black text-slate-800 tabular-nums" id="palms-raw-testimonials">0件</span>
               </div>
             </div>
           </div>
@@ -9148,8 +9148,8 @@ select.form-input, select.form-select {
                   <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-ceu">0 pt</span>
                 </div>
                 <div class="bg-white px-2 py-1.5 rounded-lg flex justify-between items-center border border-slate-100">
-                  <span class="text-3xs font-bold text-slate-500">推薦/スポンサー</span>
-                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-sponsor">0件</span>
+                  <span class="text-3xs font-bold text-slate-500">推薦の言葉</span>
+                  <span class="font-black text-slate-800 tabular-nums" id="member-palms-raw-testimonials">0件</span>
                 </div>
               </div>
             </div>
@@ -18866,6 +18866,15 @@ window.CelebrationEffect = (function() {
       return;
     }
 
+    if (typeof calcBniTrafficLightScore === 'function') {
+      record.sponsors = Number(record.sponsors != null ? record.sponsors : (record.sponsors_count != null ? record.sponsors_count : 0));
+      record.testimonials = Number(record.testimonials != null ? record.testimonials : 0);
+      record.trafficLight = calcBniTrafficLightScore(record, record.weeks_count || 26);
+      record.total_score = record.trafficLight.totalScore;
+      record.ppw = record.trafficLight.ppw;
+      record.rpw = record.trafficLight.rpw;
+    }
+
     const tl = record.trafficLight || (typeof calcBniTrafficLightScore === 'function' ? calcBniTrafficLightScore(record) : {});
     const s = tl.scores || {};
     const r = tl.rates || {};
@@ -18923,7 +18932,7 @@ window.CelebrationEffect = (function() {
     if (elPpwStatus) {
       const totalRef = Number(record.total_referrals_given != null ? record.total_referrals_given : ((Number(record.rgi) || 0) + (Number(record.rgo) || 0)));
       const vis = Number(record.visitors ?? record.v_visitors ?? 0);
-      const test = Number(record.testimonials ?? record.sponsors ?? 0);
+      const test = Number(record.testimonials != null ? record.testimonials : 0);
       elPpwStatus.textContent = `${tl.ppwDot || ''} 内訳: 紹介${totalRef}件 + 招待${vis}名 + 推薦${test}件`;
       elPpwStatus.title = `${tl.ppwTierLabel || ''} (リファーラル${totalRef}件 ＋ ビジター${vis}名 ＋ 推薦の言葉${test}件)`;
     }
@@ -18996,13 +19005,13 @@ window.CelebrationEffect = (function() {
         icon: 'fa-yen-sign'
       },
       {
-        title: '推薦状・スポンサー',
+        title: '新会員スポンサー',
         shortTitle: 'スポンサー',
         maxScore: 5,
         score: s.sponsor != null ? s.sponsor : 0,
-        unit: '件',
-        actual: `${record.sponsors || 0}件`,
-        desc: '1件以上=5pt / 0件=0pt',
+        unit: '名',
+        actual: `${record.sponsors || 0}名`,
+        desc: '1名以上=5pt / 0名=0pt',
         icon: 'fa-award'
       }
     ];
@@ -19234,12 +19243,12 @@ window.CelebrationEffect = (function() {
     const elVisitors = document.getElementById('member-palms-raw-visitors');
     const elOto = document.getElementById('member-palms-raw-oto');
     const elCeu = document.getElementById('member-palms-raw-ceu');
-    const elSponsor = document.getElementById('member-palms-raw-sponsor');
+    const elTestimonials = document.getElementById('member-palms-raw-testimonials') || document.getElementById('member-palms-raw-sponsor');
     if (elTyfcbBadge) elTyfcbBadge.textContent = `¥${(m.tyfcb_yen || 0).toLocaleString()}`;
     if (elVisitors) elVisitors.textContent = `${m.visitors || 0}名`;
     if (elOto) elOto.textContent = `${m.one_to_ones || 0}回`;
     if (elCeu) elCeu.textContent = `${m.ceu || 0} pt`;
-    if (elSponsor) elSponsor.textContent = `${m.sponsors || 0}件`;
+    if (elTestimonials) elTestimonials.textContent = `${m.testimonials || 0}件`;
   }
 
   function fetchMemberPalmsWeeklySubmissions(memberName) {
@@ -27586,10 +27595,11 @@ function calcBniTrafficLightScore(r, weeks) {
   const totalRefGiven = Number(r.total_referrals_given != null ? r.total_referrals_given : (Number(r.rgi ?? r.rgi_referrals_given_internal ?? 0) + Number(r.rgo ?? r.rgo_referrals_given_external ?? 0)));
   const rpw = totalRefGiven / w;
 
-  // PPW = (RGI + RGO + Visitors + Testimonials/Sponsors) / W
-  const sponsors = Number(r.testimonials ?? r.sponsors ?? 0);
+  // PPW = (RGI + RGO + Visitors + Testimonials) / W
+  // ※ 推薦の言葉（Testimonials）を含めて計算（スポンサーとは別指標）
+  const testimonials = Number(r.testimonials != null ? r.testimonials : 0);
   const visitors = Number(r.visitors ?? r.v_visitors ?? 0);
-  const ppw = (totalRefGiven + visitors + sponsors) / w;
+  const ppw = (totalRefGiven + visitors + testimonials) / w;
 
   // PPW Band Tier (Reference lines: 2.0000 and 1.0000)
   let ppwTier = 'low';
@@ -27650,7 +27660,9 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreReferral = 0;
 
   // 5. Members Sponsored in 6 Months (Max 5 pt)
-  const scoreSponsor = (sponsors >= 1) ? 5 : 0;
+  // ※ 新規入会メンバーのスポンサー数（推薦の言葉とは完全に別指標）
+  const sponsorsCount = Number(r.sponsors != null ? r.sponsors : (r.sponsors_count != null ? r.sponsors_count : 0));
+  const scoreSponsor = (sponsorsCount >= 1) ? 5 : 0;
 
   // 6. CEU Per Week (Max 10 pt)
   const ceuPerWeek = (r.ceu || 0) / w;
@@ -27789,7 +27801,8 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
     const oto = Number(r.one_to_ones || 0);
     const tyfcbYen = Number(r.tyfcb_yen != null ? r.tyfcb_yen : (Number(r.tyfcb_amount || 0) * 1000));
     const ceu = Number(r.ceu || r.ceu_credits || 0);
-    const sponsors = Number(r.testimonials || r.sponsors || 0);
+    const testimonials = Number(r.testimonials != null ? r.testimonials : 0);
+    const sponsors = Number(r.sponsors != null ? r.sponsors : (r.sponsors_count != null ? r.sponsors_count : 0));
 
     // 出席が始まった週からのカウント（定例会参加週数＝P+A+L+M+S）
     const memberAttendanceWeeks = (p + a + l + m + s);
@@ -27813,7 +27826,9 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
       one_to_ones: oto,
       tyfcb_yen: tyfcbYen,
       ceu,
+      testimonials,
       sponsors,
+      sponsors_count: sponsors,
       weeks_count: memberWeeks,
       attendance_weeks: memberAttendanceWeeks,
       is_new_member: isNewMember,
@@ -28601,7 +28616,7 @@ function switchPalmsMetric(metric) {
   if (hintEl) {
     const hints = {
       'total': '公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)',
-      'ppw': 'PPW（Points Per Week: 週貢献指数）= (リファーラル提供 ＋ ビジター ＋ 推薦・スポンサー) ÷ 週数 【黒線基準: 2.00以上 達成 / 1.00以上 目安】',
+      'ppw': 'PPW（Points Per Week: 週貢献指数）= (リファーラル提供 ＋ ビジター ＋ 推薦の言葉) ÷ 週数 【黒線基準: 2.00以上 達成 / 1.00以上 目安】',
       'rpw': 'RPW（Referrals Per Week: 週リファーラル提供）= (内部リファーラル ＋ 外部リファーラル) ÷ 週数 【目標: 1.25以上】',
       'referrals': 'リファーラル提供点数（週1.25件以上=25点, 1.00件=20点, 0.75件=15点, 0.50件=10点, 0.25件=5点）',
       'visitors': 'ビジター招待点数（6ヶ月換算: 5名以上=25点, 4名=20点, 3名=15点, 2名=10点, 1名=5点）',
@@ -29187,13 +29202,13 @@ function renderPalmsDetailScores(m) {
       icon: 'fa-yen-sign'
     },
     {
-      title: '推薦状・スポンサー',
+      title: '新会員スポンサー',
       shortTitle: 'スポンサー',
       maxScore: 5,
       score: s.sponsor,
-      unit: '件',
-      actual: `${m.sponsors}件`,
-      desc: '1件以上=5pt / 0件=0pt',
+      unit: '名',
+      actual: `${m.sponsors || 0}名`,
+      desc: '1名以上=5pt / 0名=0pt',
       icon: 'fa-award'
     }
   ];
@@ -29396,12 +29411,12 @@ function renderPalmsDetailRawBreakdown(m) {
   const elVisitors = document.getElementById('palms-raw-visitors');
   const elOto = document.getElementById('palms-raw-oto');
   const elCeu = document.getElementById('palms-raw-ceu');
-  const elSponsor = document.getElementById('palms-raw-sponsor');
+  const elTestimonials = document.getElementById('palms-raw-testimonials') || document.getElementById('palms-raw-sponsor');
   if (elTyfcbBadge) elTyfcbBadge.textContent = `¥${(m.tyfcb_yen || 0).toLocaleString()}`;
   if (elVisitors) elVisitors.textContent = `${m.visitors || 0}名`;
   if (elOto) elOto.textContent = `${m.one_to_ones || 0}回`;
   if (elCeu) elCeu.textContent = `${m.ceu || 0} pt`;
-  if (elSponsor) elSponsor.textContent = `${m.sponsors || 0}件`;
+  if (elTestimonials) elTestimonials.textContent = `${m.testimonials || 0}件`;
 }
 
 function fetchPalmsMemberHistory(memberName) {
@@ -30938,7 +30953,7 @@ function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
     { key: 'ceu', label: 'CEU', max: 10, name: 'CEU' },
     { key: 'attendance', label: 'ATT', max: 10, name: '出席' },
     { key: 'tyfcb', label: 'TYF', max: 5, name: 'TYFCB' },
-    { key: 'sponsor', label: 'SPO', max: 5, name: '推薦' }
+    { key: 'sponsor', label: 'SPO', max: 5, name: 'スポンサー' }
   ];
 
   const width = 220;
