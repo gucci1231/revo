@@ -687,7 +687,7 @@ function handleApiRequest(req, res, urlObj) {
       const monthlyMap = {};
 
       const startDateRow = runSqlJson("SELECT value FROM settings WHERE key = 'start_date';")[0];
-      const startDateStr = (startDateRow && startDateRow.value) ? startDateRow.value : '2026/04/01';
+      const startDateStr = (startDateRow && startDateRow.value) ? startDateRow.value : '2026/10/01';
 
       const apSql = `
         SELECT ap.*, 

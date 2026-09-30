@@ -17088,7 +17088,7 @@ window.CelebrationEffect = (function() {
       const list = Array.isArray(dataOrList) ? dataOrList : (typeof cachedAllVisitors !== 'undefined' ? cachedAllVisitors : []);
       const dedupedList = typeof deduplicateVisitorListClient === 'function' ? deduplicateVisitorListClient(list) : list;
 
-      let startDateStr = '2026/04/01';
+      let startDateStr = '2026/10/01';
       if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
         startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
       }
@@ -19815,7 +19815,7 @@ window.CelebrationEffect = (function() {
     const dedupedList = deduplicateVisitorListClient(rawList);
 
     // 集計開始日（今期）の取得
-    let startDateStr = '2026/04/01';
+    let startDateStr = '2026/10/01';
     if (typeof currentDashboardData !== 'undefined' && currentDashboardData) {
       startDateStr = currentDashboardData.startDate || (currentDashboardData.metrics && currentDashboardData.metrics.startDate) || startDateStr;
     }

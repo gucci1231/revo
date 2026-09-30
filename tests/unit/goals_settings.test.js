@@ -160,18 +160,21 @@ describe('Goal Settings & Automatic Inheritance Feature Unit Tests', () => {
     }
 
     const testTerms = [
+      { label: '第3期 (2026/10/01〜)', value: '2026/10/01' },
       { label: '第2期 (2026/04/01〜)', value: '2026/04/01' },
       { label: '第1期 (2025/10/01〜)', dateStr: '2025/10/01' }
     ];
 
-    renderOptions(testTerms, '2026/04/01');
+    renderOptions(testTerms, '2026/10/01');
 
     const settingSelect = mockElements['setting-page-period-select'];
-    assert.strictEqual(settingSelect.options.length, 2);
-    assert.strictEqual(settingSelect.options[0].value, '2026/04/01');
+    assert.strictEqual(settingSelect.options.length, 3);
+    assert.strictEqual(settingSelect.options[0].value, '2026/10/01');
     assert.strictEqual(settingSelect.options[0].selected, true);
-    assert.strictEqual(settingSelect.options[1].value, '2025/10/01');
+    assert.strictEqual(settingSelect.options[1].value, '2026/04/01');
     assert.strictEqual(settingSelect.options[1].selected, false);
+    assert.strictEqual(settingSelect.options[2].value, '2025/10/01');
+    assert.strictEqual(settingSelect.options[2].selected, false);
   });
 
   it('correctly switches settings subtabs between period, goals, members, and maintenance', () => {

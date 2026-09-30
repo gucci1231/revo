@@ -230,7 +230,7 @@ function generateBniTermsList() {
   }
 
   const baseYear = 2025;
-  const baseMonth = 4;
+  const baseMonth = 10;
   let terms = [];
 
   let loopYear = currentTermYear;
@@ -243,8 +243,7 @@ function generateBniTermsList() {
 
     const diffMonths = (loopYear - baseYear) * 12 + (loopMonth - baseMonth);
     const halfIndex = Math.floor(diffMonths / 6);
-    const termNo = Math.floor(halfIndex / 2) + 1;
-    const halfStr = halfIndex % 2 === 0 ? "上半期" : "下半期";
+    const termNo = halfIndex + 1;
 
     const monthStr = loopMonth < 10 ? "0" + loopMonth : String(loopMonth);
     const dateStr = `${loopYear}/${monthStr}/01`;
@@ -252,7 +251,8 @@ function generateBniTermsList() {
 
     terms.push({
       dateStr: dateStr,
-      label: `${dateStr} 〜 (第${termNo}期 ${halfStr})${isCurrent ? ' [現在の期]' : ''}`,
+      value: dateStr,
+      label: `第${termNo}期 (${dateStr}〜)${isCurrent ? ' [現在の期]' : ''}`,
       isCurrent: isCurrent
     });
 
@@ -264,8 +264,9 @@ function generateBniTermsList() {
   }
 
   terms.push({
-    dateStr: "2025/01/01",
-    label: "全期間表示 (2025年〜)",
+    dateStr: "2024/10/01",
+    value: "2024/10/01",
+    label: "全期間 (2024/10/01〜)",
     isCurrent: false
   });
 

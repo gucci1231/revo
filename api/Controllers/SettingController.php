@@ -82,8 +82,9 @@ class SettingController extends Controller {
         }
 
         $settings = $this->settingRepo->getAll();
-        $startDateStr = $settings['start_date'] ?? '2026/04/01';
+        $startDateStr = $settings['start_date'] ?? '2026/10/01';
         $bniTermsList = [
+            ['label' => '第3期 (2026/10/01〜)', 'value' => '2026/10/01', 'dateStr' => '2026/10/01'],
             ['label' => '第2期 (2026/04/01〜)', 'value' => '2026/04/01', 'dateStr' => '2026/04/01'],
             ['label' => '第1期 (2025/10/01〜)', 'value' => '2025/10/01', 'dateStr' => '2025/10/01'],
             ['label' => '全期間 (2024/10/01〜)', 'value' => '2024/10/01', 'dateStr' => '2024/10/01']

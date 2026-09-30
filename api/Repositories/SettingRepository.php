@@ -17,7 +17,7 @@ class SettingRepository {
             $settings[$r['key']] = $r['value'];
         }
         if (empty($settings['start_date'])) {
-            $settings['start_date'] = '2026/04/01';
+            $settings['start_date'] = '2026/10/01';
         }
         return $settings;
     }
