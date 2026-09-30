@@ -1128,22 +1128,26 @@ function handleApiRequest(req, res, urlObj) {
       }
 
       if (action === 'record') {
+        const data = input || {};
         const memberId = (data.member_id || '').replace(/'/g, "''");
         const memberName = (data.member_name || '').replace(/'/g, "''");
         const awardTitle = (data.award_title || '定例会プレゼント').replace(/'/g, "''");
         const wonAt = (data.won_at || new Date().toISOString().split('T')[0].replace(/-/g, '/')).replace(/'/g, "''");
+        const now = new Date().toISOString();
+        const id = 'lot_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
 
         if (!memberId || !memberName) {
           res.writeHead(400);
           return res.end(JSON.stringify({ success: false, error: 'member_id and member_name are required' }));
         }
 
-        const sql = `INSERT INTO lottery_history (member_id, member_name, award_title, won_at) VALUES ('${memberId}', '${memberName}', '${awardTitle}', '${wonAt}');`;
+        const sql = `INSERT INTO lottery_history (id, member_id, member_name, award_title, won_at, created_at) VALUES ('${id}', '${memberId}', '${memberName}', '${awardTitle}', '${wonAt}', '${now}');`;
         runSqlExec(sql);
-        return res.end(JSON.stringify({ success: true, message: '当選を記録しました' }));
+        return res.end(JSON.stringify({ success: true, message: '当選を記録しました', id: id }));
       }
 
       if (action === 'delete') {
+        const data = input || {};
         const id = (data.id || urlObj.searchParams.get('id') || '').replace(/'/g, "''");
         if (!id) {
           res.writeHead(400);
