@@ -41,4 +41,33 @@ describe('HTML & JS Syntax Verification Tests', () => {
       }, SyntaxError, `Script block ${idx} in index.html contains syntax errors`);
     });
   });
+
+  it('verifies all src HTML files and view-content panels have balanced <div> tags', () => {
+    const files = fs.readdirSync(SRC_DIR).filter(f => f.endsWith('.html'));
+    files.forEach(f => {
+      const content = fs.readFileSync(path.join(SRC_DIR, f), 'utf8');
+      const opens = (content.match(/<div\b/gi) || []).length;
+      const closes = (content.match(/<\/div>/gi) || []).length;
+      assert.strictEqual(opens, closes, `${f} has unbalanced <div> tags (opened: ${opens}, closed: ${closes})`);
+    });
+
+    const indexPath = path.join(__dirname, '../../index.html');
+    const html = fs.readFileSync(indexPath, 'utf8');
+    const lines = html.split('\n');
+    let depth = 0;
+    let foundLottery = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes('id="view-lottery"')) {
+        foundLottery = true;
+        assert.strictEqual(depth, 1, `view-lottery should be directly inside main content container (depth 1), but got depth ${depth}`);
+      }
+      const tags = line.match(/<\/?div\b[^>]*>/gi) || [];
+      for (const t of tags) {
+        if (t.startsWith('</')) depth--;
+        else if (!t.endsWith('/>')) depth++;
+      }
+    }
+    assert.ok(foundLottery, 'index.html contains view-lottery');
+  });
 });
