@@ -14,6 +14,8 @@ describe('🎰 Regular Meeting Lottery Slot Machine & 16:9 Stage Feature Tests',
 
   it('verifies lottery container and 16:9 stage elements exist in compiled index.html', () => {
     assert.match(indexHtml, /id="view-lottery"/, 'Should contain view-lottery panel');
+    assert.match(indexHtml, /id="view-lottery"\s+class="view-content"/, 'view-lottery must have class view-content');
+    assert.doesNotMatch(indexHtml, /id="view-lottery"[^>]*style="display:\s*none;?"/, 'view-lottery must not have inline display:none');
     assert.match(indexHtml, /id="lottery-theater-wrapper"/, 'Should contain lottery-theater-wrapper');
     assert.match(indexHtml, /class="lottery-stage-16-9/, 'Should contain lottery-stage-16-9');
     assert.match(indexHtml, /id="lottery-award-input"/, 'Should contain award title input');

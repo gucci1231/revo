@@ -871,7 +871,7 @@
   function setupLotteryShortcuts() {
     window.addEventListener('keydown', (e) => {
       const lotteryView = document.getElementById('view-lottery');
-      if (!lotteryView || lotteryView.style.display === 'none') return;
+      if (!lotteryView || !lotteryView.classList.contains('active')) return;
 
       // 入力フォームフォーカス中は無視
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;

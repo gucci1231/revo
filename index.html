@@ -10613,7 +10613,7 @@ select.form-input, select.form-select {
 
 
     <!-- 定例会スロット抽選ビュー (16:9 Fullscreen Stage) -->
-<div id="view-lottery" class="view-panel" style="display: none;">
+<div id="view-lottery" class="view-content">
   <!-- 操作バー（通常モード時） -->
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
     <div class="flex items-center gap-3">
@@ -26617,7 +26617,7 @@ function renderPalmsEmptyState(customMessage = null) {
   function setupLotteryShortcuts() {
     window.addEventListener('keydown', (e) => {
       const lotteryView = document.getElementById('view-lottery');
-      if (!lotteryView || lotteryView.style.display === 'none') return;
+      if (!lotteryView || !lotteryView.classList.contains('active')) return;
 
       // 入力フォームフォーカス中は無視
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;

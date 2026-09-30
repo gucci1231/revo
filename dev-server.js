@@ -1072,6 +1072,93 @@ function handleApiRequest(req, res, urlObj) {
       }
     }
 
+    if (pathname === '/api/lottery.php') {
+      const action = urlObj.searchParams.get('action') || 'list';
+
+      if (action === 'list') {
+        const historySql = `SELECT id, member_id, member_name, award_title, won_at, created_at FROM lottery_history ORDER BY won_at DESC, created_at DESC;`;
+        const history = runSqlJson(historySql);
+
+        const membersSql = `SELECT id, category, name, profession FROM members ORDER BY category, name;`;
+        const rawMembers = runSqlJson(membersSql);
+
+        // 重複排除＆当選集計
+        const uniqueByName = {};
+        rawMembers.forEach(m => {
+          const cleanName = (m.name || '').replace(/\s+/g, '');
+          if (!cleanName) return;
+          if (!uniqueByName[cleanName]) {
+            uniqueByName[cleanName] = m;
+          } else {
+            const existing = uniqueByName[cleanName];
+            const existingHasCat = (existing.category && existing.category !== 'その他');
+            const newHasCat = (m.category && m.category !== 'その他');
+            if (!existingHasCat && newHasCat) {
+              uniqueByName[cleanName] = m;
+            } else if (m.profession && !existing.profession) {
+              uniqueByName[cleanName] = m;
+            }
+          }
+        });
+
+        // 集計
+        const members = Object.values(uniqueByName).map(m => {
+          const mId = String(m.id);
+          const cleanName = (m.name || '').replace(/\s+/g, '');
+          const wonHistory = history.filter(h => String(h.member_id) === mId || (h.member_name || '').replace(/\s+/g, '') === cleanName);
+          const winCount = wonHistory.length;
+          const lastWonAt = wonHistory.length > 0 ? wonHistory[0].won_at : null;
+          const awards = wonHistory.map(h => ({ award_title: h.award_title, won_at: h.won_at }));
+          return {
+            id: m.id,
+            name: m.name,
+            category: m.category || 'その他',
+            profession: m.profession || '',
+            win_count: winCount,
+            last_won_at: lastWonAt,
+            awards: awards
+          };
+        });
+
+        return res.end(JSON.stringify({
+          success: true,
+          members: members,
+          history: history
+        }));
+      }
+
+      if (action === 'record') {
+        const memberId = (data.member_id || '').replace(/'/g, "''");
+        const memberName = (data.member_name || '').replace(/'/g, "''");
+        const awardTitle = (data.award_title || '定例会プレゼント').replace(/'/g, "''");
+        const wonAt = (data.won_at || new Date().toISOString().split('T')[0].replace(/-/g, '/')).replace(/'/g, "''");
+
+        if (!memberId || !memberName) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ success: false, error: 'member_id and member_name are required' }));
+        }
+
+        const sql = `INSERT INTO lottery_history (member_id, member_name, award_title, won_at) VALUES ('${memberId}', '${memberName}', '${awardTitle}', '${wonAt}');`;
+        runSqlExec(sql);
+        return res.end(JSON.stringify({ success: true, message: '当選を記録しました' }));
+      }
+
+      if (action === 'delete') {
+        const id = (data.id || urlObj.searchParams.get('id') || '').replace(/'/g, "''");
+        if (!id) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({ success: false, error: 'id is required' }));
+        }
+        runSqlExec(`DELETE FROM lottery_history WHERE id = '${id}';`);
+        return res.end(JSON.stringify({ success: true, message: '履歴を削除しました' }));
+      }
+
+      if (action === 'reset') {
+        runSqlExec(`DELETE FROM lottery_history;`);
+        return res.end(JSON.stringify({ success: true, message: '全当選履歴をリセットしました' }));
+      }
+    }
+
     return res.end(JSON.stringify({ success: false, message: 'Endpoint not found' }));
   });
 }
