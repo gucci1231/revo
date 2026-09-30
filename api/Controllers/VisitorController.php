@@ -47,6 +47,9 @@ class VisitorController extends Controller {
             case 'update_status':
                 $this->updateStatus();
                 break;
+            case 'update_category':
+                $this->updateCategory();
+                break;
             case 'save_memo':
                 $this->saveMemo();
                 break;
@@ -129,6 +132,7 @@ class VisitorController extends Controller {
                 'email' => $visitor['email'],
                 'attendanceCount' => $visitor['attendance_count'],
                 'remarks' => $visitor['remarks'],
+                'category' => $visitor['category'] ?? 'ビジター',
                 'allIds' => $linkedIds,
                 'visitCount' => count($visits),
                 'followType' => $status['follow_type'] ?? '直近フォロー'
@@ -167,7 +171,8 @@ class VisitorController extends Controller {
             'company' => $this->getParam('company', ''),
             'email' => $this->getParam('email', ''),
             'attendance_count' => $this->getParam('attendanceCount', '初めて'),
-            'remarks' => $this->getParam('remarks', '')
+            'remarks' => $this->getParam('remarks', ''),
+            'category' => $this->getParam('category', 'ビジター')
         ]);
 
         $this->visitorRepo->createInitialStatus($newId, $now);
@@ -210,6 +215,18 @@ class VisitorController extends Controller {
         $this->visitorRepo->updateRemarks($vId, $memo);
 
         Response::success(['visitorId' => $vId, 'memo' => $memo]);
+    }
+
+    private function updateCategory(): void {
+        $vId = $this->getParam('visitorId', '');
+        $category = $this->getParam('category', 'ビジター');
+
+        if (!$vId) {
+            Response::error('Visitor ID is required');
+        }
+
+        $this->visitorRepo->updateCategory($vId, $category);
+        Response::success(['visitorId' => $vId, 'category' => $category]);
     }
 
     private function delete(): void {

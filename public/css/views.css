@@ -4159,6 +4159,63 @@
   transform: translateY(-1px);
 }
 
+/* --- Visitor / Guest Segmented Control --- */
+.visitor-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.visitor-cat-btn:hover {
+  color: #1e293b;
+}
+
+.visitor-cat-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.visitor-cat-badge {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.18s ease;
+}
+
+.visitor-cat-btn.active .visitor-cat-badge {
+  background: #eff6ff;
+  color: #0071e3;
+}
+
+.badge-guest-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+
 
 
 

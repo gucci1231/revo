@@ -21,6 +21,7 @@ class VisitorRepository {
                 COALESCE(v.company, '') as company, 
                 COALESCE(v.email, '') as email, 
                 v.attendance_count as attendanceCount, v.remarks,
+                COALESCE(v.category, 'ビジター') as category,
                 COALESCE(s.is_attended, '未') as isAttended,
                 COALESCE(s.is_joined, '未') as isJoined,
                 COALESCE(s.is_1to1, '未') as is1to1,
@@ -124,6 +125,7 @@ class VisitorRepository {
                 COALESCE(v.email, '') as email,
                 COALESCE(v.attendance_count, '初めて') as attendanceCount,
                 COALESCE(v.remarks, '') as remarks,
+                COALESCE(v.category, 'ビジター') as category,
                 COALESCE(s.is_attended, '未') as isAttended,
                 COALESCE(s.is_joined, '未') as isJoined,
                 COALESCE(s.is_1to1, '未') as is1to1,
@@ -227,6 +229,10 @@ class VisitorRepository {
         $this->db->execute("DELETE FROM hearing_sheets WHERE visitor_id = ?", [$visitorId]);
     }
 
+    public function updateCategory(string $visitorId, string $category): int {
+        return $this->db->update('visitors', ['category' => $category], 'id = ?', [$visitorId]);
+    }
+
     public function getDashboardVisitors(): array {
         $sql = "
             SELECT 
@@ -252,6 +258,7 @@ class VisitorRepository {
             FROM visitors v
             LEFT JOIN visitors_status s ON v.id = s.visitor_id
             LEFT JOIN hearing_sheets h ON v.id = h.visitor_id
+            WHERE COALESCE(v.category, 'ビジター') != 'ゲスト'
             ORDER BY v.event_date DESC, v.id DESC
         ";
         return $this->db->fetchAll($sql);

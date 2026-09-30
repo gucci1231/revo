@@ -125,6 +125,12 @@
           <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap pt-2 border-t border-slate-100/80">
             <div class="vd-status-select-wrap">
+              <select id="vd-select-category" class="vd-status-select font-bold text-slate-800" onchange="changeVisitorCategory(currentVdVisitorId, this.value)" title="参加区分">
+                <option value="ビジター">👥 ビジター</option>
+                <option value="ゲスト">🤝 ゲスト (入会不可)</option>
+              </select>
+            </div>
+            <div class="vd-status-select-wrap">
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠">
                 <option value="未">未</option>
                 <option value="参加">参加</option>

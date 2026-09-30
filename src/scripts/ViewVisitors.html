@@ -131,6 +131,30 @@
   }
 
   let currentVisitorsStatusFilter = 'all';
+  let currentVisitorCategory = 'ビジター';
+
+  function setVisitorCategoryFilter(cat) {
+    currentVisitorCategory = cat;
+    const visitorBtn = document.getElementById('tab-cat-visitor');
+    const guestBtn = document.getElementById('tab-cat-guest');
+    const descEl = document.getElementById('visitor-cat-description');
+
+    if (cat === 'ゲスト') {
+      visitorBtn?.classList.remove('active');
+      guestBtn?.classList.add('active');
+      if (descEl) {
+        descEl.innerHTML = '<i class="fa-solid fa-circle-info text-amber-500"></i><span>入会不可の定例会参加者（他チャプターメンバー・見学等）</span>';
+      }
+    } else {
+      visitorBtn?.classList.add('active');
+      guestBtn?.classList.remove('active');
+      if (descEl) {
+        descEl.innerHTML = '<i class="fa-solid fa-circle-info text-blue-500"></i><span>入会検討対象ビジター（目標・KPI集計対象）</span>';
+      }
+    }
+    visitorsCurrentPage = 1;
+    filterAllVisitorsTable();
+  }
 
   function setVisitorsStatusFilter(status) {
     currentVisitorsStatusFilter = status;
@@ -145,8 +169,18 @@
   }
 
   function updateVisitorsFilterCounts(dedupedList) {
+    const catVisitors = dedupedList.filter(v => (v.category || 'ビジター') !== 'ゲスト');
+    const catGuests = dedupedList.filter(v => (v.category || 'ビジター') === 'ゲスト');
+
+    const vBadge = document.getElementById('count-cat-visitor');
+    const gBadge = document.getElementById('count-cat-guest');
+    if (vBadge) vBadge.innerText = catVisitors.length;
+    if (gBadge) gBadge.innerText = catGuests.length;
+
+    const targetList = (currentVisitorCategory === 'ゲスト') ? catGuests : catVisitors;
+
     const counts = {
-      all: dedupedList.length,
+      all: targetList.length,
       follow: 0,
       pending: 0,
       maintenance: 0,
@@ -154,7 +188,7 @@
       closed: 0
     };
 
-    dedupedList.forEach(v => {
+    targetList.forEach(v => {
       const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
       const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り' || followType === 'フォロー終了');
@@ -200,6 +234,10 @@
     updateVisitorsFilterCounts(dedupedList);
 
     filteredVisitors = dedupedList.filter(v => {
+      const isGuest = ((v.category || 'ビジター') === 'ゲスト');
+      const matchCategory = (currentVisitorCategory === 'ゲスト') ? isGuest : !isGuest;
+      if (!matchCategory) return false;
+
       const name = (v.name || '').toLowerCase();
       const furigana = (v.furigana || '').toLowerCase();
       const inviter = (v.inviter || '').toLowerCase();

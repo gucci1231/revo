@@ -49,13 +49,22 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">ビジター参加回数</label>
-        <select id="crud-v-attendance-count" class="form-input">
-          <option value="初めて">初めて</option>
-          <option value="2回目">2回目</option>
-          <option value="3回以上">3回以上</option>
-        </select>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">参加区分 <span style="color:red;">*</span></label>
+          <select id="crud-v-category" class="form-input" style="font-weight:700;">
+            <option value="ビジター">👥 ビジター（入会対象）</option>
+            <option value="ゲスト">🤝 ゲスト（入会不可・他チャプター等）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">参加回数</label>
+          <select id="crud-v-attendance-count" class="form-input">
+            <option value="初めて">初めて</option>
+            <option value="2回目">2回目</option>
+            <option value="3回以上">3回以上</option>
+          </select>
+        </div>
       </div>
 
       <div class="modal-footer-btns">

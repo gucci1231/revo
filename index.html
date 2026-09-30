@@ -5721,6 +5721,63 @@ select.form-input, select.form-select {
   transform: translateY(-1px);
 }
 
+/* --- Visitor / Guest Segmented Control --- */
+.visitor-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.visitor-cat-btn:hover {
+  color: #1e293b;
+}
+
+.visitor-cat-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.visitor-cat-badge {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.2);
+  color: #64748b;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.18s ease;
+}
+
+.visitor-cat-btn.active .visitor-cat-badge {
+  background: #eff6ff;
+  color: #0071e3;
+}
+
+.badge-guest-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+
 
 
 
@@ -5797,13 +5854,22 @@ select.form-input, select.form-select {
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">ビジター参加回数</label>
-        <select id="crud-v-attendance-count" class="form-input">
-          <option value="初めて">初めて</option>
-          <option value="2回目">2回目</option>
-          <option value="3回以上">3回以上</option>
-        </select>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">参加区分 <span style="color:red;">*</span></label>
+          <select id="crud-v-category" class="form-input" style="font-weight:700;">
+            <option value="ビジター">👥 ビジター（入会対象）</option>
+            <option value="ゲスト">🤝 ゲスト（入会不可・他チャプター等）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">参加回数</label>
+          <select id="crud-v-attendance-count" class="form-input">
+            <option value="初めて">初めて</option>
+            <option value="2回目">2回目</option>
+            <option value="3回以上">3回以上</option>
+          </select>
+        </div>
       </div>
 
       <div class="modal-footer-btns">
@@ -7299,6 +7365,24 @@ select.form-input, select.form-select {
       </div>
     </div>
 
+    <!-- ビジター / ゲスト 分離切替セグメント (Apple Segmented Control) -->
+    <div class="visitor-category-segment-bar flex items-center justify-between gap-3 px-4 md:px-5 py-2.5 bg-slate-50/70 border-y border-slate-100">
+      <div class="inline-flex p-1 bg-slate-200/80 rounded-xl gap-1" role="tablist">
+        <button type="button" id="tab-cat-visitor" class="visitor-cat-btn active" onclick="setVisitorCategoryFilter('ビジター')">
+          <i class="fa-solid fa-users text-xs mr-1.5"></i>ビジター名簿
+          <span class="visitor-cat-badge" id="count-cat-visitor">0</span>
+        </button>
+        <button type="button" id="tab-cat-guest" class="visitor-cat-btn" onclick="setVisitorCategoryFilter('ゲスト')">
+          <i class="fa-solid fa-handshake text-xs mr-1.5"></i>ゲスト名簿
+          <span class="visitor-cat-badge" id="count-cat-guest">0</span>
+        </button>
+      </div>
+      <div class="text-[11px] font-medium text-slate-500 hidden sm:flex items-center gap-1.5" id="visitor-cat-description">
+        <i class="fa-solid fa-circle-info text-blue-500"></i>
+        <span>入会検討対象ビジター（目標・KPI集計対象）</span>
+      </div>
+    </div>
+
     <!-- ステータス絞り込みタブバー (Apple Pill Style) -->
     <div class="visitors-status-tabs">
       <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">
@@ -7510,6 +7594,12 @@ select.form-input, select.form-select {
 
           <!-- ステータス概要 (Clean Slate Minimalist Selectors) -->
           <div class="vd-badges-wrap pt-2 border-t border-slate-100/80">
+            <div class="vd-status-select-wrap">
+              <select id="vd-select-category" class="vd-status-select font-bold text-slate-800" onchange="changeVisitorCategory(currentVdVisitorId, this.value)" title="参加区分">
+                <option value="ビジター">👥 ビジター</option>
+                <option value="ゲスト">🤝 ゲスト (入会不可)</option>
+              </select>
+            </div>
             <div class="vd-status-select-wrap">
               <select id="vd-select-attended" class="vd-status-select" onchange="changeVisitorStatus(currentVdVisitorId, 'isAttended', this.value)" title="出欠">
                 <option value="未">未</option>
@@ -9450,6 +9540,13 @@ const ApiService = {
           method: 'POST',
           body: { visitorId: args[0], field: args[1], value: args[2] }
         };
+      case 'updateVisitorCategoryApi':
+        const catArg = (args[0] && typeof args[0] === 'object') ? args[0] : { visitorId: args[0], category: args[1] };
+        return {
+          url: '/api/visitors.php?action=update_category',
+          method: 'POST',
+          body: catArg
+        };
       case 'saveVisitorMemoApi':
         return {
           url: '/api/visitors.php?action=save_memo',
@@ -9963,6 +10060,39 @@ const ApiService = {
       .catch(handleError);
   }
 
+  function changeVisitorCategory(id, category) {
+    showToast(`参加区分を【${category}】に変更中...`);
+
+    if (typeof cachedAllVisitors !== 'undefined' && cachedAllVisitors && cachedAllVisitors.length > 0) {
+      cachedAllVisitors.forEach(v => {
+        if (String(v.id) === String(id)) {
+          v.category = category;
+        }
+      });
+      if (typeof filterAllVisitorsTable === 'function') {
+        filterAllVisitorsTable();
+      }
+    }
+
+    if (typeof ApiService !== 'undefined' && ApiService.call) {
+      ApiService.call('updateVisitorCategoryApi', { visitorId: id, category: category })
+        .then(res => {
+          if (res && res.success) {
+            showToast(`✅ 参加区分を【${category}】に変更しました`);
+            if (typeof fetchDashboardData === 'function') {
+              fetchDashboardData();
+            }
+          } else {
+            showToast(`⚠️ 更新に失敗しました: ${res?.message || ''}`);
+          }
+        })
+        .catch(err => {
+          showToast(`❌ エラー: ${err.message || '更新に失敗しました'}`);
+        });
+    }
+  }
+  window.changeVisitorCategory = changeVisitorCategory;
+
   // ==========================================
   // 🎯 ステータスマスタ定義 (Single Source of Truth)
   // ==========================================
@@ -10245,7 +10375,8 @@ const ApiService = {
 
   function renderVisitorNameLinkHtml(id, name, v = null) {
     const repeatBadge = v ? renderRepeatBadgeHtml(v) : '';
-    return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${repeatBadge}</span>`;
+    const guestBadge = (v && (v.category === 'ゲスト' || v.isGuest)) ? '<span class="badge-guest-tag ml-1.5"><i class="fa-solid fa-handshake"></i> ゲスト</span>' : '';
+    return `<span style="display:inline-flex; align-items:center;"><a href="#visitor/${id}" onclick="openVisitorDetailView('${id}'); return false;" style="font-weight:700; color:#1d1d1f; text-decoration:none;" onmouseover="this.style.color='#0071e3'" onmouseout="this.style.color='#1d1d1f'">${escapeHtml(name)}</a>${guestBadge}${repeatBadge}</span>`;
   }
 
   function formatShortDate(val) {
@@ -15829,6 +15960,30 @@ window.CelebrationEffect = (function() {
   }
 
   let currentVisitorsStatusFilter = 'all';
+  let currentVisitorCategory = 'ビジター';
+
+  function setVisitorCategoryFilter(cat) {
+    currentVisitorCategory = cat;
+    const visitorBtn = document.getElementById('tab-cat-visitor');
+    const guestBtn = document.getElementById('tab-cat-guest');
+    const descEl = document.getElementById('visitor-cat-description');
+
+    if (cat === 'ゲスト') {
+      visitorBtn?.classList.remove('active');
+      guestBtn?.classList.add('active');
+      if (descEl) {
+        descEl.innerHTML = '<i class="fa-solid fa-circle-info text-amber-500"></i><span>入会不可の定例会参加者（他チャプターメンバー・見学等）</span>';
+      }
+    } else {
+      visitorBtn?.classList.add('active');
+      guestBtn?.classList.remove('active');
+      if (descEl) {
+        descEl.innerHTML = '<i class="fa-solid fa-circle-info text-blue-500"></i><span>入会検討対象ビジター（目標・KPI集計対象）</span>';
+      }
+    }
+    visitorsCurrentPage = 1;
+    filterAllVisitorsTable();
+  }
 
   function setVisitorsStatusFilter(status) {
     currentVisitorsStatusFilter = status;
@@ -15843,8 +15998,18 @@ window.CelebrationEffect = (function() {
   }
 
   function updateVisitorsFilterCounts(dedupedList) {
+    const catVisitors = dedupedList.filter(v => (v.category || 'ビジター') !== 'ゲスト');
+    const catGuests = dedupedList.filter(v => (v.category || 'ビジター') === 'ゲスト');
+
+    const vBadge = document.getElementById('count-cat-visitor');
+    const gBadge = document.getElementById('count-cat-guest');
+    if (vBadge) vBadge.innerText = catVisitors.length;
+    if (gBadge) gBadge.innerText = catGuests.length;
+
+    const targetList = (currentVisitorCategory === 'ゲスト') ? catGuests : catVisitors;
+
     const counts = {
-      all: dedupedList.length,
+      all: targetList.length,
       follow: 0,
       pending: 0,
       maintenance: 0,
@@ -15852,7 +16017,7 @@ window.CelebrationEffect = (function() {
       closed: 0
     };
 
-    dedupedList.forEach(v => {
+    targetList.forEach(v => {
       const isJoined = (v.isJoined === '入会済' || v.isJoined === '済' || v.isJoined === '入会' || v.isJoined === true);
       const followType = typeof normalizeFollowType === 'function' ? normalizeFollowType(v.followType) : (v.followType || 'フォロー');
       const isClosed = (v.isJoined === 'フォロー終了' || v.isJoined === '見送り' || followType === 'フォロー終了');
@@ -15898,6 +16063,10 @@ window.CelebrationEffect = (function() {
     updateVisitorsFilterCounts(dedupedList);
 
     filteredVisitors = dedupedList.filter(v => {
+      const isGuest = ((v.category || 'ビジター') === 'ゲスト');
+      const matchCategory = (currentVisitorCategory === 'ゲスト') ? isGuest : !isGuest;
+      if (!matchCategory) return false;
+
       const name = (v.name || '').toLowerCase();
       const furigana = (v.furigana || '').toLowerCase();
       const inviter = (v.inviter || '').toLowerCase();
@@ -19036,6 +19205,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
           });
         }
 
+        // 参加区分（ビジター / ゲスト）の反映
+        const selectCat = document.getElementById('vd-select-category');
+        if (selectCat) {
+          selectCat.value = v.category || 'ビジター';
+        }
+
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {
@@ -20024,6 +20199,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-company').value = '';
     document.getElementById('crud-v-email').value = '';
     document.getElementById('crud-v-attendance-count').value = '初めて';
+    if (document.getElementById('crud-v-category')) {
+      document.getElementById('crud-v-category').value = (typeof currentVisitorCategory !== 'undefined' && currentVisitorCategory === 'ゲスト') ? 'ゲスト' : 'ビジター';
+    }
     setCrudQuickDate('today');
     document.getElementById('modal-visitor-crud').style.display = 'flex';
   }
@@ -20043,6 +20221,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-company').value = v.company || '';
     document.getElementById('crud-v-email').value = v.email || '';
     document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
+    if (document.getElementById('crud-v-category')) {
+      document.getElementById('crud-v-category').value = v.category || 'ビジター';
+    }
     document.getElementById('modal-visitor-crud').style.display = 'flex';
   }
 
@@ -20065,7 +20246,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       profession: document.getElementById('crud-v-profession').value.trim(),
       company: document.getElementById('crud-v-company').value.trim(),
       email: document.getElementById('crud-v-email').value.trim(),
-      attendanceCount: document.getElementById('crud-v-attendance-count').value
+      attendanceCount: document.getElementById('crud-v-attendance-count').value,
+      category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'
     };
 
     if (!vData.name || !vData.eventDate) {

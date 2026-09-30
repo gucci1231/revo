@@ -405,6 +405,12 @@
           });
         }
 
+        // 参加区分（ビジター / ゲスト）の反映
+        const selectCat = document.getElementById('vd-select-category');
+        if (selectCat) {
+          selectCat.value = v.category || 'ビジター';
+        }
+
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {

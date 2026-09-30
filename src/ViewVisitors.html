@@ -31,6 +31,24 @@
       </div>
     </div>
 
+    <!-- ビジター / ゲスト 分離切替セグメント (Apple Segmented Control) -->
+    <div class="visitor-category-segment-bar flex items-center justify-between gap-3 px-4 md:px-5 py-2.5 bg-slate-50/70 border-y border-slate-100">
+      <div class="inline-flex p-1 bg-slate-200/80 rounded-xl gap-1" role="tablist">
+        <button type="button" id="tab-cat-visitor" class="visitor-cat-btn active" onclick="setVisitorCategoryFilter('ビジター')">
+          <i class="fa-solid fa-users text-xs mr-1.5"></i>ビジター名簿
+          <span class="visitor-cat-badge" id="count-cat-visitor">0</span>
+        </button>
+        <button type="button" id="tab-cat-guest" class="visitor-cat-btn" onclick="setVisitorCategoryFilter('ゲスト')">
+          <i class="fa-solid fa-handshake text-xs mr-1.5"></i>ゲスト名簿
+          <span class="visitor-cat-badge" id="count-cat-guest">0</span>
+        </button>
+      </div>
+      <div class="text-[11px] font-medium text-slate-500 hidden sm:flex items-center gap-1.5" id="visitor-cat-description">
+        <i class="fa-solid fa-circle-info text-blue-500"></i>
+        <span>入会検討対象ビジター（目標・KPI集計対象）</span>
+      </div>
+    </div>
+
     <!-- ステータス絞り込みタブバー (Apple Pill Style) -->
     <div class="visitors-status-tabs">
       <button type="button" class="visitors-status-tab active" data-status-filter="all" onclick="setVisitorsStatusFilter('all')">

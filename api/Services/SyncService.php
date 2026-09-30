@@ -63,7 +63,8 @@ class SyncService {
                             'company' => $v['company'] ?? '',
                             'email' => $v['email'] ?? '',
                             'attendance_count' => $v['attendanceCount'] ?? $v['attendance_count'] ?? '初めて',
-                            'remarks' => $v['remarks'] ?? ''
+                            'remarks' => $v['remarks'] ?? '',
+                            'category' => $v['category'] ?? 'ビジター'
                         ], ['id']);
 
                         $newlyAddedVisitors[] = [
@@ -224,6 +225,7 @@ class SyncService {
                 'email' => $v['email'] ?? '',
                 'attendance_count' => $v['attendance_count'] ?? '初めて',
                 'remarks' => $v['remarks'] ?? '',
+                'category' => $v['category'] ?? 'ビジター',
                 'is_attended' => $st['is_attended'] ?? '未',
                 'is_joined' => $st['is_joined'] ?? '未',
                 'is_1to1' => $st['is_1to1'] ?? '未',
@@ -269,6 +271,7 @@ class SyncService {
                 $profession = trim((string)($row['お仕事の専門分野'] ?? $row['専門分野'] ?? $row['業種'] ?? ''));
                 $company = trim((string)($row['会社名'] ?? $row['屋号'] ?? ''));
                 $attendanceCount = trim((string)($row['定例会へのビジター参加回数'] ?? $row['参加回数'] ?? '初めて'));
+                $isGuest = (str_contains($attendanceCount, 'ゲスト') || str_contains($profession, 'ゲスト') || str_contains($company, 'ゲスト') || str_contains($attendanceCount, '他チャプター'));
 
                 $visitors[] = [
                     'id' => $newId,
@@ -282,6 +285,7 @@ class SyncService {
                     'email' => $email,
                     'attendance_count' => $attendanceCount ?: '初めて',
                     'remarks' => '',
+                    'category' => $isGuest ? 'ゲスト' : 'ビジター',
                     'is_attended' => '未',
                     'is_joined' => '未',
                     'is_1to1' => '未',

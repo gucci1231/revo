@@ -51,7 +51,7 @@ echo "Header columns mapped: " . implode(', ', array_keys($colMap)) . "\n";
 
 // 現在の最大IDを取得
 $maxRow = $db->fetchOne("SELECT MAX(CAST(id AS INTEGER)) as max_id FROM visitors WHERE id GLOB '[0-9]*'");
-$currentMaxId = (int)($maxRow['max_id'] ?? 0);
+$currentMaxId = isset($maxRow['max_id']) ? (int)$maxRow['max_id'] : 0;
 echo "Current MAX Visitor ID: {$currentMaxId}\n";
 
 $nextId = $currentMaxId + 1;
@@ -59,8 +59,8 @@ $importedCount = 0;
 $skippedCount = 0;
 
 $stmtInsertVisitor = $db->getPdo()->prepare("
-    INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, attendance_count, remarks)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, attendance_count, remarks, category)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 ");
 
 $stmtInsertStatus = $db->getPdo()->prepare("
@@ -161,7 +161,8 @@ try {
             $company,
             $email,
             '初めて',
-            $remarks
+            $remarks,
+            (str_contains($booking, 'ゲスト') || str_contains($memoInfo, 'ユニコーン') || str_contains($profession, 'ユニコーン') || str_starts_with($name, 'メンバー')) ? 'ゲスト' : 'ビジター'
         ]);
 
         // 2. visitors_status テーブル

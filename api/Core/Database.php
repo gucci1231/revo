@@ -53,7 +53,8 @@ class Database {
                 company TEXT,
                 email TEXT,
                 attendance_count TEXT DEFAULT '初めて',
-                remarks TEXT DEFAULT ''
+                remarks TEXT DEFAULT '',
+                category TEXT DEFAULT 'ビジター'
             );
 
             CREATE TABLE IF NOT EXISTS visitors_status (
@@ -144,6 +145,22 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN completed_by TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors ADD COLUMN category TEXT DEFAULT 'ビジター'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
+                UPDATE visitors 
+                SET category = 'ゲスト' 
+                WHERE (
+                    remarks LIKE '%予約: ゲスト%' 
+                    OR remarks LIKE '%ユニコーンチャプター%' 
+                    OR profession LIKE '%(ユニコーン)%' 
+                    OR visitor_name LIKE 'メンバー%' 
+                    OR (visitor_name = '豊田健司' AND company LIKE '%ライフ&ファイナンス%')
+                ) AND (category IS NULL OR category = 'ビジター' OR category = '')
+            ");
         } catch (\PDOException $e) {}
     }
 
