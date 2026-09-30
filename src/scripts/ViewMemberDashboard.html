@@ -6,8 +6,66 @@
   let currentMemberActionFilter = 'pending'; // 'pending' | 'completed' | 'all'
   let currentMemberActionData = { pending: [], completed: [] };
   let isAllMembersSummaryView = false;
+  let currentMemberDashboardSubTab = 'traffic'; // 'traffic' | 'visitors'
+  let memberPalmsRadarChartInstance = null;
 
-  function initMemberDashboard(targetMemberName = null) {
+  /**
+   * Switch between Personal Scores (Traffic Lights & PALMS) and Visitor Host Activities
+   */
+  function switchMemberDashboardSubTab(subTab) {
+    currentMemberDashboardSubTab = subTab;
+    const btnTraffic = document.getElementById('btn-subtab-traffic');
+    const btnVisitors = document.getElementById('btn-subtab-visitors');
+    const viewTraffic = document.getElementById('member-dash-subview-traffic');
+    const viewVisitors = document.getElementById('member-dash-subview-visitors');
+
+    const activeBtnClass = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-slate-900 text-white shadow-2xs flex items-center gap-1.5';
+    const inactiveBtnClass = 'px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5';
+
+    if (subTab === 'traffic') {
+      if (btnTraffic) btnTraffic.className = activeBtnClass;
+      if (btnVisitors) btnVisitors.className = inactiveBtnClass;
+      if (viewTraffic) viewTraffic.style.display = 'block';
+      if (viewVisitors) viewVisitors.style.display = 'none';
+
+      requestAnimationFrame(() => {
+        if (memberPalmsRadarChartInstance) {
+          try { memberPalmsRadarChartInstance.resize(); } catch(e) {}
+        }
+      });
+    } else {
+      if (btnTraffic) btnTraffic.className = inactiveBtnClass;
+      if (btnVisitors) btnVisitors.className = activeBtnClass;
+      if (viewTraffic) viewTraffic.style.display = 'none';
+      if (viewVisitors) viewVisitors.style.display = 'block';
+
+      requestAnimationFrame(() => {
+        if (memberActivityChartInstance) {
+          try { memberActivityChartInstance.resize(); } catch(e) {}
+        }
+        if (memberFeelDonutChartInstance) {
+          try { memberFeelDonutChartInstance.resize(); } catch(e) {}
+        }
+      });
+    }
+  }
+
+  /**
+   * Navigate back from Member Dashboard to previous tab
+   */
+  function navigateBackFromMemberDashboard() {
+    const prev = window.lastNavigatedFromTab || 'traffic-lights';
+    if (typeof switchTab === 'function') {
+      switchTab(prev, false);
+    }
+  }
+
+  function initMemberDashboard(targetMemberName = null, initialSubTab = null) {
+    if (initialSubTab) {
+      currentMemberDashboardSubTab = initialSubTab;
+    }
+    switchMemberDashboardSubTab(currentMemberDashboardSubTab);
+
     const promises = [];
     
     // メンバーマスターデータのキャッシュ確認
@@ -18,6 +76,11 @@
     // 全ビジターデータのキャッシュ確認
     if ((!cachedAllVisitors || cachedAllVisitors.length === 0) && typeof fetchAllVisitorsData === 'function') {
       promises.push(fetchAllVisitorsData(false));
+    }
+
+    // PALMS個人成績データのキャッシュ確認
+    if ((typeof currentPalmsRecords === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) && typeof fetchPalmsRankingData === 'function') {
+      promises.push(fetchPalmsRankingData());
     }
 
     if (promises.length > 0) {
@@ -668,6 +731,396 @@
 
     const activeList = currentMemberRoleView === 'oriented' ? orientedVisitors : invitedVisitors;
     renderMemberVisitorCards(activeList);
+
+    // メンバーのPALMS個人成績（トラフィックライト100点スコア等）を描画
+    renderMemberPalmsPersonalScores(memberName);
+  }
+
+  /**
+   * Render Member PALMS & Traffic Lights Personal Scores into Dashboard
+   */
+  function renderMemberPalmsPersonalScores(memberName) {
+    if (!memberName) return;
+    const cleanName = String(memberName).trim();
+
+    // currentPalmsRecordsから検索
+    let record = null;
+    if (typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords)) {
+      record = currentPalmsRecords.find(r => (r.member_name || '').trim() === cleanName);
+      if (!record && typeof findMemberByName === 'function') {
+        const fuzzy = findMemberByName(cleanName);
+        if (fuzzy && fuzzy.name) {
+          record = currentPalmsRecords.find(r => (r.member_name || '').trim() === fuzzy.name);
+        }
+      }
+    }
+
+    if (!record) {
+      if (typeof fetchPalmsRankingData === 'function' && (!currentPalmsRecords || currentPalmsRecords.length === 0)) {
+        fetchPalmsRankingData().then(() => {
+          renderMemberPalmsPersonalScores(memberName);
+        });
+      }
+      return;
+    }
+
+    const tl = record.trafficLight || (typeof calcBniTrafficLightScore === 'function' ? calcBniTrafficLightScore(record) : {});
+    const s = tl.scores || {};
+    const r = tl.rates || {};
+    const currentScore = Number(record.total_score) || 0;
+
+    // ヘッダーのスコア表示
+    const headerScoreEl = document.getElementById('member-dash-total-score');
+    const headerDotEl = document.getElementById('member-dash-tier-dot');
+    if (headerScoreEl) headerScoreEl.textContent = currentScore;
+    if (headerDotEl) {
+      let dotBg = 'bg-slate-300';
+      if (currentScore >= 70) dotBg = 'bg-emerald-500 shadow-2xs shadow-emerald-500/50';
+      else if (currentScore >= 50) dotBg = 'bg-amber-500 shadow-2xs shadow-amber-500/50';
+      else if (currentScore >= 30) dotBg = 'bg-rose-500 shadow-2xs shadow-rose-500/50';
+      headerDotEl.className = `w-2.5 h-2.5 rounded-full ${dotBg}`;
+    }
+
+    // 1. 3大指標カード (総合スコア, PPW, RPW)
+    const elTotalScore = document.getElementById('member-tl-total-score');
+    const elStatusPill = document.getElementById('member-tl-status-pill');
+    const elScoreDesc = document.getElementById('member-tl-score-desc');
+    if (elTotalScore) elTotalScore.textContent = currentScore;
+    if (elStatusPill) {
+      elStatusPill.className = `text-3xs font-extrabold px-1.5 py-0.2 rounded border ${tl.tierBadgeClass || 'border-slate-200 bg-slate-50 text-slate-700'}`;
+      elStatusPill.textContent = tl.tierDot || '⚪';
+      elStatusPill.title = `${tl.tierName || ''} (${currentScore}pt)`;
+    }
+    if (elScoreDesc) {
+      if (currentScore >= 70) elScoreDesc.innerHTML = '<span class="text-emerald-700 font-bold">目標クリア (70点以上)</span>';
+      else if (currentScore >= 50) elScoreDesc.innerHTML = '<span class="text-amber-700 font-bold">標準ライン (50-69点)</span>';
+      else elScoreDesc.innerHTML = '<span class="text-rose-700 font-bold">改善・注力ライン (&lt;50点)</span>';
+    }
+
+    const elPpw = document.getElementById('member-tl-ppw-value');
+    const elPpwStatus = document.getElementById('member-tl-ppw-status');
+    if (elPpw) elPpw.textContent = (Number(record.ppw) || 0).toFixed(2);
+    if (elPpwStatus) elPpwStatus.textContent = `${tl.ppwDot || ''} ${tl.ppwTierLabel || ''}`;
+
+    const elRpw = document.getElementById('member-tl-rpw-value');
+    const elRpwStatus = document.getElementById('member-tl-rpw-status');
+    if (elRpw) elRpw.textContent = (Number(record.rpw) || 0).toFixed(2);
+    if (elRpwStatus) elRpwStatus.textContent = `総提供: ${record.total_referrals_given || 0}件 (内与${record.rgi || 0}件 + 外与${record.rgo || 0}件)`;
+
+    // 2. 7大採点項目カード & レーダーチャート
+    const items = [
+      {
+        title: 'ビジター招待',
+        shortTitle: 'ビジター',
+        maxScore: 25,
+        score: s.visitor != null ? s.visitor : 0,
+        unit: '名',
+        actual: `${record.visitors || 0}名 (6ヶ月換算: ${(r.vis6m || 0).toFixed(1)}名)`,
+        desc: '5名以上=25pt / 4名=20pt / 3名=15pt / 2名=10pt / 1名=5pt',
+        icon: 'fa-users'
+      },
+      {
+        title: 'リファーラル提供',
+        shortTitle: 'リファーラル',
+        maxScore: 25,
+        score: s.referral != null ? s.referral : 0,
+        unit: '件/週',
+        actual: `${record.total_referrals_given || 0}件 (週平均: ${(r.refPerWeek || 0).toFixed(2)}件)`,
+        desc: '週1.25件以上=25pt / 1.00件=20pt / 0.75件=15pt / 0.50件=10pt',
+        icon: 'fa-handshake'
+      },
+      {
+        title: '1to1実施',
+        shortTitle: '1to1',
+        maxScore: 20,
+        score: s.one_to_ones != null ? s.one_to_ones : 0,
+        unit: '回/週',
+        actual: `${record.one_to_ones || 0}回 (週平均: ${(r.otoPerWeek || 0).toFixed(2)}回)`,
+        desc: '週1.00回以上=20pt / 0.75回=15pt / 0.50回=10pt / 0.25回=5pt',
+        icon: 'fa-mug-saucer'
+      },
+      {
+        title: '定例会出席率',
+        shortTitle: '出席率',
+        maxScore: 10,
+        score: s.attendance != null ? s.attendance : 0,
+        unit: '%',
+        actual: `${(r.attRate || 100).toFixed(0)}% (出席${record.p || 0}回, 代理${record.s || 0}回, 欠席${record.a || 0}回)`,
+        desc: '96%以上=10pt / 88%以上=5pt / 88%未満=0pt',
+        icon: 'fa-clipboard-check'
+      },
+      {
+        title: 'CEU学習単位',
+        shortTitle: 'CEU',
+        maxScore: 10,
+        score: s.ceu != null ? s.ceu : 0,
+        unit: 'pt/週',
+        actual: `${record.ceu || 0}pt (週平均: ${(r.ceuPerWeek || 0).toFixed(2)}pt)`,
+        desc: '週0.5pt超=10pt / 0超0.5以下=5pt / 0以下=0pt',
+        icon: 'fa-graduation-cap'
+      },
+      {
+        title: 'TYFCB売上貢献',
+        shortTitle: 'TYFCB',
+        maxScore: 5,
+        score: s.tyfcb != null ? s.tyfcb : 0,
+        unit: '円',
+        actual: `¥${(record.tyfcb_yen || 0).toLocaleString()} (6ヶ月換算: ¥${Math.round(r.tyfcb6m || 0).toLocaleString()})`,
+        desc: '570万円以上=5pt / 285万円=4pt / 95万円=3pt / 38万円=2pt',
+        icon: 'fa-yen-sign'
+      },
+      {
+        title: '推薦状・スポンサー',
+        shortTitle: 'スポンサー',
+        maxScore: 5,
+        score: s.sponsor != null ? s.sponsor : 0,
+        unit: '件',
+        actual: `${record.sponsors || 0}件`,
+        desc: '1件以上=5pt / 0件=0pt',
+        icon: 'fa-award'
+      }
+    ];
+
+    items.forEach(it => {
+      it.pct = Math.min(100, Math.round((it.score / it.maxScore) * 100));
+    });
+
+    renderMemberPalmsScoresGrid(items);
+    renderMemberPalmsRadarChart(record, items);
+
+    // 3. PALMS 原票データ完全内訳
+    renderMemberPalmsRawBreakdown(record, r);
+
+    // 4. 半年間活動実績・スリップ推移テーブル
+    fetchMemberPalmsWeeklySubmissions(record.member_name);
+  }
+
+  function renderMemberPalmsRadarChart(record, items) {
+    if (typeof Chart === 'undefined') return;
+    const canvas = document.getElementById('member-chart-palms-radar');
+    if (!canvas) return;
+
+    if (memberPalmsRadarChartInstance) {
+      try { memberPalmsRadarChartInstance.destroy(); } catch(e) {}
+      memberPalmsRadarChartInstance = null;
+    }
+
+    const labels = items.map(it => `${it.shortTitle} (${it.maxScore}点)`);
+    const userScores = items.map(it => it.pct);
+    const targetScores = [70, 70, 70, 70, 70, 70, 70];
+
+    const ctx = canvas.getContext('2d');
+    memberPalmsRadarChartInstance = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: '本人実績 (%)',
+            data: userScores,
+            backgroundColor: 'rgba(0, 113, 227, 0.18)',
+            borderColor: '#0071e3',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#0071e3',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1.5,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: '目標基準 (70%)',
+            data: targetScores,
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(16, 185, 129, 0.75)',
+            borderWidth: 1.5,
+            borderDash: [4, 4],
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 300 },
+        scales: {
+          r: {
+            min: 0,
+            max: 100,
+            ticks: { stepSize: 25, display: false },
+            grid: { color: '#e2e8f0', lineWidth: 1 },
+            angleLines: { color: '#f1f5f9', lineWidth: 1 },
+            pointLabels: {
+              font: { size: 10, weight: 'bold' },
+              color: '#334155'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+              boxWidth: 8,
+              boxHeight: 8,
+              usePointStyle: true,
+              font: { size: 10, weight: 'bold' },
+              padding: 8
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 11, weight: 'bold' },
+            bodyFont: { size: 10 },
+            padding: 8,
+            callbacks: {
+              label: function(item) {
+                if (item.datasetIndex === 0) {
+                  const it = items[item.dataIndex];
+                  return ` ${it.title}: ${it.score}/${it.maxScore}pt (${it.pct}%) - ${it.actual}`;
+                }
+                return ` ${item.dataset.label}: 70% (グリーン基準)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function renderMemberPalmsScoresGrid(items) {
+    const container = document.getElementById('member-palms-scores-grid');
+    if (!container) return;
+
+    let html = '';
+    items.forEach(it => {
+      let scoreColor = 'text-slate-400';
+      let badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
+      if (it.score > 0) {
+        if (it.pct >= 80) {
+          scoreColor = 'text-emerald-600';
+          badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        } else if (it.pct >= 50) {
+          scoreColor = 'text-amber-600';
+          badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+        } else {
+          scoreColor = 'text-rose-600';
+          badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+        }
+      }
+
+      html += `
+        <div class="border border-slate-200/90 rounded-2xl p-3 bg-white shadow-2xs flex flex-col justify-between hover:border-blue-200 transition-colors">
+          <div class="flex items-start justify-between gap-1.5 mb-1.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs shrink-0">
+                <i class="fa-solid ${it.icon}"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-black text-slate-800 truncate">${it.title}</div>
+                <div class="text-3xs text-slate-500 font-medium truncate">${it.actual}</div>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-sm font-black font-tabular ${scoreColor}">
+                ${it.score} <span class="text-3xs font-bold text-slate-400">/ ${it.maxScore} pt</span>
+              </div>
+              <span class="inline-block text-3xs font-black px-1.5 py-0.2 rounded-md border ${badgeClass}">
+                ${it.pct}%
+              </span>
+            </div>
+          </div>
+
+          <div class="text-3xs text-slate-400 truncate pt-1 border-t border-slate-100">
+            ${it.desc}
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  function renderMemberPalmsRawBreakdown(m, r) {
+    const elAttRate = document.getElementById('member-palms-raw-att-rate');
+    if (elAttRate) elAttRate.textContent = `${(r.attRate || 100).toFixed(0)}%`;
+    const elP = document.getElementById('member-palms-raw-p');
+    const elA = document.getElementById('member-palms-raw-a');
+    const elL = document.getElementById('member-palms-raw-l');
+    const elM = document.getElementById('member-palms-raw-m');
+    const elS = document.getElementById('member-palms-raw-s');
+    if (elP) elP.textContent = m.p || 0;
+    if (elA) elA.textContent = m.a || 0;
+    if (elL) elL.textContent = m.l || 0;
+    if (elM) elM.textContent = m.m || 0;
+    if (elS) elS.textContent = m.s || 0;
+
+    const elRefTotal = document.getElementById('member-palms-raw-ref-total');
+    const elRefSplit = document.getElementById('member-palms-raw-ref-given-split');
+    const elRefRec = document.getElementById('member-palms-raw-ref-received');
+    if (elRefTotal) elRefTotal.textContent = `提供 ${m.total_referrals_given || 0}件`;
+    if (elRefSplit) elRefSplit.textContent = `${m.rgi || 0}件 (内) / ${m.rgo || 0}件 (外)`;
+    if (elRefRec) elRefRec.textContent = `${m.total_referrals_received || 0}件 (${m.rri || 0}内 + ${m.rro || 0}外)`;
+
+    const elTyfcbBadge = document.getElementById('member-palms-raw-tyfcb-badge');
+    const elVisitors = document.getElementById('member-palms-raw-visitors');
+    const elOto = document.getElementById('member-palms-raw-oto');
+    const elCeu = document.getElementById('member-palms-raw-ceu');
+    const elSponsor = document.getElementById('member-palms-raw-sponsor');
+    if (elTyfcbBadge) elTyfcbBadge.textContent = `¥${(m.tyfcb_yen || 0).toLocaleString()}`;
+    if (elVisitors) elVisitors.textContent = `${m.visitors || 0}名`;
+    if (elOto) elOto.textContent = `${m.one_to_ones || 0}回`;
+    if (elCeu) elCeu.textContent = `${m.ceu || 0} pt`;
+    if (elSponsor) elSponsor.textContent = `${m.sponsors || 0}件`;
+  }
+
+  function fetchMemberPalmsWeeklySubmissions(memberName) {
+    const weeklyTbody = document.getElementById('member-palms-weekly-tbody');
+    const weeklyBadge = document.getElementById('member-palms-weekly-badge');
+
+    if (weeklyTbody) {
+      weeklyTbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="py-6 text-center text-slate-400 text-xs">
+            <i class="fa-solid fa-circle-notch fa-spin text-sm mb-1.5"></i>
+            <p>半年間データを読込中...</p>
+          </td>
+        </tr>
+      `;
+    }
+
+    if (typeof ApiService === 'undefined' || !ApiService.call) return;
+
+    ApiService.call('getPalmsMemberHistoryApi', memberName)
+      .then(res => {
+        if (res && res.success && Array.isArray(res.history)) {
+          if (typeof renderPalmsDetailWeeklySubmissions === 'function') {
+            renderPalmsDetailWeeklySubmissions(res.history, 'member-palms-weekly-tbody', 'member-palms-weekly-badge');
+          }
+        } else {
+          if (weeklyTbody) {
+            weeklyTbody.innerHTML = `
+              <tr>
+                <td colspan="9" class="py-4 text-center text-slate-400 text-xs">
+                  該当メンバーの半年間データはありません
+                </td>
+              </tr>
+            `;
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch PALMS member history:', err);
+        if (weeklyTbody) {
+          weeklyTbody.innerHTML = `
+            <tr>
+              <td colspan="9" class="py-4 text-center text-slate-400 text-xs">
+                半年間データの取得に失敗しました
+              </td>
+            </tr>
+          `;
+        }
+      });
   }
 
   function filterMemberActionList(mode) {

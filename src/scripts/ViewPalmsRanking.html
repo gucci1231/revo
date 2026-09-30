@@ -1985,59 +1985,40 @@ function renderPalmsTable(records) {
 }
 
 /**
- * Currently inspected member in PALMS detail modal
+ * Currently inspected member in PALMS detail modal / dashboard
  */
 let currentInspectedPalmsMember = null;
 
 /**
- * Open PALMS Detail Modal for a specific member
+ * Navigate to Member Personal Dashboard with PALMS & Traffic Lights
+ */
+function navigateToMemberPersonalDashboard(memberName, initialSubTab = 'traffic') {
+  if (!memberName) return;
+  const cleanName = String(memberName).trim();
+  currentInspectedPalmsMember = cleanName;
+  window.lastNavigatedFromTab = window.currentTab || 'traffic-lights';
+
+  if (typeof switchTab === 'function') {
+    switchTab('member-dashboard', false);
+    setTimeout(() => {
+      if (typeof selectMemberDashboard === 'function') {
+        selectMemberDashboard(cleanName, true);
+        if (typeof switchMemberDashboardSubTab === 'function') {
+          switchMemberDashboardSubTab(initialSubTab);
+        }
+      }
+    }, 50);
+  }
+}
+
+/**
+ * Open PALMS Detail - Redirected to Member Dashboard per user requirement
  */
 function openPalmsDetailModal(memberName) {
   if (!memberName) return;
-  const cleanName = String(memberName).trim();
-
-  // Find record in currently loaded records
-  let record = currentPalmsRecords.find(r => (r.member_name || '').trim() === cleanName);
-  
-  if (!record && typeof findMemberByName === 'function') {
-    const fuzzy = findMemberByName(cleanName);
-    if (fuzzy && fuzzy.name) {
-      record = currentPalmsRecords.find(r => (r.member_name || '').trim() === fuzzy.name);
-    }
-  }
-
-  if (!record) {
-    showToast(`メンバー「${cleanName}」のデータが見つかりませんでした`, 'warning');
-    return;
-  }
-
-  currentInspectedPalmsMember = record.member_name;
-
-  // Render modal content synchronously from cached record (0ms instant display)
-  renderPalmsDetailModalContent(record);
-
-  // Show modal
-  const modalEl = document.getElementById('modal-palms-detail');
-  const containerEl = document.getElementById('modal-palms-container');
-  if (modalEl && containerEl) {
-    modalEl.style.display = 'flex';
-    requestAnimationFrame(() => {
-      containerEl.classList.remove('scale-95');
-      containerEl.classList.add('scale-100');
-    });
-  }
-
-  // Fetch full multi-period history in background
-  fetchPalmsMemberHistory(record.member_name);
-
-  // Bind ESC key to close
-  window.addEventListener('keydown', handlePalmsModalKeydown);
-  if (modalEl) {
-    modalEl.onclick = function(e) {
-      if (e.target === modalEl) closePalmsDetailModal();
-    };
-  }
+  navigateToMemberPersonalDashboard(memberName, 'traffic');
 }
+
 
 function handlePalmsModalKeydown(e) {
   if (e.key === 'Escape') {
@@ -2487,9 +2468,9 @@ function fetchPalmsMemberHistory(memberName) {
 /**
  * Render Half-Year PALMS Activity & Slip Submissions Table
  */
-function renderPalmsDetailWeeklySubmissions(historyList) {
-  const tbody = document.getElementById('palms-detail-weekly-tbody');
-  const badge = document.getElementById('palms-detail-weekly-badge');
+function renderPalmsDetailWeeklySubmissions(historyList, targetTbodyId = 'palms-detail-weekly-tbody', targetBadgeId = 'palms-detail-weekly-badge') {
+  const tbody = document.getElementById(targetTbodyId);
+  const badge = document.getElementById(targetBadgeId);
   if (!tbody) return;
 
   if (badge) {
@@ -3619,7 +3600,7 @@ function renderTrafficLightsGrid() {
     else if (currentScore >= 30) dotColor = 'bg-rose-500 shadow-2xs shadow-rose-500/50';
 
     html += `
-      <div onclick="openPalmsDetailModal('${memberNameSafe}')" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
+      <div onclick="navigateToMemberPersonalDashboard('${memberNameSafe}', 'traffic')" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
         <div>
           <!-- Top Row: Avatar, Name, Category, Score & Status Dot -->
           <div class="flex items-start justify-between gap-2.5 mb-3">

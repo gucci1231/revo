@@ -53,4 +53,33 @@ describe('Member Personal Dashboard Feature Tests', () => {
     // .htaccess rewrite rule for /member/{name} or /member/{id}
     assert.strictEqual(htaccess.includes('RewriteRule ^member/(.+)$ index.html [L,QSA]'), true);
   });
+
+  it('verifies Personal Scores (Traffic Lights & PALMS) integration in Member Dashboard', () => {
+    // UI Elements in Member Dashboard
+    assert.strictEqual(indexHtml.includes('id="member-dash-subtabs"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-subtab-traffic"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-subtab-visitors"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-dash-subview-traffic"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-dash-subview-visitors"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-dash-total-score"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-tl-total-score"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-tl-ppw-value"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-tl-rpw-value"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-chart-palms-radar"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-scores-grid"'), true);
+    assert.strictEqual(indexHtml.includes('id="member-palms-weekly-tbody"'), true);
+
+    // Script Functions
+    assert.strictEqual(indexHtml.includes('function switchMemberDashboardSubTab'), true);
+    assert.strictEqual(indexHtml.includes('function navigateBackFromMemberDashboard'), true);
+    assert.strictEqual(indexHtml.includes('function renderMemberPalmsPersonalScores'), true);
+    assert.strictEqual(indexHtml.includes('function renderMemberPalmsRadarChart'), true);
+    assert.strictEqual(indexHtml.includes('function renderMemberPalmsScoresGrid'), true);
+    assert.strictEqual(indexHtml.includes('function renderMemberPalmsRawBreakdown'), true);
+    assert.strictEqual(indexHtml.includes('function navigateToMemberPersonalDashboard'), true);
+
+    // Traffic light card click navigates to dashboard instead of standalone modal
+    assert.strictEqual(indexHtml.includes('navigateToMemberPersonalDashboard'), true);
+  });
 });
+
