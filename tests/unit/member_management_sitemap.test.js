@@ -92,6 +92,8 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     assert.strictEqual(indexHtml.includes('function fetchPalmsChapterTrends('), true);
     assert.strictEqual(indexHtml.includes('function renderChapterTrendLineChart('), true);
     assert.strictEqual(indexHtml.includes('getPalmsChapterTrendsApi'), true);
+    assert.strictEqual(indexHtml.includes('週平均/人'), true);
+    assert.strictEqual(indexHtml.includes('件/人/週'), true);
   });
 
   it('verifies 3-period achievement cards (1 Month, 6 Months, All Time) and 6 core metrics in Growth Dashboard', () => {

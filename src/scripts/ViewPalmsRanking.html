@@ -1540,11 +1540,15 @@ function setGrowthTrendGranularity(mode) {
     if (mode === 'weekly') {
       btnWeekly.className = 'px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs font-bold';
       btnPeriod.className = 'px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800 font-bold';
-      if (titleEl) titleEl.textContent = 'チャプター成長推移・毎週刻みトレンド';
+      if (titleEl) {
+        titleEl.innerHTML = '<span>毎週刻みトレンド</span> <span class="text-3xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">週平均/人</span>';
+      }
     } else {
       btnPeriod.className = 'px-2.5 py-1 rounded-md transition-all bg-white text-blue-600 shadow-2xs font-bold';
       btnWeekly.className = 'px-2.5 py-1 rounded-md transition-all text-slate-500 hover:text-slate-800 font-bold';
-      if (titleEl) titleEl.textContent = 'チャプター成長推移・2年間期別トレンド';
+      if (titleEl) {
+        titleEl.innerHTML = '<span>2年間期別トレンド</span> <span class="text-3xs font-extrabold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">週平均/人</span>';
+      }
     }
   }
   renderChapterTrendLineChart();
@@ -1572,7 +1576,7 @@ function fetchPalmsChapterTrends() {
 }
 
 /**
- * Render Chart 4: Multi-Period & Weekly Trend Line Chart
+ * Render Chart 4: Multi-Period & Weekly Trend Line Chart (Per-Person Weekly Average)
  */
 function renderChapterTrendLineChart() {
   if (typeof Chart === 'undefined') return;
@@ -1590,18 +1594,26 @@ function renderChapterTrendLineChart() {
   let trendVisitors = [];
   const isWeekly = (growthTrendGranularity === 'weekly');
 
-  if (isWeekly) {
-    // 毎週刻み
-    const weeklyList = (palmsChapterTrendsData && palmsChapterTrendsData.weekly && palmsChapterTrendsData.weekly.length > 0)
-      ? palmsChapterTrendsData.weekly
-      : [
-          { start_date: '2026-08-20', end_date: '2026-08-27', total_referrals: 41, total_oto: 52, total_visitors: 3 },
-          { start_date: '2026-08-27', end_date: '2026-09-03', total_referrals: 40, total_oto: 57, total_visitors: 5 },
-          { start_date: '2026-09-03', end_date: '2026-09-10', total_referrals: 31, total_oto: 48, total_visitors: 4 },
-          { start_date: '2026-09-10', end_date: '2026-09-17', total_referrals: 27, total_oto: 48, total_visitors: 2 },
-          { start_date: '2026-09-17', end_date: '2026-09-24', total_referrals: 46, total_oto: 33, total_visitors: 1 }
-        ];
+  const weeklyList = (palmsChapterTrendsData && palmsChapterTrendsData.weekly && palmsChapterTrendsData.weekly.length > 0)
+    ? palmsChapterTrendsData.weekly
+    : [
+        { start_date: '2026-08-20', end_date: '2026-08-27', total_referrals: 41, total_oto: 52, total_visitors: 3, member_count: 15 },
+        { start_date: '2026-08-27', end_date: '2026-09-03', total_referrals: 40, total_oto: 57, total_visitors: 5, member_count: 15 },
+        { start_date: '2026-09-03', end_date: '2026-09-10', total_referrals: 31, total_oto: 48, total_visitors: 4, member_count: 15 },
+        { start_date: '2026-09-10', end_date: '2026-09-17', total_referrals: 27, total_oto: 48, total_visitors: 2, member_count: 15 },
+        { start_date: '2026-09-17', end_date: '2026-09-24', total_referrals: 46, total_oto: 33, total_visitors: 1, member_count: 15 }
+      ];
 
+  const termList = (palmsChapterTrendsData && palmsChapterTrendsData.terms && palmsChapterTrendsData.terms.length > 0)
+    ? palmsChapterTrendsData.terms
+    : [
+        { start_date: '2025-04-01', end_date: '2025-09-30', total_referrals: 204, total_oto: 305, total_visitors: 25, member_count: 10 },
+        { start_date: '2025-10-01', end_date: '2026-03-31', total_referrals: 322, total_oto: 252, total_visitors: 37, member_count: 12 },
+        { start_date: '2026-04-01', end_date: '2026-09-30', total_referrals: 515, total_oto: 645, total_visitors: 56, member_count: 15 }
+      ];
+
+  if (isWeekly) {
+    // 毎週刻み（メンバー1人あたりの週平均 = 週合計 ÷ 在籍人数）
     labels = weeklyList.map(w => {
       const parts = (w.end_date || '').split('-');
       if (parts.length === 3) {
@@ -1609,19 +1621,23 @@ function renderChapterTrendLineChart() {
       }
       return w.end_date;
     });
-    trendReferrals = weeklyList.map(w => Number(w.total_referrals || 0));
-    trendOto = weeklyList.map(w => Number(w.total_oto || 0));
-    trendVisitors = weeklyList.map(w => Number(w.total_visitors || 0));
-  } else {
-    // 2年間期別
-    const termList = (palmsChapterTrendsData && palmsChapterTrendsData.terms && palmsChapterTrendsData.terms.length > 0)
-      ? palmsChapterTrendsData.terms
-      : [
-          { start_date: '2025-04-01', end_date: '2025-09-30', total_referrals: 204, total_oto: 305, total_visitors: 25 },
-          { start_date: '2025-10-01', end_date: '2026-03-31', total_referrals: 322, total_oto: 252, total_visitors: 37 },
-          { start_date: '2026-04-01', end_date: '2026-09-30', total_referrals: 515, total_oto: 645, total_visitors: 56 }
-        ];
 
+    trendReferrals = weeklyList.map(w => {
+      const mCount = Math.max(1, Number(w.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      return Number(((Number(w.total_referrals) || 0) / mCount).toFixed(2));
+    });
+
+    trendOto = weeklyList.map(w => {
+      const mCount = Math.max(1, Number(w.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      return Number(((Number(w.total_oto) || 0) / mCount).toFixed(2));
+    });
+
+    trendVisitors = weeklyList.map(w => {
+      const mCount = Math.max(1, Number(w.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      return Number(((Number(w.total_visitors) || 0) / mCount).toFixed(2));
+    });
+  } else {
+    // 2年間期別（メンバー1人あたりの週平均 = 期累計 ÷ 期の週数 ÷ 在籍人数）
     labels = termList.map(t => {
       const s = t.start_date || '';
       if (s.startsWith('2025-04')) return '25年前期(4-9月)';
@@ -1630,9 +1646,27 @@ function renderChapterTrendLineChart() {
       const sParts = s.split('-');
       return `${sParts[0]}年${sParts[1]}月〜`;
     });
-    trendReferrals = termList.map(t => Number(t.total_referrals || 0));
-    trendOto = termList.map(t => Number(t.total_oto || 0));
-    trendVisitors = termList.map(t => Number(t.total_visitors || 0));
+
+    trendReferrals = termList.map(t => {
+      const mCount = Math.max(1, Number(t.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      const days = Math.max(1, Math.round((new Date(t.end_date) - new Date(t.start_date)) / (1000 * 60 * 60 * 24)));
+      const weeks = Math.max(1, Math.round(days / 7));
+      return Number(((Number(t.total_referrals) || 0) / (mCount * weeks)).toFixed(2));
+    });
+
+    trendOto = termList.map(t => {
+      const mCount = Math.max(1, Number(t.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      const days = Math.max(1, Math.round((new Date(t.end_date) - new Date(t.start_date)) / (1000 * 60 * 60 * 24)));
+      const weeks = Math.max(1, Math.round(days / 7));
+      return Number(((Number(t.total_oto) || 0) / (mCount * weeks)).toFixed(2));
+    });
+
+    trendVisitors = termList.map(t => {
+      const mCount = Math.max(1, Number(t.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+      const days = Math.max(1, Math.round((new Date(t.end_date) - new Date(t.start_date)) / (1000 * 60 * 60 * 24)));
+      const weeks = Math.max(1, Math.round(days / 7));
+      return Number(((Number(t.total_visitors) || 0) / (mCount * weeks)).toFixed(2));
+    });
   }
 
   const ctx = trendCanvas.getContext('2d');
@@ -1642,7 +1676,7 @@ function renderChapterTrendLineChart() {
       labels: labels,
       datasets: [
         {
-          label: 'リファーラル提供数',
+          label: 'リファーラル (件/人/週)',
           data: trendReferrals,
           borderColor: '#0071e3',
           backgroundColor: 'rgba(0, 113, 227, 0.08)',
@@ -1653,7 +1687,7 @@ function renderChapterTrendLineChart() {
           pointHoverRadius: 6
         },
         {
-          label: '1to1 実施回数',
+          label: '1to1 (回/人/週)',
           data: trendOto,
           borderColor: '#d97706',
           backgroundColor: 'rgba(217, 119, 6, 0.08)',
@@ -1664,7 +1698,7 @@ function renderChapterTrendLineChart() {
           pointHoverRadius: 6
         },
         {
-          label: 'ビジター招待人数',
+          label: 'ビジター (名/人/週)',
           data: trendVisitors,
           borderColor: '#059669',
           backgroundColor: 'rgba(5, 150, 105, 0.08)',
@@ -1683,7 +1717,13 @@ function renderChapterTrendLineChart() {
         y: {
           beginAtZero: true,
           grid: { color: '#f1f5f9' },
-          ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+          ticks: {
+            font: { size: 10, weight: 'bold' },
+            color: '#64748b',
+            callback: function(value) {
+              return Number(value).toFixed(1);
+            }
+          }
         },
         x: {
           grid: { display: false },
@@ -1699,9 +1739,37 @@ function renderChapterTrendLineChart() {
           callbacks: {
             title: function(items) {
               if (items && items[0]) {
-                return `${items[0].label} (${isWeekly ? '週間実績' : '期別実績'})`;
+                return `${items[0].label} (${isWeekly ? '週間実績・週平均' : '期別実績・週平均'})`;
               }
               return '';
+            },
+            label: function(context) {
+              const val = context.parsed.y != null ? context.parsed.y : 0;
+              const rawList = isWeekly ? weeklyList : termList;
+              const item = rawList[context.dataIndex];
+              if (!item) return ` ${context.dataset.label}: ${val.toFixed(2)}`;
+
+              const mCount = Math.max(1, Number(item.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
+              let total = 0;
+              let unit = '件';
+              if (context.datasetIndex === 0) {
+                total = item.total_referrals || 0;
+                unit = '件';
+              } else if (context.datasetIndex === 1) {
+                total = item.total_oto || 0;
+                unit = '回';
+              } else if (context.datasetIndex === 2) {
+                total = item.total_visitors || 0;
+                unit = '名';
+              }
+
+              if (isWeekly) {
+                return ` ${context.dataset.label}: ${val.toFixed(2)} ${unit} (チャプター合計: ${Number(total).toLocaleString()}${unit} / 在籍${mCount}名)`;
+              } else {
+                const days = Math.max(1, Math.round((new Date(item.end_date) - new Date(item.start_date)) / (1000 * 60 * 60 * 24)));
+                const weeks = Math.max(1, Math.round(days / 7));
+                return ` ${context.dataset.label}: ${val.toFixed(2)} ${unit} (期累計: ${Number(total).toLocaleString()}${unit} / ${weeks}週 / 在籍${mCount}名)`;
+              }
             }
           }
         }
