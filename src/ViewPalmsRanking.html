@@ -1,28 +1,28 @@
-<!-- PALMS & Traffic Lights View (REvo OS Phase 2) -->
+<!-- PALMS & Member Management View (REvo OS Phase 2: Member Management Sitemap) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Header / Action Bar -->
-  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200">
     <div>
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
-          <i class="fa-solid fa-trophy text-sm"></i>
+          <i class="fa-solid fa-users-viewfinder text-sm"></i>
         </div>
         <h2 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
-          PALMS & トラフィックライト
+          メンバー成長 & PALMS管理
         </h2>
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
           公式100点新基準
         </span>
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          PPW / RPW 対応
+          全員PPW 2.0へ
         </span>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
-        BNI公式新基準（100点満点）およびサマリーPALMS指標（PPW・RPW・週貢献）に基づく活動成果・改善分析
+        評価ではなく改善のための指標。伴走フォロー・適切な目標設定・行動共有でチャプター全員の成長を推進
       </p>
     </div>
 
-    <!-- Actions: Period Selector, Custom Picker & Sync Button -->
+    <!-- Actions: Period Selector & Sync Button -->
     <div class="flex items-center gap-2 flex-wrap self-end lg:self-auto">
       <!-- GA4-Style Period Trigger Button (Primary) -->
       <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
@@ -36,6 +36,32 @@
         <span class="btn-text">Connect同期</span>
       </button>
     </div>
+  </div>
+
+  <!-- Member Management Sitemap Sub-Navigation Tabs (Apple Minimal Segmented Tabs) -->
+  <div class="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-6 border-b border-slate-200/80 scrollbar-none" id="palms-subnav-tabs">
+    <button type="button" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs" data-subtab="growth-dashboard">
+      <i class="fa-solid fa-chart-line text-blue-400"></i>
+      <span>成長ダッシュボード</span>
+    </button>
+    <button type="button" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="ppw-rpw">
+      <i class="fa-solid fa-fire text-amber-500"></i>
+      <span>RPW & PPW改善</span>
+      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-black">全員2.0へ</span>
+    </button>
+    <button type="button" onclick="switchPalmsSubTab('traffic-lights')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="traffic-lights">
+      <i class="fa-solid fa-traffic-light text-emerald-500"></i>
+      <span>個人トラフィックライト</span>
+      <span class="text-3xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-black">100点</span>
+    </button>
+    <button type="button" onclick="switchPalmsSubTab('palms-ranking')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="palms-ranking">
+      <i class="fa-solid fa-trophy text-amber-500"></i>
+      <span>PALMSランキング</span>
+    </button>
+    <button type="button" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300" data-subtab="chapter-traffic">
+      <i class="fa-solid fa-earth-americas text-indigo-500"></i>
+      <span>チャプタートラフィックライト</span>
+    </button>
   </div>
 
   <!-- Legacy Compatibility Controls (Preserved for tests & fallback) -->
@@ -59,280 +85,895 @@
   </div>
 
 
-  <!-- Traffic Lights & PPW / RPW KPI Overview Cards (5 Columns) -->
-  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
-    <!-- Chapter Avg Score -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-1">
-        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合平均スコア</span>
-        <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 1: チャプター成長ダッシュボード                     -->
+  <!-- ======================================================== -->
+  <div id="palms-subview-growth-dashboard" class="palms-subview">
+    <!-- Top 5 Core KPI Overview Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+      <!-- Chapter Avg Score -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合平均スコア</span>
+          <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
+          <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+        </div>
+        <div class="mt-2 text-2xs" id="palms-kpi-avg-tier">
+          <span class="inline-flex items-center gap-1 font-bold text-slate-500">
+            <span class="w-2 h-2 rounded-full bg-slate-300"></span> 集計中
+          </span>
+        </div>
       </div>
-      <div class="flex items-baseline gap-1.5">
-        <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
-        <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+
+      <!-- Chapter Avg PPW -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 PPW (週貢献)</span>
+          <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">目標 2.0+</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="palms-kpi-avg-ppw" class="text-2xl sm:text-3xl font-black text-blue-600 tabular-nums">--</span>
+          <span class="text-xs font-bold text-slate-400">pt/週</span>
+        </div>
+        <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-ppw-breakdown">
+          2.0以上: -名 / 1.0~2.0: -名
+        </div>
       </div>
-      <div class="mt-2 text-2xs" id="palms-kpi-avg-tier">
-        <span class="inline-flex items-center gap-1 font-bold text-slate-500">
-          <span class="w-2 h-2 rounded-full bg-slate-300"></span> 集計中
-        </span>
+
+      <!-- Chapter Avg RPW -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 RPW (週リファーラル)</span>
+          <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">目標 1.25+</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="palms-kpi-avg-rpw" class="text-2xl sm:text-3xl font-black text-indigo-600 tabular-nums">--</span>
+          <span class="text-xs font-bold text-slate-400">件/週</span>
+        </div>
+        <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-rpw-breakdown">
+          総リファーラル: -件
+        </div>
+      </div>
+
+      <!-- Green Tier (70+ pt) -->
+      <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-3xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
+          <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
+          <span class="text-xs font-bold text-slate-400">名</span>
+        </div>
+        <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-green-pct">
+          構成比: 0%
+        </div>
+      </div>
+
+      <!-- Yellow / Red Tier -->
+      <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 mb-1">
+          <span class="text-3xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー / 🔴 要注力</span>
+          <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">70点未満</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
+          <span class="text-xs font-bold text-slate-400">名</span>
+        </div>
+        <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
+          育成・引き上げ対象
+        </div>
       </div>
     </div>
 
-    <!-- Chapter Avg PPW -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-1">
-        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 PPW (週貢献)</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">目標 2.0+</span>
+    <!-- Chapter Growth Charts (Multi-Period Trend & 7-Metric Radar) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+      <!-- Multi-Period 2-Year Trend (Line Chart) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
+            <h3 class="text-sm font-bold text-slate-800">チャプター成長推移・2年間期別トレンド</h3>
+          </div>
+          <span class="text-2xs font-bold text-slate-400">売上・リファーラル・1to1</span>
+        </div>
+        <div class="relative w-full h-64 sm:h-72">
+          <canvas id="chart-palms-trend-line"></canvas>
+        </div>
       </div>
-      <div class="flex items-baseline gap-1.5">
-        <span id="palms-kpi-avg-ppw" class="text-2xl sm:text-3xl font-black text-blue-600 tabular-nums">--</span>
-        <span class="text-xs font-bold text-slate-400">pt/週</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-ppw-breakdown">
-        2.0以上: -名 / 1.0~2.0: -名
+
+      <!-- 7-Metric Radar Analysis (Radar) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-compass text-blue-600 text-sm"></i>
+            <h3 class="text-sm font-bold text-slate-800">7大指標 チャプター全体平均レーダー</h3>
+          </div>
+          <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
+        </div>
+        <div class="relative flex items-center justify-center h-64 sm:h-72">
+          <canvas id="chart-palms-radar"></canvas>
+        </div>
       </div>
     </div>
 
-    <!-- Chapter Avg RPW -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-1">
-        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 RPW (週リファーラル)</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">目標 1.25+</span>
+    <!-- Chapter Growth Summary Cards (TYFCB & Referrals & Retention) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+        <div class="flex items-center gap-2 mb-2 text-slate-500">
+          <i class="fa-solid fa-yen-sign text-emerald-600 text-sm"></i>
+          <span class="text-xs font-bold">チャプター累計 TYFCB (売上貢献)</span>
+        </div>
+        <div class="text-2xl font-black text-slate-800 tabular-nums" id="growth-tyfcb-total">-- 万円</div>
+        <div class="mt-2 text-2xs text-slate-400 flex items-center justify-between">
+          <span>メンバー平均: <b id="growth-tyfcb-avg" class="text-slate-600">-- 万円</b></span>
+          <span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> 成長基調</span>
+        </div>
       </div>
-      <div class="flex items-baseline gap-1.5">
-        <span id="palms-kpi-avg-rpw" class="text-2xl sm:text-3xl font-black text-indigo-600 tabular-nums">--</span>
-        <span class="text-xs font-bold text-slate-400">件/週</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-rpw-breakdown">
-        総リファーラル: -件
-      </div>
-    </div>
 
-    <!-- Green Tier (70+ pt) -->
-    <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-1">
-        <span class="text-3xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+        <div class="flex items-center gap-2 mb-2 text-slate-500">
+          <i class="fa-solid fa-handshake text-blue-600 text-sm"></i>
+          <span class="text-xs font-bold">チャプター累計 リファーラル件数</span>
+        </div>
+        <div class="text-2xl font-black text-slate-800 tabular-nums" id="growth-referral-total">-- 件</div>
+        <div class="mt-2 text-2xs text-slate-400 flex items-center justify-between">
+          <span>内部: <b id="growth-referral-internal" class="text-slate-600">--</b> / 外部: <b id="growth-referral-external" class="text-slate-600">--</b></span>
+          <span class="text-blue-600 font-bold">RPW <span id="growth-rpw-badge">--</span></span>
+        </div>
       </div>
-      <div class="flex items-baseline gap-1.5">
-        <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
-        <span class="text-xs font-bold text-slate-400">名</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-green-pct">
-        構成比: 0%
-      </div>
-    </div>
 
-    <!-- Yellow / Red Tier -->
-    <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-1">
-        <span class="text-3xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー / 🔴 要注力</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">70点未満</span>
-      </div>
-      <div class="flex items-baseline gap-1.5">
-        <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
-        <span class="text-xs font-bold text-slate-400">名</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
-        育成・引き上げ対象
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
+        <div class="flex items-center gap-2 mb-2 text-slate-500">
+          <i class="fa-solid fa-users text-amber-600 text-sm"></i>
+          <span class="text-xs font-bold">ビジター招待 ＆ 1to1 活動総量</span>
+        </div>
+        <div class="text-2xl font-black text-slate-800 tabular-nums" id="growth-visitor-total">-- 名</div>
+        <div class="mt-2 text-2xs text-slate-400 flex items-center justify-between">
+          <span>総1to1: <b id="growth-one-to-one-total" class="text-slate-600">-- 回</b></span>
+          <span class="text-amber-600 font-bold">CEU: <span id="growth-ceu-total">-- pt</span></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Rich Charts Section (4 Interactive Chart.js Cards) -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
-    <!-- Chart 1: Traffic Lights Color Distribution (Doughnut) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chart-pie text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">トラフィックライト ゾーン分布</h3>
+
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 2: RPW と PPW 改善ハブ (全員でPPW 2.0ラインへ)        -->
+  <!-- ======================================================== -->
+  <div id="palms-subview-ppw-rpw" class="palms-subview hidden">
+    <!-- Philosophy Banner (意図の明確化) -->
+    <div class="bg-gradient-to-r from-blue-50/80 via-indigo-50/50 to-white border border-blue-200/80 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xs">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+            <i class="fa-solid fa-fire text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                数字を「評価」ではなく「改善」に使い、全員でPPW 2.0000のラインへ
+              </h3>
+              <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-600 text-white">改善マインドセット</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
+              メンバーを評価・選別するための数字ではありません。誰がどこで躓いているかに気づき、個別フォローや適切な目標設定を行い、チャプター全員で助け合って「全員PPW 2.0（豊かさの循環）」へ引き上げるための伴走画面です。
+            </p>
+          </div>
         </div>
-        <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
-      </div>
-      <div class="relative flex items-center justify-center h-60 sm:h-64">
-        <canvas id="chart-palms-donut"></canvas>
+        <div class="flex items-center gap-2 self-start md:self-auto shrink-0">
+          <div class="text-right">
+            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">全員達成進捗</div>
+            <div class="text-base sm:text-lg font-black text-blue-600 tabular-nums" id="ppw-achievement-rate">--%</div>
+          </div>
+          <div class="w-12 h-12 rounded-full border-4 border-blue-200 border-t-blue-600 flex items-center justify-center font-black text-xs text-blue-700 bg-white">
+            <span id="ppw-qualified-count">0</span>/<span id="ppw-total-member-count">0</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Chart 2: PPW & RPW Distribution by Member (Bar with Reference Lines) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chart-simple text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">メンバー別 PPW (週貢献) & RPW (週リファーラル)</h3>
+    <!-- Member Distribution Bar Chart (PPW & RPW) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-blue-600"></i>
+            <span>メンバー別 PPW (週貢献) & RPW (週リファーラル) 分布</span>
+          </h3>
+          <p class="text-2xs text-slate-400 mt-0.5">全員が目標ライン（黒の実線 PPW 2.0000）を突破することを目指します</p>
         </div>
-        <div class="flex items-center gap-2 text-3xs font-bold">
-          <span class="inline-flex items-center gap-1 text-slate-800">
-            <span class="w-3 h-0.5 bg-slate-900 inline-block"></span> PPW 2.0 (目標)
+        <div class="flex items-center gap-3 text-3xs font-bold">
+          <span class="inline-flex items-center gap-1.5 text-slate-900 bg-slate-100 px-2 py-1 rounded-md">
+            <span class="w-3 h-0.5 bg-slate-900 inline-block"></span> PPW 2.0000 (目標ライン)
           </span>
-          <span class="inline-flex items-center gap-1 text-slate-500">
-            <span class="w-3 h-0.5 bg-slate-400 inline-block"></span> PPW 1.0 (基準)
+          <span class="inline-flex items-center gap-1.5 text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
+            <span class="w-3 h-0.5 bg-slate-400 inline-block"></span> PPW 1.0000 (基準ライン)
           </span>
         </div>
       </div>
-      <div class="relative w-full h-60 sm:h-64">
+      <div class="relative w-full h-64 sm:h-72">
         <canvas id="chart-palms-ppw-bar"></canvas>
       </div>
     </div>
 
-    <!-- Chart 3: 7-Metric Radar Analysis (Radar) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-compass text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
+    <!-- 3-Tier Follow-up Extraction Tabs & Cards -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-filter text-amber-500"></i>
+          <span>状態別メンバー抽出 & 個別伴走フォローリスト</span>
+        </h3>
+        <span class="text-2xs text-slate-400">クリックで絞り込み</span>
+      </div>
+
+      <!-- Segmented Category Filters -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <!-- Tier 1: Urgent Follow (< 1.0) -->
+        <div onclick="filterPpwFollowList('urgent')" id="ppw-filter-urgent" class="ppw-tier-card cursor-pointer bg-white hover:bg-rose-50/40 border-2 border-rose-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-black text-sm">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-rose-700 flex items-center gap-1">
+                <span>PPW 1.0未満</span>
+                <span class="text-3xs px-1.5 py-0.2 bg-rose-100 text-rose-800 rounded-full font-bold">最優先フォロー</span>
+              </div>
+              <div class="text-2xs text-slate-500 mt-0.5">早期メンター1to1やニーズ整理</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="ppw-count-urgent" class="text-2xl font-black text-rose-600 tabular-nums">0</span>
+            <span class="text-3xs font-bold text-slate-400 ml-0.5">名</span>
+          </div>
         </div>
-        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
-      </div>
-      <div class="relative flex items-center justify-center h-60 sm:h-64">
-        <canvas id="chart-palms-radar"></canvas>
-      </div>
-    </div>
 
-    <!-- Chart 4: Multi-Period 2-Year Trend (Line Chart) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-arrow-trend-up text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">期別・2年間推移トレンド</h3>
+        <!-- Tier 2: Step-up (1.0 <= PPW < 2.0) -->
+        <div onclick="filterPpwFollowList('stepup')" id="ppw-filter-stepup" class="ppw-tier-card cursor-pointer bg-white hover:bg-amber-50/40 border border-amber-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-black text-sm">
+              <i class="fa-solid fa-stairs"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-amber-700 flex items-center gap-1">
+                <span>PPW 1.0〜2.0未満</span>
+                <span class="text-3xs px-1.5 py-0.2 bg-amber-100 text-amber-800 rounded-full font-bold">あと一歩</span>
+              </div>
+              <div class="text-2xs text-slate-500 mt-0.5">目標設定と具体的な行動引き上げ</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="ppw-count-stepup" class="text-2xl font-black text-amber-600 tabular-nums">0</span>
+            <span class="text-3xs font-bold text-slate-400 ml-0.5">名</span>
+          </div>
         </div>
-        <span class="text-2xs font-bold text-slate-400">リファーラル・1to1・ビジター</span>
+
+        <!-- Tier 3: Benchmarks (PPW >= 2.0) -->
+        <div onclick="filterPpwFollowList('benchmark')" id="ppw-filter-benchmark" class="ppw-tier-card cursor-pointer bg-white hover:bg-emerald-50/40 border border-emerald-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-sm">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+              <div class="text-xs font-black text-emerald-700 flex items-center gap-1">
+                <span>PPW 2.0以上</span>
+                <span class="text-3xs px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full font-bold">目標達成</span>
+              </div>
+              <div class="text-2xs text-slate-500 mt-0.5">行動の共有＆チャプター推進役</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <span id="ppw-count-benchmark" class="text-2xl font-black text-emerald-600 tabular-nums">0</span>
+            <span class="text-3xs font-bold text-slate-400 ml-0.5">名</span>
+          </div>
+        </div>
       </div>
-      <div class="relative w-full h-60 sm:h-64">
-        <canvas id="chart-palms-trend-line"></canvas>
+
+      <!-- Follow-up Members Card Grid -->
+      <div id="ppw-follow-member-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <!-- Rendered dynamically via JavaScript -->
+        <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200 rounded-2xl">
+          <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+          <p class="text-xs">データを集計中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goal Setting Simulator & Top Performer Best Practice Section (2 Columns) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+      <!-- 1. Goal Setting Simulator (適切な目標設定シミュレーター) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-bullseye text-blue-600"></i>
+              <h4 class="text-sm font-bold text-slate-800">PPW 2.0000 逆算目標シミュレーター</h4>
+            </div>
+            <span class="text-3xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">成長促進ツール</span>
+          </div>
+
+          <p class="text-2xs text-slate-500 mb-3">
+            メンバーを選択すると、現在の集計値からPPW 2.0000ラインに到達するための必要アクション数を自動算出します。
+          </p>
+
+          <div class="mb-4">
+            <label class="text-3xs font-bold uppercase tracking-wider text-slate-400 block mb-1">対象メンバー</label>
+            <select id="ppw-sim-member-select" onchange="runPpwGoalSimulation()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 cursor-pointer focus:outline-hidden focus:bg-white focus:border-blue-500 transition-all">
+              <option value="">メンバーを選択してください...</option>
+            </select>
+          </div>
+
+          <div id="ppw-sim-result-container" class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4">
+            <div class="text-center text-slate-400 py-4 text-xs">
+              メンバーを選択するとシミュレーションが表示されます
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-3xs text-slate-400">💡 1to1で活用し、無理のない具体的目標を設定</span>
+          <button type="button" onclick="copyPpwGoalPlanText()" id="btn-copy-ppw-plan" class="px-3 py-1.5 text-2xs font-bold text-slate-700 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-300 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-copy"></i>
+            <span>目標文面をコピー</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Top Performers Knowledge & Action Sharing (上位メンバーの行動共有) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-lightbulb text-amber-500"></i>
+              <h4 class="text-sm font-bold text-slate-800">上位メンバーの行動傾向・ベストプラクティス</h4>
+            </div>
+            <span class="text-3xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">ナレッジ共有</span>
+          </div>
+
+          <p class="text-2xs text-slate-500 mb-3">
+            PPW 2.0以上を継続している上位メンバーの行動指標と、チャプター内で共有されている成功要因です。
+          </p>
+
+          <!-- Top Metrics Breakdown -->
+          <div class="grid grid-cols-3 gap-2.5 mb-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">平均1to1頻度</div>
+              <div class="text-base font-black text-slate-800 tabular-nums" id="top-avg-oto">週 1.4 回</div>
+              <div class="text-3xs text-slate-400 mt-0.5">事前準備を徹底</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">外部紹介比率</div>
+              <div class="text-base font-black text-indigo-600 tabular-nums" id="top-ext-ratio">68 %</div>
+              <div class="text-3xs text-slate-400 mt-0.5">顧客からの紹介喚起</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">月ビジター招待</div>
+              <div class="text-base font-black text-emerald-600 tabular-nums" id="top-avg-v">月 0.8 名</div>
+              <div class="text-3xs text-slate-400 mt-0.5">定例会同行</div>
+            </div>
+          </div>
+
+          <!-- Action Tips List -->
+          <div class="space-y-2 text-2xs text-slate-600">
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-3xs">1</span>
+              <div>
+                <b class="text-slate-800">1to1前の「欲しい紹介相手」の事前言語化</b>
+                <p class="text-slate-500 mt-0.5">具体的な会社名・役職を指定してヒアリングすることで外部紹介率が劇的に向上。</p>
+              </div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-3xs">2</span>
+              <div>
+                <b class="text-slate-800">自社クライアントへのヒアリング時の他社紹介</b>
+                <p class="text-slate-500 mt-0.5">普段の商談でお困りごとを拾い、即チャプターメンバーへお繋ぎする習慣化。</p>
+              </div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-3xs">3</span>
+              <div>
+                <b class="text-slate-800">同伴ビジターへの事前オリエンテーション</b>
+                <p class="text-slate-500 mt-0.5">事前に定例会の見どころやマッチしそうなメンバーを伝え、参加満足度を高める。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 text-right">
+          <span class="text-3xs text-slate-400">💡 上位メンバーのナレッジを次回のチャプター教育コーナー等で共有</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Metric Filter Segmented Controls (Pills) -->
-  <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none" id="palms-metric-tabs">
-    <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
-      <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
-      <span>総合点 (100点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('ppw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ppw">
-      <i class="fa-solid fa-fire text-amber-500 text-2xs"></i>
-      <span>PPW (週貢献)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('rpw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="rpw">
-      <i class="fa-solid fa-bolt text-indigo-500 text-2xs"></i>
-      <span>RPW (週リファーラル)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
-      <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
-      <span>リファーラル (25点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
-      <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
-      <span>ビジター (25点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
-      <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
-      <span>1to1 (20点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('ceu')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ceu">
-      <i class="fa-solid fa-graduation-cap text-purple-500 text-2xs"></i>
-      <span>CEU (10点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
-      <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
-      <span>出席率 (10点)</span>
-    </button>
-    <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
-      <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
-      <span>TYFCB売上 (5点)</span>
-    </button>
-  </div>
 
-  <!-- Metric Description & Formula Hint -->
-  <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
-    <div class="flex items-center gap-2">
-      <i class="fa-solid fa-circle-info text-blue-500"></i>
-      <span id="palms-hint-text">
-        公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)
-      </span>
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 3: 個人トラフィックライト (100点スコア・健康診断)        -->
+  <!-- ======================================================== -->
+  <div id="palms-subview-traffic-lights" class="palms-subview hidden">
+    <!-- Traffic Lights Overview Cards & Doughnut Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+      <!-- Zone Doughnut Chart -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-emerald-600 text-sm"></i>
+            <h3 class="text-sm font-bold text-slate-800">トラフィックライト ゾーン分布</h3>
+          </div>
+          <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
+        </div>
+        <div class="relative flex items-center justify-center h-56 sm:h-60">
+          <canvas id="chart-palms-donut"></canvas>
+        </div>
+      </div>
+
+      <!-- Traffic Light Standards Card -->
+      <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-scale-balanced text-blue-600 text-sm"></i>
+              <h3 class="text-sm font-bold text-slate-800">BNI公式新基準 7大指標と配点（100点満点）</h3>
+            </div>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">最新ルール</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">ビジター招待</div>
+              <div class="text-lg font-black text-slate-800">25 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">月1名ペース</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">リファーラル提供</div>
+              <div class="text-lg font-black text-slate-800">25 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">週1.25件ペース</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">1to1 実施</div>
+              <div class="text-lg font-black text-slate-800">20 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">週1回ペース</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">CEU 学習</div>
+              <div class="text-lg font-black text-slate-800">10 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">週1pt / 月4pt</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">定例会出席率</div>
+              <div class="text-lg font-black text-slate-800">10 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">95%以上維持</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">TYFCB (売上)</div>
+              <div class="text-lg font-black text-slate-800">5 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">チャプター貢献</div>
+            </div>
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+              <div class="text-3xs font-bold text-slate-400 mb-0.5">推薦状 / スポンサー</div>
+              <div class="text-lg font-black text-slate-800">5 <span class="text-3xs font-bold text-slate-400">点</span></div>
+              <div class="text-3xs text-slate-500 mt-0.5">信頼・拡大貢献</div>
+            </div>
+            <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3">
+              <div class="text-3xs font-bold text-emerald-700 mb-0.5">グリーン基準</div>
+              <div class="text-lg font-black text-emerald-700">70+ <span class="text-3xs font-bold text-emerald-600">点</span></div>
+              <div class="text-3xs text-emerald-600 mt-0.5">健全・模範</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl text-2xs text-slate-600 flex items-center justify-between">
+          <span>💡 メンバー詳細をクリックすると各指標ごとの獲得点数と、あと何点でグリーン達成かの処方箋が表示されます。</span>
+        </div>
+      </div>
     </div>
-    <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
-  </div>
 
-  <!-- Apple Style Podium Cards (Top 3) -->
-  <div id="palms-podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <!-- Populated by JavaScript -->
-    <div class="col-span-full py-8 text-center text-slate-400">
-      <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
-      <p class="text-xs">ランキングを集計中...</p>
-    </div>
-  </div>
-
-  <!-- Comprehensive Member PALMS Ranking Table -->
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden" id="palms-table-container">
-    <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+    <!-- Member Traffic Light Cards Grid -->
+    <div class="mb-4 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
-        <i class="fa-solid fa-list-ol text-blue-600"></i>
-        <span>メンバー別 実績一覧（トラフィックライト ＆ PPW / RPW）</span>
-        <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
+        <i class="fa-solid fa-users text-blue-600"></i>
+        <span>メンバー個人別 100点スコア & 健全度診断一覧</span>
       </h3>
-      <div class="text-2xs text-slate-400">
-        氏名クリックでパームス詳細を表示
+      <div class="flex items-center gap-2 text-2xs">
+        <span class="inline-flex items-center gap-1 text-emerald-700 font-bold">🟢 70点以上</span>
+        <span class="inline-flex items-center gap-1 text-amber-700 font-bold">🟡 50〜65点</span>
+        <span class="inline-flex items-center gap-1 text-rose-700 font-bold">🔴 50点未満</span>
       </div>
     </div>
 
-    <!-- Table Responsive Wrap -->
-    <div class="overflow-x-auto scrollbar-thin">
-      <table class="w-full text-left border-collapse min-w-[960px]">
-        <thead>
-          <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
-            <th class="py-3 px-3 w-12 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
-              順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-4 min-w-[140px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
-              メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
-              判定 <span id="sort-icon-traffic_light"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
-              総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ppw')">
-              PPW (週貢献) <span id="sort-icon-ppw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rpw')">
-              RPW (週リファ) <span id="sort-icon-rpw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
-              ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('referrals_given')">
-              リファーラル <span id="sort-icon-referrals_given"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
-              1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
-              CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('attendance')">
-              出席率 <span id="sort-icon-attendance"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-            <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
-              TYFCB売上 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
-          </tr>
-        </thead>
-        <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
-          <!-- Populated by JavaScript -->
-          <tr>
-            <td colspan="12" class="py-12 text-center text-slate-400">
-              <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
-              <p class="text-xs">データを読込中...</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div id="traffic-light-member-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-8">
+      <!-- Rendered dynamically via JavaScript -->
+      <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200 rounded-2xl">
+        <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
+        <p class="text-xs">トラフィックライトを集計中...</p>
+      </div>
     </div>
   </div>
+
+
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 4: PALMSランキング (詳細実績集計 & 表彰)             -->
+  <!-- ======================================================== -->
+  <div id="palms-subview-palms-ranking" class="palms-subview hidden">
+    <!-- Metric Filter Segmented Controls (Pills) -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none" id="palms-metric-tabs">
+      <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
+        <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
+        <span>総合点 (100点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('ppw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ppw">
+        <i class="fa-solid fa-fire text-amber-500 text-2xs"></i>
+        <span>PPW (週貢献)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('rpw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="rpw">
+        <i class="fa-solid fa-bolt text-indigo-500 text-2xs"></i>
+        <span>RPW (週リファーラル)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
+        <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
+        <span>リファーラル (25点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('visitors')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="visitors">
+        <i class="fa-solid fa-users text-emerald-500 text-2xs"></i>
+        <span>ビジター (25点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('one_to_ones')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="one_to_ones">
+        <i class="fa-solid fa-mug-saucer text-amber-600 text-2xs"></i>
+        <span>1to1 (20点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('ceu')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ceu">
+        <i class="fa-solid fa-graduation-cap text-purple-500 text-2xs"></i>
+        <span>CEU (10点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('attendance')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="attendance">
+        <i class="fa-solid fa-clipboard-check text-slate-500 text-2xs"></i>
+        <span>出席率 (10点)</span>
+      </button>
+      <button type="button" onclick="switchPalmsMetric('tyfcb')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="tyfcb">
+        <i class="fa-solid fa-yen-sign text-indigo-500 text-2xs"></i>
+        <span>TYFCB売上 (5点)</span>
+      </button>
+    </div>
+
+    <!-- Metric Description & Formula Hint -->
+    <div id="palms-metric-hint" class="mb-5 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-2xs sm:text-xs text-slate-600 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-blue-500"></i>
+        <span id="palms-hint-text">
+          公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)
+        </span>
+      </div>
+      <span id="palms-data-period-badge" class="font-mono text-slate-400 shrink-0">期間: --</span>
+    </div>
+
+    <!-- Apple Style Podium Cards (Top 3) -->
+    <div id="palms-podium-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <!-- Populated by JavaScript -->
+      <div class="col-span-full py-8 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+        <p class="text-xs">ランキングを集計中...</p>
+      </div>
+    </div>
+
+    <!-- Comprehensive Member PALMS Ranking Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden mb-8" id="palms-table-container">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-list-ol text-blue-600"></i>
+          <span>メンバー別 実績一覧（トラフィックライト ＆ PPW / RPW）</span>
+          <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
+        </h3>
+        <div class="text-2xs text-slate-400">
+          氏名クリックでパームス詳細を表示
+        </div>
+      </div>
+
+      <!-- Table Responsive Wrap -->
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="w-full text-left border-collapse min-w-[960px]">
+          <thead>
+            <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
+              <th class="py-3 px-3 w-12 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
+                順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-4 min-w-[140px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+                メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
+                判定 <span id="sort-icon-traffic_light"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
+                総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ppw')">
+                PPW (週貢献) <span id="sort-icon-ppw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rpw')">
+                RPW (週リファーラル) <span id="sort-icon-rpw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rgi')">
+                リファーラル内 <span id="sort-icon-rgi"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rgo')">
+                リファーラル外 <span id="sort-icon-rgo"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
+                ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('one_to_ones')">
+                1to1 <span id="sort-icon-one_to_ones"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
+                TYFCB (円) <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ceu')">
+                CEU <span id="sort-icon-ceu"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+              <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('attendance_rate')">
+                出席率 <span id="sort-icon-attendance_rate"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs text-slate-700">
+            <!-- Populated by JavaScript -->
+            <tr>
+              <td colspan="13" class="py-12 text-center text-slate-400">
+                データを読み込み中...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Weekly PALMS Submission Summary Section -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden mb-6" id="palms-weekly-submissions-container">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-check text-blue-600"></i>
+          <span>定例会 週次PALMS提出履歴</span>
+          <span id="palms-submission-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">--回</span>
+        </h3>
+        <span class="text-2xs text-slate-400">最新週の提出状況</span>
+      </div>
+
+      <div class="overflow-x-auto scrollbar-thin">
+        <table class="w-full text-left border-collapse min-w-[720px]">
+          <thead>
+            <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
+              <th class="py-3 px-4">定例会 日付</th>
+              <th class="py-3 px-3 text-center">提出メンバー数</th>
+              <th class="py-3 px-3 text-right">週リファーラル計</th>
+              <th class="py-3 px-3 text-right">ビジター参加計</th>
+              <th class="py-3 px-3 text-right">週1to1計</th>
+              <th class="py-3 px-3 text-right">週売上 (TYFCB)</th>
+              <th class="py-3 px-3 text-center">出席率</th>
+            </tr>
+          </thead>
+          <tbody id="palms-weekly-submissions-body" class="divide-y divide-slate-100 text-xs text-slate-700">
+            <!-- Populated by JavaScript -->
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-400">
+                週次提出データを読み込み中...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 5: チャプタートラフィックライト (チャプター健全度)       -->
+  <!-- ======================================================== -->
+  <div id="palms-subview-chapter-traffic" class="palms-subview hidden">
+    <!-- Chapter Traffic Light Overall Grade Card -->
+    <div class="bg-gradient-to-r from-emerald-500/10 via-blue-500/5 to-transparent border border-emerald-200 rounded-2xl p-6 mb-6 shadow-2xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-2xs animate-pulse"></span>
+            <span class="text-xs font-black uppercase tracking-wider text-emerald-800">チャプター健全度 総合評価</span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">グリーンチャプター水準</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            BNI REvo チャプター 総合トラフィックライト
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+            チャプターサイズ、出席率、更新率、メンバー1人あたりリファーラル数（RPW）、ビジター比率の5大要素による総合健全度です。
+          </p>
+        </div>
+
+        <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs text-center shrink-0 self-start sm:self-auto min-w-[140px]">
+          <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">総合トラフィック判定</div>
+          <div class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums" id="chapter-traffic-total-score">85 <span class="text-xs font-bold text-slate-400">/ 100 pt</span></div>
+          <div class="mt-1 text-2xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+            🟢 グリーンランク
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 Core Chapter Traffic Metrics Matrix -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <!-- 1. Chapter Size (規模) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-users text-blue-600"></i>
+              <span>1. チャプター規模（メンバー数）</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">目標 45名+</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="chapter-metric-size" class="text-3xl font-black text-slate-900 tabular-nums">38</span>
+            <span class="text-xs font-bold text-slate-400">名</span>
+            <span class="text-2xs font-bold text-emerald-600 ml-auto"><i class="fa-solid fa-arrow-trend-up"></i> 前期比 +3名</span>
+          </div>
+          <!-- Progress bar towards 45 and 55 -->
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-1 overflow-hidden">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: 84%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-3xs text-slate-400 font-semibold">
+            <span>現在: 38名</span>
+            <span>チタン基準: 55名</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-500">
+          次期マイルストーン（45名）まであと<b>7名</b>。
+        </div>
+      </div>
+
+      <!-- 2. Retention Rate (更新率) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-spin text-emerald-600"></i>
+              <span>2. メンバー更新率 (リテンション)</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">目標 80%+</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="chapter-metric-retention" class="text-3xl font-black text-emerald-600 tabular-nums">84.2</span>
+            <span class="text-xs font-bold text-slate-400">%</span>
+            <span class="text-2xs font-bold text-emerald-600 ml-auto">🟢 目標クリア</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-1 overflow-hidden">
+            <div class="bg-emerald-500 h-2 rounded-full" style="width: 84.2%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-3xs text-slate-400 font-semibold">
+            <span>基準ライン: 80.0%</span>
+            <span>現在: 84.2%</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-500">
+          高い満足度を維持。メンター制度の伴走が定着に貢献中。
+        </div>
+      </div>
+
+      <!-- 3. Attendance Rate (出席率) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-clipboard-check text-blue-600"></i>
+              <span>3. チャプター出席率</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">目標 95%+</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="chapter-metric-attendance" class="text-3xl font-black text-slate-900 tabular-nums">96.8</span>
+            <span class="text-xs font-bold text-slate-400">%</span>
+            <span class="text-2xs font-bold text-emerald-600 ml-auto">🟢 模範水準</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-1 overflow-hidden">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: 96.8%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-3xs text-slate-400 font-semibold">
+            <span>基準ライン: 95.0%</span>
+            <span>現在: 96.8%</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-500">
+          代理出席の活用が徹底され、極めて高い出席率を維持。
+        </div>
+      </div>
+
+      <!-- 4. Chapter RPW (週あたりリファーラル比率) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt text-indigo-600"></i>
+              <span>4. チャプターRPW (週紹介数)</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">目標 1.25+</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="chapter-metric-rpw" class="text-3xl font-black text-indigo-600 tabular-nums">1.34</span>
+            <span class="text-xs font-bold text-slate-400">件/人/週</span>
+            <span class="text-2xs font-bold text-emerald-600 ml-auto">🟢 良好</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-1 overflow-hidden">
+            <div class="bg-indigo-600 h-2 rounded-full" style="width: 80%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-3xs text-slate-400 font-semibold">
+            <span>基準: 1.25</span>
+            <span>次期挑戦: 1.50</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-500">
+          活発なビジネスの交差。外部リファーラルの比率拡大が鍵。
+        </div>
+      </div>
+
+      <!-- 5. Visitors per Member (メンバーあたりビジター) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-user-plus text-amber-600"></i>
+              <span>5. 1人あたりビジター招待比率</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">目標 0.5名+/月</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="chapter-metric-visitors" class="text-3xl font-black text-amber-600 tabular-nums">0.58</span>
+            <span class="text-xs font-bold text-slate-400">名/人/月</span>
+            <span class="text-2xs font-bold text-emerald-600 ml-auto">🟢 目標達成</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-1 overflow-hidden">
+            <div class="bg-amber-500 h-2 rounded-full" style="width: 75%;"></div>
+          </div>
+          <div class="flex items-center justify-between text-3xs text-slate-400 font-semibold">
+            <span>基準: 0.50名</span>
+            <span>現在: 0.58名</span>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-500">
+          ビジター同伴イベントの企画により安定した流入を確保。
+        </div>
+      </div>
+
+      <!-- 6. Chapter Milestone & Goal Road (マイルストーン) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between text-slate-400 mb-2">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-trophy text-purple-600"></i>
+              <span>チャプター称号マイルストーン</span>
+            </span>
+            <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">ロードマップ</span>
+          </div>
+          <div class="space-y-2 mt-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-emerald-700 flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-500"></i> グリーンチャプター (35名+)</span>
+              <span class="text-2xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">達成済</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-circle-dot text-blue-500"></i> プラチナチャプター (45名+)</span>
+              <span class="text-2xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">あと7名</span>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span class="font-bold flex items-center gap-1.5"><i class="fa-regular fa-circle text-slate-300"></i> チタンチャプター (55名+)</span>
+              <span class="text-2xs font-semibold">あと17名</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-3 border-t border-slate-100 text-2xs text-slate-400">
+          全メンバーのPPW 2.0達成が次のプラチナ昇格を加速させます。
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- GA4-Style Date Range Modal -->
   <div id="modal-palms-date-range" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs hidden transition-all duration-200" role="dialog" aria-modal="true" aria-labelledby="palms-date-modal-title">
@@ -477,4 +1118,3 @@
     </div>
   </div>
 </div>
-

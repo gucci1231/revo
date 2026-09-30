@@ -1495,6 +1495,12 @@ function renderPalmsRankingView() {
 
   renderPalmsPodium(sortedRecords);
   renderPalmsTable(sortedRecords);
+
+  // Render all 5 Member Management Sitemap Subviews
+  if (typeof renderGrowthDashboardSummary === 'function') renderGrowthDashboardSummary();
+  if (typeof renderPpwRpwHub === 'function') renderPpwRpwHub();
+  if (typeof renderTrafficLightsGrid === 'function') renderTrafficLightsGrid();
+  if (typeof renderChapterTrafficView === 'function') renderChapterTrafficView();
 }
 
 /**
@@ -2461,5 +2467,652 @@ function renderPalmsEmptyState(customMessage = null) {
       </tr>
     `;
   }
+}
+
+/**
+ * =========================================================================
+ * 🗺️ Member Management Sitemap Subviews Controller
+ * 1. Growth Dashboard
+ * 2. PPW & RPW Improvement Accelerator (Goal 2.0000, 3 Tiers, Simulation)
+ * 3. Personal Traffic Lights (100pt Diagnosis)
+ * 4. PALMS Rankings (Legacy Table & Podium)
+ * 5. Chapter Traffic Lights (Overall Health Matrix)
+ * =========================================================================
+ */
+
+let currentPalmsSubTab = 'growth-dashboard';
+let currentPpwFilterTier = 'urgent';
+
+/**
+ * Switch Sub-Navigation Tab within PALMS & Member Management
+ */
+function switchPalmsSubTab(subTabName) {
+  currentPalmsSubTab = subTabName;
+
+  // 1. Update Sub-Nav Buttons
+  const subNavTabs = ['growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic'];
+  subNavTabs.forEach(t => {
+    const btn = document.querySelector(`.palms-subnav-tab[data-subtab="${t}"]`);
+    const view = document.getElementById(`palms-subview-${t}`);
+
+    if (btn) {
+      if (t === subTabName) {
+        btn.className = 'palms-subnav-tab active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-slate-900 text-white shadow-2xs';
+      } else {
+        btn.className = 'palms-subnav-tab px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300';
+      }
+    }
+
+    if (view) {
+      if (t === subTabName) {
+        view.classList.remove('hidden');
+      } else {
+        view.classList.add('hidden');
+      }
+    }
+  });
+
+  // 2. Trigger view-specific re-renders & Chart.js resizes
+  if (subTabName === 'growth-dashboard') {
+    renderGrowthDashboardSummary();
+    setTimeout(() => {
+      if (palmsTrendChart) palmsTrendChart.resize();
+      if (palmsRadarChart) palmsRadarChart.resize();
+    }, 50);
+  } else if (subTabName === 'ppw-rpw') {
+    renderPpwRpwHub();
+    setTimeout(() => {
+      if (palmsPpwChart) palmsPpwChart.resize();
+    }, 50);
+  } else if (subTabName === 'traffic-lights') {
+    renderTrafficLightsGrid();
+    setTimeout(() => {
+      if (palmsDonutChart) palmsDonutChart.resize();
+    }, 50);
+  } else if (subTabName === 'chapter-traffic') {
+    renderChapterTrafficView();
+  }
+}
+
+/**
+ * Render Subview 1: Growth Dashboard Summary Metrics
+ */
+function renderGrowthDashboardSummary() {
+  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
+
+  let totalTyfcb = 0;
+  let totalRefInternal = 0;
+  let totalRefExternal = 0;
+  let totalVisitors = 0;
+  let totalOneToOnes = 0;
+  let totalCeu = 0;
+
+  currentPalmsRecords.forEach(r => {
+    totalTyfcb += (Number(r.tyfcb_amount) || 0);
+    totalRefInternal += (Number(r.rgi_referrals_given_internal) || 0);
+    totalRefExternal += (Number(r.rgo_referrals_given_external) || 0);
+    totalVisitors += (Number(r.v_visitors) || 0);
+    totalOneToOnes += (Number(r.one_to_ones) || 0);
+    totalCeu += (Number(r.ceu) || 0);
+  });
+
+  const memberCount = currentPalmsRecords.length;
+  const totalRef = totalRefInternal + totalRefExternal;
+  const avgTyfcb = memberCount > 0 ? Math.round(totalTyfcb / memberCount) : 0;
+
+  const tyfcbTotalEl = document.getElementById('growth-tyfcb-total');
+  const tyfcbAvgEl = document.getElementById('growth-tyfcb-avg');
+  if (tyfcbTotalEl) tyfcbTotalEl.textContent = (totalTyfcb / 10000).toLocaleString('ja-JP', { maximumFractionDigits: 1 }) + ' 万円';
+  if (tyfcbAvgEl) tyfcbAvgEl.textContent = (avgTyfcb / 10000).toLocaleString('ja-JP', { maximumFractionDigits: 1 }) + ' 万円';
+
+  const refTotalEl = document.getElementById('growth-referral-total');
+  const refIntEl = document.getElementById('growth-referral-internal');
+  const refExtEl = document.getElementById('growth-referral-external');
+  if (refTotalEl) refTotalEl.textContent = totalRef.toLocaleString('ja-JP') + ' 件';
+  if (refIntEl) refIntEl.textContent = totalRefInternal + '件';
+  if (refExtEl) refExtEl.textContent = totalRefExternal + '件';
+
+  const visTotalEl = document.getElementById('growth-visitor-total');
+  const otoTotalEl = document.getElementById('growth-one-to-one-total');
+  const ceuTotalEl = document.getElementById('growth-ceu-total');
+  if (visTotalEl) visTotalEl.textContent = totalVisitors.toLocaleString('ja-JP') + ' 名';
+  if (otoTotalEl) otoTotalEl.textContent = totalOneToOnes.toLocaleString('ja-JP') + ' 回';
+  if (ceuTotalEl) ceuTotalEl.textContent = totalCeu.toLocaleString('ja-JP') + ' pt';
+
+  // Average RPW badge
+  const avgRpw = memberCount > 0 ? (totalRef / memberCount / Math.max(1, currentPalmsRecords[0].weeks_count || 4)).toFixed(2) : '0.00';
+  const rpwBadgeEl = document.getElementById('growth-rpw-badge');
+  if (rpwBadgeEl) rpwBadgeEl.textContent = avgRpw;
+}
+
+/**
+ * Render Subview 2: RPW & PPW Improvement Accelerator
+ */
+function renderPpwRpwHub() {
+  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
+
+  const totalMembers = currentPalmsRecords.length;
+
+  // Segment members into 3 tiers
+  const urgentMembers = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) < 1.0);
+  const stepupMembers = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) >= 1.0 && (Number(r.ppw) || 0) < 2.0);
+  const benchmarkMembers = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) >= 2.0);
+
+  // Update Counters & Badges
+  const urgentCountEl = document.getElementById('ppw-count-urgent');
+  const stepupCountEl = document.getElementById('ppw-count-stepup');
+  const benchmarkCountEl = document.getElementById('ppw-count-benchmark');
+  if (urgentCountEl) urgentCountEl.textContent = urgentMembers.length;
+  if (stepupCountEl) stepupCountEl.textContent = stepupMembers.length;
+  if (benchmarkCountEl) benchmarkCountEl.textContent = benchmarkMembers.length;
+
+  const qualifiedCountEl = document.getElementById('ppw-qualified-count');
+  const totalCountEl = document.getElementById('ppw-total-member-count');
+  const achRateEl = document.getElementById('ppw-achievement-rate');
+  if (qualifiedCountEl) qualifiedCountEl.textContent = benchmarkMembers.length;
+  if (totalCountEl) totalCountEl.textContent = totalMembers;
+  if (achRateEl) {
+    const rate = totalMembers > 0 ? Math.round((benchmarkMembers.length / totalMembers) * 100) : 0;
+    achRateEl.textContent = rate + '%';
+  }
+
+  // Populate Simulation Member Select
+  const simSelect = document.getElementById('ppw-sim-member-select');
+  if (simSelect && simSelect.options.length <= 1) {
+    simSelect.innerHTML = '<option value="">メンバーを選択してください...</option>';
+    // Sort members alphabetically
+    const alphaMembers = [...currentPalmsRecords].sort((a, b) => (a.member_name || '').localeCompare(b.member_name || '', 'ja'));
+    alphaMembers.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.member_name;
+      opt.textContent = `${m.member_name} (現在PPW: ${(Number(m.ppw) || 0).toFixed(2)})`;
+      simSelect.appendChild(opt);
+    });
+  }
+
+  // Render Top Performers Action Stats (Top 5 average metrics)
+  const topMembers = [...currentPalmsRecords].sort((a, b) => (Number(b.ppw) || 0) - (Number(a.ppw) || 0)).slice(0, 5);
+  if (topMembers.length > 0) {
+    const weeks = Math.max(1, topMembers[0].weeks_count || 4);
+    let topOtoSum = 0;
+    let topExtSum = 0;
+    let topTotalRefSum = 0;
+    let topVisSum = 0;
+
+    topMembers.forEach(m => {
+      topOtoSum += (Number(m.one_to_ones) || 0);
+      const ext = Number(m.rgo_referrals_given_external) || 0;
+      const total = ext + (Number(m.rgi_referrals_given_internal) || 0);
+      topExtSum += ext;
+      topTotalRefSum += total;
+      topVisSum += (Number(m.v_visitors) || 0);
+    });
+
+    const avgOtoPerWeek = (topOtoSum / topMembers.length / weeks).toFixed(1);
+    const extRatio = topTotalRefSum > 0 ? Math.round((topExtSum / topTotalRefSum) * 100) : 65;
+    const avgVisPerMonth = ((topVisSum / topMembers.length) * (4 / weeks)).toFixed(1);
+
+    const topAvgOtoEl = document.getElementById('top-avg-oto');
+    const topExtRatioEl = document.getElementById('top-ext-ratio');
+    const topAvgVEl = document.getElementById('top-avg-v');
+    if (topAvgOtoEl) topAvgOtoEl.textContent = `週 ${avgOtoPerWeek} 回`;
+    if (topExtRatioEl) topExtRatioEl.textContent = `${extRatio} %`;
+    if (topAvgVEl) topAvgVEl.textContent = `月 ${avgVisPerMonth} 名`;
+  }
+
+  // Render the member grid according to active filter
+  renderPpwFollowMemberGrid(currentPpwFilterTier);
+}
+
+/**
+ * Filter Follow-up Member Cards
+ */
+function filterPpwFollowList(tier) {
+  currentPpwFilterTier = tier;
+
+  // Update Filter Card Borders
+  ['urgent', 'stepup', 'benchmark'].forEach(t => {
+    const card = document.getElementById(`ppw-filter-${t}`);
+    if (!card) return;
+    if (t === tier) {
+      card.classList.add('border-2');
+      if (t === 'urgent') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-rose-500 bg-rose-50/60');
+      if (t === 'stepup') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-amber-500 bg-amber-50/60');
+      if (t === 'benchmark') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-emerald-500 bg-emerald-50/60');
+    } else {
+      if (t === 'urgent') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-rose-50/40 border border-rose-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+      if (t === 'stepup') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-amber-50/40 border border-amber-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+      if (t === 'benchmark') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-emerald-50/40 border border-emerald-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+    }
+  });
+
+  renderPpwFollowMemberGrid(tier);
+}
+
+/**
+ * Render Follow-up Member Cards Grid
+ */
+function renderPpwFollowMemberGrid(tier) {
+  const container = document.getElementById('ppw-follow-member-grid');
+  if (!container || !currentPalmsRecords) return;
+
+  let filtered = [];
+  if (tier === 'urgent') {
+    filtered = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) < 1.0);
+  } else if (tier === 'stepup') {
+    filtered = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) >= 1.0 && (Number(r.ppw) || 0) < 2.0);
+  } else {
+    filtered = currentPalmsRecords.filter(r => (Number(r.ppw) || 0) >= 2.0);
+  }
+
+  // Sort by PPW ascending for urgent/stepup, descending for benchmark
+  filtered.sort((a, b) => {
+    return tier === 'benchmark' ? (Number(b.ppw) || 0) - (Number(a.ppw) || 0) : (Number(a.ppw) || 0) - (Number(b.ppw) || 0);
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400">
+        <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2"></i>
+        <p class="text-xs font-bold text-slate-600">このゾーンに該当するメンバーはいません</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(m => {
+    const ppwVal = (Number(m.ppw) || 0).toFixed(2);
+    const rpwVal = (Number(m.rpw) || 0).toFixed(2);
+    const weeks = Math.max(1, m.weeks_count || 4);
+    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+
+    // Gap to reach 2.0000
+    // PPW points formula: (visitors * 1.0) + (referrals * 1.0) + (one_to_ones * 0.5) + (ceu * 0.25)
+    // Points needed = (2.0 - current_ppw) * weeks
+    const pointsGap = Math.max(0, (2.0 - Number(m.ppw)) * weeks);
+    const refGap = Math.ceil(pointsGap); // 1 point per referral
+
+    let badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+    let dotColor = 'bg-rose-500';
+    let gapAdvice = '';
+
+    if (tier === 'urgent') {
+      badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+      dotColor = 'bg-rose-500';
+      gapAdvice = `あと <b>${refGap}件</b> の紹介（またはビジター招待）でPPW 2.0へ`;
+    } else if (tier === 'stepup') {
+      badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+      dotColor = 'bg-amber-500';
+      gapAdvice = `あと一歩！ <b>${refGap}件</b> の紹介で2.0ライン突破`;
+    } else {
+      badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      dotColor = 'bg-emerald-500';
+      gapAdvice = `模範水準をクリア中（余剰 +${Math.round((Number(m.ppw) - 2.0) * weeks)} pt）`;
+    }
+
+    html += `
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+        <div>
+          <!-- Header: Name & PPW Badge -->
+          <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                ${m.member_name ? m.member_name.charAt(0) : '名'}
+              </div>
+              <div class="min-w-0">
+                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-bold text-slate-800 hover:text-blue-600 truncate block transition-colors">
+                  ${m.member_name}
+                </a>
+                <span class="text-3xs text-slate-400 font-semibold truncate block">${m.member_category || 'メンバー'}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center gap-1 text-3xs font-extrabold px-2 py-0.5 rounded-full border ${badgeClass}">
+                <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+                <span>PPW ${ppwVal}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Metrics (4 items) -->
+          <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50/70 rounded-xl p-2 mb-2.5 text-3xs">
+            <div>
+              <div class="text-slate-400 font-bold">RPW</div>
+              <div class="font-extrabold text-indigo-600 tabular-nums">${rpwVal}</div>
+            </div>
+            <div>
+              <div class="text-slate-400 font-bold">リファーラル</div>
+              <div class="font-extrabold text-slate-700 tabular-nums">${(Number(m.rgi_referrals_given_internal) || 0) + (Number(m.rgo_referrals_given_external) || 0)}</div>
+            </div>
+            <div>
+              <div class="text-slate-400 font-bold">ビジター</div>
+              <div class="font-extrabold text-emerald-600 tabular-nums">${m.v_visitors || 0}</div>
+            </div>
+            <div>
+              <div class="text-slate-400 font-bold">1to1</div>
+              <div class="font-extrabold text-amber-600 tabular-nums">${m.one_to_ones || 0}</div>
+            </div>
+          </div>
+
+          <!-- Advice Banner -->
+          <div class="text-3xs text-slate-600 bg-slate-50 border border-slate-100/80 rounded-lg px-2.5 py-1.5 mb-3">
+            <i class="fa-solid fa-compass text-blue-500 mr-1"></i>
+            <span>${gapAdvice}</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="selectMemberForPpwSim('${memberNameSafe}')" class="flex-1 py-1.5 text-3xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/60 hover:bg-blue-100/60 rounded-lg transition-all text-center cursor-pointer">
+            <i class="fa-solid fa-bullseye mr-1"></i>目標シミュレーション
+          </button>
+          <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="px-2.5 py-1.5 text-3xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer" title="実績詳細">
+            <i class="fa-solid fa-chart-pie"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Select a member directly into the simulator
+ */
+function selectMemberForPpwSim(name) {
+  const sel = document.getElementById('ppw-sim-member-select');
+  if (sel) {
+    sel.value = name;
+    runPpwGoalSimulation();
+    // Smooth scroll into simulator
+    sel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+/**
+ * Run PPW Goal Simulation for a selected member
+ */
+function runPpwGoalSimulation() {
+  const sel = document.getElementById('ppw-sim-member-select');
+  const container = document.getElementById('ppw-sim-result-container');
+  if (!sel || !container) return;
+
+  const memberName = sel.value;
+  if (!memberName) {
+    container.innerHTML = `
+      <div class="text-center text-slate-400 py-4 text-xs">
+        メンバーを選択するとシミュレーションが表示されます
+      </div>
+    `;
+    return;
+  }
+
+  const m = currentPalmsRecords.find(r => r.member_name === memberName);
+  if (!m) return;
+
+  const currentPpw = Number(m.ppw) || 0;
+  const currentRpw = Number(m.rpw) || 0;
+  const weeks = Math.max(1, m.weeks_count || 4);
+  const targetPpw = 2.0000;
+
+  const totalPointsNeeded = targetPpw * weeks;
+  const currentPoints = currentPpw * weeks;
+  const gapPoints = Math.max(0, totalPointsNeeded - currentPoints);
+
+  // Recommended Action Mix:
+  // 1 Referral = 1.0 pt
+  // 1 Visitor = 1.0 pt
+  // 1 One-to-One = 0.5 pt
+  const reqReferrals = Math.ceil(gapPoints * 0.5); // 50% from referrals
+  const reqVisitors = Math.ceil(gapPoints * 0.25); // 25% from visitors
+  const reqOto = Math.ceil((gapPoints - reqReferrals - reqVisitors) / 0.5); // balance from 1to1
+
+  const isAchieved = currentPpw >= targetPpw;
+
+  let planHtml = '';
+  if (isAchieved) {
+    planHtml = `
+      <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+        <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-1"></i>
+        <div class="text-sm font-black text-emerald-800">目標 PPW 2.0000 を達成中！</div>
+        <p class="text-xs text-emerald-700 mt-1">
+          現在値 <b>${currentPpw.toFixed(2)}</b> pt/週。模範的な行動をぜひチャプター内で共有してください。
+        </p>
+      </div>
+    `;
+  } else {
+    planHtml = `
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-200/60">
+          <div>
+            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">現在値 ➔ 目標値</div>
+            <div class="text-base font-black text-slate-800">
+              <span class="text-rose-600">${currentPpw.toFixed(2)}</span>
+              <span class="text-slate-400 text-xs mx-1">➔</span>
+              <span class="text-blue-600">2.0000</span> pt/週
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">必要追加ポイント</div>
+            <div class="text-base font-black text-blue-600 tabular-nums">+${gapPoints.toFixed(1)} pt</div>
+          </div>
+        </div>
+
+        <div class="text-2xs font-bold text-slate-700 mb-1">🎯 PPW 2.0 達成のための推奨アクション構成（期間内）:</div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+            <div class="text-3xs font-bold text-slate-400">リファーラル提供</div>
+            <div class="text-base font-black text-indigo-600 tabular-nums">+${Math.max(1, reqReferrals)} 件</div>
+            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(1, reqReferrals) / weeks).toFixed(1)} 件ペース</div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+            <div class="text-3xs font-bold text-slate-400">ビジター招待</div>
+            <div class="text-base font-black text-emerald-600 tabular-nums">+${Math.max(1, reqVisitors)} 名</div>
+            <div class="text-3xs text-slate-400 mt-0.5">定例会同行</div>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-2.5">
+            <div class="text-3xs font-bold text-slate-400">1to1 実施</div>
+            <div class="text-base font-black text-amber-600 tabular-nums">+${Math.max(2, reqOto)} 回</div>
+            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(2, reqOto) / weeks).toFixed(1)} 回ペース</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = planHtml;
+}
+
+/**
+ * Copy PPW Goal Plan to clipboard for 1to1 or mentoring
+ */
+function copyPpwGoalPlanText() {
+  const sel = document.getElementById('ppw-sim-member-select');
+  if (!sel || !sel.value) {
+    if (typeof showToast === 'function') showToast('シミュレーション対象のメンバーを選択してください', 'warning');
+    return;
+  }
+
+  const memberName = sel.value;
+  const m = currentPalmsRecords.find(r => r.member_name === memberName);
+  if (!m) return;
+
+  const currentPpw = (Number(m.ppw) || 0).toFixed(2);
+  const weeks = Math.max(1, m.weeks_count || 4);
+  const gapPoints = Math.max(0, (2.0 - Number(m.ppw)) * weeks);
+  const reqRef = Math.max(1, Math.ceil(gapPoints * 0.5));
+  const reqVis = Math.max(1, Math.ceil(gapPoints * 0.25));
+  const reqOto = Math.max(2, Math.ceil((gapPoints - reqRef - reqVis) / 0.5));
+
+  const text = `【PPW 2.0000 達成伴走プラン】
+対象メンバー: ${memberName} 様
+現在PPW: ${currentPpw} pt/週 (目標: 2.0000)
+
+【今期の推奨アクション】
+・リファーラル提供: +${reqRef} 件
+・ビジター招待: +${reqVis} 名
+・1to1実施: +${reqOto} 回 (週 ${(reqOto / weeks).toFixed(1)} 回ペース)
+
+※数字は評価ではなく、全員で豊かになるための改善目標です。一緒にクリアしていきましょう！`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    if (typeof showToast === 'function') showToast('目標プランをクリップボードにコピーしました！', 'success');
+  }).catch(() => {
+    alert(text);
+  });
+}
+
+/**
+ * Render Subview 3: Personal Traffic Lights (100pt Diagnosis Grid)
+ */
+function renderTrafficLightsGrid() {
+  const container = document.getElementById('traffic-light-member-cards');
+  if (!container || !currentPalmsRecords) return;
+
+  // Sort by total score descending
+  const sorted = [...currentPalmsRecords].sort((a, b) => (Number(b.total_score) || 0) - (Number(a.total_score) || 0));
+
+  let html = '';
+  sorted.forEach(m => {
+    const tl = m.trafficLight;
+    const scores = tl.scores;
+    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+
+    // Gap to Green (70 pts)
+    const currentScore = Number(m.total_score) || 0;
+    const gapToGreen = Math.max(0, 70 - currentScore);
+
+    let prescriptionText = '';
+    if (currentScore >= 70) {
+      prescriptionText = '🟢 健全・模範基準クリア中';
+    } else {
+      if (scores.visitor < 15) prescriptionText = `あとビジター1名招待で <b>+5〜10点</b> 獲得可能`;
+      else if (scores.referral < 15) prescriptionText = `週リファーラルを1件増やすと <b>+5〜10点</b> 改善`;
+      else if (scores.one_to_ones < 15) prescriptionText = `週1回の1to1継続で <b>+5点</b> UP`;
+      else if (scores.ceu < 10) prescriptionText = `BNI Business BuilderのCEU受講で <b>+5点</b> 即効UP`;
+      else prescriptionText = `あと <b>${gapToGreen}点</b> でグリーンゾーン到達！`;
+    }
+
+    html += `
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+        <div>
+          <!-- Top Row: Name, Tier Badge, Score -->
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                ${m.member_name ? m.member_name.charAt(0) : '名'}
+              </div>
+              <div class="min-w-0">
+                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-bold text-slate-800 hover:text-blue-600 truncate block transition-colors">
+                  ${m.member_name}
+                </a>
+                <span class="text-3xs text-slate-400 font-semibold truncate block">${m.member_category || 'メンバー'}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="inline-flex items-center gap-1 text-3xs font-extrabold px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
+                <span>${tl.tierDot}</span>
+                <span>${tl.tierLabel}</span>
+              </span>
+              <span class="text-base font-black text-slate-800 tabular-nums">${currentScore}<span class="text-3xs font-bold text-slate-400">点</span></span>
+            </div>
+          </div>
+
+          <!-- 7-Metric Mini Progress Bars -->
+          <div class="space-y-1.5 mb-3 text-3xs">
+            <!-- Referral (25) -->
+            <div>
+              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
+                <span>リファーラル</span>
+                <span class="tabular-nums font-black text-indigo-600">${scores.referral}/25</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-indigo-600 h-1.5 rounded-full" style="width: ${(scores.referral / 25) * 100}%;"></div>
+              </div>
+            </div>
+
+            <!-- Visitor (25) -->
+            <div>
+              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
+                <span>ビジター招待</span>
+                <span class="tabular-nums font-black text-emerald-600">${scores.visitor}/25</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-emerald-600 h-1.5 rounded-full" style="width: ${(scores.visitor / 25) * 100}%;"></div>
+              </div>
+            </div>
+
+            <!-- 1to1 (20) -->
+            <div>
+              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
+                <span>1to1 実施</span>
+                <span class="tabular-nums font-black text-amber-600">${scores.one_to_ones}/20</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-600 h-1.5 rounded-full" style="width: ${(scores.one_to_ones / 20) * 100}%;"></div>
+              </div>
+            </div>
+
+            <!-- CEU & Attendance & TYFCB (Compact Row) -->
+            <div class="grid grid-cols-3 gap-1 pt-1 text-slate-400 font-semibold text-center border-t border-slate-100/60">
+              <div>CEU: <b class="text-purple-600">${scores.ceu}</b>/10</div>
+              <div>出席: <b class="text-blue-600">${scores.attendance}</b>/10</div>
+              <div>TYFCB: <b class="text-slate-700">${scores.tyfcb}</b>/5</div>
+            </div>
+          </div>
+
+          <!-- Prescription Hint -->
+          <div class="text-3xs text-slate-600 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 mb-2">
+            <i class="fa-solid fa-stethoscope text-emerald-600 mr-1"></i>
+            <span>${prescriptionText}</span>
+          </div>
+        </div>
+
+        <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="w-full py-1.5 text-3xs font-bold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all text-center cursor-pointer border border-slate-100">
+          詳細内訳・生データを見る
+        </button>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Render Subview 5: Chapter Traffic Lights Matrix
+ */
+function renderChapterTrafficView() {
+  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
+
+  const memberCount = currentPalmsRecords.length;
+  const weeks = Math.max(1, currentPalmsRecords[0].weeks_count || 4);
+
+  let totalPresent = 0;
+  let totalPalms = 0;
+  let totalRef = 0;
+  let totalVis = 0;
+
+  currentPalmsRecords.forEach(r => {
+    totalPresent += (Number(r.p_present) || 0) + (Number(r.s_substitute) || 0);
+    totalPalms += (Number(r.p_present) || 0) + (Number(r.a_absent) || 0) + (Number(r.l_late) || 0) + (Number(r.m_medical) || 0) + (Number(r.s_substitute) || 0);
+    totalRef += (Number(r.rgi_referrals_given_internal) || 0) + (Number(r.rgo_referrals_given_external) || 0);
+    totalVis += (Number(r.v_visitors) || 0);
+  });
+
+  const attendanceRate = totalPalms > 0 ? ((totalPresent / totalPalms) * 100).toFixed(1) : '95.0';
+  const rpw = memberCount > 0 ? (totalRef / memberCount / weeks).toFixed(2) : '1.25';
+  const visitorsPerMember = memberCount > 0 ? ((totalVis / memberCount) * (4 / weeks)).toFixed(2) : '0.50';
+
+  const sizeEl = document.getElementById('chapter-metric-size');
+  const attEl = document.getElementById('chapter-metric-attendance');
+  const rpwEl = document.getElementById('chapter-metric-rpw');
+  const visEl = document.getElementById('chapter-metric-visitors');
+
+  if (sizeEl) sizeEl.textContent = memberCount;
+  if (attEl) attEl.textContent = attendanceRate;
+  if (rpwEl) rpwEl.textContent = rpw;
+  if (visEl) visEl.textContent = visitorsPerMember;
 }
 </script>
