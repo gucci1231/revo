@@ -2628,27 +2628,27 @@ function switchPalmsSubTab(subTabName) {
     }
   });
 
-  // 2. Dynamic Title & Subtitle updates
+  // 2. Dynamic Title & Subtitle updates (Apple Radical Minimalism)
   const metaInfo = {
     'growth-dashboard': {
-      title: '成長ダッシュボード',
-      subtitle: 'チャプター全体の成長トレンド・期別推移・主要KPIのリアルタイム集計'
+      title: 'ダッシュボード',
+      subtitle: ''
     },
     'ppw-rpw': {
-      title: 'RPW & PPW改善ハブ',
-      subtitle: '数字を評価ではなく改善に使い、全員でPPW 2.0000のラインへ伴走支援'
+      title: 'RPWとPPW',
+      subtitle: ''
     },
     'traffic-lights': {
-      title: '個人トラフィックライト',
-      subtitle: 'BNI公式新基準（100点満点）による健全度診断・7大指標の内訳と処方箋'
+      title: 'トラフィックライト',
+      subtitle: ''
     },
     'palms-ranking': {
-      title: 'PALMSランキング',
-      subtitle: '定例会スライド発表・表彰に向けた詳細実績集計と週次提出データ'
+      title: 'PARMSランキング',
+      subtitle: ''
     },
     'chapter-traffic': {
       title: 'チャプタートラフィックライト',
-      subtitle: 'チャプター規模・更新率・出席率・RPW・ビジター比率の総合健全度'
+      subtitle: ''
     }
   };
 
@@ -2820,19 +2820,16 @@ function renderPpwRpwHub() {
 function filterPpwFollowList(tier) {
   currentPpwFilterTier = tier;
 
-  // Update Filter Card Borders
+  // Update Filter Card Borders (Apple Minimal Active States)
   ['urgent', 'stepup', 'benchmark'].forEach(t => {
     const card = document.getElementById(`ppw-filter-${t}`);
     if (!card) return;
     if (t === tier) {
-      card.classList.add('border-2');
-      if (t === 'urgent') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-rose-500 bg-rose-50/60');
-      if (t === 'stepup') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-amber-500 bg-amber-50/60');
-      if (t === 'benchmark') card.className = card.className.replace(/border-[a-z0-9-]+/, 'border-emerald-500 bg-emerald-50/60');
+      if (t === 'urgent') card.className = 'ppw-tier-card cursor-pointer bg-white border-2 border-rose-500 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+      if (t === 'stepup') card.className = 'ppw-tier-card cursor-pointer bg-white border-2 border-amber-500 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+      if (t === 'benchmark') card.className = 'ppw-tier-card cursor-pointer bg-white border-2 border-emerald-500 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
     } else {
-      if (t === 'urgent') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-rose-50/40 border border-rose-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
-      if (t === 'stepup') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-amber-50/40 border border-amber-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
-      if (t === 'benchmark') card.className = 'ppw-tier-card cursor-pointer bg-white hover:bg-emerald-50/40 border border-emerald-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between';
+      card.className = 'ppw-tier-card cursor-pointer bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between opacity-70 hover:opacity-100';
     }
   });
 
@@ -2840,7 +2837,7 @@ function filterPpwFollowList(tier) {
 }
 
 /**
- * Render Follow-up Member Cards Grid
+ * Render Follow-up Member Cards Grid (Apple Minimalist Pure White)
  */
 function renderPpwFollowMemberGrid(tier) {
   const container = document.getElementById('ppw-follow-member-grid');
@@ -2863,8 +2860,7 @@ function renderPpwFollowMemberGrid(tier) {
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="col-span-full bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-400">
-        <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2"></i>
-        <p class="text-xs font-bold text-slate-600">このゾーンに該当するメンバーはいません</p>
+        <p class="text-xs font-bold text-slate-500">対象メンバーはいません</p>
       </div>
     `;
     return;
@@ -2878,86 +2874,80 @@ function renderPpwFollowMemberGrid(tier) {
     const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
 
     // Gap to reach 2.0000
-    // PPW points formula: (visitors * 1.0) + (referrals * 1.0) + (one_to_ones * 0.5) + (ceu * 0.25)
-    // Points needed = (2.0 - current_ppw) * weeks
     const pointsGap = Math.max(0, (2.0 - Number(m.ppw)) * weeks);
-    const refGap = Math.ceil(pointsGap); // 1 point per referral
+    const refGap = Math.ceil(pointsGap);
 
-    let badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
     let dotColor = 'bg-rose-500';
     let gapAdvice = '';
 
     if (tier === 'urgent') {
-      badgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
       dotColor = 'bg-rose-500';
-      gapAdvice = `あと <b>${refGap}件</b> の紹介（またはビジター招待）でPPW 2.0へ`;
+      gapAdvice = `あと ${refGap}件 の紹介で 2.0 へ`;
     } else if (tier === 'stepup') {
-      badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
       dotColor = 'bg-amber-500';
-      gapAdvice = `あと一歩！ <b>${refGap}件</b> の紹介で2.0ライン突破`;
+      gapAdvice = `あと ${refGap}件 の紹介で達成`;
     } else {
-      badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
       dotColor = 'bg-emerald-500';
-      gapAdvice = `模範水準をクリア中（余剰 +${Math.round((Number(m.ppw) - 2.0) * weeks)} pt）`;
+      gapAdvice = `目標達成中 (+${Math.round((Number(m.ppw) - 2.0) * weeks)} pt)`;
     }
 
     html += `
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between">
         <div>
-          <!-- Header: Name & PPW Badge -->
-          <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+          <!-- Header: Name & PPW -->
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
                 ${m.member_name ? m.member_name.charAt(0) : '名'}
               </div>
               <div class="min-w-0">
-                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-bold text-slate-800 hover:text-blue-600 truncate block transition-colors">
+                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-black text-slate-900 hover:text-blue-600 truncate block transition-colors">
                   ${m.member_name}
                 </a>
                 <span class="text-3xs text-slate-400 font-semibold truncate block">${m.member_category || 'メンバー'}</span>
               </div>
             </div>
             <div class="text-right">
-              <span class="inline-flex items-center gap-1 text-3xs font-extrabold px-2 py-0.5 rounded-full border ${badgeClass}">
-                <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+              <span class="inline-flex items-center gap-1.5 text-xs font-black text-slate-900 tabular-nums">
+                <span class="w-2 h-2 rounded-full ${dotColor}"></span>
                 <span>PPW ${ppwVal}</span>
               </span>
             </div>
           </div>
 
           <!-- Quick Metrics (4 items) -->
-          <div class="grid grid-cols-4 gap-1.5 text-center bg-slate-50/70 rounded-xl p-2 mb-2.5 text-3xs">
+          <div class="grid grid-cols-4 gap-1 text-center bg-slate-50 rounded-xl p-2 mb-3 text-3xs">
             <div>
               <div class="text-slate-400 font-bold">RPW</div>
-              <div class="font-extrabold text-indigo-600 tabular-nums">${rpwVal}</div>
+              <div class="font-black text-indigo-600 tabular-nums">${rpwVal}</div>
             </div>
             <div>
               <div class="text-slate-400 font-bold">リファーラル</div>
-              <div class="font-extrabold text-slate-700 tabular-nums">${(Number(m.rgi_referrals_given_internal) || 0) + (Number(m.rgo_referrals_given_external) || 0)}</div>
+              <div class="font-black text-slate-800 tabular-nums">${(Number(m.rgi_referrals_given_internal) || 0) + (Number(m.rgo_referrals_given_external) || 0)}</div>
             </div>
             <div>
               <div class="text-slate-400 font-bold">ビジター</div>
-              <div class="font-extrabold text-emerald-600 tabular-nums">${m.v_visitors || 0}</div>
+              <div class="font-black text-emerald-600 tabular-nums">${m.v_visitors || 0}</div>
             </div>
             <div>
               <div class="text-slate-400 font-bold">1to1</div>
-              <div class="font-extrabold text-amber-600 tabular-nums">${m.one_to_ones || 0}</div>
+              <div class="font-black text-amber-600 tabular-nums">${m.one_to_ones || 0}</div>
             </div>
           </div>
 
           <!-- Advice Banner -->
-          <div class="text-3xs text-slate-600 bg-slate-50 border border-slate-100/80 rounded-lg px-2.5 py-1.5 mb-3">
-            <i class="fa-solid fa-compass text-blue-500 mr-1"></i>
+          <div class="text-3xs font-bold text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-3 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
             <span>${gapAdvice}</span>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-          <button type="button" onclick="selectMemberForPpwSim('${memberNameSafe}')" class="flex-1 py-1.5 text-3xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/60 hover:bg-blue-100/60 rounded-lg transition-all text-center cursor-pointer">
-            <i class="fa-solid fa-bullseye mr-1"></i>目標シミュレーション
+          <button type="button" onclick="selectMemberForPpwSim('${memberNameSafe}')" class="flex-1 py-1.5 text-3xs font-bold text-slate-700 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all text-center cursor-pointer">
+            目標シミュレーション
           </button>
-          <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="px-2.5 py-1.5 text-3xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all cursor-pointer" title="実績詳細">
+          <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="px-2.5 py-1.5 text-3xs font-bold text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all cursor-pointer" title="実績詳細">
             <i class="fa-solid fa-chart-pie"></i>
           </button>
         </div>
@@ -3037,35 +3027,34 @@ function runPpwGoalSimulation() {
       <div class="space-y-3">
         <div class="flex items-center justify-between pb-2 border-b border-slate-200/60">
           <div>
-            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">現在値 ➔ 目標値</div>
-            <div class="text-base font-black text-slate-800">
+            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">現在 ➔ 目標</div>
+            <div class="text-base font-black text-slate-900 tabular-nums">
               <span class="text-rose-600">${currentPpw.toFixed(2)}</span>
-              <span class="text-slate-400 text-xs mx-1">➔</span>
-              <span class="text-blue-600">2.0000</span> pt/週
+              <span class="text-slate-300 text-xs mx-1">/</span>
+              <span class="text-blue-600">2.0000</span>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">必要追加ポイント</div>
+            <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">必要ポイント</div>
             <div class="text-base font-black text-blue-600 tabular-nums">+${gapPoints.toFixed(1)} pt</div>
           </div>
         </div>
 
-        <div class="text-2xs font-bold text-slate-700 mb-1">🎯 PPW 2.0 達成のための推奨アクション構成（期間内）:</div>
         <div class="grid grid-cols-3 gap-2 text-center text-xs">
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
-            <div class="text-3xs font-bold text-slate-400">リファーラル提供</div>
+            <div class="text-3xs font-bold text-slate-400">リファーラル</div>
             <div class="text-base font-black text-indigo-600 tabular-nums">+${Math.max(1, reqReferrals)} 件</div>
-            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(1, reqReferrals) / weeks).toFixed(1)} 件ペース</div>
+            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(1, reqReferrals) / weeks).toFixed(1)} 件</div>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
-            <div class="text-3xs font-bold text-slate-400">ビジター招待</div>
+            <div class="text-3xs font-bold text-slate-400">ビジター</div>
             <div class="text-base font-black text-emerald-600 tabular-nums">+${Math.max(1, reqVisitors)} 名</div>
-            <div class="text-3xs text-slate-400 mt-0.5">定例会同行</div>
+            <div class="text-3xs text-slate-400 mt-0.5">同行</div>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-2.5">
-            <div class="text-3xs font-bold text-slate-400">1to1 実施</div>
+            <div class="text-3xs font-bold text-slate-400">1to1</div>
             <div class="text-base font-black text-amber-600 tabular-nums">+${Math.max(2, reqOto)} 回</div>
-            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(2, reqOto) / weeks).toFixed(1)} 回ペース</div>
+            <div class="text-3xs text-slate-400 mt-0.5">週 ${(Math.max(2, reqOto) / weeks).toFixed(1)} 回</div>
           </div>
         </div>
       </div>
@@ -3146,27 +3135,24 @@ function renderTrafficLightsGrid() {
     }
 
     html += `
-      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between">
         <div>
-          <!-- Top Row: Name, Tier Badge, Score -->
+          <!-- Top Row: Name, Tier, Score -->
           <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
                 ${m.member_name ? m.member_name.charAt(0) : '名'}
               </div>
               <div class="min-w-0">
-                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-bold text-slate-800 hover:text-blue-600 truncate block transition-colors">
+                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-black text-slate-900 hover:text-blue-600 truncate block transition-colors">
                   ${m.member_name}
                 </a>
                 <span class="text-3xs text-slate-400 font-semibold truncate block">${m.member_category || 'メンバー'}</span>
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <span class="inline-flex items-center gap-1 text-3xs font-extrabold px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
-                <span>${tl.tierDot}</span>
-                <span>${tl.tierLabel}</span>
-              </span>
-              <span class="text-base font-black text-slate-800 tabular-nums">${currentScore}<span class="text-3xs font-bold text-slate-400">点</span></span>
+              <span class="text-base font-black text-slate-900 tabular-nums">${currentScore}<span class="text-3xs font-bold text-slate-400"> pt</span></span>
+              <span>${tl.tierDot}</span>
             </div>
           </div>
 
@@ -3186,7 +3172,7 @@ function renderTrafficLightsGrid() {
             <!-- Visitor (25) -->
             <div>
               <div class="flex justify-between text-slate-500 font-bold mb-0.5">
-                <span>ビジター招待</span>
+                <span>ビジター</span>
                 <span class="tabular-nums font-black text-emerald-600">${scores.visitor}/25</span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
@@ -3197,7 +3183,7 @@ function renderTrafficLightsGrid() {
             <!-- 1to1 (20) -->
             <div>
               <div class="flex justify-between text-slate-500 font-bold mb-0.5">
-                <span>1to1 実施</span>
+                <span>1to1</span>
                 <span class="tabular-nums font-black text-amber-600">${scores.one_to_ones}/20</span>
               </div>
               <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
@@ -3206,22 +3192,21 @@ function renderTrafficLightsGrid() {
             </div>
 
             <!-- CEU & Attendance & TYFCB (Compact Row) -->
-            <div class="grid grid-cols-3 gap-1 pt-1 text-slate-400 font-semibold text-center border-t border-slate-100/60">
-              <div>CEU: <b class="text-purple-600">${scores.ceu}</b>/10</div>
-              <div>出席: <b class="text-blue-600">${scores.attendance}</b>/10</div>
-              <div>TYFCB: <b class="text-slate-700">${scores.tyfcb}</b>/5</div>
+            <div class="grid grid-cols-3 gap-1 pt-1.5 text-slate-400 font-semibold text-center border-t border-slate-100">
+              <div>CEU <b class="text-purple-600 tabular-nums">${scores.ceu}</b>/10</div>
+              <div>出席 <b class="text-blue-600 tabular-nums">${scores.attendance}</b>/10</div>
+              <div>TYFCB <b class="text-slate-700 tabular-nums">${scores.tyfcb}</b>/5</div>
             </div>
           </div>
 
           <!-- Prescription Hint -->
-          <div class="text-3xs text-slate-600 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 mb-2">
-            <i class="fa-solid fa-stethoscope text-emerald-600 mr-1"></i>
+          <div class="text-3xs font-semibold text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
             <span>${prescriptionText}</span>
           </div>
         </div>
 
-        <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="w-full py-1.5 text-3xs font-bold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all text-center cursor-pointer border border-slate-100">
-          詳細内訳・生データを見る
+        <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="w-full py-1.5 text-3xs font-bold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all text-center cursor-pointer">
+          詳細内訳を見る
         </button>
       </div>
     `;
