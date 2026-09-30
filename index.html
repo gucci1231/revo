@@ -27149,6 +27149,12 @@ function applyPalmsDateModal() {
     }
   }
 
+  // Save active selected period to state and localStorage
+  currentPalmsPeriod = { startDate: sFin, endDate: eFin };
+  try {
+    localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+  } catch (err) {}
+
   // Update display label
   updatePalmsPeriodDisplayLabel(sFin, eFin);
 
@@ -27173,41 +27179,70 @@ function fetchPalmsPeriods() {
         currentPalmsPeriodsList = res.periods;
         selectEl.innerHTML = '';
         
-        // Priority order for default period: 2026-04-01_2026-09-30 (Latest 6M)
-        let defaultVal = '';
-        const pref6M = res.periods.find(p => p.start_date === '2026-04-01' && p.end_date === '2026-09-30');
-        const pref4W = res.periods.find(p => p.start_date === '2026-08-27' && p.end_date === '2026-09-24');
-        const pref2Y = res.periods.find(p => p.start_date === '2024-10-01' && p.end_date === '2026-09-30');
-        
-        if (pref6M) defaultVal = `${pref6M.start_date}_${pref6M.end_date}`;
-        else if (pref4W) defaultVal = `${pref4W.start_date}_${pref4W.end_date}`;
-        else if (pref2Y) defaultVal = `${pref2Y.start_date}_${pref2Y.end_date}`;
-        else defaultVal = `${res.periods[0].start_date}_${res.periods[0].end_date}`;
+        // Priority order for target active period:
+        // 1. Previously chosen period in current session or localStorage (選択した月 / 期間)
+        // 2. Default: Last Month (先月: 2026-09-01 〜 2026-09-30)
+        let targetStart = currentPalmsPeriod.startDate;
+        let targetEnd = currentPalmsPeriod.endDate;
+
+        if (!targetStart || !targetEnd) {
+          const prefLastMonth = res.periods.find(p => p.start_date === '2026-09-01' && p.end_date === '2026-09-30');
+          if (prefLastMonth) {
+            targetStart = prefLastMonth.start_date;
+            targetEnd = prefLastMonth.end_date;
+          } else {
+            const range1M = calcPalmsPresetRange('1month');
+            targetStart = range1M.start;
+            targetEnd = range1M.end;
+          }
+        }
+
+        const targetVal = `${targetStart}_${targetEnd}`;
+        let matched = false;
 
         res.periods.forEach(p => {
           const opt = document.createElement('option');
           opt.value = `${p.start_date}_${p.end_date}`;
           opt.textContent = formatPalmsPeriodLabel(p);
-          if (opt.value === defaultVal && !currentPalmsPeriod.startDate) {
+          if (opt.value === targetVal) {
             opt.selected = true;
+            matched = true;
           }
           selectEl.appendChild(opt);
         });
 
-        // Trigger load for the selected period
-        if (selectEl.value) {
-          const [s, e] = selectEl.value.split('_');
-          fetchPalmsRankingData(s, e);
+        // If target period is not in res.periods list, add it as a designated option to prevent select falling back to index 0 (weekly)
+        if (!matched) {
+          const opt = document.createElement('option');
+          opt.value = targetVal;
+          opt.textContent = formatPalmsPeriodLabel({ start_date: targetStart, end_date: targetEnd, member_count: '-' });
+          opt.selected = true;
+          selectEl.insertBefore(opt, selectEl.firstChild);
         }
+
+        currentPalmsPeriod = { startDate: targetStart, endDate: targetEnd };
+        try {
+          localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+        } catch (e) {}
+
+        updatePeriodPresetPillActive(targetStart, targetEnd);
+        updatePalmsPeriodDisplayLabel(targetStart, targetEnd);
+
+        // Fetch ranking data for this target period
+        fetchPalmsRankingData(targetStart, targetEnd);
       } else {
         selectEl.innerHTML = '<option value="">登録期間なし</option>';
-        fetchPalmsRankingData();
+        const s = currentPalmsPeriod.startDate || '2026-09-01';
+        const e = currentPalmsPeriod.endDate || '2026-09-30';
+        fetchPalmsRankingData(s, e);
       }
     })
     .catch(err => {
       console.error('Failed to fetch PALMS periods:', err);
       selectEl.innerHTML = '<option value="">期間取得失敗</option>';
-      fetchPalmsRankingData();
+      const s = currentPalmsPeriod.startDate || '2026-09-01';
+      const e = currentPalmsPeriod.endDate || '2026-09-30';
+      fetchPalmsRankingData(s, e);
     });
 }
 
@@ -27217,7 +27252,12 @@ function fetchPalmsPeriods() {
 function changePalmsPeriod(val) {
   if (!val) return;
   const [s, e] = val.split('_');
+  currentPalmsPeriod = { startDate: s, endDate: e };
+  try {
+    localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+  } catch (err) {}
   updatePeriodPresetPillActive(s, e);
+  updatePalmsPeriodDisplayLabel(s, e);
   fetchPalmsRankingData(s, e);
 }
 
@@ -27246,7 +27286,12 @@ function selectPalmsPreset(presetKey) {
   }
 
   if (s && e) {
+    currentPalmsPeriod = { startDate: s, endDate: e };
+    try {
+      localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+    } catch (err) {}
     updatePeriodPresetPillActive(s, e);
+    updatePalmsPeriodDisplayLabel(s, e);
     
     // Update select dropdown if matching option exists
     const selectEl = document.getElementById('palms-period-select');
@@ -27557,10 +27602,17 @@ let activePalmsFetchPromise = null;
  * Fetch PALMS records for specified or latest period
  */
 function fetchPalmsRankingData(startDate = null, endDate = null) {
-  if (!startDate && !endDate && typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
+  const sTarget = startDate || currentPalmsPeriod.startDate || '2026-09-01';
+  const eTarget = endDate || currentPalmsPeriod.endDate || '2026-09-30';
+
+  if (currentPalmsPeriod.startDate === sTarget &&
+      currentPalmsPeriod.endDate === eTarget &&
+      typeof currentPalmsRecords !== 'undefined' &&
+      Array.isArray(currentPalmsRecords) &&
+      currentPalmsRecords.length > 0) {
     return Promise.resolve(currentPalmsRecords);
   }
-  if (!startDate && !endDate && activePalmsFetchPromise) {
+  if (activePalmsFetchPromise) {
     return activePalmsFetchPromise;
   }
 
@@ -27586,11 +27638,14 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
     `;
   }
 
-  activePalmsFetchPromise = ApiService.call('getPalmsListApi', startDate, endDate)
+  activePalmsFetchPromise = ApiService.call('getPalmsListApi', sTarget, eTarget)
     .then(res => {
       activePalmsFetchPromise = null;
       if (res && res.success) {
-        currentPalmsPeriod = res.period || { startDate, endDate };
+        currentPalmsPeriod = res.period || { startDate: sTarget, endDate: eTarget };
+        try {
+          localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+        } catch (e) {}
         
         // Calculate weeks in active period
         let weeks = 26; // Default to 26 weeks

@@ -410,6 +410,21 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(tableBody.includes('text-indigo-600 font-semibold'), false);
     assert.strictEqual(tableBody.includes('text-purple-600 font-semibold'), false);
   });
+
+  it('verifies selected period persistence and default to last month across view switches', () => {
+    // 1. Initial default is last month (2026-09-01 ~ 2026-09-30)
+    assert.ok(indexHtml.includes("startDate: '2026-09-01', endDate: '2026-09-30'"));
+    assert.ok(indexHtml.includes("localStorage.getItem('revo_palms_selected_period')"));
+
+    // 2. fetchPalmsPeriods prioritizes previously chosen period or last month
+    assert.ok(indexHtml.includes('let targetStart = currentPalmsPeriod.startDate;'));
+    assert.ok(indexHtml.includes('let targetEnd = currentPalmsPeriod.endDate;'));
+    assert.ok(indexHtml.includes("calcPalmsPresetRange('1month')"));
+
+    // 3. fetchPalmsRankingData respects target period and caches cleanly
+    assert.ok(indexHtml.includes("const sTarget = startDate || currentPalmsPeriod.startDate || '2026-09-01';"));
+    assert.ok(indexHtml.includes("const eTarget = endDate || currentPalmsPeriod.endDate || '2026-09-30';"));
+  });
 });
 
 

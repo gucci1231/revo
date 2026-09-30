@@ -1049,10 +1049,17 @@ let activePalmsFetchPromise = null;
  * Fetch PALMS records for specified or latest period
  */
 function fetchPalmsRankingData(startDate = null, endDate = null) {
-  if (!startDate && !endDate && typeof currentPalmsRecords !== 'undefined' && Array.isArray(currentPalmsRecords) && currentPalmsRecords.length > 0) {
+  const sTarget = startDate || currentPalmsPeriod.startDate || '2026-09-01';
+  const eTarget = endDate || currentPalmsPeriod.endDate || '2026-09-30';
+
+  if (currentPalmsPeriod.startDate === sTarget &&
+      currentPalmsPeriod.endDate === eTarget &&
+      typeof currentPalmsRecords !== 'undefined' &&
+      Array.isArray(currentPalmsRecords) &&
+      currentPalmsRecords.length > 0) {
     return Promise.resolve(currentPalmsRecords);
   }
-  if (!startDate && !endDate && activePalmsFetchPromise) {
+  if (activePalmsFetchPromise) {
     return activePalmsFetchPromise;
   }
 
@@ -1078,11 +1085,14 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
     `;
   }
 
-  activePalmsFetchPromise = ApiService.call('getPalmsListApi', startDate, endDate)
+  activePalmsFetchPromise = ApiService.call('getPalmsListApi', sTarget, eTarget)
     .then(res => {
       activePalmsFetchPromise = null;
       if (res && res.success) {
-        currentPalmsPeriod = res.period || { startDate, endDate };
+        currentPalmsPeriod = res.period || { startDate: sTarget, endDate: eTarget };
+        try {
+          localStorage.setItem('revo_palms_selected_period', JSON.stringify(currentPalmsPeriod));
+        } catch (e) {}
         
         // Calculate weeks in active period
         let weeks = 26; // Default to 26 weeks
