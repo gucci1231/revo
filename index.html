@@ -8153,17 +8153,18 @@ select.form-input, select.form-select {
               <span>半年間活動実績・スリップ推移</span>
             </h4>
             <span id="palms-detail-weekly-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              週ごと (基本)
+              全期間 (基本)
             </span>
           </div>
 
           <!-- 期間切り替えセグメントコントロール -->
           <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="palms-detail-period-tabs">
-            <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">週ごと</button>
-            <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
-            <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
-            <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+            <button type="button" data-period="all" onclick="switchPalmsHistoryPeriod('all', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">全期間</button>
             <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
+            <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+            <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
+            <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
+            <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">週ごと</button>
           </div>
         </div>
 
@@ -9131,17 +9132,18 @@ select.form-input, select.form-select {
                 <span>半年間活動実績・スリップ推移</span>
               </h3>
               <span id="member-palms-weekly-badge" class="text-3xs font-black px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                週ごと (基本)
+                全期間 (基本)
               </span>
             </div>
 
             <!-- 期間切り替えセグメントコントロール -->
             <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="member-palms-period-tabs">
-              <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">週ごと</button>
-              <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
-              <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
-              <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+              <button type="button" data-period="all" onclick="switchPalmsHistoryPeriod('all', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">全期間</button>
               <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
+              <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+              <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
+              <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
+              <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'member')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">週ごと</button>
             </div>
           </div>
 
@@ -28890,18 +28892,18 @@ function fetchPalmsMemberHistory(memberName) {
 
 // --- PALMS Detail & Member Dashboard History State ---
 let palmsDetailHistoryList = [];
-let palmsDetailCurrentPeriod = 'week';
+let palmsDetailCurrentPeriod = 'all';
 let palmsDetailHistoryChartInstance = null;
 
 let memberPalmsHistoryList = [];
-let memberPalmsCurrentPeriod = 'week';
+let memberPalmsCurrentPeriod = 'all';
 let memberPalmsHistoryChartInstance = null;
 
 /**
  * Filter or Aggregate PALMS History based on chosen periodKey
- * ('week' | 'month' | '2months' | '3months' | 'half')
+ * ('all' | 'half' | '3months' | '2months' | 'month' | 'week')
  */
-function getFilteredPalmsHistory(historyList, periodKey = 'week') {
+function getFilteredPalmsHistory(historyList, periodKey = 'all') {
   if (!Array.isArray(historyList) || historyList.length === 0) return [];
 
   const getDiffDays = (h) => {
@@ -28909,6 +28911,32 @@ function getFilteredPalmsHistory(historyList, periodKey = 'week') {
     const d2 = new Date(h.end_date);
     return Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
   };
+
+  // 0. 全期間 (all: 期別推移または通算レコード)
+  if (periodKey === 'all') {
+    // 半期レコード (diffDays between 150 and 210) があれば全期間の期別推移として表示
+    const terms = historyList
+      .filter(h => {
+        const d = getDiffDays(h);
+        return d >= 150 && d <= 210;
+      })
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (terms.length > 0) return terms;
+
+    // 長期通算レコード (diffDays > 210)
+    const longTerms = historyList
+      .filter(h => getDiffDays(h) > 210)
+      .sort((a, b) => new Date(b.end_date) - new Date(a.end_date));
+
+    if (longTerms.length > 0) return longTerms;
+
+    // 月次レコード
+    const months = aggregateWeeklyToMonths(historyList);
+    if (months.length > 0) return months;
+
+    return [combineHistoryRecords(historyList, '全期間 (累計)')];
+  }
 
   // 1. 週ごと (基本: diffDays <= 14 の全レコード)
   if (periodKey === 'week') {
@@ -29157,9 +29185,16 @@ function renderPalmsHistoryTable(tbodyId, records, periodKey) {
     } else {
       dateFormatted = `${w.start_date.replace(/-/g, '/')} 〜 ${w.end_date.replace(/-/g, '/')}`;
       if (!periodLabel) {
-        if (periodKey === 'month') periodLabel = `${endDateObj.getMonth() + 1}月度`;
-        else if (periodKey === 'half') periodLabel = `半年間 (${weeksCount}週)`;
-        else periodLabel = `${Math.round(diffDays / 30)}ヶ月間`;
+        if (diffDays > 250) {
+          periodLabel = '全期間 (通算)';
+        } else if (periodKey === 'month') {
+          periodLabel = `${endDateObj.getMonth() + 1}月度`;
+        } else if (periodKey === 'half' || periodKey === 'all') {
+          const m = endDateObj.getMonth() + 1;
+          periodLabel = `${endDateObj.getFullYear()}年${m <= 3 ? '下期' : (m <= 9 ? '上期' : '下期')}`;
+        } else {
+          periodLabel = `${Math.round(diffDays / 30)}ヶ月間`;
+        }
       }
     }
 
@@ -29302,7 +29337,11 @@ function renderPalmsHistoryChart(canvasId, records, periodKey) {
       return `${m}/${d}${day}`;
     }
     if (periodKey === 'month') return `${m}月`;
-    if (periodKey === 'half') return `${d2.getFullYear()}年${m <= 3 ? '下期' : (m <= 9 ? '上期' : '下期')}`;
+    if (periodKey === 'half' || periodKey === 'all') {
+      const diff = Math.max(1, Math.round((new Date(r.end_date) - new Date(r.start_date)) / (1000 * 60 * 60 * 24)) + 1);
+      if (diff > 250) return '全期間 (通算)';
+      return `${d2.getFullYear()}年${m <= 3 ? '下期' : (m <= 9 ? '上期' : '下期')}`;
+    }
     return `${m}/${d}`;
   });
 
@@ -29467,7 +29506,9 @@ function switchPalmsHistoryPeriod(periodKey, context = 'detail') {
   // Update Badge
   const badge = document.getElementById(`${prefix}-weekly-badge`);
   if (badge) {
+    const allLabel = filtered.length === 1 ? '全期間 (通算)' : `全期間 (${filtered.length}期分)`;
     const periodNames = {
+      'all': allLabel,
       'week': `週ごと (${filtered.length}週分)`,
       'month': `月毎 (${filtered.length}ヶ月分)`,
       '2months': `2ヶ月 (${filtered.length}期)`,
@@ -29497,8 +29538,8 @@ function renderPalmsDetailWeeklySubmissions(historyList, targetTbodyId = 'palms-
     palmsDetailHistoryList = Array.isArray(historyList) ? historyList : [];
   }
 
-  // デフォルト表示: 基本は１週間ごとに全て表示
-  switchPalmsHistoryPeriod('week', context);
+  // デフォルト表示: 全期間
+  switchPalmsHistoryPeriod('all', context);
 }
 
 /**
