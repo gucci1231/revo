@@ -138,7 +138,34 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS palms_reports (
+                id TEXT PRIMARY KEY,
+                member_id TEXT NOT NULL,
+                member_name TEXT NOT NULL,
+                start_date TEXT NOT NULL,
+                end_date TEXT NOT NULL,
+                p_present INTEGER DEFAULT 0,
+                a_absent INTEGER DEFAULT 0,
+                l_late INTEGER DEFAULT 0,
+                m_medical INTEGER DEFAULT 0,
+                s_substitute INTEGER DEFAULT 0,
+                rgi_referrals_given_internal INTEGER DEFAULT 0,
+                rgo_referrals_given_external INTEGER DEFAULT 0,
+                rri_referrals_received_internal INTEGER DEFAULT 0,
+                rro_referrals_received_external INTEGER DEFAULT 0,
+                v_visitors INTEGER DEFAULT 0,
+                one_to_ones INTEGER DEFAULT 0,
+                tyfcb_amount REAL DEFAULT 0.0,
+                ceu INTEGER DEFAULT 0,
+                testimonials INTEGER DEFAULT 0,
+                created_at TEXT,
+                updated_at TEXT,
+                UNIQUE(member_id, start_date, end_date)
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
+            CREATE INDEX IF NOT EXISTS idx_palms_reports_member ON palms_reports(member_id);
+            CREATE INDEX IF NOT EXISTS idx_palms_reports_dates ON palms_reports(start_date, end_date);
         ");
 
         $this->seedDefaultEmailTemplates();

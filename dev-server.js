@@ -107,6 +107,56 @@ function handleApiRequest(req, res, urlObj) {
     let input = {};
     try { if (body) input = JSON.parse(body); } catch(e){}
 
+    const getDefaultGoals = () => {
+      const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_default';")[0];
+      const def = { target_joined: 2, target_visitors_weekly: 4, target_join_rate: 25.0, target_hearing_rate: 100.0 };
+      if (row && row.value) {
+        try { return { ...def, ...JSON.parse(row.value) }; } catch (e) {}
+      }
+      return def;
+    };
+
+    const getMonthlyGoalsMap = () => {
+      const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_monthly';")[0];
+      if (row && row.value) {
+        try { return JSON.parse(row.value) || {}; } catch (e) {}
+      }
+      return {};
+    };
+
+    const resolveGoalsForMonth = (mStr) => {
+      const norm = mStr.replace(/-/g, '/').trim();
+      const def = getDefaultGoals();
+      const map = getMonthlyGoalsMap();
+      const resolved = {
+        target_join_rate: def.target_join_rate || 25.0,
+        target_hearing_rate: def.target_hearing_rate || 100.0,
+        target_joined: def.target_joined || 2,
+        target_visitors_weekly: def.target_visitors_weekly || 4,
+        month: norm,
+        source: 'default',
+        is_custom: false
+      };
+
+      if (map[norm]) {
+        resolved.target_joined = Number(map[norm].target_joined || def.target_joined);
+        resolved.target_visitors_weekly = Number(map[norm].target_visitors_weekly || def.target_visitors_weekly);
+        resolved.source = 'custom';
+        resolved.is_custom = true;
+        return resolved;
+      }
+      const past = Object.keys(map).filter(k => k < norm).sort().reverse();
+      if (past.length > 0) {
+        resolved.target_joined = Number(map[past[0]].target_joined || def.target_joined);
+        resolved.target_visitors_weekly = Number(map[past[0]].target_visitors_weekly || def.target_visitors_weekly);
+        resolved.source = 'inherited';
+        resolved.inherited_from = past[0];
+        resolved.is_custom = false;
+        return resolved;
+      }
+      return resolved;
+    };
+
     if (pathname === '/api/visitors.php') {
       const action = urlObj.searchParams.get('action') || input.action || 'list';
       if (action === 'list') {
@@ -521,57 +571,7 @@ function handleApiRequest(req, res, urlObj) {
     }
 
     if (pathname === '/api/settings.php') {
-      const action = parsedUrl.query.action || (input ? input.action : 'get');
-
-      const getDefaultGoals = () => {
-        const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_default';")[0];
-        const def = { target_joined: 2, target_visitors_weekly: 4, target_join_rate: 25.0, target_hearing_rate: 100.0 };
-        if (row && row.value) {
-          try { return { ...def, ...JSON.parse(row.value) }; } catch (e) {}
-        }
-        return def;
-      };
-
-      const getMonthlyGoalsMap = () => {
-        const row = runSqlJson("SELECT value FROM settings WHERE key = 'goals_monthly';")[0];
-        if (row && row.value) {
-          try { return JSON.parse(row.value) || {}; } catch (e) {}
-        }
-        return {};
-      };
-
-      const resolveGoalsForMonth = (mStr) => {
-        const norm = mStr.replace(/-/g, '/').trim();
-        const def = getDefaultGoals();
-        const map = getMonthlyGoalsMap();
-        const resolved = {
-          target_join_rate: def.target_join_rate || 25.0,
-          target_hearing_rate: def.target_hearing_rate || 100.0,
-          target_joined: def.target_joined || 2,
-          target_visitors_weekly: def.target_visitors_weekly || 4,
-          month: norm,
-          source: 'default',
-          is_custom: false
-        };
-
-        if (map[norm]) {
-          resolved.target_joined = Number(map[norm].target_joined || def.target_joined);
-          resolved.target_visitors_weekly = Number(map[norm].target_visitors_weekly || def.target_visitors_weekly);
-          resolved.source = 'custom';
-          resolved.is_custom = true;
-          return resolved;
-        }
-        const past = Object.keys(map).filter(k => k < norm).sort().reverse();
-        if (past.length > 0) {
-          resolved.target_joined = Number(map[past[0]].target_joined || def.target_joined);
-          resolved.target_visitors_weekly = Number(map[past[0]].target_visitors_weekly || def.target_visitors_weekly);
-          resolved.source = 'inherited';
-          resolved.inherited_from = past[0];
-          resolved.is_custom = false;
-          return resolved;
-        }
-        return resolved;
-      };
+      const action = urlObj.searchParams.get('action') || (input ? input.action : 'get');
 
       if (action === 'get') {
         const rows = runSqlJson("SELECT key, value FROM settings;");
@@ -683,6 +683,11 @@ function handleApiRequest(req, res, urlObj) {
       const nextMeetingVisitors = [];
       const lastMeetingVisitors = [];
       const oneMonthFollowup = [];
+      const weeklyMap = {};
+      const monthlyMap = {};
+
+      const startDateRow = runSqlJson("SELECT value FROM settings WHERE key = 'start_date';")[0];
+      const startDateStr = (startDateRow && startDateRow.value) ? startDateRow.value : '2026/04/01';
 
       const apSql = `
         SELECT ap.*, 
@@ -777,6 +782,8 @@ function handleApiRequest(req, res, urlObj) {
             }
           }
         }
+      });
+
       // 指定期間（startDate〜today）内の全木曜日（定例会開催日）を weeklyMap に事前登録
       const todayObj = new Date();
       let curD = new Date(startDateStr.replace(/\//g, '-'));
@@ -939,6 +946,84 @@ function handleApiRequest(req, res, urlObj) {
       });
       const memberCategories = Object.keys(categoriesMap).map(cat => ({ category: cat, members: categoriesMap[cat] }));
       return res.end(JSON.stringify({ success: true, memberCategories: memberCategories, flatMembers: flatMembers }));
+    }
+
+    if (pathname === '/api/palms.php') {
+      const action = urlObj.searchParams.get('action') || (req.method === 'POST' ? 'sync' : 'list');
+      
+      if (action === 'periods') {
+        const sql = `SELECT DISTINCT start_date, end_date, COUNT(*) as member_count FROM palms_reports GROUP BY start_date, end_date ORDER BY end_date DESC;`;
+        const periods = runSqlJson(sql);
+        return res.end(JSON.stringify({ success: true, periods: periods }));
+      }
+
+      if (action === 'sync') {
+        try {
+          const palmsFetcher = require('./scripts/fetch_bni_connect_palms.js');
+          const range = palmsFetcher.getDefaultWeeklyRange();
+          const startDate = input.startDate || urlObj.searchParams.get('startDate') || range.startDate;
+          const endDate = input.endDate || urlObj.searchParams.get('endDate') || range.endDate;
+          
+          palmsFetcher.authenticate().then(tokens => {
+            return palmsFetcher.establishWebSession(tokens);
+          }).then(cookie => {
+            return palmsFetcher.fetchPalmsReportHtml(cookie, startDate, endDate);
+          }).then(html => {
+            const records = palmsFetcher.parsePalmsHtml(html, startDate, endDate);
+            const saved = palmsFetcher.savePalmsToDb(records);
+            res.end(JSON.stringify({
+              success: true,
+              message: `PALMSデータを正常に取得・更新しました（${saved}件）`,
+              data: { startDate, endDate, recordsCount: records.length, savedCount: saved }
+            }));
+          }).catch(err => {
+            res.writeHead(500);
+            res.end(JSON.stringify({ success: false, error: err.message }));
+          });
+          return;
+        } catch (e) {
+          res.writeHead(500);
+          return res.end(JSON.stringify({ success: false, error: e.message }));
+        }
+      }
+
+      if (action === 'list') {
+        const startDate = urlObj.searchParams.get('startDate');
+        const endDate = urlObj.searchParams.get('endDate');
+        let whereClause = "";
+        let filterPeriod = { startDate, endDate };
+
+        if (startDate && endDate) {
+          whereClause = `WHERE p.start_date = '${startDate}' AND p.end_date = '${endDate}'`;
+        } else {
+          const latestRow = runSqlJson("SELECT start_date, end_date FROM palms_reports ORDER BY end_date DESC LIMIT 1;")[0];
+          if (latestRow) {
+            whereClause = `WHERE p.start_date = '${latestRow.start_date}' AND p.end_date = '${latestRow.end_date}'`;
+            filterPeriod = { startDate: latestRow.start_date, endDate: latestRow.end_date };
+          }
+        }
+
+        const sql = `
+          SELECT 
+            p.*,
+            (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) as total_referrals_given,
+            (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
+            (p.tyfcb_amount * 1000) as tyfcb_yen,
+            m.category as member_category,
+            m.profession as member_profession
+          FROM palms_reports p
+          LEFT JOIN members m ON p.member_id = m.id
+          ${whereClause}
+          ORDER BY (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) DESC, p.one_to_ones DESC, p.v_visitors DESC;
+        `;
+        const records = runSqlJson(sql);
+        return res.end(JSON.stringify({
+          success: true,
+          period: filterPeriod,
+          totalMembers: records.length,
+          records: records
+        }));
+      }
     }
 
     return res.end(JSON.stringify({ success: false, message: 'Endpoint not found' }));
