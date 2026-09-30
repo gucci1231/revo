@@ -53,7 +53,8 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
 
   it('verifies Personal Traffic Lights (100pt Diagnosis) elements exist', () => {
     assert.strictEqual(indexHtml.includes('id="traffic-light-member-cards"'), true);
-    assert.strictEqual(indexHtml.includes('BNI公式新基準 7大指標と配点（100点満点）'), true);
+    assert.strictEqual(indexHtml.includes('id="traffic-light-summary-green-pct"'), true);
+    assert.strictEqual(indexHtml.includes('id="traffic-light-zone-filters"'), true);
   });
 
   it('verifies Chapter Traffic Lights Matrix elements exist', () => {

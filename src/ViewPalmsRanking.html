@@ -380,78 +380,55 @@
   <!-- SUBVIEW 3: 個人トラフィックライト (100点スコア・健康診断)        -->
   <!-- ======================================================== -->
   <div id="palms-subview-traffic-lights" class="palms-subview hidden">
-    <!-- Traffic Lights Overview Cards & Doughnut Chart -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
-      <!-- Zone Doughnut Chart -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-          <h3 class="text-sm font-bold text-slate-900">ゾーン分布</h3>
-          <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
-        </div>
-        <div class="relative flex items-center justify-center h-56 sm:h-60">
-          <canvas id="chart-palms-donut"></canvas>
-        </div>
-      </div>
-
-      <!-- Traffic Light Standards Card -->
-      <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-            <h3 class="text-sm font-bold text-slate-900">BNI公式新基準 7大指標と配点（100点満点）</h3>
-            <span class="text-3xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">最新ルール</span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">ビジター招待</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">25 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">リファーラル提供</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">25 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">1to1 実施</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">20 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">CEU 学習</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">10 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">定例会出席率</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">10 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">TYFCB (売上)</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">5 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">推薦状 / スポンサー</div>
-              <div class="text-lg font-black text-slate-900 tabular-nums">5 <span class="text-3xs font-bold text-slate-400">点</span></div>
-            </div>
-            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3">
-              <div class="text-3xs font-bold text-emerald-700 mb-0.5">グリーン基準</div>
-              <div class="text-lg font-black text-emerald-700 tabular-nums">70+ <span class="text-3xs font-bold text-emerald-600">点</span></div>
+    <!-- Traffic Lights Overview Card (Apple Radical Minimalism) -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Chapter Green Rate Hero -->
+        <div class="flex items-center gap-4">
+          <div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 flex items-center justify-center">
+            <canvas id="chart-palms-donut"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span id="traffic-light-summary-green-pct" class="text-base sm:text-lg font-black text-slate-900 tabular-nums">0%</span>
             </div>
           </div>
+          <div>
+            <div class="flex items-baseline gap-1.5">
+              <span id="traffic-light-summary-green-count" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">0</span>
+              <span id="traffic-light-summary-total-count" class="text-xs sm:text-sm font-bold text-slate-400 tabular-nums">/ 0</span>
+            </div>
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mt-0.5">GREEN</div>
+          </div>
+        </div>
+
+        <!-- Minimalist Filter Pills (Apple Segmented Control) -->
+        <div class="flex items-center gap-1.5 flex-wrap" id="traffic-light-zone-filters">
+          <button type="button" onclick="filterTrafficLightZone('all')" data-zone="all" class="tl-filter-pill active px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-slate-900 text-white shadow-2xs">
+            すべて <span id="tl-count-all" class="tabular-nums ml-0.5 opacity-70">0</span>
+          </button>
+          <button type="button" onclick="filterTrafficLightZone('green')" data-zone="green" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="tl-count-green" class="tabular-nums text-emerald-700 font-black">0</span>
+          </button>
+          <button type="button" onclick="filterTrafficLightZone('yellow')" data-zone="yellow" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="tl-count-yellow" class="tabular-nums text-amber-700 font-black">0</span>
+          </button>
+          <button type="button" onclick="filterTrafficLightZone('red')" data-zone="red" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span id="tl-count-red" class="tabular-nums text-rose-700 font-black">0</span>
+          </button>
+          <button type="button" onclick="filterTrafficLightZone('grey')" data-zone="grey" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+            <span id="tl-count-grey" class="tabular-nums text-slate-600 font-black">0</span>
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Member Traffic Light Cards Grid -->
-    <div class="mb-4 flex items-center justify-between">
-      <h3 class="text-sm font-bold text-slate-900">メンバー個人別 診断</h3>
-      <div class="flex items-center gap-3 text-3xs font-bold">
-        <span class="inline-flex items-center gap-1 text-emerald-700"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 70+</span>
-        <span class="inline-flex items-center gap-1 text-amber-700"><span class="w-2 h-2 rounded-full bg-amber-500"></span> 50〜65</span>
-        <span class="inline-flex items-center gap-1 text-rose-700"><span class="w-2 h-2 rounded-full bg-rose-500"></span> &lt; 50</span>
-      </div>
-    </div>
-
-    <div id="traffic-light-member-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-8">
+    <div id="traffic-light-member-cards" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mb-8">
       <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200 rounded-2xl">
-        <p class="text-xs">トラフィックライトを集計中...</p>
+        <p class="text-xs">集計中...</p>
       </div>
     </div>
   </div>

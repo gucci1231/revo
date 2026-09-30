@@ -1118,11 +1118,11 @@ function renderPalmsCharts() {
     palmsDonutChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['🟢 グリーン (70点以上)', '🟡 イエロー (50-69点)', '🔴 レッド (30-49点)', '⚪ グレー (30点未満)'],
+        labels: ['グリーン', 'イエロー', 'レッド', 'グレー'],
         datasets: [{
           data: [greenCount, yellowCount, redCount, greyCount],
-          backgroundColor: ['#059669', '#d97706', '#dc2626', '#94a3b8'],
-          hoverBackgroundColor: ['#047857', '#b45309', '#b91c1c', '#64748b'],
+          backgroundColor: ['#10b981', '#f59e0b', '#f43f5e', '#cbd5e1'],
+          hoverBackgroundColor: ['#059669', '#d97706', '#e11d48', '#94a3b8'],
           borderWidth: 2,
           borderColor: '#ffffff'
         }]
@@ -1130,15 +1130,10 @@ function renderPalmsCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '72%',
+        cutout: '80%',
         plugins: {
           legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 10,
-              font: { size: 10, weight: 'bold' },
-              padding: 10
-            }
+            display: false
           },
           tooltip: {
             callbacks: {
@@ -3260,8 +3255,25 @@ function copyPpwGoalPlanText() {
   });
 }
 
+let activeTrafficLightZone = 'all';
+
+function filterTrafficLightZone(zone) {
+  activeTrafficLightZone = zone;
+  const pills = document.querySelectorAll('.tl-filter-pill');
+  pills.forEach(p => {
+    const isCurrent = p.getAttribute('data-zone') === zone;
+    if (isCurrent) {
+      p.className = 'tl-filter-pill active px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-slate-900 text-white shadow-2xs flex items-center gap-1.5';
+    } else {
+      p.className = 'tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5';
+    }
+  });
+  renderTrafficLightsGrid();
+}
+
 /**
  * Render Subview 3: Personal Traffic Lights (100pt Diagnosis Grid)
+ * Apple Radical Minimalism Design
  */
 function renderTrafficLightsGrid() {
   const container = document.getElementById('traffic-light-member-cards');
@@ -3270,101 +3282,171 @@ function renderTrafficLightsGrid() {
   // Sort by total score descending
   const sorted = [...currentPalmsRecords].sort((a, b) => (Number(b.total_score) || 0) - (Number(a.total_score) || 0));
 
-  let html = '';
-  sorted.forEach(m => {
-    const tl = m.trafficLight;
-    const scores = tl.scores;
-    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+  // Count metrics for summary card
+  const totalCount = sorted.length;
+  const greenCount = sorted.filter(m => (Number(m.total_score) || 0) >= 70).length;
+  const yellowCount = sorted.filter(m => {
+    const s = Number(m.total_score) || 0;
+    return s >= 50 && s < 70;
+  }).length;
+  const redCount = sorted.filter(m => {
+    const s = Number(m.total_score) || 0;
+    return s >= 30 && s < 50;
+  }).length;
+  const greyCount = sorted.filter(m => (Number(m.total_score) || 0) < 30).length;
 
-    // Gap to Green (70 pts)
-    const currentScore = Number(m.total_score) || 0;
-    const gapToGreen = Math.max(0, 70 - currentScore);
+  const greenPct = totalCount > 0 ? Math.round((greenCount / totalCount) * 100) : 0;
 
-    let prescriptionText = '';
-    if (currentScore >= 70) {
-      prescriptionText = '🟢 健全・模範基準クリア中';
-    } else {
-      if (scores.visitor < 15) prescriptionText = `あとビジター1名招待で <b>+5〜10点</b> 獲得可能`;
-      else if (scores.referral < 15) prescriptionText = `週リファーラルを1件増やすと <b>+5〜10点</b> 改善`;
-      else if (scores.one_to_ones < 15) prescriptionText = `週1回の1to1継続で <b>+5点</b> UP`;
-      else if (scores.ceu < 10) prescriptionText = `BNI Business BuilderのCEU受講で <b>+5点</b> 即効UP`;
-      else prescriptionText = `あと <b>${gapToGreen}点</b> でグリーンゾーン到達！`;
+  // Update summary header numbers
+  const pctEl = document.getElementById('traffic-light-summary-green-pct');
+  const gCountEl = document.getElementById('traffic-light-summary-green-count');
+  const tCountEl = document.getElementById('traffic-light-summary-total-count');
+  const cAllEl = document.getElementById('tl-count-all');
+  const cGreenEl = document.getElementById('tl-count-green');
+  const cYellowEl = document.getElementById('tl-count-yellow');
+  const cRedEl = document.getElementById('tl-count-red');
+  const cGreyEl = document.getElementById('tl-count-grey');
+
+  if (pctEl) pctEl.textContent = `${greenPct}%`;
+  if (gCountEl) gCountEl.textContent = greenCount;
+  if (tCountEl) tCountEl.textContent = `/ ${totalCount}`;
+  if (cAllEl) cAllEl.textContent = totalCount;
+  if (cGreenEl) cGreenEl.textContent = greenCount;
+  if (cYellowEl) cYellowEl.textContent = yellowCount;
+  if (cRedEl) cRedEl.textContent = redCount;
+  if (cGreyEl) cGreyEl.textContent = greyCount;
+
+  // Sync donut chart if canvas exists
+  if (typeof Chart !== 'undefined') {
+    const donutCanvas = document.getElementById('chart-palms-donut');
+    if (donutCanvas) {
+      if (!palmsDonutChart) {
+        const ctx = donutCanvas.getContext('2d');
+        palmsDonutChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['グリーン', 'イエロー', 'レッド', 'グレー'],
+            datasets: [{
+              data: [greenCount, yellowCount, redCount, greyCount],
+              backgroundColor: ['#10b981', '#f59e0b', '#f43f5e', '#cbd5e1'],
+              hoverBackgroundColor: ['#059669', '#d97706', '#e11d48', '#94a3b8'],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(item) {
+                    const val = item.raw || 0;
+                    const pct = totalCount > 0 ? Math.round((val / totalCount) * 100) : 0;
+                    return ` ${item.label}: ${val}名 (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } else {
+        palmsDonutChart.data.datasets[0].data = [greenCount, yellowCount, redCount, greyCount];
+        palmsDonutChart.update();
+      }
     }
+  }
+
+  // Filter records by selected zone
+  const filtered = sorted.filter(m => {
+    const s = Number(m.total_score) || 0;
+    if (activeTrafficLightZone === 'green') return s >= 70;
+    if (activeTrafficLightZone === 'yellow') return s >= 50 && s < 70;
+    if (activeTrafficLightZone === 'red') return s >= 30 && s < 50;
+    if (activeTrafficLightZone === 'grey') return s < 30;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200/80 rounded-2xl">
+        <p class="text-xs font-bold">該当するメンバーはいません</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Helper for mini equalizer bar (Apple Activity Bar Style)
+  const renderMiniBar = (val, max, label, title) => {
+    const v = Number(val) || 0;
+    const ratio = Math.min(1, Math.max(0, v / max));
+    const pct = Math.round(ratio * 100);
+    let color = 'bg-slate-300';
+    if (ratio >= 0.8) color = 'bg-emerald-500';
+    else if (ratio >= 0.5) color = 'bg-amber-500';
+    else if (ratio > 0) color = 'bg-rose-500';
+
+    return `
+      <div class="flex flex-col items-center gap-1 group/bar" title="${title}: ${v}/${max}pt (${pct}%)">
+        <div class="w-full bg-slate-100 rounded-full h-8 flex items-end p-0.5 overflow-hidden">
+          <div class="w-full ${color} rounded-full transition-all duration-300" style="height: ${Math.max(12, pct)}%;"></div>
+        </div>
+        <span class="text-3xs font-black text-slate-400 group-hover/bar:text-slate-700 tracking-tighter leading-none">${label}</span>
+      </div>
+    `;
+  };
+
+  let html = '';
+  filtered.forEach(m => {
+    const tl = m.trafficLight || {};
+    const scores = tl.scores || {};
+    const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
+    const currentScore = Number(m.total_score) || 0;
+
+    let dotColor = 'bg-slate-300';
+    if (currentScore >= 70) dotColor = 'bg-emerald-500 shadow-2xs shadow-emerald-500/50';
+    else if (currentScore >= 50) dotColor = 'bg-amber-500 shadow-2xs shadow-amber-500/50';
+    else if (currentScore >= 30) dotColor = 'bg-rose-500 shadow-2xs shadow-rose-500/50';
 
     html += `
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div onclick="openPalmsDetailModal('${memberNameSafe}')" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
         <div>
-          <!-- Top Row: Name, Tier, Score -->
-          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <!-- Top Row: Avatar, Name, Category, Score & Status Dot -->
+          <div class="flex items-start justify-between gap-2.5 mb-3">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-black text-xs flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                 ${m.member_name ? m.member_name.charAt(0) : '名'}
               </div>
               <div class="min-w-0">
-                <a href="javascript:void(0)" onclick="openPalmsDetailModal('${memberNameSafe}')" class="text-xs font-black text-slate-900 hover:text-blue-600 truncate block transition-colors">
+                <div class="text-xs font-black text-slate-900 group-hover:text-blue-600 truncate transition-colors">
                   ${m.member_name}
-                </a>
-                <span class="text-3xs text-slate-400 font-semibold truncate block">${m.member_category || 'メンバー'}</span>
+                </div>
+                <div class="text-3xs text-slate-400 font-semibold truncate">
+                  ${m.member_category || 'メンバー'}
+                </div>
               </div>
             </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="text-base font-black text-slate-900 tabular-nums">${currentScore}<span class="text-3xs font-bold text-slate-400"> pt</span></span>
-              <span>${tl.tierDot}</span>
-            </div>
-          </div>
-
-          <!-- 7-Metric Mini Progress Bars -->
-          <div class="space-y-1.5 mb-3 text-3xs">
-            <!-- Referral (25) -->
-            <div>
-              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
-                <span>リファーラル</span>
-                <span class="tabular-nums ${getPalmsScoreColorClass(scores.referral, 25)}">${scores.referral}/25</span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="${(scores.referral / 25) >= 0.8 ? 'bg-emerald-500' : ((scores.referral / 25) >= 0.5 ? 'bg-amber-500' : (scores.referral > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.referral / 25) * 100}%;"></div>
-              </div>
-            </div>
-
-            <!-- Visitor (25) -->
-            <div>
-              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
-                <span>ビジター</span>
-                <span class="tabular-nums ${getPalmsScoreColorClass(scores.visitor, 25)}">${scores.visitor}/25</span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="${(scores.visitor / 25) >= 0.8 ? 'bg-emerald-500' : ((scores.visitor / 25) >= 0.5 ? 'bg-amber-500' : (scores.visitor > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.visitor / 25) * 100}%;"></div>
-              </div>
-            </div>
-
-            <!-- 1to1 (20) -->
-            <div>
-              <div class="flex justify-between text-slate-500 font-bold mb-0.5">
-                <span>1to1</span>
-                <span class="tabular-nums ${getPalmsScoreColorClass(scores.one_to_ones, 20)}">${scores.one_to_ones}/20</span>
-              </div>
-              <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div class="${(scores.one_to_ones / 20) >= 0.8 ? 'bg-emerald-500' : ((scores.one_to_ones / 20) >= 0.5 ? 'bg-amber-500' : (scores.one_to_ones > 0 ? 'bg-rose-500' : 'bg-slate-300'))} h-1.5 rounded-full" style="width: ${(scores.one_to_ones / 20) * 100}%;"></div>
-              </div>
-            </div>
-
-            <!-- CEU & Attendance & TYFCB (Compact Row) -->
-            <div class="grid grid-cols-3 gap-1 pt-1.5 text-slate-400 font-semibold text-center border-t border-slate-100">
-              <div>CEU <b class="${getPalmsScoreColorClass(scores.ceu, 10)} tabular-nums">${scores.ceu}</b>/10</div>
-              <div>出席 <b class="${getPalmsScoreColorClass(scores.attendance, 10)} tabular-nums">${scores.attendance}</b>/10</div>
-              <div>TYFCB <b class="${getPalmsScoreColorClass(scores.tyfcb, 5)} tabular-nums">${scores.tyfcb}</b>/5</div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-lg font-black text-slate-900 tabular-nums tracking-tight">${currentScore}</span>
+              <span class="w-2.5 h-2.5 rounded-full ${dotColor}"></span>
             </div>
           </div>
 
-          <!-- Prescription Hint -->
-          <div class="text-3xs font-semibold text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
-            <span>${prescriptionText}</span>
+          <!-- 7-Metric Visual Equalizer (Apple Activity Bar Style, Radical Minimalism) -->
+          <div class="bg-slate-50/70 rounded-xl p-2">
+            <div class="grid grid-cols-7 gap-1 items-end">
+              ${renderMiniBar(scores.referral, 25, 'REF', 'リファーラル')}
+              ${renderMiniBar(scores.visitor, 25, 'VIS', 'ビジター')}
+              ${renderMiniBar(scores.one_to_ones, 20, '1:1', '1to1')}
+              ${renderMiniBar(scores.ceu, 10, 'CEU', 'CEU')}
+              ${renderMiniBar(scores.attendance, 10, 'ATT', '出席')}
+              ${renderMiniBar(scores.tyfcb, 5, 'TYF', 'TYFCB')}
+              ${renderMiniBar(scores.sponsor, 5, 'SPO', '推薦/スポンサー')}
+            </div>
           </div>
         </div>
-
-        <button type="button" onclick="openPalmsDetailModal('${memberNameSafe}')" class="w-full py-1.5 text-3xs font-bold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-all text-center cursor-pointer">
-          詳細内訳を見る
-        </button>
       </div>
     `;
   });
