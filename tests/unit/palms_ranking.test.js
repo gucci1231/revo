@@ -314,9 +314,13 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('id="palms-cal-right-grid"'), true);
     assert.strictEqual(indexHtml.includes('id="btn-palms-modal-apply"'), true);
 
-    // 1-Month Unit Labels
+    // 1-Month & Multi-Month Unit Labels
     assert.strictEqual(indexHtml.includes('先月 (9月)'), true);
     assert.strictEqual(indexHtml.includes('先々月 (8月)'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="term_2months"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset-key="term_3months"'), true);
+    assert.strictEqual(indexHtml.includes('type="date" id="palms-modal-start"'), true);
+    assert.strictEqual(indexHtml.includes('type="date" id="palms-modal-end"'), true);
 
     // JS functions
     assert.strictEqual(indexHtml.includes('function openPalmsDateModal('), true);

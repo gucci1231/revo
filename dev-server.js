@@ -1195,7 +1195,45 @@ function handleApiRequest(req, res, urlObj) {
           ${whereClause}
           ORDER BY (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) DESC, p.one_to_ones DESC, p.v_visitors DESC;
         `;
-        const records = runSqlJson(sql);
+        let records = runSqlJson(sql);
+
+        // Fallback: aggregate weekly records if no exact pre-calculated period matches
+        if (records.length === 0 && startDate && endDate) {
+          const aggSql = `
+            SELECT 
+              p.member_id,
+              p.member_name,
+              '${startDate}' as start_date,
+              '${endDate}' as end_date,
+              SUM(p.p_present) as p_present,
+              SUM(p.a_absent) as a_absent,
+              SUM(p.l_late) as l_late,
+              SUM(p.m_medical) as m_medical,
+              SUM(p.s_substitute) as s_substitute,
+              SUM(p.rgi_referrals_given_internal) as rgi_referrals_given_internal,
+              SUM(p.rgo_referrals_given_external) as rgo_referrals_given_external,
+              SUM(p.rri_referrals_received_internal) as rri_referrals_received_internal,
+              SUM(p.rro_referrals_received_external) as rro_referrals_received_external,
+              SUM(p.v_visitors) as v_visitors,
+              SUM(p.one_to_ones) as one_to_ones,
+              SUM(p.tyfcb_amount) as tyfcb_amount,
+              SUM(p.ceu) as ceu,
+              SUM(p.testimonials) as testimonials,
+              (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) as total_referrals_given,
+              (SUM(p.rri_referrals_received_internal) + SUM(p.rro_referrals_received_external)) as total_referrals_received,
+              (SUM(p.tyfcb_amount) * 1000) as tyfcb_yen,
+              m.category as member_category,
+              m.profession as member_profession
+            FROM palms_reports p
+            LEFT JOIN members m ON p.member_id = m.id
+            WHERE (julianday(p.end_date) - julianday(p.start_date)) <= 14
+              AND p.end_date >= '${startDate}' AND p.start_date <= '${endDate}'
+            GROUP BY p.member_id, p.member_name
+            ORDER BY (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) DESC, SUM(p.one_to_ones) DESC, SUM(p.v_visitors) DESC;
+          `;
+          records = runSqlJson(aggSql);
+        }
+
         return res.end(JSON.stringify({
           success: true,
           period: filterPeriod,

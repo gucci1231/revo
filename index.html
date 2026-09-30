@@ -12945,28 +12945,30 @@ select.form-input, select.form-select {
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
               <div class="flex items-center gap-2 flex-wrap">
                 <!-- Start Date Tab -->
-                <button type="button" id="palms-picker-tab-start" onclick="setPalmsPickerActiveField('start')" class="group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer text-left shadow-2xs">
+                <div id="palms-picker-tab-start" onclick="setPalmsPickerActiveField('start')" class="group flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer shadow-2xs">
                   <div class="flex flex-col">
-                    <span class="text-3xs uppercase tracking-wider font-bold text-slate-400">開始日</span>
-                    <span id="palms-modal-start-display" class="text-xs sm:text-sm font-black text-slate-900 tabular-nums">--/--/--</span>
+                    <span class="text-3xs uppercase tracking-wider font-black text-blue-600">開始日</span>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span id="palms-modal-start-display" class="sr-only">--/--/--</span>
+                      <input type="date" id="palms-modal-start" onchange="onPalmsModalInputChange()" onclick="event.stopPropagation(); setPalmsPickerActiveField('start');" class="text-xs sm:text-sm font-black text-slate-900 bg-white/90 border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer">
+                    </div>
                   </div>
-                  <i class="fa-regular fa-calendar text-xs text-blue-600 ml-1"></i>
-                </button>
+                  <i class="fa-regular fa-calendar text-xs text-blue-600 shrink-0 ml-1"></i>
+                </div>
 
                 <i class="fa-solid fa-arrow-right text-slate-300 text-2xs"></i>
 
                 <!-- End Date Tab -->
-                <button type="button" id="palms-picker-tab-end" onclick="setPalmsPickerActiveField('end')" class="group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-blue-500 bg-blue-50/60 text-blue-900 transition-all cursor-pointer text-left shadow-2xs">
+                <div id="palms-picker-tab-end" onclick="setPalmsPickerActiveField('end')" class="group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer shadow-2xs">
                   <div class="flex flex-col">
-                    <span class="text-3xs uppercase tracking-wider font-bold text-blue-600">終了日</span>
-                    <span id="palms-modal-end-display" class="text-xs sm:text-sm font-black text-slate-900 tabular-nums">--/--/--</span>
+                    <span class="text-3xs uppercase tracking-wider font-bold text-slate-400">終了日</span>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span id="palms-modal-end-display" class="sr-only">--/--/--</span>
+                      <input type="date" id="palms-modal-end" onchange="onPalmsModalInputChange()" onclick="event.stopPropagation(); setPalmsPickerActiveField('end');" class="text-xs sm:text-sm font-black text-slate-900 bg-white/90 border border-slate-200 rounded-lg px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer">
+                    </div>
                   </div>
-                  <i class="fa-regular fa-calendar text-xs text-blue-600 ml-1"></i>
-                </button>
-
-                <!-- Hidden inputs for fallback / test assertions -->
-                <input type="date" id="palms-modal-start" onchange="onPalmsModalInputChange()" class="sr-only">
-                <input type="date" id="palms-modal-end" onchange="onPalmsModalInputChange()" class="sr-only">
+                  <i class="fa-regular fa-calendar text-xs text-slate-400 shrink-0 ml-1"></i>
+                </div>
               </div>
 
               <!-- Status Guide Badge & Duration -->
@@ -26559,7 +26561,16 @@ let currentPalmsRecords = [];
 let currentPalmsPeriodsList = [];
 let currentPalmsMetric = 'total';
 let currentPalmsSort = { field: 'total_score', asc: false };
-let currentPalmsPeriod = { startDate: null, endDate: null };
+let currentPalmsPeriod = (() => {
+  try {
+    const saved = localStorage.getItem('revo_palms_selected_period');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.startDate && parsed.endDate) return parsed;
+    }
+  } catch (e) {}
+  return { startDate: '2026-09-01', endDate: '2026-09-30' };
+})();
 let isPalmsSyncing = false;
 
 // Chart.js Instances
@@ -26577,14 +26588,17 @@ let growthTrendGranularity = 'weekly';
 function formatPalmsPeriodLabel(p) {
   const s = p.start_date;
   const e = p.end_date;
-  if (s === '2024-10-01' && e === '2026-09-30') return `過去2年間累計 (2024/10〜2026/09) [${p.member_count}名]`;
+  if (s === '2026-09-01' && e === '2026-09-30') return `先月: 9月 (2026/09/01〜2026/09/30) [${p.member_count}名]`;
+  if (s === '2026-08-01' && e === '2026-08-31') return `先々月: 8月 (2026/08/01〜2026/08/31) [${p.member_count}名]`;
+  if (s === '2026-07-01' && e === '2026-07-31') return `7月 (2026/07/01〜2026/07/31) [${p.member_count}名]`;
   if (s === '2026-04-01' && e === '2026-09-30') return `直近第2期 6ヶ月 (2026/04〜2026/09) ★最新基準 [${p.member_count}名]`;
+  if (s === '2024-10-01' && e === '2026-09-30') return `過去2年間累計 (2024/10〜2026/09) [${p.member_count}名]`;
   if (s === '2025-10-01' && e === '2026-03-31') return `第1期後半 6ヶ月 (2025/10〜2026/03) [${p.member_count}名]`;
   if (s === '2025-04-01' && e === '2025-09-30') return `第1期前半 6ヶ月 (2025/04〜2025/09) [${p.member_count}名]`;
   if (s === '2026-08-27' && e === '2026-09-24') return `直近4週間 (2026/08/27〜09/24) [${p.member_count}名]`;
   if (s === '2026-09-17' && e === '2026-09-24') return `直近定例会 週次 (2026/09/17〜09/24) [${p.member_count}名]`;
-  const sFmt = s.replace(/-/g, '/');
-  const eFmt = e.replace(/-/g, '/');
+  const sFmt = s ? s.replace(/-/g, '/') : '';
+  const eFmt = e ? e.replace(/-/g, '/') : '';
   return `${sFmt} 〜 ${eFmt} (${p.member_count}名)`;
 }
 
@@ -26594,10 +26608,10 @@ function formatPalmsPeriodLabel(p) {
 let palmsDateModalState = {
   start: null,
   end: null,
-  activeField: 'end', // 'start' or 'end' (which date is being selected)
+  activeField: 'start', // 'start' or 'end' (which date is being selected)
   hoverDate: null,
   viewYear: 2026,
-  viewMonth: 8, // 0-indexed (8 = September)
+  viewMonth: 7, // 0-indexed (7 = August)
   activePreset: '1month'
 };
 
@@ -26622,30 +26636,38 @@ function updatePalmsPickerTabsUi() {
 
   if (tabStart) {
     if (isStart) {
-      tabStart.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer text-left shadow-2xs';
+      tabStart.className = 'group flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer shadow-2xs';
       const label = tabStart.querySelector('.text-3xs');
       if (label) label.className = 'text-3xs uppercase tracking-wider font-black text-blue-600';
+      const icon = tabStart.querySelector('.fa-calendar');
+      if (icon) icon.className = 'fa-regular fa-calendar text-xs text-blue-600 shrink-0 ml-1';
     } else {
-      tabStart.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer text-left shadow-2xs';
+      tabStart.className = 'group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer shadow-2xs';
       const label = tabStart.querySelector('.text-3xs');
       if (label) label.className = 'text-3xs uppercase tracking-wider font-bold text-slate-400';
+      const icon = tabStart.querySelector('.fa-calendar');
+      if (icon) icon.className = 'fa-regular fa-calendar text-xs text-slate-400 shrink-0 ml-1';
     }
   }
 
   if (tabEnd) {
     if (!isStart) {
-      tabEnd.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer text-left shadow-2xs';
+      tabEnd.className = 'group flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 border-blue-600 bg-blue-50/80 text-blue-900 transition-all cursor-pointer shadow-2xs';
       const label = tabEnd.querySelector('.text-3xs');
       if (label) label.className = 'text-3xs uppercase tracking-wider font-black text-blue-600';
+      const icon = tabEnd.querySelector('.fa-calendar');
+      if (icon) icon.className = 'fa-regular fa-calendar text-xs text-blue-600 shrink-0 ml-1';
     } else {
-      tabEnd.className = 'group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer text-left shadow-2xs';
+      tabEnd.className = 'group flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 text-slate-700 transition-all cursor-pointer shadow-2xs';
       const label = tabEnd.querySelector('.text-3xs');
       if (label) label.className = 'text-3xs uppercase tracking-wider font-bold text-slate-400';
+      const icon = tabEnd.querySelector('.fa-calendar');
+      if (icon) icon.className = 'fa-regular fa-calendar text-xs text-slate-400 shrink-0 ml-1';
     }
   }
 
   if (guideText) {
-    guideText.textContent = isStart ? 'カレンダーをクリックして開始日を選択' : 'カレンダーをクリックして終了日を選択';
+    guideText.textContent = isStart ? 'カレンダーまたは日付入力で開始日を選択' : 'カレンダーまたは日付入力で終了日を選択';
   }
 }
 
@@ -26777,13 +26799,13 @@ function openPalmsDateModal() {
   const e = currentPalmsPeriod.endDate || '2026-09-30';
   palmsDateModalState.start = s;
   palmsDateModalState.end = e;
-  // Default active field is 'end' so clicking a date immediately sets the end date without clearing start!
-  palmsDateModalState.activeField = 'end';
+  palmsDateModalState.activeField = 'start';
   palmsDateModalState.hoverDate = null;
 
-  const endD = new Date(e + 'T00:00:00');
-  palmsDateModalState.viewYear = !isNaN(endD.getFullYear()) ? endD.getFullYear() : 2026;
-  palmsDateModalState.viewMonth = !isNaN(endD.getMonth()) ? endD.getMonth() : 8;
+  // カレンダー基準月：開始日の年月を表示（左：当月、右：翌月）
+  const startD = new Date(s + 'T00:00:00');
+  palmsDateModalState.viewYear = !isNaN(startD.getFullYear()) ? startD.getFullYear() : 2026;
+  palmsDateModalState.viewMonth = !isNaN(startD.getMonth()) ? startD.getMonth() : 7;
 
   palmsDateModalState.activePreset = detectPalmsActivePreset(s, e);
 
@@ -26872,13 +26894,13 @@ function selectPalmsDatePreset(presetKey) {
   const range = calcPalmsPresetRange(presetKey);
   palmsDateModalState.start = range.start;
   palmsDateModalState.end = range.end;
-  palmsDateModalState.activeField = 'end';
+  palmsDateModalState.activeField = 'start';
   palmsDateModalState.hoverDate = null;
   palmsDateModalState.activePreset = presetKey;
 
-  const endD = new Date(range.end + 'T00:00:00');
-  palmsDateModalState.viewYear = endD.getFullYear();
-  palmsDateModalState.viewMonth = endD.getMonth();
+  const startD = new Date(range.start + 'T00:00:00');
+  palmsDateModalState.viewYear = startD.getFullYear();
+  palmsDateModalState.viewMonth = startD.getMonth();
 
   syncPalmsModalInputs();
   updatePalmsModalSidebarActive(presetKey);
@@ -26896,20 +26918,30 @@ function onPalmsModalInputChange() {
   const s = sInput.value;
   const e = eInput.value;
 
-  if (s && e) {
-    if (s <= e) {
-      palmsDateModalState.start = s;
-      palmsDateModalState.end = e;
-    } else {
-      palmsDateModalState.start = e;
-      palmsDateModalState.end = s;
+  if (s) palmsDateModalState.start = s;
+  if (e) palmsDateModalState.end = e;
+
+  if (palmsDateModalState.start && palmsDateModalState.end) {
+    if (palmsDateModalState.start > palmsDateModalState.end) {
+      const tmp = palmsDateModalState.start;
+      palmsDateModalState.start = palmsDateModalState.end;
+      palmsDateModalState.end = tmp;
     }
-    palmsDateModalState.activeField = 'end';
-    palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
-    updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
-    syncPalmsModalInputs();
-    renderPalmsModalCalendars();
   }
+
+  if (palmsDateModalState.start) {
+    const d = new Date(palmsDateModalState.start + 'T00:00:00');
+    if (!isNaN(d.getFullYear())) {
+      palmsDateModalState.viewYear = d.getFullYear();
+      palmsDateModalState.viewMonth = d.getMonth();
+    }
+  }
+
+  palmsDateModalState.activeField = 'start';
+  palmsDateModalState.activePreset = detectPalmsActivePreset(palmsDateModalState.start, palmsDateModalState.end);
+  updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
+  syncPalmsModalInputs();
+  renderPalmsModalCalendars();
 }
 
 /**
@@ -26930,13 +26962,13 @@ function movePalmsCalendarMonth(delta) {
 /**
  * Handle date click inside calendar:
  * If selecting start -> updates start, auto-advances to end
- * If selecting end -> updates end directly!
+ * If selecting end -> updates end directly, loops back to start ready
  */
 function onPalmsCalendarDateClick(dateStr) {
   if (palmsDateModalState.activeField === 'start') {
     palmsDateModalState.start = dateStr;
-    // If end exists and is before start, advance end to match start
-    if (palmsDateModalState.end && dateStr > palmsDateModalState.end) {
+    // 開始日を選択したら、終了日を開始日と同じ（または後）にして終了日選択へ進む
+    if (!palmsDateModalState.end || palmsDateModalState.end < dateStr) {
       palmsDateModalState.end = dateStr;
     }
     // Auto-advance to end date selection
@@ -26944,11 +26976,12 @@ function onPalmsCalendarDateClick(dateStr) {
   } else {
     // Selecting End Date
     if (palmsDateModalState.start && dateStr < palmsDateModalState.start) {
-      // If clicked date is before start, gracefully swap them
-      palmsDateModalState.end = palmsDateModalState.start;
+      // 開始日より前の日をクリックした場合は、それを新しい開始日にする
       palmsDateModalState.start = dateStr;
     } else {
       palmsDateModalState.end = dateStr;
+      // 選択完了後は次回クリックで新しく開始日を選べるよう 'start' に戻す
+      palmsDateModalState.activeField = 'start';
     }
   }
 
@@ -26970,17 +27003,17 @@ function onPalmsCalendarDateHover(dateStr) {
 }
 
 /**
- * Render Both Left & Right Calendars
+ * Render Both Left & Right Calendars (Left: View Month, Right: Next Month)
  */
 function renderPalmsModalCalendars() {
-  const rightY = palmsDateModalState.viewYear;
-  const rightM = palmsDateModalState.viewMonth;
+  const leftY = palmsDateModalState.viewYear;
+  const leftM = palmsDateModalState.viewMonth;
 
-  let leftY = rightY;
-  let leftM = rightM - 1;
-  if (leftM < 0) {
-    leftY--;
-    leftM = 11;
+  let rightY = leftY;
+  let rightM = leftM + 1;
+  if (rightM > 11) {
+    rightY++;
+    rightM = 0;
   }
 
   const leftTitle = document.getElementById('palms-cal-left-title');
@@ -27007,7 +27040,6 @@ function renderSingleMonthGrid(containerId, year, month) {
   // Range bounds
   const start = palmsDateModalState.start;
   const end = palmsDateModalState.end;
-  const selectingEnd = palmsDateModalState.selectingEnd;
   const hoverDate = palmsDateModalState.hoverDate;
 
   // Empty cells before 1st day
@@ -27096,15 +27128,24 @@ function applyPalmsDateModal() {
   if (startInput) startInput.value = sFin;
   if (endInput) endInput.value = eFin;
 
-  // Update dropdown if matching option exists
+  // Update dropdown if matching option exists or add dynamic option
   const selectEl = document.getElementById('palms-period-select');
   if (selectEl) {
     const matchVal = `${sFin}_${eFin}`;
+    let matched = false;
     for (let i = 0; i < selectEl.options.length; i++) {
       if (selectEl.options[i].value === matchVal) {
         selectEl.selectedIndex = i;
+        matched = true;
         break;
       }
+    }
+    if (!matched) {
+      const opt = document.createElement('option');
+      opt.value = matchVal;
+      opt.textContent = `${sFin.replace(/-/g, '/')} 〜 ${eFin.replace(/-/g, '/')}`;
+      selectEl.appendChild(opt);
+      selectEl.value = matchVal;
     }
   }
 
@@ -27114,33 +27155,8 @@ function applyPalmsDateModal() {
   // Close Modal
   closePalmsDateModal();
 
-  // Check if period exists in DB
-  const exists = currentPalmsPeriodsList.some(p => p.start_date === sFin && p.end_date === eFin);
-
-  if (exists) {
-    fetchPalmsRankingData(sFin, eFin);
-  } else {
-    // Sync via BNI Connect
-    showToast(`BNI Connectより指定期間 (${sFin}〜${eFin}) を取得中...`, 'info');
-    const partsS = sFin.split('-');
-    const partsE = eFin.split('-');
-    const bniStart = `${partsS[1]}/${partsS[2]}/${partsS[0]}`;
-    const bniEnd = `${partsE[1]}/${partsE[2]}/${partsE[0]}`;
-
-    ApiService.call('syncPalmsApi', bniStart, bniEnd)
-      .then(res => {
-        if (res && res.success) {
-          showToast(res.message || '指定期間のデータを正常に取得しました', 'success');
-          fetchPalmsPeriods();
-        } else {
-          showToast('データ取得に失敗しました: ' + (res ? res.error : '不明なエラー'), 'error');
-        }
-      })
-      .catch(err => {
-        console.error('Custom sync error:', err);
-        showToast('通信エラーが発生しました', 'error');
-      });
-  }
+  // Fetch ranking data directly (backend aggregates automatically if no exact period record exists)
+  fetchPalmsRankingData(sFin, eFin);
 }
 
 
@@ -30484,23 +30500,31 @@ function renderTrafficLightsGrid() {
           </div>
 
           <!-- Mini 7-Axis Radar Chart (Radical Minimalism & High Information Density) -->
-          <div class="bg-slate-50/60 rounded-xl p-2 flex items-center justify-center my-1.5 border border-slate-100/60 group-hover:bg-slate-50 transition-colors">
+          <div class="bg-slate-50/60 rounded-xl p-2.5 flex items-center justify-center my-2 border border-slate-100/60 group-hover:bg-slate-50 transition-colors">
             ${radarSvg}
           </div>
 
-          <!-- Bottom Key Metric Scores (Top Weight Indicators: REF / VIS / 1:1) -->
-          <div class="mt-2 pt-2 border-t border-slate-100 grid grid-cols-3 gap-1.5 text-center">
-            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+          <!-- Bottom Key Metric Scores (Top 5 Indicators: REF / VIS / 1:1 / CEU / TYF) -->
+          <div class="mt-2.5 pt-2 border-t border-slate-100 grid grid-cols-5 gap-1 text-center">
+            <div class="bg-slate-50/80 rounded-lg py-1 px-0.5 flex flex-col items-center">
               <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">REF</span>
-              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.referral || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5 whitespace-nowrap">${scores.referral || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
             </div>
-            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+            <div class="bg-slate-50/80 rounded-lg py-1 px-0.5 flex flex-col items-center">
               <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">VIS</span>
-              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.visitor || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5 whitespace-nowrap">${scores.visitor || 0}<span class="text-3xs font-bold text-slate-400">/25</span></span>
             </div>
-            <div class="bg-slate-50/80 rounded-lg py-1 px-1 flex flex-col items-center">
+            <div class="bg-slate-50/80 rounded-lg py-1 px-0.5 flex flex-col items-center">
               <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">1:1</span>
-              <span class="text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5">${scores.one_to_ones || 0}<span class="text-3xs font-bold text-slate-400">/20</span></span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5 whitespace-nowrap">${scores.one_to_ones || 0}<span class="text-3xs font-bold text-slate-400">/20</span></span>
+            </div>
+            <div class="bg-slate-50/80 rounded-lg py-1 px-0.5 flex flex-col items-center">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">CEU</span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5 whitespace-nowrap">${scores.ceu || 0}<span class="text-3xs font-bold text-slate-400">/10</span></span>
+            </div>
+            <div class="bg-slate-50/80 rounded-lg py-1 px-0.5 flex flex-col items-center">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-tighter">TYF</span>
+              <span class="text-[11px] sm:text-xs font-black text-slate-800 tabular-nums leading-tight mt-0.5 whitespace-nowrap">${scores.tyfcb || 0}<span class="text-3xs font-bold text-slate-400">/5</span></span>
             </div>
           </div>
         </div>
@@ -30528,10 +30552,11 @@ function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
     { key: 'sponsor', label: 'SPO', max: 5, name: '推薦' }
   ];
 
-  const size = 180;
-  const cx = 90;
-  const cy = 90;
-  const r = 50;
+  const width = 220;
+  const height = 200;
+  const cx = 110;
+  const cy = 104;
+  const r = 68;
   const total = items.length;
 
   // Angles: start at top (-PI/2) and go clockwise
@@ -30561,16 +30586,16 @@ function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
     const a = angles[i];
     const lr = r + 15;
     const lx = (cx + lr * Math.cos(a)).toFixed(1);
-    const ly = (cy + lr * Math.sin(a) + 3).toFixed(1);
+    const ly = (cy + lr * Math.sin(a) + (i === 3 || i === 4 ? 6 : (i === 0 ? 0 : 3))).toFixed(1);
     let anchor = 'middle';
-    if (Math.cos(a) > 0.25) anchor = 'start';
-    else if (Math.cos(a) < -0.25) anchor = 'end';
+    if (Math.cos(a) > 0.6) anchor = 'start';
+    else if (Math.cos(a) < -0.6) anchor = 'end';
 
     const val = Number(scores[item.key]) || 0;
     const pct = Math.round((Math.min(item.max, Math.max(0, val)) / item.max) * 100);
 
     return `
-      <text x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="7.5" font-weight="800" fill="#64748b" class="select-none tracking-tighter">
+      <text x="${lx}" y="${ly}" text-anchor="${anchor}" font-size="8" font-weight="800" fill="#64748b" class="select-none tracking-tighter">
         ${item.label}
         <title>${item.name}: ${val}/${item.max}pt (${pct}%)</title>
       </text>
@@ -30609,13 +30634,13 @@ function renderMiniRadarSvg(scores = {}, themeColor = 'green') {
 
   // Dots for each apex
   const dotsHtml = dataPoints.map(p => `
-    <circle cx="${p.x}" cy="${p.y}" r="2.2" fill="${dotColor}" stroke="#ffffff" stroke-width="1.2">
+    <circle cx="${p.x}" cy="${p.y}" r="2.5" fill="${dotColor}" stroke="#ffffff" stroke-width="1.2">
       <title>${p.name}: ${p.val}/${p.max}pt</title>
     </circle>
   `).join('');
 
   return `
-    <svg viewBox="0 0 ${size} ${size}" class="w-full h-auto max-w-[160px] mx-auto block overflow-visible">
+    <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto max-w-[230px] mx-auto block overflow-visible">
       <!-- Outer & Inner Polygons -->
       <polygon points="${grid100}" fill="none" stroke="#cbd5e1" stroke-width="1" />
       <polygon points="${grid50}" fill="none" stroke="#e2e8f0" stroke-width="0.8" stroke-dasharray="2,2" />

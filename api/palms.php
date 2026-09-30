@@ -261,14 +261,26 @@ try {
             $params[':start_date'] = $startDate;
             $params[':end_date'] = $endDate;
         } else {
-            // Default to the latest period available in DB
-            $latestStmt = $pdo->query("
+            // Default to last month (2026-09-01 ~ 2026-09-30) if available, otherwise latest period
+            $prefStmt = $pdo->prepare("
                 SELECT start_date, end_date 
                 FROM palms_reports 
-                ORDER BY end_date DESC 
+                WHERE start_date = '2026-09-01' AND end_date = '2026-09-30'
                 LIMIT 1
             ");
-            $latest = $latestStmt->fetch(PDO::FETCH_ASSOC);
+            $prefStmt->execute();
+            $latest = $prefStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$latest) {
+                $latestStmt = $pdo->query("
+                    SELECT start_date, end_date 
+                    FROM palms_reports 
+                    ORDER BY end_date DESC, start_date DESC 
+                    LIMIT 1
+                ");
+                $latest = $latestStmt->fetch(PDO::FETCH_ASSOC);
+            }
+
             if ($latest) {
                 $whereClause = "WHERE start_date = :start_date AND end_date = :end_date";
                 $params[':start_date'] = $latest['start_date'];
@@ -293,6 +305,46 @@ try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Fallback: If no pre-calculated period record exists in palms_reports,
+        // dynamically aggregate weekly records (<= 14 days) within the requested range!
+        if (empty($records) && $startDate && $endDate) {
+            $aggSql = "
+                SELECT 
+                    p.member_id,
+                    p.member_name,
+                    :start_date as start_date,
+                    :end_date as end_date,
+                    SUM(p.p_present) as p_present,
+                    SUM(p.a_absent) as a_absent,
+                    SUM(p.l_late) as l_late,
+                    SUM(p.m_medical) as m_medical,
+                    SUM(p.s_substitute) as s_substitute,
+                    SUM(p.rgi_referrals_given_internal) as rgi_referrals_given_internal,
+                    SUM(p.rgo_referrals_given_external) as rgo_referrals_given_external,
+                    SUM(p.rri_referrals_received_internal) as rri_referrals_received_internal,
+                    SUM(p.rro_referrals_received_external) as rro_referrals_received_external,
+                    SUM(p.v_visitors) as v_visitors,
+                    SUM(p.one_to_ones) as one_to_ones,
+                    SUM(p.tyfcb_amount) as tyfcb_amount,
+                    SUM(p.ceu) as ceu,
+                    SUM(p.testimonials) as testimonials,
+                    (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) as total_referrals_given,
+                    (SUM(p.rri_referrals_received_internal) + SUM(p.rro_referrals_received_external)) as total_referrals_received,
+                    (SUM(p.tyfcb_amount) * 1000) as tyfcb_yen,
+                    m.category as member_category,
+                    m.profession as member_profession
+                FROM palms_reports p
+                LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
+                WHERE (julianday(p.end_date) - julianday(p.start_date)) <= 14
+                  AND p.end_date >= :start_date AND p.start_date <= :end_date
+                GROUP BY p.member_id, p.member_name
+                ORDER BY (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) DESC, SUM(p.one_to_ones) DESC, SUM(p.v_visitors) DESC
+            ";
+            $aggStmt = $pdo->prepare($aggSql);
+            $aggStmt->execute([':start_date' => $startDate, ':end_date' => $endDate]);
+            $records = $aggStmt->fetchAll(PDO::FETCH_ASSOC);
+        }
 
         echo json_encode([
             'success' => true,
