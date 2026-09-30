@@ -14,6 +14,8 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
 
   it('verifies PALMS Ranking HTML container and UI elements exist in compiled index.html', () => {
     assert.strictEqual(indexHtml.includes('id="view-palms-ranking"'), true);
+    assert.strictEqual(indexHtml.includes('<div id="view-palms-ranking" class="view-content">'), true);
+    assert.strictEqual(indexHtml.includes('id="view-palms-ranking" class="view-content" style="display: none;"'), false);
     assert.strictEqual(indexHtml.includes('id="palms-period-select"'), true);
     assert.strictEqual(indexHtml.includes('id="btn-sync-palms"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-metric-tabs"'), true);
