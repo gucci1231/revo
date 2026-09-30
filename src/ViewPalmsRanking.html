@@ -1,7 +1,7 @@
 <!-- PALMS & Traffic Lights View (REvo OS Phase 2) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Header / Action Bar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
     <div>
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
@@ -13,23 +13,31 @@
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
           公式100点新基準
         </span>
+        <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          PPW / RPW 対応
+        </span>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
-        BNI Connect PALMS実績に基づく公式トラフィックライト（Traffic Lights: 100点満点）評価
+        BNI公式新基準（100点満点）およびサマリーPALMS指標（PPW・RPW・週貢献）に基づく活動成果・改善分析
       </p>
     </div>
 
-    <!-- Actions: Period Selector & Sync Button -->
-    <div class="flex items-center gap-2 flex-wrap self-end md:self-auto">
+    <!-- Actions: Period Selector, Custom Picker & Sync Button -->
+    <div class="flex items-center gap-2 flex-wrap self-end lg:self-auto">
       <div class="relative">
         <label for="palms-period-select" class="sr-only">集計期間</label>
-        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none">
+        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none max-w-[280px] sm:max-w-none truncate">
           <option value="">期間を読込中...</option>
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
           <i class="fa-solid fa-chevron-down text-2xs"></i>
         </div>
       </div>
+
+      <button id="btn-toggle-custom-period" onclick="toggleCustomPeriodBar()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="カレンダーから自由な日付範囲を指定">
+        <i class="fa-solid fa-calendar-days text-slate-500"></i>
+        <span>自由期間指定</span>
+      </button>
 
       <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="BNI Connectから最新PALMSを取得">
         <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
@@ -38,15 +46,67 @@
     </div>
   </div>
 
-  <!-- Traffic Lights 4 KPI Overview Cards -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <!-- Quick Period Preset Pills & Custom Date Range Bar -->
+  <div class="mb-6 space-y-3">
+    <!-- Preset Pills -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-2xs font-bold text-slate-600" id="palms-period-presets">
+      <span class="text-3xs uppercase tracking-wider text-slate-400 mr-1 shrink-0">プリセット:</span>
+      <button type="button" onclick="selectPalmsPreset('4weeks')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="4weeks">
+        直近4週間 (月次総括)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term2')" class="palms-period-pill active px-3 py-1.5 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 transition-all shrink-0 cursor-pointer" data-preset="term2">
+        直近第2期 6ヶ月 (26/04〜09)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term1_h2')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="term1_h2">
+        第1期後半 6ヶ月 (25/10〜26/03)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term1_h1')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="term1_h1">
+        第1期前半 6ヶ月 (25/04〜25/09)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('2years')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="2years">
+        過去2年通算 (2024/10〜2026/09)
+      </button>
+    </div>
+
+    <!-- Custom Date Range Bar (Collapsible) -->
+    <div id="palms-custom-period-bar" class="hidden bg-slate-50/80 border border-slate-200 rounded-2xl p-4 transition-all">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-range text-blue-600"></i>
+            <span>カスタム期間指定:</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <input type="date" id="palms-custom-start" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 shadow-2xs focus:border-blue-500 focus:outline-hidden">
+            <span class="text-slate-400 text-xs">〜</span>
+            <input type="date" id="palms-custom-end" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 shadow-2xs focus:border-blue-500 focus:outline-hidden">
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="applyCustomPalmsPeriod()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-play text-3xs"></i>
+            <span>この期間で集計</span>
+          </button>
+          <button type="button" onclick="toggleCustomPeriodBar(false)" class="text-slate-400 hover:text-slate-600 p-1.5 text-xs rounded-lg hover:bg-slate-200/60 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <p class="text-3xs text-slate-400 mt-2">
+        ※ データベース内に存在しない期間が指定された場合は、BNI Connectより自動でPALMSデータを取得して即時集計します。
+      </p>
+    </div>
+  </div>
+
+  <!-- Traffic Lights & PPW / RPW KPI Overview Cards (5 Columns) -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
     <!-- Chapter Avg Score -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-slate-500">チャプター平均</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合平均スコア</span>
         <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
         <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
       </div>
@@ -57,13 +117,43 @@
       </div>
     </div>
 
+    <!-- Chapter Avg PPW -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 PPW (週貢献)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">目標 2.0+</span>
+      </div>
+      <div class="flex items-baseline gap-1.5">
+        <span id="palms-kpi-avg-ppw" class="text-2xl sm:text-3xl font-black text-blue-600 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">pt/週</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-ppw-breakdown">
+        2.0以上: -名 / 1.0~2.0: -名
+      </div>
+    </div>
+
+    <!-- Chapter Avg RPW -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 RPW (週リファーラル)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">目標 1.25+</span>
+      </div>
+      <div class="flex items-baseline gap-1.5">
+        <span id="palms-kpi-avg-rpw" class="text-2xl sm:text-3xl font-black text-indigo-600 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">件/週</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-rpw-breakdown">
+        総リファーラル: -件
+      </div>
+    </div>
+
     <!-- Green Tier (70+ pt) -->
     <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
         <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
         <span class="text-xs font-bold text-slate-400">名</span>
       </div>
@@ -72,33 +162,18 @@
       </div>
     </div>
 
-    <!-- Yellow Tier (50-69 pt) -->
+    <!-- Yellow / Red Tier -->
     <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー (標準)</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">50〜69点</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー / 🔴 要注力</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">70点未満</span>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
         <span class="text-xs font-bold text-slate-400">名</span>
       </div>
       <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
-        構成比: 0%
-      </div>
-    </div>
-
-    <!-- Red & Grey Tier (<50 pt) -->
-    <div class="bg-white border border-rose-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-rose-700">🔴 要注力 / ⚪ 改善</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">50点未満</span>
-      </div>
-      <div class="flex items-baseline gap-2">
-        <span id="palms-kpi-red-count" class="text-2xl sm:text-3xl font-black text-rose-600 tabular-nums">0</span>
-        <span class="text-xs font-bold text-slate-400">名</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-red-pct">
-        構成比: 0%
+        育成・引き上げ対象
       </div>
     </div>
   </div>
@@ -114,36 +189,43 @@
         </div>
         <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
       </div>
-      <div class="relative flex items-center justify-center h-56 sm:h-64">
+      <div class="relative flex items-center justify-center h-60 sm:h-64">
         <canvas id="chart-palms-donut"></canvas>
       </div>
     </div>
 
-    <!-- Chart 2: 7-Metric Radar Analysis (Radar) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chart-line text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
-        </div>
-        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
-      </div>
-      <div class="relative flex items-center justify-center h-56 sm:h-64">
-        <canvas id="chart-palms-radar"></canvas>
-      </div>
-    </div>
-
-    <!-- Chart 3: Member Ranking Score Bar Chart -->
+    <!-- Chart 2: PPW & RPW Distribution by Member (Bar with Reference Lines) -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
       <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chart-simple text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">メンバー別 総合スコア (100点満点)</h3>
+          <h3 class="text-sm font-bold text-slate-800">メンバー別 PPW (週貢献) & RPW (週リファーラル)</h3>
         </div>
-        <span class="text-2xs font-bold text-slate-400">緑線: 70pt / 黄線: 50pt</span>
+        <div class="flex items-center gap-2 text-3xs font-bold">
+          <span class="inline-flex items-center gap-1 text-slate-800">
+            <span class="w-3 h-0.5 bg-slate-900 inline-block"></span> PPW 2.0 (目標)
+          </span>
+          <span class="inline-flex items-center gap-1 text-slate-500">
+            <span class="w-3 h-0.5 bg-slate-400 inline-block"></span> PPW 1.0 (基準)
+          </span>
+        </div>
       </div>
-      <div class="relative w-full h-64 sm:h-72">
-        <canvas id="chart-palms-ranking-bar"></canvas>
+      <div class="relative w-full h-60 sm:h-64">
+        <canvas id="chart-palms-ppw-bar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 3: 7-Metric Radar Analysis (Radar) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-compass text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
+      </div>
+      <div class="relative flex items-center justify-center h-60 sm:h-64">
+        <canvas id="chart-palms-radar"></canvas>
       </div>
     </div>
 
@@ -156,7 +238,7 @@
         </div>
         <span class="text-2xs font-bold text-slate-400">リファーラル・1to1・ビジター</span>
       </div>
-      <div class="relative w-full h-64 sm:h-72">
+      <div class="relative w-full h-60 sm:h-64">
         <canvas id="chart-palms-trend-line"></canvas>
       </div>
     </div>
@@ -167,6 +249,14 @@
     <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
       <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
       <span>総合点 (100点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('ppw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ppw">
+      <i class="fa-solid fa-fire text-amber-500 text-2xs"></i>
+      <span>PPW (週貢献)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('rpw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="rpw">
+      <i class="fa-solid fa-bolt text-indigo-500 text-2xs"></i>
+      <span>RPW (週リファーラル)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
       <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
@@ -219,7 +309,7 @@
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-list-ol text-blue-600"></i>
-        <span>メンバー別 トラフィックライト詳細実績一覧</span>
+        <span>メンバー別 実績一覧（トラフィックライト ＆ PPW / RPW）</span>
         <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
       </h3>
       <div class="text-2xs text-slate-400">
@@ -229,13 +319,13 @@
 
     <!-- Table Responsive Wrap -->
     <div class="overflow-x-auto scrollbar-thin">
-      <table class="w-full text-left border-collapse min-w-[880px]">
+      <table class="w-full text-left border-collapse min-w-[960px]">
         <thead>
           <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
-            <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
+            <th class="py-3 px-3 w-12 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
               順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 min-w-[150px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+            <th class="py-3 px-4 min-w-[140px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
               メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
@@ -243,6 +333,12 @@
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
               総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ppw')">
+              PPW (週貢献) <span id="sort-icon-ppw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rpw')">
+              RPW (週リファ) <span id="sort-icon-rpw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
               ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
@@ -262,15 +358,12 @@
             <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
               TYFCB売上 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('sponsors')">
-              スポンサー <span id="sort-icon-sponsors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
           </tr>
         </thead>
         <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
           <!-- Populated by JavaScript -->
           <tr>
-            <td colspan="11" class="py-12 text-center text-slate-400">
+            <td colspan="12" class="py-12 text-center text-slate-400">
               <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
               <p class="text-xs">データを読込中...</p>
             </td>
@@ -280,4 +373,3 @@
     </div>
   </div>
 </div>
-

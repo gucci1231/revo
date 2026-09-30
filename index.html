@@ -9538,7 +9538,7 @@ select.form-input, select.form-select {
     <!-- PALMS & Traffic Lights View (REvo OS Phase 2) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Header / Action Bar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200">
     <div>
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 shadow-2xs">
@@ -9550,23 +9550,31 @@ select.form-input, select.form-select {
         <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
           公式100点新基準
         </span>
+        <span class="text-3xs font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          PPW / RPW 対応
+        </span>
       </div>
       <p class="text-xs sm:text-sm text-slate-500 mt-1 pl-10">
-        BNI Connect PALMS実績に基づく公式トラフィックライト（Traffic Lights: 100点満点）評価
+        BNI公式新基準（100点満点）およびサマリーPALMS指標（PPW・RPW・週貢献）に基づく活動成果・改善分析
       </p>
     </div>
 
-    <!-- Actions: Period Selector & Sync Button -->
-    <div class="flex items-center gap-2 flex-wrap self-end md:self-auto">
+    <!-- Actions: Period Selector, Custom Picker & Sync Button -->
+    <div class="flex items-center gap-2 flex-wrap self-end lg:self-auto">
       <div class="relative">
         <label for="palms-period-select" class="sr-only">集計期間</label>
-        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none">
+        <select id="palms-period-select" onchange="changePalmsPeriod(this.value)" class="text-xs sm:text-sm font-semibold bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 pr-8 text-slate-700 shadow-2xs cursor-pointer focus:outline-hidden focus:border-blue-500 transition-all appearance-none max-w-[280px] sm:max-w-none truncate">
           <option value="">期間を読込中...</option>
         </select>
         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
           <i class="fa-solid fa-chevron-down text-2xs"></i>
         </div>
       </div>
+
+      <button id="btn-toggle-custom-period" onclick="toggleCustomPeriodBar()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="カレンダーから自由な日付範囲を指定">
+        <i class="fa-solid fa-calendar-days text-slate-500"></i>
+        <span>自由期間指定</span>
+      </button>
 
       <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="BNI Connectから最新PALMSを取得">
         <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
@@ -9575,15 +9583,67 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- Traffic Lights 4 KPI Overview Cards -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <!-- Quick Period Preset Pills & Custom Date Range Bar -->
+  <div class="mb-6 space-y-3">
+    <!-- Preset Pills -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-2xs font-bold text-slate-600" id="palms-period-presets">
+      <span class="text-3xs uppercase tracking-wider text-slate-400 mr-1 shrink-0">プリセット:</span>
+      <button type="button" onclick="selectPalmsPreset('4weeks')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="4weeks">
+        直近4週間 (月次総括)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term2')" class="palms-period-pill active px-3 py-1.5 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 transition-all shrink-0 cursor-pointer" data-preset="term2">
+        直近第2期 6ヶ月 (26/04〜09)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term1_h2')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="term1_h2">
+        第1期後半 6ヶ月 (25/10〜26/03)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('term1_h1')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="term1_h1">
+        第1期前半 6ヶ月 (25/04〜25/09)
+      </button>
+      <button type="button" onclick="selectPalmsPreset('2years')" class="palms-period-pill px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shrink-0 cursor-pointer" data-preset="2years">
+        過去2年通算 (2024/10〜2026/09)
+      </button>
+    </div>
+
+    <!-- Custom Date Range Bar (Collapsible) -->
+    <div id="palms-custom-period-bar" class="hidden bg-slate-50/80 border border-slate-200 rounded-2xl p-4 transition-all">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-range text-blue-600"></i>
+            <span>カスタム期間指定:</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <input type="date" id="palms-custom-start" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 shadow-2xs focus:border-blue-500 focus:outline-hidden">
+            <span class="text-slate-400 text-xs">〜</span>
+            <input type="date" id="palms-custom-end" class="text-xs font-semibold bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 shadow-2xs focus:border-blue-500 focus:outline-hidden">
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="applyCustomPalmsPeriod()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-play text-3xs"></i>
+            <span>この期間で集計</span>
+          </button>
+          <button type="button" onclick="toggleCustomPeriodBar(false)" class="text-slate-400 hover:text-slate-600 p-1.5 text-xs rounded-lg hover:bg-slate-200/60 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <p class="text-3xs text-slate-400 mt-2">
+        ※ データベース内に存在しない期間が指定された場合は、BNI Connectより自動でPALMSデータを取得して即時集計します。
+      </p>
+    </div>
+  </div>
+
+  <!-- Traffic Lights & PPW / RPW KPI Overview Cards (5 Columns) -->
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
     <!-- Chapter Avg Score -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-slate-500">チャプター平均</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合平均スコア</span>
         <i class="fa-solid fa-gauge-high text-xs text-blue-500"></i>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-avg-score" class="text-2xl sm:text-3xl font-black text-slate-800 tabular-nums">--</span>
         <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
       </div>
@@ -9594,13 +9654,43 @@ select.form-input, select.form-select {
       </div>
     </div>
 
+    <!-- Chapter Avg PPW -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 PPW (週貢献)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">目標 2.0+</span>
+      </div>
+      <div class="flex items-baseline gap-1.5">
+        <span id="palms-kpi-avg-ppw" class="text-2xl sm:text-3xl font-black text-blue-600 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">pt/週</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-ppw-breakdown">
+        2.0以上: -名 / 1.0~2.0: -名
+      </div>
+    </div>
+
+    <!-- Chapter Avg RPW -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 RPW (週リファーラル)</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">目標 1.25+</span>
+      </div>
+      <div class="flex items-baseline gap-1.5">
+        <span id="palms-kpi-avg-rpw" class="text-2xl sm:text-3xl font-black text-indigo-600 tabular-nums">--</span>
+        <span class="text-xs font-bold text-slate-400">件/週</span>
+      </div>
+      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-rpw-breakdown">
+        総リファーラル: -件
+      </div>
+    </div>
+
     <!-- Green Tier (70+ pt) -->
     <div class="bg-white border border-emerald-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-emerald-700">🟢 グリーン (優秀)</span>
         <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">70点以上</span>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-green-count" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">0</span>
         <span class="text-xs font-bold text-slate-400">名</span>
       </div>
@@ -9609,33 +9699,18 @@ select.form-input, select.form-select {
       </div>
     </div>
 
-    <!-- Yellow Tier (50-69 pt) -->
+    <!-- Yellow / Red Tier -->
     <div class="bg-white border border-amber-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー (標準)</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">50〜69点</span>
+      <div class="flex items-center justify-between text-slate-400 mb-1">
+        <span class="text-3xs font-bold uppercase tracking-wider text-amber-700">🟡 イエロー / 🔴 要注力</span>
+        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">70点未満</span>
       </div>
-      <div class="flex items-baseline gap-2">
+      <div class="flex items-baseline gap-1.5">
         <span id="palms-kpi-yellow-count" class="text-2xl sm:text-3xl font-black text-amber-600 tabular-nums">0</span>
         <span class="text-xs font-bold text-slate-400">名</span>
       </div>
       <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-yellow-pct">
-        構成比: 0%
-      </div>
-    </div>
-
-    <!-- Red & Grey Tier (<50 pt) -->
-    <div class="bg-white border border-rose-100 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between text-slate-400 mb-2">
-        <span class="text-2xs font-bold uppercase tracking-wider text-rose-700">🔴 要注力 / ⚪ 改善</span>
-        <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-rose-50 text-rose-600">50点未満</span>
-      </div>
-      <div class="flex items-baseline gap-2">
-        <span id="palms-kpi-red-count" class="text-2xl sm:text-3xl font-black text-rose-600 tabular-nums">0</span>
-        <span class="text-xs font-bold text-slate-400">名</span>
-      </div>
-      <div class="mt-2 text-2xs text-slate-500 font-semibold" id="palms-kpi-red-pct">
-        構成比: 0%
+        育成・引き上げ対象
       </div>
     </div>
   </div>
@@ -9651,36 +9726,43 @@ select.form-input, select.form-select {
         </div>
         <span class="text-2xs font-bold text-slate-400">目標: グリーン70%以上</span>
       </div>
-      <div class="relative flex items-center justify-center h-56 sm:h-64">
+      <div class="relative flex items-center justify-center h-60 sm:h-64">
         <canvas id="chart-palms-donut"></canvas>
       </div>
     </div>
 
-    <!-- Chart 2: 7-Metric Radar Analysis (Radar) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
-      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chart-line text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
-        </div>
-        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
-      </div>
-      <div class="relative flex items-center justify-center h-56 sm:h-64">
-        <canvas id="chart-palms-radar"></canvas>
-      </div>
-    </div>
-
-    <!-- Chart 3: Member Ranking Score Bar Chart -->
+    <!-- Chart 2: PPW & RPW Distribution by Member (Bar with Reference Lines) -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
       <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
         <div class="flex items-center gap-2">
           <i class="fa-solid fa-chart-simple text-blue-600 text-sm"></i>
-          <h3 class="text-sm font-bold text-slate-800">メンバー別 総合スコア (100点満点)</h3>
+          <h3 class="text-sm font-bold text-slate-800">メンバー別 PPW (週貢献) & RPW (週リファーラル)</h3>
         </div>
-        <span class="text-2xs font-bold text-slate-400">緑線: 70pt / 黄線: 50pt</span>
+        <div class="flex items-center gap-2 text-3xs font-bold">
+          <span class="inline-flex items-center gap-1 text-slate-800">
+            <span class="w-3 h-0.5 bg-slate-900 inline-block"></span> PPW 2.0 (目標)
+          </span>
+          <span class="inline-flex items-center gap-1 text-slate-500">
+            <span class="w-3 h-0.5 bg-slate-400 inline-block"></span> PPW 1.0 (基準)
+          </span>
+        </div>
       </div>
-      <div class="relative w-full h-64 sm:h-72">
-        <canvas id="chart-palms-ranking-bar"></canvas>
+      <div class="relative w-full h-60 sm:h-64">
+        <canvas id="chart-palms-ppw-bar"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 3: 7-Metric Radar Analysis (Radar) -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-compass text-blue-600 text-sm"></i>
+          <h3 class="text-sm font-bold text-slate-800">7大指標 平均スコア・レーダー分析</h3>
+        </div>
+        <span class="text-2xs font-bold text-slate-400">各指標の満点比</span>
+      </div>
+      <div class="relative flex items-center justify-center h-60 sm:h-64">
+        <canvas id="chart-palms-radar"></canvas>
       </div>
     </div>
 
@@ -9693,7 +9775,7 @@ select.form-input, select.form-select {
         </div>
         <span class="text-2xs font-bold text-slate-400">リファーラル・1to1・ビジター</span>
       </div>
-      <div class="relative w-full h-64 sm:h-72">
+      <div class="relative w-full h-60 sm:h-64">
         <canvas id="chart-palms-trend-line"></canvas>
       </div>
     </div>
@@ -9704,6 +9786,14 @@ select.form-input, select.form-select {
     <button type="button" onclick="switchPalmsMetric('total')" class="palms-metric-tab active px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-2xs flex items-center gap-1.5" data-metric="total">
       <i class="fa-solid fa-crown text-amber-300 text-2xs"></i>
       <span>総合点 (100点)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('ppw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="ppw">
+      <i class="fa-solid fa-fire text-amber-500 text-2xs"></i>
+      <span>PPW (週貢献)</span>
+    </button>
+    <button type="button" onclick="switchPalmsMetric('rpw')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="rpw">
+      <i class="fa-solid fa-bolt text-indigo-500 text-2xs"></i>
+      <span>RPW (週リファーラル)</span>
     </button>
     <button type="button" onclick="switchPalmsMetric('referrals')" class="palms-metric-tab px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5" data-metric="referrals">
       <i class="fa-solid fa-handshake text-blue-500 text-2xs"></i>
@@ -9756,7 +9846,7 @@ select.form-input, select.form-select {
     <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
       <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-list-ol text-blue-600"></i>
-        <span>メンバー別 トラフィックライト詳細実績一覧</span>
+        <span>メンバー別 実績一覧（トラフィックライト ＆ PPW / RPW）</span>
         <span id="palms-member-count-badge" class="text-2xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 ml-1">0名</span>
       </h3>
       <div class="text-2xs text-slate-400">
@@ -9766,13 +9856,13 @@ select.form-input, select.form-select {
 
     <!-- Table Responsive Wrap -->
     <div class="overflow-x-auto scrollbar-thin">
-      <table class="w-full text-left border-collapse min-w-[880px]">
+      <table class="w-full text-left border-collapse min-w-[960px]">
         <thead>
           <tr class="bg-slate-50/70 border-b border-slate-200/80 text-2xs font-black text-slate-500 uppercase tracking-wider">
-            <th class="py-3 px-3 w-14 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
+            <th class="py-3 px-3 w-12 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rank')">
               順位 <span id="sort-icon-rank"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-4 min-w-[150px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
+            <th class="py-3 px-4 min-w-[140px] cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('name')">
               メンバー <span id="sort-icon-name"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-center cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('traffic_light')">
@@ -9780,6 +9870,12 @@ select.form-input, select.form-select {
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('total_score')">
               総合点 <span id="sort-icon-total_score"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('ppw')">
+              PPW (週貢献) <span id="sort-icon-ppw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
+            </th>
+            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('rpw')">
+              RPW (週リファ) <span id="sort-icon-rpw"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
             <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('visitors')">
               ビジター <span id="sort-icon-visitors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
@@ -9799,15 +9895,12 @@ select.form-input, select.form-select {
             <th class="py-3 px-4 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('tyfcb')">
               TYFCB売上 <span id="sort-icon-tyfcb"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
             </th>
-            <th class="py-3 px-3 text-right cursor-pointer select-none hover:text-blue-600" onclick="sortPalmsTable('sponsors')">
-              スポンサー <span id="sort-icon-sponsors"><i class="fa-solid fa-sort text-slate-300 text-3xs"></i></span>
-            </th>
           </tr>
         </thead>
         <tbody id="palms-table-body" class="divide-y divide-slate-100 text-xs">
           <!-- Populated by JavaScript -->
           <tr>
-            <td colspan="11" class="py-12 text-center text-slate-400">
+            <td colspan="12" class="py-12 text-center text-slate-400">
               <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
               <p class="text-xs">データを読込中...</p>
             </td>
@@ -9817,7 +9910,6 @@ select.form-input, select.form-select {
     </div>
   </div>
 </div>
-
 
     <!-- Modal: フォロー方針（時期尚早 / 関係維持）リマインド設定モーダル -->
 <div id="modal-follow-pending-reminder" class="modal-overlay" style="display:none;">
@@ -22138,7 +22230,7 @@ function deleteChapterLink(linkId, title) {
 <script>
 /**
  * PALMS & BNI Traffic Lights View Controller (REvo OS Phase 2)
- * Full 100-Point Scoring System + Rich Chart.js Visualizations
+ * Full 100-Point Scoring System + PPW / RPW Analytics + Flexible Period Selection + Rich Chart.js
  */
 
 let currentPalmsRecords = [];
@@ -22150,8 +22242,8 @@ let isPalmsSyncing = false;
 
 // Chart.js Instances
 let palmsDonutChart = null;
+let palmsPpwChart = null;
 let palmsRadarChart = null;
-let palmsBarChart = null;
 let palmsTrendChart = null;
 
 /**
@@ -22164,6 +22256,7 @@ function formatPalmsPeriodLabel(p) {
   if (s === '2026-04-01' && e === '2026-09-30') return `直近第2期 6ヶ月 (2026/04〜2026/09) ★最新基準 [${p.member_count}名]`;
   if (s === '2025-10-01' && e === '2026-03-31') return `第1期後半 6ヶ月 (2025/10〜2026/03) [${p.member_count}名]`;
   if (s === '2025-04-01' && e === '2025-09-30') return `第1期前半 6ヶ月 (2025/04〜2025/09) [${p.member_count}名]`;
+  if (s === '2026-08-27' && e === '2026-09-24') return `直近4週間 (2026/08/27〜09/24) [${p.member_count}名]`;
   if (s === '2026-09-17' && e === '2026-09-24') return `直近定例会 週次 (2026/09/17〜09/24) [${p.member_count}名]`;
   const sFmt = s.replace(/-/g, '/');
   const eFmt = e.replace(/-/g, '/');
@@ -22183,12 +22276,14 @@ function fetchPalmsPeriods() {
         currentPalmsPeriodsList = res.periods;
         selectEl.innerHTML = '';
         
-        // Priority order for default period: 2026-04-01_2026-09-30 (Latest 6M) or 2024-10-01_2026-09-30 (2Y)
+        // Priority order for default period: 2026-04-01_2026-09-30 (Latest 6M)
         let defaultVal = '';
         const pref6M = res.periods.find(p => p.start_date === '2026-04-01' && p.end_date === '2026-09-30');
+        const pref4W = res.periods.find(p => p.start_date === '2026-08-27' && p.end_date === '2026-09-24');
         const pref2Y = res.periods.find(p => p.start_date === '2024-10-01' && p.end_date === '2026-09-30');
         
         if (pref6M) defaultVal = `${pref6M.start_date}_${pref6M.end_date}`;
+        else if (pref4W) defaultVal = `${pref4W.start_date}_${pref4W.end_date}`;
         else if (pref2Y) defaultVal = `${pref2Y.start_date}_${pref2Y.end_date}`;
         else defaultVal = `${res.periods[0].start_date}_${res.periods[0].end_date}`;
 
@@ -22220,23 +22315,195 @@ function fetchPalmsPeriods() {
 }
 
 /**
- * Change selected PALMS period
+ * Change selected PALMS period from dropdown
  */
 function changePalmsPeriod(val) {
   if (!val) return;
   const [s, e] = val.split('_');
+  updatePeriodPresetPillActive(s, e);
   fetchPalmsRankingData(s, e);
 }
 
 /**
- * Calculate BNI Traffic Lights Official 100-Point Score
+ * Select from quick preset pills
+ */
+function selectPalmsPreset(presetKey) {
+  let s = '';
+  let e = '';
+
+  if (presetKey === '4weeks') {
+    s = '2026-08-27';
+    e = '2026-09-24';
+  } else if (presetKey === 'term2') {
+    s = '2026-04-01';
+    e = '2026-09-30';
+  } else if (presetKey === 'term1_h2') {
+    s = '2025-10-01';
+    e = '2026-03-31';
+  } else if (presetKey === 'term1_h1') {
+    s = '2025-04-01';
+    e = '2025-09-30';
+  } else if (presetKey === '2years') {
+    s = '2024-10-01';
+    e = '2026-09-30';
+  }
+
+  if (s && e) {
+    updatePeriodPresetPillActive(s, e);
+    
+    // Update select dropdown if matching option exists
+    const selectEl = document.getElementById('palms-period-select');
+    if (selectEl) {
+      const matchVal = `${s}_${e}`;
+      for (let i = 0; i < selectEl.options.length; i++) {
+        if (selectEl.options[i].value === matchVal) {
+          selectEl.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    fetchPalmsRankingData(s, e);
+  }
+}
+
+/**
+ * Toggle custom period selection bar
+ */
+function toggleCustomPeriodBar(forceState = null) {
+  const bar = document.getElementById('palms-custom-period-bar');
+  if (!bar) return;
+  const isHidden = bar.classList.contains('hidden');
+  const shouldShow = (forceState !== null) ? forceState : isHidden;
+
+  if (shouldShow) {
+    bar.classList.remove('hidden');
+    // Set default values from current period
+    const startInput = document.getElementById('palms-custom-start');
+    const endInput = document.getElementById('palms-custom-end');
+    if (startInput && currentPalmsPeriod.startDate) startInput.value = currentPalmsPeriod.startDate;
+    if (endInput && currentPalmsPeriod.endDate) endInput.value = currentPalmsPeriod.endDate;
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+/**
+ * Apply user-entered custom date range
+ */
+function applyCustomPalmsPeriod() {
+  const startInput = document.getElementById('palms-custom-start');
+  const endInput = document.getElementById('palms-custom-end');
+  if (!startInput || !endInput || !startInput.value || !endInput.value) {
+    showToast('開始日と終了日を両方入力してください', 'warning');
+    return;
+  }
+
+  const s = startInput.value;
+  const e = endInput.value;
+
+  if (s > e) {
+    showToast('開始日は終了日以前の日付を指定してください', 'warning');
+    return;
+  }
+
+  // Check if period already exists in loaded periods
+  const exists = currentPalmsPeriodsList.some(p => p.start_date === s && p.end_date === e);
+
+  if (exists) {
+    fetchPalmsRankingData(s, e);
+    toggleCustomPeriodBar(false);
+  } else {
+    // Need to crawl / sync from BNI Connect for this specific date range
+    showToast(`BNI Connectより指定期間 (${s}〜${e}) を取得中...`, 'info');
+    
+    // Format to MM/DD/YYYY for BNI Connect API
+    const partsS = s.split('-');
+    const partsE = e.split('-');
+    const bniStart = `${partsS[1]}/${partsS[2]}/${partsS[0]}`;
+    const bniEnd = `${partsE[1]}/${partsE[2]}/${partsE[0]}`;
+
+    ApiService.call('syncPalmsApi', bniStart, bniEnd)
+      .then(res => {
+        if (res && res.success) {
+          showToast(res.message || '指定期間のデータを正常に取得しました', 'success');
+          toggleCustomPeriodBar(false);
+          fetchPalmsPeriods();
+        } else {
+          showToast('データ取得に失敗しました: ' + (res ? res.error : '不明なエラー'), 'error');
+        }
+      })
+      .catch(err => {
+        console.error('Custom sync error:', err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+}
+
+/**
+ * Update active state of preset pills
+ */
+function updatePeriodPresetPillActive(s, e) {
+  const pills = document.querySelectorAll('#palms-period-presets .palms-period-pill');
+  pills.forEach(pill => {
+    const key = pill.getAttribute('data-preset');
+    let match = false;
+    if (key === '4weeks' && s === '2026-08-27' && e === '2026-09-24') match = true;
+    else if (key === 'term2' && s === '2026-04-01' && e === '2026-09-30') match = true;
+    else if (key === 'term1_h2' && s === '2025-10-01' && e === '2026-03-31') match = true;
+    else if (key === 'term1_h1' && s === '2025-04-01' && e === '2025-09-30') match = true;
+    else if (key === '2years' && s === '2024-10-01' && e === '2026-09-30') match = true;
+
+    if (match) {
+      pill.classList.add('active', 'border-blue-600', 'bg-blue-50', 'text-blue-700');
+      pill.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
+    } else {
+      pill.classList.remove('active', 'border-blue-600', 'bg-blue-50', 'text-blue-700');
+      pill.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
+    }
+  });
+}
+
+/**
+ * Calculate BNI Traffic Lights Official 100-Point Score & PPW / RPW
+ * Formula Source: BNI Member Traffic Lights Report (2025/10~) & Summary PALMS Report
  */
 function calcBniTrafficLightScore(r, weeks) {
-  const w = Math.max(1, weeks);
+  // Number of meeting weeks in period (W = P + A + L + M + S)
+  const meetingCount = (r.p || 0) + (r.a || 0) + (r.l || 0) + (r.m || 0) + (r.s || 0);
+  const w = Math.max(1, meetingCount > 0 ? meetingCount : weeks);
 
+  // --- RPW & PPW Metrics (Summary PALMS Standard) ---
+  // RPW = (RGI + RGO) / W (Referrals Given per Week)
+  const totalRefGiven = r.total_referrals_given || 0;
+  const rpw = totalRefGiven / w;
+
+  // PPW = (RGI + RGO + Visitors + Testimonials/Sponsors) / W
+  const sponsors = Number(r.testimonials || r.sponsors || 0);
+  const visitors = r.visitors || 0;
+  const ppw = (totalRefGiven + visitors + sponsors) / w;
+
+  // PPW Band Tier (Reference lines: 2.0000 and 1.0000)
+  let ppwTier = 'low';
+  let ppwTierLabel = '1.0未満 (要フォロー)';
+  let ppwBadgeClass = 'bg-rose-50 text-rose-700 border-rose-200';
+  let ppwDot = '⚠️';
+
+  if (ppw >= 2.0) {
+    ppwTier = 'high';
+    ppwTierLabel = '2.0以上 (維持・共有)';
+    ppwBadgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    ppwDot = '🌟';
+  } else if (ppw >= 1.0) {
+    ppwTier = 'mid';
+    ppwTierLabel = '1.0〜2.0 (具体化)';
+    ppwBadgeClass = 'bg-blue-50 text-blue-700 border-blue-200';
+    ppwDot = '🔹';
+  }
+
+  // --- 100-Point Traffic Light Scoring System ---
   // 1. Visitors in 6 Months (Max 25 pt)
-  // Normalized to 26 weeks (6 months)
-  const vis6m = (r.visitors || 0) * (26 / w);
+  const vis6m = visitors * (26 / w);
   let scoreVisitor = 0;
   if (vis6m >= 5) scoreVisitor = 25;
   else if (vis6m >= 4) scoreVisitor = 20;
@@ -22246,13 +22513,6 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreVisitor = 0;
 
   // 2. TYFCB Score in 6 Months (Max 5 pt)
-  // Base benchmark ¥190,000 / week -> 6M normalized
-  // >= 5,700,000 (30x): 5 pt
-  // >= 2,850,000 (15x): 4 pt
-  // >= 950,000 (5x): 3 pt
-  // >= 380,000 (2x): 2 pt
-  // > 0 (< 380,000): 1 pt
-  // 0: 0 pt
   const tyfcb6m = (r.tyfcb_yen || 0) * (26 / w);
   let scoreTyfcb = 0;
   if (tyfcb6m >= 5700000) scoreTyfcb = 5;
@@ -22263,11 +22523,6 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreTyfcb = 0;
 
   // 3. 1-2-1s Score Per Week (Max 20 pt)
-  // >= 1.00 / wk: 20 pt
-  // >= 0.75 / wk: 15 pt
-  // >= 0.50 / wk: 10 pt
-  // >= 0.25 / wk: 5 pt
-  // < 0.25 / wk: 0 pt
   const otoPerWeek = (r.one_to_ones || 0) / w;
   let scoreOto = 0;
   if (otoPerWeek >= 1.00) scoreOto = 20;
@@ -22277,13 +22532,7 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreOto = 0;
 
   // 4. Referrals Given Per Week (Max 25 pt)
-  // >= 1.25 / wk: 25 pt
-  // >= 1.00 / wk: 20 pt
-  // >= 0.75 / wk: 15 pt
-  // >= 0.50 / wk: 10 pt
-  // >= 0.25 / wk: 5 pt
-  // < 0.25 / wk: 0 pt
-  const refPerWeek = (r.total_referrals_given || 0) / w;
+  const refPerWeek = rpw;
   let scoreReferral = 0;
   if (refPerWeek >= 1.25) scoreReferral = 25;
   else if (refPerWeek >= 1.00) scoreReferral = 20;
@@ -22293,13 +22542,9 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreReferral = 0;
 
   // 5. Members Sponsored in 6 Months (Max 5 pt)
-  const sponsors = Number(r.testimonials || r.sponsors || 0);
   const scoreSponsor = (sponsors >= 1) ? 5 : 0;
 
   // 6. CEU Per Week (Max 10 pt)
-  // > 0.5 / wk: 10 pt
-  // > 0 && <= 0.5 / wk: 5 pt
-  // <= 0: 0 pt
   const ceuPerWeek = (r.ceu || 0) / w;
   let scoreCeu = 0;
   if (ceuPerWeek > 0.5) scoreCeu = 10;
@@ -22307,11 +22552,7 @@ function calcBniTrafficLightScore(r, weeks) {
   else scoreCeu = 0;
 
   // 7. Attendance Rate (Max 10 pt)
-  // >= 96%: 10 pt
-  // >= 88%: 5 pt
-  // < 88%: 0 pt
-  const totalMeetings = (r.p || 0) + (r.a || 0) + (r.l || 0) + (r.m || 0) + (r.s || 0);
-  const attRate = totalMeetings > 0 ? (((r.p || 0) + (r.s || 0)) / totalMeetings) * 100 : 100;
+  const attRate = meetingCount > 0 ? (((r.p || 0) + (r.s || 0)) / meetingCount) * 100 : 100;
   let scoreAttendance = 0;
   if (attRate >= 96) scoreAttendance = 10;
   else if (attRate >= 88) scoreAttendance = 5;
@@ -22359,6 +22600,13 @@ function calcBniTrafficLightScore(r, weeks) {
     tierBg,
     tierBadgeClass,
     tierDot,
+    rpw,
+    ppw,
+    ppwTier,
+    ppwTierLabel,
+    ppwBadgeClass,
+    ppwDot,
+    weeksCount: w,
     scores: {
       visitor: scoreVisitor,
       tyfcb: scoreTyfcb,
@@ -22397,7 +22645,7 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="11" class="py-12 text-center text-slate-400">
+        <td colspan="12" class="py-12 text-center text-slate-400">
           <i class="fa-solid fa-circle-notch fa-spin text-xl mb-2"></i>
           <p class="text-xs">データを読込中...</p>
         </td>
@@ -22411,7 +22659,7 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
         currentPalmsPeriod = res.period || { startDate, endDate };
         
         // Calculate weeks in active period
-        let weeks = 26; // Default to 26 weeks (half year)
+        let weeks = 26; // Default to 26 weeks
         if (currentPalmsPeriod.startDate && currentPalmsPeriod.endDate) {
           const d1 = new Date(currentPalmsPeriod.startDate);
           const d2 = new Date(currentPalmsPeriod.endDate);
@@ -22424,6 +22672,8 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
             const e = currentPalmsPeriod.endDate.replace(/-/g, '/');
             periodBadge.textContent = `集計期間: ${s} 〜 ${e} (約${Math.round(weeks)}週間)`;
           }
+
+          updatePeriodPresetPillActive(currentPalmsPeriod.startDate, currentPalmsPeriod.endDate);
         }
 
         // Process records with BNI Traffic Light Scoring System
@@ -22466,6 +22716,8 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
             ...parsed,
             trafficLight,
             total_score: trafficLight.totalScore,
+            rpw: trafficLight.rpw,
+            ppw: trafficLight.ppw,
             tier: trafficLight.tier,
             tierName: trafficLight.tierName,
             tierColor: trafficLight.tierColor,
@@ -22492,7 +22744,7 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
 }
 
 /**
- * Render 4 KPI Overview Cards
+ * Render 5 KPI Overview Cards (including PPW and RPW)
  */
 function renderPalmsKpiCards() {
   if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
@@ -22501,13 +22753,23 @@ function renderPalmsKpiCards() {
   const sumScore = currentPalmsRecords.reduce((acc, r) => acc + r.total_score, 0);
   const avgScore = totalMembers > 0 ? (sumScore / totalMembers).toFixed(1) : 0;
 
+  // PPW & RPW Averages
+  const sumPpw = currentPalmsRecords.reduce((acc, r) => acc + r.ppw, 0);
+  const avgPpw = totalMembers > 0 ? (sumPpw / totalMembers).toFixed(2) : '0.00';
+
+  const sumRpw = currentPalmsRecords.reduce((acc, r) => acc + r.rpw, 0);
+  const avgRpw = totalMembers > 0 ? (sumRpw / totalMembers).toFixed(2) : '0.00';
+  const totalRef = currentPalmsRecords.reduce((acc, r) => acc + r.total_referrals_given, 0);
+
+  const ppwHighCount = currentPalmsRecords.filter(r => r.ppw >= 2.0).length;
+  const ppwMidCount = currentPalmsRecords.filter(r => r.ppw >= 1.0 && r.ppw < 2.0).length;
+  const ppwLowCount = currentPalmsRecords.filter(r => r.ppw < 1.0).length;
+
   const greenCount = currentPalmsRecords.filter(r => r.total_score >= 70).length;
   const yellowCount = currentPalmsRecords.filter(r => r.total_score >= 50 && r.total_score < 70).length;
   const redCount = currentPalmsRecords.filter(r => r.total_score < 50).length;
 
   const greenPct = totalMembers > 0 ? Math.round((greenCount / totalMembers) * 100) : 0;
-  const yellowPct = totalMembers > 0 ? Math.round((yellowCount / totalMembers) * 100) : 0;
-  const redPct = totalMembers > 0 ? Math.round((redCount / totalMembers) * 100) : 0;
 
   // DOM Updates
   const elAvgScore = document.getElementById('palms-kpi-avg-score');
@@ -22523,24 +22785,31 @@ function renderPalmsKpiCards() {
     }
   }
 
+  const elAvgPpw = document.getElementById('palms-kpi-avg-ppw');
+  const elPpwBreakdown = document.getElementById('palms-kpi-ppw-breakdown');
+  if (elAvgPpw) elAvgPpw.textContent = avgPpw;
+  if (elPpwBreakdown) {
+    elPpwBreakdown.textContent = `2.0以上: ${ppwHighCount}名 / 1.0~2.0: ${ppwMidCount}名 / <1.0: ${ppwLowCount}名`;
+  }
+
+  const elAvgRpw = document.getElementById('palms-kpi-avg-rpw');
+  const elRpwBreakdown = document.getElementById('palms-kpi-rpw-breakdown');
+  if (elAvgRpw) elAvgRpw.textContent = avgRpw;
+  if (elRpwBreakdown) {
+    elRpwBreakdown.textContent = `総提供: ${totalRef}件 (内与+外与)`;
+  }
+
   const elGreenCount = document.getElementById('palms-kpi-green-count');
   const elGreenPct = document.getElementById('palms-kpi-green-pct');
   if (elGreenCount) elGreenCount.textContent = greenCount;
   if (elGreenPct) elGreenPct.textContent = `構成比: ${greenPct}% (${greenCount}/${totalMembers}名)`;
 
   const elYellowCount = document.getElementById('palms-kpi-yellow-count');
-  const elYellowPct = document.getElementById('palms-kpi-yellow-pct');
-  if (elYellowCount) elYellowCount.textContent = yellowCount;
-  if (elYellowPct) elYellowPct.textContent = `構成比: ${yellowPct}% (${yellowCount}/${totalMembers}名)`;
-
-  const elRedCount = document.getElementById('palms-kpi-red-count');
-  const elRedPct = document.getElementById('palms-kpi-red-pct');
-  if (elRedCount) elRedCount.textContent = redCount;
-  if (elRedPct) elRedPct.textContent = `構成比: ${redPct}% (${redCount}/${totalMembers}名)`;
+  if (elYellowCount) elYellowCount.textContent = yellowCount + redCount;
 }
 
 /**
- * Render 4 Interactive Chart.js Graphs
+ * Render 4 Interactive Chart.js Graphs (including PPW / RPW Distribution with reference lines)
  */
 function renderPalmsCharts() {
   if (typeof Chart === 'undefined' || !currentPalmsRecords || currentPalmsRecords.length === 0) return;
@@ -22577,8 +22846,8 @@ function renderPalmsCharts() {
             position: 'bottom',
             labels: {
               boxWidth: 10,
-              font: { size: 11, weight: 'bold' },
-              padding: 12
+              font: { size: 10, weight: 'bold' },
+              padding: 10
             }
           },
           tooltip: {
@@ -22595,12 +22864,80 @@ function renderPalmsCharts() {
     });
   }
 
-  // --- Chart 2: Radar Chart (7 Core Indicators Balance) ---
+  // --- Chart 2: PPW & RPW Bar Chart by Member with Reference Lines ---
+  const ppwCanvas = document.getElementById('chart-palms-ppw-bar');
+  if (ppwCanvas) {
+    if (palmsPpwChart) palmsPpwChart.destroy();
+
+    // Sort descending by PPW
+    const sortedByPpw = [...currentPalmsRecords].sort((a, b) => b.ppw - a.ppw);
+    const labels = sortedByPpw.map(r => r.member_name);
+    const ppwData = sortedByPpw.map(r => Number(r.ppw.toFixed(2)));
+    const rpwData = sortedByPpw.map(r => Number(r.rpw.toFixed(2)));
+
+    const ctx = ppwCanvas.getContext('2d');
+    palmsPpwChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'PPW (週貢献)',
+            data: ppwData,
+            backgroundColor: '#0071e3',
+            borderRadius: 4,
+            maxBarThickness: 14
+          },
+          {
+            label: 'RPW (週リファーラル)',
+            data: rpwData,
+            backgroundColor: '#f59e0b',
+            borderRadius: 4,
+            maxBarThickness: 14
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 9, weight: 'bold' }, color: '#334155', maxRotation: 45 }
+          },
+          y: {
+            beginAtZero: true,
+            suggestedMax: 4.5,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } }
+          },
+          tooltip: {
+            callbacks: {
+              afterLabel: function(item) {
+                const rec = sortedByPpw[item.dataIndex];
+                if (item.datasetIndex === 0) {
+                  return ` 判定: ${rec.trafficLight.ppwTierLabel}`;
+                }
+                return '';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // --- Chart 3: Radar Chart (7 Core Indicators Balance) ---
   const radarCanvas = document.getElementById('chart-palms-radar');
   if (radarCanvas) {
     if (palmsRadarChart) palmsRadarChart.destroy();
     
-    // Average scores for each of 7 metrics
     const avgVis = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.visitor, 0) / totalMembers).toFixed(1);
     const avgRef = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.referral, 0) / totalMembers).toFixed(1);
     const avgOto = (currentPalmsRecords.reduce((a, r) => a + r.trafficLight.scores.one_to_ones, 0) / totalMembers).toFixed(1);
@@ -22631,7 +22968,7 @@ function renderPalmsCharts() {
             borderWidth: 2,
             pointBackgroundColor: '#0071e3',
             pointBorderColor: '#ffffff',
-            pointRadius: 4
+            pointRadius: 3
           },
           {
             label: '満点基準',
@@ -22652,7 +22989,7 @@ function renderPalmsCharts() {
             beginAtZero: true,
             ticks: { display: false, stepSize: 5 },
             pointLabels: {
-              font: { size: 10, weight: 'bold' },
+              font: { size: 9, weight: 'bold' },
               color: '#475569'
             },
             grid: { color: '#f1f5f9' },
@@ -22662,62 +22999,7 @@ function renderPalmsCharts() {
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { boxWidth: 10, font: { size: 11, weight: 'bold' } }
-          }
-        }
-      }
-    });
-  }
-
-  // --- Chart 3: Member Ranking Bar Chart (Horizontal) ---
-  const barCanvas = document.getElementById('chart-palms-ranking-bar');
-  if (barCanvas) {
-    if (palmsBarChart) palmsBarChart.destroy();
-    
-    // Sort descending by total_score for bar chart
-    const sortedForChart = [...currentPalmsRecords].sort((a, b) => b.total_score - a.total_score);
-    const labels = sortedForChart.map(r => r.member_name);
-    const data = sortedForChart.map(r => r.total_score);
-    const barColors = sortedForChart.map(r => r.tierColor);
-
-    const ctx = barCanvas.getContext('2d');
-    palmsBarChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: '総合スコア (点)',
-          data: data,
-          backgroundColor: barColors,
-          borderRadius: 6,
-          maxBarThickness: 16
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            min: 0,
-            max: 100,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { size: 10, weight: 'bold' }, color: '#64748b' }
-          },
-          y: {
-            grid: { display: false },
-            ticks: { font: { size: 11, weight: 'bold' }, color: '#1e293b' }
-          }
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(item) {
-                const rec = sortedForChart[item.dataIndex];
-                return ` ${rec.tierDot} 総合スコア: ${item.raw}点 (${rec.tierName})`;
-              }
-            }
+            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' } }
           }
         }
       }
@@ -22729,9 +23011,7 @@ function renderPalmsCharts() {
   if (trendCanvas) {
     if (palmsTrendChart) palmsTrendChart.destroy();
 
-    // Periods timeline
     const periodLabels = ['25年前期(4-9月)', '25年後期(10-3月)', '26年第2期(4-9月)'];
-    // Estimated aggregates based on recorded periods
     const trendReferrals = [28, 42, 65];
     const trendOto = [35, 52, 94];
     const trendVisitors = [4, 8, 14];
@@ -22750,8 +23030,7 @@ function renderPalmsCharts() {
             borderWidth: 2.5,
             fill: true,
             tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointRadius: 4
           },
           {
             label: '1to1 実施回数',
@@ -22761,8 +23040,7 @@ function renderPalmsCharts() {
             borderWidth: 2.5,
             fill: true,
             tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointRadius: 4
           },
           {
             label: 'ビジター招待人数',
@@ -22772,8 +23050,7 @@ function renderPalmsCharts() {
             borderWidth: 2.5,
             fill: true,
             tension: 0.35,
-            pointRadius: 4,
-            pointHoverRadius: 6
+            pointRadius: 4
           }
         ]
       },
@@ -22788,13 +23065,13 @@ function renderPalmsCharts() {
           },
           x: {
             grid: { display: false },
-            ticks: { font: { size: 11, weight: 'bold' }, color: '#334155' }
+            ticks: { font: { size: 10, weight: 'bold' }, color: '#334155' }
           }
         },
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { boxWidth: 10, font: { size: 11, weight: 'bold' }, padding: 12 }
+            labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, padding: 10 }
           }
         }
       }
@@ -22863,6 +23140,8 @@ function switchPalmsMetric(metric) {
   if (hintEl) {
     const hints = {
       'total': '公式新基準（100点満点）: ビジター(25点) ＋ リファーラル週平均(25点) ＋ 1to1週平均(20点) ＋ CEU週平均(10点) ＋ 出席率(10点) ＋ TYFCB(5点) ＋ スポンサー(5点)',
+      'ppw': 'PPW（Points Per Week: 週貢献指数）= (リファーラル提供 ＋ ビジター ＋ 推薦・スポンサー) ÷ 週数 【黒線基準: 2.00以上 達成 / 1.00以上 目安】',
+      'rpw': 'RPW（Referrals Per Week: 週リファーラル提供）= (内部リファーラル ＋ 外部リファーラル) ÷ 週数 【目標: 1.25以上】',
       'referrals': 'リファーラル提供点数（週1.25件以上=25点, 1.00件=20点, 0.75件=15点, 0.50件=10点, 0.25件=5点）',
       'visitors': 'ビジター招待点数（6ヶ月換算: 5名以上=25点, 4名=20点, 3名=15点, 2名=10点, 1名=5点）',
       'one_to_ones': '1to1実施点数（週1.00回以上=20点, 0.75回=15点, 0.50回=10点, 0.25回=5点）',
@@ -22875,6 +23154,8 @@ function switchPalmsMetric(metric) {
 
   // Set default sort for metric
   if (metric === 'total') currentPalmsSort = { field: 'total_score', asc: false };
+  else if (metric === 'ppw') currentPalmsSort = { field: 'ppw', asc: false };
+  else if (metric === 'rpw') currentPalmsSort = { field: 'rpw', asc: false };
   else if (metric === 'referrals') currentPalmsSort = { field: 'referrals_given', asc: false };
   else if (metric === 'visitors') currentPalmsSort = { field: 'visitors', asc: false };
   else if (metric === 'one_to_ones') currentPalmsSort = { field: 'one_to_ones', asc: false };
@@ -22910,6 +23191,14 @@ function renderPalmsRankingView() {
         valA = a.total_score;
         valB = b.total_score;
         break;
+      case 'ppw':
+        valA = a.ppw;
+        valB = b.ppw;
+        break;
+      case 'rpw':
+        valA = a.rpw;
+        valB = b.rpw;
+        break;
       case 'referrals_given':
         valA = a.trafficLight.scores.referral;
         valB = b.trafficLight.scores.referral;
@@ -22934,10 +23223,6 @@ function renderPalmsRankingView() {
         valA = a.trafficLight.scores.tyfcb;
         valB = b.trafficLight.scores.tyfcb;
         break;
-      case 'sponsors':
-        valA = a.trafficLight.scores.sponsor;
-        valB = b.trafficLight.scores.sponsor;
-        break;
       default:
         valA = a.total_score;
         valB = b.total_score;
@@ -22946,8 +23231,8 @@ function renderPalmsRankingView() {
     if (valA !== valB) {
       return currentPalmsSort.asc ? (valA - valB) : (valB - valA);
     }
-    // Secondary tie-breaker: total referrals given then 1to1
-    return b.total_referrals_given - a.total_referrals_given;
+    // Secondary tie-breaker: PPW then total referrals given
+    return b.ppw - a.ppw;
   });
 
   // Assign ranking numbers (1-indexed)
@@ -22978,23 +23263,19 @@ function renderPalmsPodium(records) {
     const rank = idx + 1;
     let badgeClass = '';
     let badgeLabel = '';
-    let iconClass = '';
     let borderAccent = '';
 
     if (rank === 1) {
       badgeClass = 'bg-amber-400 text-amber-950 font-black';
       badgeLabel = '1st Place';
-      iconClass = 'fa-solid fa-crown text-amber-500';
       borderAccent = 'border-amber-200/90 shadow-sm';
     } else if (rank === 2) {
       badgeClass = 'bg-slate-300 text-slate-800 font-bold';
       badgeLabel = '2nd Place';
-      iconClass = 'fa-solid fa-medal text-slate-400';
       borderAccent = 'border-slate-200';
     } else {
       badgeClass = 'bg-amber-700/20 text-amber-800 font-bold';
       badgeLabel = '3rd Place';
-      iconClass = 'fa-solid fa-award text-amber-700';
       borderAccent = 'border-slate-200';
     }
 
@@ -23027,7 +23308,7 @@ function renderPalmsPodium(records) {
           <p class="text-2xs text-slate-400 mt-0.5 font-medium truncate">${memberCategory}</p>
         </div>
 
-        <!-- Total Score Highlight -->
+        <!-- Total Score & PPW Highlight -->
         <div class="mb-4 pt-2 border-t border-slate-100 flex items-baseline justify-between">
           <div>
             <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider">トラフィックライト総合点</div>
@@ -23036,33 +23317,26 @@ function renderPalmsPodium(records) {
             </div>
           </div>
           <div class="text-right">
-            <span class="text-xs font-black font-tabular" style="color: ${tl.tierColor}">
-              達成率 ${m.total_score}%
-            </span>
+            <div class="text-3xs font-bold text-slate-400">週貢献指数 (PPW)</div>
+            <div class="text-lg sm:text-xl font-black font-tabular text-blue-600">
+              ${m.ppw.toFixed(2)}
+            </div>
           </div>
         </div>
 
-        <!-- 7 Metrics Mini Scores Grid -->
-        <div class="space-y-1.5 pt-3 border-t border-slate-100 text-2xs">
-          <div class="flex items-center justify-between">
-            <span class="text-slate-500">ビジター (25点)</span>
-            <span class="font-bold font-tabular text-slate-800">${m.visitors}名 (${tl.scores.visitor}pt)</span>
+        <!-- Mini Key Stats (RPW, 1to1, Visitors, Tyfcb) -->
+        <div class="grid grid-cols-3 gap-1.5 pt-3 border-t border-slate-100 text-center text-2xs">
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">RPW (週リファ)</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${m.rpw.toFixed(2)}件</div>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-500">リファーラル週平均 (25点)</span>
-            <span class="font-bold font-tabular text-slate-800">${tl.rates.refPerWeek.toFixed(2)}件 (${tl.scores.referral}pt)</span>
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">1to1 (週平均)</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${tl.rates.otoPerWeek.toFixed(2)}回</div>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-500">1to1週平均 (20点)</span>
-            <span class="font-bold font-tabular text-slate-800">${tl.rates.otoPerWeek.toFixed(2)}回 (${tl.scores.one_to_ones}pt)</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-500">出席率 (10点)</span>
-            <span class="font-bold font-tabular text-slate-800">${tl.rates.attRate.toFixed(0)}% (${tl.scores.attendance}pt)</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-500">CEU週平均 (10点)</span>
-            <span class="font-bold font-tabular text-slate-800">${tl.rates.ceuPerWeek.toFixed(2)}pt (${tl.scores.ceu}pt)</span>
+          <div class="bg-slate-50 rounded-lg p-1.5">
+            <div class="text-3xs text-slate-400 font-bold">ビジター招待</div>
+            <div class="text-xs font-black text-slate-700 font-tabular">${m.visitors}名</div>
           </div>
         </div>
       </div>
@@ -23073,7 +23347,7 @@ function renderPalmsPodium(records) {
 }
 
 /**
- * Render Comprehensive PALMS & Traffic Lights Table
+ * Render Comprehensive PALMS Table with PPW and RPW
  */
 function renderPalmsTable(records) {
   const tableBody = document.getElementById('palms-table-body');
@@ -23082,7 +23356,7 @@ function renderPalmsTable(records) {
   if (records.length === 0) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="11" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="12" class="py-12 text-center text-slate-400 text-xs">
           表示対象のデータがありません
         </td>
       </tr>
@@ -23112,6 +23386,8 @@ function renderPalmsTable(records) {
 
     // Determine highlight column styling based on active metric
     const isTotalActive = currentPalmsMetric === 'total';
+    const isPpwActive = currentPalmsMetric === 'ppw';
+    const isRpwActive = currentPalmsMetric === 'rpw';
     const isVisActive = currentPalmsMetric === 'visitors';
     const isRefActive = currentPalmsMetric === 'referrals';
     const isOtoActive = currentPalmsMetric === 'one_to_ones';
@@ -23131,7 +23407,7 @@ function renderPalmsTable(records) {
             <span>${m.member_name}</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-3xs text-slate-300"></i>
           </div>
-          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[150px]">${memberCategory}</div>
+          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[140px]">${memberCategory}</div>
         </td>
         <td class="py-3 px-3 text-center align-middle">
           <span class="inline-flex items-center gap-1 text-2xs font-black px-2 py-0.5 rounded-full border ${tl.tierBadgeClass}">
@@ -23143,20 +23419,28 @@ function renderPalmsTable(records) {
           <span class="text-sm font-black">${m.total_score}</span>
           <span class="text-3xs text-slate-400 font-normal">/100</span>
         </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isPpwActive ? colHighlightClass : 'text-blue-700 font-bold'}">
+          <div class="text-sm font-black text-blue-600">${m.ppw.toFixed(2)}</div>
+          <div class="text-3xs"><span class="px-1.5 py-0.2 rounded border ${tl.ppwBadgeClass}">${tl.ppwTierLabel.split(' ')[0]}</span></div>
+        </td>
+        <td class="py-3 px-3 text-right align-middle font-tabular ${isRpwActive ? colHighlightClass : 'text-slate-700 font-semibold'}">
+          <div class="text-sm font-bold text-indigo-600">${m.rpw.toFixed(2)}</div>
+          <div class="text-3xs text-slate-400 font-normal">件/週</div>
+        </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isVisActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">${m.visitors}名</div>
           <div class="text-3xs text-emerald-600 font-semibold">${tl.scores.visitor} pt</div>
         </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isRefActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.total_referrals_given}件 <span class="text-3xs text-slate-400 font-normal">(${tl.rates.refPerWeek.toFixed(2)}/週)</span></div>
+          <div class="font-bold">${m.total_referrals_given}件</div>
           <div class="text-3xs text-blue-600 font-semibold">${tl.scores.referral} pt</div>
         </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isOtoActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.one_to_ones}回 <span class="text-3xs text-slate-400 font-normal">(${tl.rates.otoPerWeek.toFixed(2)}/週)</span></div>
+          <div class="font-bold">${m.one_to_ones}回</div>
           <div class="text-3xs text-amber-600 font-semibold">${tl.scores.one_to_ones} pt</div>
         </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isCeuActive ? colHighlightClass : 'text-slate-700'}">
-          <div class="font-bold">${m.ceu} pt <span class="text-3xs text-slate-400 font-normal">(${tl.rates.ceuPerWeek.toFixed(2)}/週)</span></div>
+          <div class="font-bold">${m.ceu} pt</div>
           <div class="text-3xs text-purple-600 font-semibold">${tl.scores.ceu} pt</div>
         </td>
         <td class="py-3 px-3 text-right align-middle font-tabular ${isAttActive ? colHighlightClass : 'text-slate-700'}">
@@ -23166,10 +23450,6 @@ function renderPalmsTable(records) {
         <td class="py-3 px-4 text-right align-middle font-tabular ${isTyfcbActive ? colHighlightClass : 'text-slate-700'}">
           <div class="font-bold">¥${m.tyfcb_yen.toLocaleString()}</div>
           <div class="text-3xs text-indigo-600 font-semibold">${tl.scores.tyfcb} pt</div>
-        </td>
-        <td class="py-3 px-3 text-right align-middle font-tabular text-slate-700">
-          <div class="font-bold">${m.sponsors}名</div>
-          <div class="text-3xs text-slate-500 font-semibold">${tl.scores.sponsor} pt</div>
         </td>
       </tr>
     `;
@@ -23205,7 +23485,7 @@ function sortPalmsTable(field) {
   }
 
   // Update table sort header icons
-  ['rank', 'name', 'traffic_light', 'total_score', 'visitors', 'referrals_given', 'one_to_ones', 'ceu', 'attendance', 'tyfcb', 'sponsors'].forEach(f => {
+  ['rank', 'name', 'traffic_light', 'total_score', 'ppw', 'rpw', 'visitors', 'referrals_given', 'one_to_ones', 'ceu', 'attendance', 'tyfcb'].forEach(f => {
     const iconEl = document.getElementById('sort-icon-' + f);
     if (!iconEl) return;
     if (f === currentPalmsSort.field) {
@@ -23248,7 +23528,7 @@ function renderPalmsEmptyState(customMessage = null) {
   if (tableBody) {
     tableBody.innerHTML = `
       <tr>
-        <td colspan="11" class="py-12 text-center text-slate-400 text-xs">
+        <td colspan="12" class="py-12 text-center text-slate-400 text-xs">
           表示可能なデータがありません
         </td>
       </tr>

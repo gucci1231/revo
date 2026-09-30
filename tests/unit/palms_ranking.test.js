@@ -112,5 +112,89 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(resRed.totalScore, 20);
     assert.strictEqual(resRed.tier, 'grey');
   });
+
+  it('verifies PPW and RPW calculation and 3 benchmark bands according to BNI guidelines', () => {
+    const calcFnMatch = indexHtml.match(/function calcBniTrafficLightScore\(r,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(calcFnMatch, 'calcBniTrafficLightScore function must exist in indexHtml');
+
+    const calcBniTrafficLightScore = new Function('r', 'weeks', calcFnMatch[1]);
+
+    // Test Case 1: 4 weeks, High PPW performer (>= 2.0000)
+    // rgi=6, rgo=2, vis=2, testimonials=1, p=4, a=0, l=0, m=0, s=0
+    // W = 4
+    // RPW = (6 + 2) / 4 = 2.0000
+    // PPW = (6 + 2 + 2 + 1) / 4 = 11 / 4 = 2.7500
+    const m1 = {
+      rgi: 6,
+      rgo: 2,
+      total_referrals_given: 8,
+      visitors: 2,
+      testimonials: 1,
+      p: 4, a: 0, l: 0, m: 0, s: 0
+    };
+    const res1 = calcBniTrafficLightScore(m1, 4);
+    assert.strictEqual(res1.rpw, 2.0);
+    assert.strictEqual(res1.ppw, 2.75);
+    assert.strictEqual(res1.ppwTier, 'high'); // >= 2.0
+
+    // Test Case 2: 4 weeks, Mid PPW performer (1.0000 <= PPW < 2.0000)
+    // rgi=2, rgo=1, vis=1, testimonials=1, p=4
+    // RPW = 3 / 4 = 0.7500
+    // PPW = (3 + 1 + 1) / 4 = 5 / 4 = 1.2500
+    const m2 = {
+      rgi: 2,
+      rgo: 1,
+      total_referrals_given: 3,
+      visitors: 1,
+      testimonials: 1,
+      p: 4, a: 0, l: 0, m: 0, s: 0
+    };
+    const res2 = calcBniTrafficLightScore(m2, 4);
+    assert.strictEqual(res2.rpw, 0.75);
+    assert.strictEqual(res2.ppw, 1.25);
+    assert.strictEqual(res2.ppwTier, 'mid'); // 1.0 - 2.0
+
+    // Test Case 3: 4 weeks, Low PPW performer (< 1.0000)
+    // rgi=1, rgo=0, vis=0, testimonials=0, p=4
+    // RPW = 1 / 4 = 0.2500
+    // PPW = 1 / 4 = 0.2500
+    const m3 = {
+      rgi: 1,
+      rgo: 0,
+      total_referrals_given: 1,
+      visitors: 0,
+      testimonials: 0,
+      p: 4, a: 0, l: 0, m: 0, s: 0
+    };
+    const res3 = calcBniTrafficLightScore(m3, 4);
+    assert.strictEqual(res3.rpw, 0.25);
+    assert.strictEqual(res3.ppw, 0.25);
+    assert.strictEqual(res3.ppwTier, 'low'); // < 1.0
+  });
+
+  it('verifies flexible period selection elements exist in compiled index.html', () => {
+    // Preset period pills
+    assert.strictEqual(indexHtml.includes('id="palms-period-presets"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset="4weeks"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset="term2"'), true);
+    assert.strictEqual(indexHtml.includes('data-preset="2years"'), true);
+
+    // Custom date range controls
+    assert.strictEqual(indexHtml.includes('id="palms-custom-period-bar"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-custom-start"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-custom-end"'), true);
+    assert.strictEqual(indexHtml.includes('onclick="applyCustomPalmsPeriod()"'), true);
+
+    // PPW and RPW KPI cards
+    assert.strictEqual(indexHtml.includes('id="palms-kpi-avg-ppw"'), true);
+    assert.strictEqual(indexHtml.includes('id="palms-kpi-avg-rpw"'), true);
+
+    // PPW Chart
+    assert.strictEqual(indexHtml.includes('id="chart-palms-ppw-bar"'), true);
+
+    // Metric filter buttons for PPW and RPW
+    assert.strictEqual(indexHtml.includes('data-metric="ppw"'), true);
+    assert.strictEqual(indexHtml.includes('data-metric="rpw"'), true);
+  });
 });
 
