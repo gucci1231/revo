@@ -219,11 +219,12 @@ try {
         $startDate = $input['startDate'] ?? $_GET['startDate'] ?? null;
         $endDate = $input['endDate'] ?? $_GET['endDate'] ?? null;
         $weeksCount = isset($input['weeksCount']) ? (int)$input['weeksCount'] : (isset($_GET['weeksCount']) ? (int)$_GET['weeksCount'] : 0);
+        $skipExisting = !empty($input['skipExisting']) || !empty($_GET['skipExisting']);
 
         $service = new BniConnectService($db);
 
         if ($weeksCount > 0) {
-            $result = $service->syncRecentWeeks($weeksCount);
+            $result = $service->syncRecentWeeks($weeksCount, $skipExisting);
             echo json_encode([
                 'success' => true,
                 'message' => "直近{$weeksCount}週間のPALMSデータを正常に取得・更新しました（{$result['totalSaved']}件）",

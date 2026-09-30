@@ -26,16 +26,45 @@ function logPalmsMessage(string $msg): void {
 logPalmsMessage("=== BNI Connect PALMS Fetcher Started ===");
 
 // Parse CLI options
-$options = getopt("", ["start:", "end:", "term:", "help"]);
+$options = getopt("", ["start:", "end:", "term:", "weeks:", "skip-existing", "help"]);
 
 if (isset($options['help'])) {
     echo "Usage: php api/scripts/fetch_bni_connect_palms.php [OPTIONS]\n";
     echo "Options:\n";
+    echo "  --weeks=N            Fetch recent N weeks of PALMS data (e.g. 52 for 1 year)\n";
+    echo "  --skip-existing      Skip weeks already existing in SQLite database\n";
     echo "  --start=MM/DD/YYYY   Start date (default: last Thursday)\n";
     echo "  --end=MM/DD/YYYY     End date (default: this Thursday)\n";
     echo "  --term=N             Fetch for specific term (1=2025/10-2026/03, 2=2026/04-2026/09)\n";
     echo "  --help               Display this help\n";
     exit(0);
+}
+
+if (isset($options['weeks'])) {
+    $weeksCount = (int)$options['weeks'];
+    $skipExisting = isset($options['skip-existing']);
+    logPalmsMessage("Fetching recent {$weeksCount} weeks of PALMS data (skipExisting=" . ($skipExisting ? 'true' : 'false') . ")...");
+
+    try {
+        $service = new BniConnectService();
+        $result = $service->syncRecentWeeks($weeksCount, $skipExisting, function($curr, $total, $s, $e, $saved, $skipped, $err = null) {
+            if ($skipped) {
+                logPalmsMessage("[{$curr}/{$total}] {$s} -> {$e}: Skipped (already in DB)");
+            } elseif ($err) {
+                logPalmsMessage("[{$curr}/{$total}] {$s} -> {$e}: ERROR - {$err}");
+            } else {
+                logPalmsMessage("[{$curr}/{$total}] {$s} -> {$e}: {$saved} records saved");
+            }
+        });
+
+        logPalmsMessage("Completed! Total saved: {$result['totalSaved']} records across {$weeksCount} weeks.");
+        logPalmsMessage("=== BNI Connect PALMS Fetcher Finished Successfully ===");
+        exit(0);
+    } catch (Exception $e) {
+        logPalmsMessage("CRITICAL ERROR: " . $e->getMessage());
+        logPalmsMessage($e->getTraceAsString());
+        exit(1);
+    }
 }
 
 $startDate = null;

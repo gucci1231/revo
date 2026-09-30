@@ -258,20 +258,19 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
   });
 
   it('verifies half-year PALMS submissions table and rendering function exist in compiled index.html', () => {
-    // Half-Year table container & badge
+    // Weekly table container & badge
     assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-tbody"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-detail-weekly-badge"'), true);
-    assert.strictEqual(indexHtml.includes('半年間活動実績・スリップ推移'), true);
+    assert.strictEqual(indexHtml.includes('活動実績・スリップ推移'), true);
 
-    // Period switcher tabs (all, half, 3months, 2months, month, week)
+    // Period switcher tabs (1month, 2months, 3months, half, 1year)
     assert.strictEqual(indexHtml.includes('id="palms-detail-period-tabs"'), true);
     assert.strictEqual(indexHtml.includes('id="member-palms-period-tabs"'), true);
-    assert.strictEqual(indexHtml.includes('data-period="all"'), true);
-    assert.strictEqual(indexHtml.includes('data-period="week"'), true);
-    assert.strictEqual(indexHtml.includes('data-period="month"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="1month"'), true);
     assert.strictEqual(indexHtml.includes('data-period="2months"'), true);
     assert.strictEqual(indexHtml.includes('data-period="3months"'), true);
     assert.strictEqual(indexHtml.includes('data-period="half"'), true);
+    assert.strictEqual(indexHtml.includes('data-period="1year"'), true);
 
     // Trend chart canvas
     assert.strictEqual(indexHtml.includes('id="palms-detail-chart-history"'), true);

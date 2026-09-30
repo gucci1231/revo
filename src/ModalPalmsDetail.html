@@ -234,21 +234,20 @@
           <div class="flex items-center gap-2">
             <h4 class="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2 m-0">
               <i class="fa-solid fa-calendar-check text-blue-600"></i>
-              <span>半年間活動実績・スリップ推移</span>
+              <span>活動実績・スリップ推移</span>
             </h4>
             <span id="palms-detail-weekly-badge" class="text-3xs font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-              全期間 (基本)
+              半年
             </span>
           </div>
 
-          <!-- 期間切り替えセグメントコントロール -->
+          <!-- 期間切り替えセグメントコントロール (1ヶ月 / 2ヶ月 / 3ヶ月 / 半年 / 1年) -->
           <div class="inline-flex p-0.5 bg-slate-100 rounded-xl border border-slate-200/80 text-3xs font-bold" id="palms-detail-period-tabs">
-            <button type="button" data-period="all" onclick="switchPalmsHistoryPeriod('all', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">全期間</button>
-            <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">半年</button>
-            <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+            <button type="button" data-period="1month" onclick="switchPalmsHistoryPeriod('1month', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">1ヶ月</button>
             <button type="button" data-period="2months" onclick="switchPalmsHistoryPeriod('2months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">2ヶ月</button>
-            <button type="button" data-period="month" onclick="switchPalmsHistoryPeriod('month', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">月毎</button>
-            <button type="button" data-period="week" onclick="switchPalmsHistoryPeriod('week', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">週ごと</button>
+            <button type="button" data-period="3months" onclick="switchPalmsHistoryPeriod('3months', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">3ヶ月</button>
+            <button type="button" data-period="half" onclick="switchPalmsHistoryPeriod('half', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all font-black bg-white text-blue-600 shadow-2xs cursor-pointer">半年</button>
+            <button type="button" data-period="1year" onclick="switchPalmsHistoryPeriod('1year', 'detail')" class="history-period-btn px-2.5 py-1 rounded-lg transition-all text-slate-500 hover:text-slate-900 cursor-pointer">1年</button>
           </div>
         </div>
 

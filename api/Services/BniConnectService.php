@@ -373,9 +373,9 @@ class BniConnectService {
     }
 
     /**
-     * Sync multiple recent weeks of PALMS data (e.g. 4 to 8 weeks)
+     * Sync multiple recent weeks of PALMS data (e.g. 4 to 52 weeks)
      */
-    public function syncRecentWeeks(int $weeksCount = 4): array {
+    public function syncRecentWeeks(int $weeksCount = 4, bool $skipExisting = false, ?callable $progressCallback = null): array {
         $tokens = $this->authenticate();
         $cookie = $this->establishWebSession($tokens);
 
@@ -401,18 +401,56 @@ class BniConnectService {
 
             $s = $startThu->format('m/d/Y');
             $e = $endThu->format('m/d/Y');
+            $sIso = $startThu->format('Y-m-d');
+            $eIso = $endThu->format('Y-m-d');
 
-            $html = $this->fetchPalmsReportHtml($cookie, $s, $e);
-            $records = $this->parsePalmsHtml($html, $s, $e);
-            $saved = $this->savePalmsToDb($records);
-            $totalSaved += $saved;
+            if ($skipExisting) {
+                $checkStmt = $this->pdo->prepare("SELECT COUNT(*) FROM palms_reports WHERE start_date = :s AND end_date = :e");
+                $checkStmt->execute([':s' => $sIso, ':e' => $eIso]);
+                $existingCount = (int)$checkStmt->fetchColumn();
+                if ($existingCount > 0) {
+                    if ($progressCallback) {
+                        call_user_func($progressCallback, $i + 1, $weeksCount, $s, $e, 0, true);
+                    }
+                    $results[] = [
+                        'startDate' => $s,
+                        'endDate' => $e,
+                        'recordsCount' => $existingCount,
+                        'savedCount' => 0,
+                        'skipped' => true
+                    ];
+                    continue;
+                }
+            }
 
-            $results[] = [
-                'startDate' => $s,
-                'endDate' => $e,
-                'recordsCount' => count($records),
-                'savedCount' => $saved
-            ];
+            try {
+                $html = $this->fetchPalmsReportHtml($cookie, $s, $e);
+                $records = $this->parsePalmsHtml($html, $s, $e);
+                $saved = $this->savePalmsToDb($records);
+                $totalSaved += $saved;
+
+                if ($progressCallback) {
+                    call_user_func($progressCallback, $i + 1, $weeksCount, $s, $e, $saved, false);
+                }
+
+                $results[] = [
+                    'startDate' => $s,
+                    'endDate' => $e,
+                    'recordsCount' => count($records),
+                    'savedCount' => $saved,
+                    'skipped' => false
+                ];
+            } catch (\Exception $ex) {
+                if ($progressCallback) {
+                    call_user_func($progressCallback, $i + 1, $weeksCount, $s, $e, 0, false, $ex->getMessage());
+                }
+                $results[] = [
+                    'startDate' => $s,
+                    'endDate' => $e,
+                    'error' => $ex->getMessage(),
+                    'skipped' => false
+                ];
+            }
         }
 
         return [
