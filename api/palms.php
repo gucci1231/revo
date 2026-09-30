@@ -70,8 +70,11 @@ try {
             SELECT 
                 start_date, end_date,
                 SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                SUM(rgi_referrals_given_internal) as total_referrals_internal,
+                SUM(rgo_referrals_given_external) as total_referrals_external,
                 SUM(one_to_ones) as total_oto,
                 SUM(v_visitors) as total_visitors,
+                SUM(ceu) as total_ceu,
                 SUM(tyfcb_amount * 1000) as total_tyfcb,
                 COUNT(DISTINCT member_id) as member_count
             FROM palms_reports
@@ -85,8 +88,11 @@ try {
             SELECT 
                 start_date, end_date,
                 SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                SUM(rgi_referrals_given_internal) as total_referrals_internal,
+                SUM(rgo_referrals_given_external) as total_referrals_external,
                 SUM(one_to_ones) as total_oto,
                 SUM(v_visitors) as total_visitors,
+                SUM(ceu) as total_ceu,
                 SUM(tyfcb_amount * 1000) as total_tyfcb,
                 COUNT(DISTINCT member_id) as member_count
             FROM palms_reports
@@ -96,10 +102,102 @@ try {
         ");
         $terms = $stmtTerms->fetchAll(PDO::FETCH_ASSOC);
 
+        // Fetch period groupings for 1 Month, 6 Months, and All Time achievements
+        $stmtPeriods = $pdo->query("
+            SELECT 
+                start_date, end_date,
+                CAST(julianday(end_date) - julianday(start_date) + 1 AS INTEGER) as days_diff,
+                SUM(tyfcb_amount * 1000) as tyfcb_yen,
+                SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                SUM(rgi_referrals_given_internal) as internal_referrals,
+                SUM(rgo_referrals_given_external) as external_referrals,
+                ROUND(CAST(SUM(rgo_referrals_given_external) AS FLOAT) / NULLIF(SUM(rgi_referrals_given_internal + rgo_referrals_given_external), 0) * 100, 1) as external_rate,
+                SUM(v_visitors) as visitors,
+                SUM(one_to_ones) as one_to_ones,
+                SUM(ceu) as ceu,
+                COUNT(DISTINCT member_id) as member_count
+            FROM palms_reports
+            GROUP BY start_date, end_date
+            ORDER BY end_date DESC, days_diff ASC
+        ");
+        $allGroups = $stmtPeriods->fetchAll(PDO::FETCH_ASSOC);
+
+        $oneMonthRaw = null;
+        $sixMonthsRaw = null;
+        $allTimeRaw = null;
+
+        foreach ($allGroups as $row) {
+            $diff = (int)$row['days_diff'];
+            if ($diff >= 20 && $diff <= 45 && !$oneMonthRaw) {
+                $oneMonthRaw = $row;
+            }
+            if ($diff >= 120 && $diff <= 210 && !$sixMonthsRaw) {
+                $sixMonthsRaw = $row;
+            }
+            if ($diff >= 300 && !$allTimeRaw) {
+                $allTimeRaw = $row;
+            }
+        }
+
+        $formatPeriodData = function ($raw, $label) {
+            if (!$raw) {
+                return [
+                    'label' => $label,
+                    'period_label' => '--',
+                    'start_date' => null,
+                    'end_date' => null,
+                    'tyfcb_yen' => 0,
+                    'tyfcb_formatted' => '0 万円',
+                    'total_referrals' => 0,
+                    'internal_referrals' => 0,
+                    'external_referrals' => 0,
+                    'external_rate' => 0.0,
+                    'visitors' => 0,
+                    'one_to_ones' => 0,
+                    'ceu' => 0,
+                    'member_count' => 0
+                ];
+            }
+            $yen = (float)($raw['tyfcb_yen'] ?? 0);
+            $formattedTyfcb = '0 万円';
+            if ($yen >= 100000000) {
+                $formattedTyfcb = number_format($yen / 100000000, 2) . ' 億円';
+            } elseif ($yen >= 10000) {
+                $man = $yen / 10000;
+                $formattedTyfcb = (floor($man) == $man ? number_format($man) : number_format($man, 1)) . ' 万円';
+            } else {
+                $formattedTyfcb = number_format($yen) . ' 円';
+            }
+
+            return [
+                'label' => $label,
+                'period_label' => ($raw['start_date'] ?? '') . ' 〜 ' . ($raw['end_date'] ?? ''),
+                'start_date' => $raw['start_date'] ?? null,
+                'end_date' => $raw['end_date'] ?? null,
+                'tyfcb_yen' => $yen,
+                'tyfcb_formatted' => $formattedTyfcb,
+                'total_referrals' => (int)($raw['total_referrals'] ?? 0),
+                'internal_referrals' => (int)($raw['internal_referrals'] ?? 0),
+                'external_referrals' => (int)($raw['external_referrals'] ?? 0),
+                'external_rate' => (float)($raw['external_rate'] ?? 0.0),
+                'visitors' => (int)($raw['visitors'] ?? 0),
+                'one_to_ones' => (int)($raw['one_to_ones'] ?? 0),
+                'ceu' => (int)($raw['ceu'] ?? 0),
+                'member_count' => (int)($raw['member_count'] ?? 0)
+            ];
+        };
+
+        $periodsSummary = [
+            'one_month' => $formatPeriodData($oneMonthRaw, '1ヶ月の成果'),
+            'six_months' => $formatPeriodData($sixMonthsRaw, '半年間の成果'),
+            'all_time' => $formatPeriodData($allTimeRaw, '全期間の成果')
+        ];
+
         echo json_encode([
             'success' => true,
             'weekly' => $weekly,
-            'terms' => $terms
+            'terms' => $terms,
+            'periods_summary' => $periodsSummary
         ]);
         exit;
     }

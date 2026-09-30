@@ -1345,12 +1345,14 @@ function fetchPalmsChapterTrends() {
       if (res && res.success) {
         palmsChapterTrendsData = res;
         renderChapterTrendLineChart();
+        renderGrowthDashboardSummary();
       }
       return res;
     })
     .catch(err => {
       console.warn('Failed to fetch chapter trends:', err);
       renderChapterTrendLineChart();
+      renderGrowthDashboardSummary();
     });
 }
 
@@ -2832,58 +2834,180 @@ function switchPalmsSubTab(subTabName) {
 }
 
 /**
- * Render Subview 1: Growth Dashboard Summary Metrics
+ * Format TYFCB Yen currency string
+ * Note: Input data in palms_reports is in thousands (1/1000th), so yen = amount * 1000
+ */
+function formatTyfcbYenDisplay(yen) {
+  const num = Number(yen) || 0;
+  if (num >= 100000000) {
+    const oku = num / 100000000;
+    return oku.toLocaleString('ja-JP', { maximumFractionDigits: 2 }) + ' 億円';
+  } else if (num >= 10000) {
+    const man = num / 10000;
+    const isInt = (man % 1 === 0);
+    return man.toLocaleString('ja-JP', { maximumFractionDigits: isInt ? 0 : 1 }) + ' 万円';
+  } else {
+    return num.toLocaleString('ja-JP') + ' 円';
+  }
+}
+
+/**
+ * Render Subview 1: Growth Dashboard Summary Metrics (1 Month, 6 Months, All Time)
  */
 function renderGrowthDashboardSummary() {
   if (!palmsChapterTrendsData) {
     fetchPalmsChapterTrends();
   }
-  if (!currentPalmsRecords || currentPalmsRecords.length === 0) return;
 
-  let totalTyfcb = 0;
-  let totalRefInternal = 0;
-  let totalRefExternal = 0;
-  let totalVisitors = 0;
-  let totalOneToOnes = 0;
-  let totalCeu = 0;
+  // 1. If periods_summary is provided by API, use it directly
+  let summary = (palmsChapterTrendsData && palmsChapterTrendsData.periods_summary) ? palmsChapterTrendsData.periods_summary : null;
 
-  currentPalmsRecords.forEach(r => {
-    totalTyfcb += (Number(r.tyfcb_amount) || 0);
-    totalRefInternal += (Number(r.rgi_referrals_given_internal) || 0);
-    totalRefExternal += (Number(r.rgo_referrals_given_external) || 0);
-    totalVisitors += (Number(r.v_visitors) || 0);
-    totalOneToOnes += (Number(r.one_to_ones) || 0);
-    totalCeu += (Number(r.ceu) || 0);
-  });
+  // 2. Fallback calculation if summary is not yet provided by API
+  if (!summary) {
+    let fallbackTyfcb = 0;
+    let fallbackRefInternal = 0;
+    let fallbackRefExternal = 0;
+    let fallbackVisitors = 0;
+    let fallbackOneToOnes = 0;
+    let fallbackCeu = 0;
 
-  const memberCount = currentPalmsRecords.length;
-  const totalRef = totalRefInternal + totalRefExternal;
-  const avgTyfcb = memberCount > 0 ? Math.round(totalTyfcb / memberCount) : 0;
+    if (currentPalmsRecords && currentPalmsRecords.length > 0) {
+      currentPalmsRecords.forEach(r => {
+        fallbackTyfcb += (Number(r.tyfcb_amount) || 0) * 1000;
+        fallbackRefInternal += (Number(r.rgi_referrals_given_internal) || 0);
+        fallbackRefExternal += (Number(r.rgo_referrals_given_external) || 0);
+        fallbackVisitors += (Number(r.v_visitors) || 0);
+        fallbackOneToOnes += (Number(r.one_to_ones) || 0);
+        fallbackCeu += (Number(r.ceu) || 0);
+      });
+    }
 
-  const tyfcbTotalEl = document.getElementById('growth-tyfcb-total');
-  const tyfcbAvgEl = document.getElementById('growth-tyfcb-avg');
-  if (tyfcbTotalEl) tyfcbTotalEl.textContent = (totalTyfcb / 10000).toLocaleString('ja-JP', { maximumFractionDigits: 1 }) + ' 万円';
-  if (tyfcbAvgEl) tyfcbAvgEl.textContent = (avgTyfcb / 10000).toLocaleString('ja-JP', { maximumFractionDigits: 1 }) + ' 万円';
+    const totalRef = fallbackRefInternal + fallbackRefExternal;
+    const extRate = totalRef > 0 ? Number(((fallbackRefExternal / totalRef) * 100).toFixed(1)) : 0;
 
-  const refTotalEl = document.getElementById('growth-referral-total');
-  const refIntEl = document.getElementById('growth-referral-internal');
-  const refExtEl = document.getElementById('growth-referral-external');
-  if (refTotalEl) refTotalEl.textContent = totalRef.toLocaleString('ja-JP') + ' 件';
-  if (refIntEl) refIntEl.textContent = totalRefInternal + '件';
-  if (refExtEl) refExtEl.textContent = totalRefExternal + '件';
+    const dummyItem = {
+      period_label: '集計中',
+      tyfcb_yen: fallbackTyfcb,
+      tyfcb_formatted: formatTyfcbYenDisplay(fallbackTyfcb),
+      total_referrals: totalRef,
+      internal_referrals: fallbackRefInternal,
+      external_referrals: fallbackRefExternal,
+      external_rate: extRate,
+      visitors: fallbackVisitors,
+      one_to_ones: fallbackOneToOnes,
+      ceu: fallbackCeu
+    };
 
-  const visTotalEl = document.getElementById('growth-visitor-total');
-  const otoTotalEl = document.getElementById('growth-one-to-one-total');
-  const ceuTotalEl = document.getElementById('growth-ceu-total');
-  if (visTotalEl) visTotalEl.textContent = totalVisitors.toLocaleString('ja-JP') + ' 名';
-  if (otoTotalEl) otoTotalEl.textContent = totalOneToOnes.toLocaleString('ja-JP') + ' 回';
-  if (ceuTotalEl) ceuTotalEl.textContent = totalCeu.toLocaleString('ja-JP') + ' pt';
+    summary = {
+      one_month: { ...dummyItem, label: '1ヶ月の成果' },
+      six_months: { ...dummyItem, label: '半年間の成果' },
+      all_time: { ...dummyItem, label: '全期間の成果' }
+    };
+  }
 
-  // Average RPW badge (各メンバーの出席週数に基づくRPWの平均)
-  const sumRpwVal = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
-  const avgRpw = memberCount > 0 ? (sumRpwVal / memberCount).toFixed(2) : '0.00';
-  const rpwBadgeEl = document.getElementById('growth-rpw-badge');
-  if (rpwBadgeEl) rpwBadgeEl.textContent = avgRpw;
+  const p1m = summary.one_month || {};
+  const p6m = summary.six_months || {};
+  const pAll = summary.all_time || {};
+
+  // Helper to format date label
+  const fmtDateRange = (s, e) => {
+    if (!s || !e) return '';
+    const sParts = s.split('-');
+    const eParts = e.split('-');
+    if (sParts.length === 3 && eParts.length === 3) {
+      return `${sParts[0]}/${sParts[1]}/${sParts[2]} 〜 ${eParts[0]}/${eParts[1]}/${eParts[2]}`;
+    }
+    return `${s} 〜 ${e}`;
+  };
+
+  // Helper to set text content safely
+  const setEl = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  // Helper to set element width
+  const setWidth = (id, pct) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  };
+
+  // --- Populate 1 Month (直近月) ---
+  setEl('growth-period-1m-dates', fmtDateRange(p1m.start_date, p1m.end_date) || p1m.period_label || '--');
+  setEl('growth-tyfcb-1m', p1m.tyfcb_formatted || formatTyfcbYenDisplay(p1m.tyfcb_yen));
+  setEl('growth-ref-total-1m', (Number(p1m.total_referrals) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ref-int-1m', Number(p1m.internal_referrals) || 0);
+  setEl('growth-ref-ext-1m', Number(p1m.external_referrals) || 0);
+  setEl('growth-ref-ext-rate-1m', (Number(p1m.external_rate) || 0).toFixed(1) + '%');
+  setWidth('growth-ref-bar-1m', Number(p1m.external_rate) || 0);
+  setEl('growth-visitors-1m', (Number(p1m.visitors) || 0).toLocaleString('ja-JP'));
+  setEl('growth-oto-1m', (Number(p1m.one_to_ones) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ceu-1m', (Number(p1m.ceu) || 0).toLocaleString('ja-JP'));
+
+  // --- Populate 6 Months (直近期) ---
+  setEl('growth-period-6m-dates', fmtDateRange(p6m.start_date, p6m.end_date) || p6m.period_label || '--');
+  setEl('growth-tyfcb-6m', p6m.tyfcb_formatted || formatTyfcbYenDisplay(p6m.tyfcb_yen));
+  setEl('growth-ref-total-6m', (Number(p6m.total_referrals) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ref-int-6m', Number(p6m.internal_referrals) || 0);
+  setEl('growth-ref-ext-6m', Number(p6m.external_referrals) || 0);
+  setEl('growth-ref-ext-rate-6m', (Number(p6m.external_rate) || 0).toFixed(1) + '%');
+  setWidth('growth-ref-bar-6m', Number(p6m.external_rate) || 0);
+  setEl('growth-visitors-6m', (Number(p6m.visitors) || 0).toLocaleString('ja-JP'));
+  setEl('growth-oto-6m', (Number(p6m.one_to_ones) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ceu-6m', (Number(p6m.ceu) || 0).toLocaleString('ja-JP'));
+
+  // --- Populate All Time (全期間累計) ---
+  setEl('growth-period-all-dates', fmtDateRange(pAll.start_date, pAll.end_date) || pAll.period_label || '--');
+  setEl('growth-tyfcb-all', pAll.tyfcb_formatted || formatTyfcbYenDisplay(pAll.tyfcb_yen));
+  setEl('growth-ref-total-all', (Number(pAll.total_referrals) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ref-int-all', Number(pAll.internal_referrals) || 0);
+  setEl('growth-ref-ext-all', Number(pAll.external_referrals) || 0);
+  setEl('growth-ref-ext-rate-all', (Number(pAll.external_rate) || 0).toFixed(1) + '%');
+  setWidth('growth-ref-bar-all', Number(pAll.external_rate) || 0);
+  setEl('growth-visitors-all', (Number(pAll.visitors) || 0).toLocaleString('ja-JP'));
+  setEl('growth-oto-all', (Number(pAll.one_to_ones) || 0).toLocaleString('ja-JP'));
+  setEl('growth-ceu-all', (Number(pAll.ceu) || 0).toLocaleString('ja-JP'));
+
+  // --- Populate Quick Comparison Matrix Table ---
+  // TYFCB
+  setEl('tbl-growth-tyfcb-1m', p1m.tyfcb_formatted || formatTyfcbYenDisplay(p1m.tyfcb_yen));
+  setEl('tbl-growth-tyfcb-6m', p6m.tyfcb_formatted || formatTyfcbYenDisplay(p6m.tyfcb_yen));
+  setEl('tbl-growth-tyfcb-all', pAll.tyfcb_formatted || formatTyfcbYenDisplay(pAll.tyfcb_yen));
+  // Referrals
+  setEl('tbl-growth-ref-1m', `${(Number(p1m.total_referrals) || 0).toLocaleString('ja-JP')} 件`);
+  setEl('tbl-growth-ref-6m', `${(Number(p6m.total_referrals) || 0).toLocaleString('ja-JP')} 件`);
+  setEl('tbl-growth-ref-all', `${(Number(pAll.total_referrals) || 0).toLocaleString('ja-JP')} 件`);
+  // External Referral Rate
+  setEl('tbl-growth-ext-1m', `${(Number(p1m.external_rate) || 0).toFixed(1)}%`);
+  setEl('tbl-growth-ext-6m', `${(Number(p6m.external_rate) || 0).toFixed(1)}%`);
+  setEl('tbl-growth-ext-all', `${(Number(pAll.external_rate) || 0).toFixed(1)}%`);
+  // Visitors
+  setEl('tbl-growth-vis-1m', `${(Number(p1m.visitors) || 0).toLocaleString('ja-JP')} 名`);
+  setEl('tbl-growth-vis-6m', `${(Number(p6m.visitors) || 0).toLocaleString('ja-JP')} 名`);
+  setEl('tbl-growth-vis-all', `${(Number(pAll.visitors) || 0).toLocaleString('ja-JP')} 名`);
+  // 1to1
+  setEl('tbl-growth-oto-1m', `${(Number(p1m.one_to_ones) || 0).toLocaleString('ja-JP')} 回`);
+  setEl('tbl-growth-oto-6m', `${(Number(p6m.one_to_ones) || 0).toLocaleString('ja-JP')} 回`);
+  setEl('tbl-growth-oto-all', `${(Number(pAll.one_to_ones) || 0).toLocaleString('ja-JP')} 回`);
+  // CEU
+  setEl('tbl-growth-ceu-1m', `${(Number(p1m.ceu) || 0).toLocaleString('ja-JP')} pt`);
+  setEl('tbl-growth-ceu-6m', `${(Number(p6m.ceu) || 0).toLocaleString('ja-JP')} pt`);
+  setEl('tbl-growth-ceu-all', `${(Number(pAll.ceu) || 0).toLocaleString('ja-JP')} pt`);
+
+  // Backward compatibility anchors
+  setEl('growth-tyfcb-total', pAll.tyfcb_formatted || formatTyfcbYenDisplay(pAll.tyfcb_yen));
+  setEl('growth-referral-total', (Number(pAll.total_referrals) || 0).toLocaleString('ja-JP') + ' 件');
+  setEl('growth-referral-internal', (Number(pAll.internal_referrals) || 0) + '件');
+  setEl('growth-referral-external', (Number(pAll.external_referrals) || 0) + '件');
+  setEl('growth-visitor-total', (Number(pAll.visitors) || 0).toLocaleString('ja-JP') + ' 名');
+  setEl('growth-one-to-one-total', (Number(pAll.one_to_ones) || 0).toLocaleString('ja-JP') + ' 回');
+  setEl('growth-ceu-total', (Number(pAll.ceu) || 0).toLocaleString('ja-JP') + ' pt');
+
+  if (currentPalmsRecords && currentPalmsRecords.length > 0) {
+    const sumRpwVal = currentPalmsRecords.reduce((acc, r) => acc + (Number(r.rpw) || 0), 0);
+    const avgRpw = (sumRpwVal / currentPalmsRecords.length).toFixed(2);
+    setEl('growth-rpw-badge', avgRpw);
+  }
 }
 
 /**

@@ -997,6 +997,139 @@ function handleApiRequest(req, res, urlObj) {
         }));
       }
 
+      if (action === 'chapter_trends') {
+        const sqlWeekly = `
+          SELECT 
+            start_date, end_date,
+            SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+            SUM(rgi_referrals_given_internal) as total_referrals_internal,
+            SUM(rgo_referrals_given_external) as total_referrals_external,
+            SUM(one_to_ones) as total_oto,
+            SUM(v_visitors) as total_visitors,
+            SUM(ceu) as total_ceu,
+            SUM(tyfcb_amount * 1000) as total_tyfcb,
+            COUNT(DISTINCT member_id) as member_count
+          FROM palms_reports
+          WHERE (julianday(end_date) - julianday(start_date)) <= 14
+          GROUP BY start_date, end_date
+          ORDER BY end_date ASC;
+        `;
+        const weekly = runSqlJson(sqlWeekly);
+
+        const sqlTerms = `
+          SELECT 
+            start_date, end_date,
+            SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+            SUM(rgi_referrals_given_internal) as total_referrals_internal,
+            SUM(rgo_referrals_given_external) as total_referrals_external,
+            SUM(one_to_ones) as total_oto,
+            SUM(v_visitors) as total_visitors,
+            SUM(ceu) as total_ceu,
+            SUM(tyfcb_amount * 1000) as total_tyfcb,
+            COUNT(DISTINCT member_id) as member_count
+          FROM palms_reports
+          WHERE (julianday(end_date) - julianday(start_date)) > 60
+          GROUP BY start_date, end_date
+          ORDER BY start_date ASC;
+        `;
+        const terms = runSqlJson(sqlTerms);
+
+        const sqlPeriods = `
+          SELECT 
+            start_date, end_date,
+            CAST(julianday(end_date) - julianday(start_date) + 1 AS INTEGER) as days_diff,
+            SUM(tyfcb_amount * 1000) as tyfcb_yen,
+            SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+            SUM(rgi_referrals_given_internal) as internal_referrals,
+            SUM(rgo_referrals_given_external) as external_referrals,
+            ROUND(CAST(SUM(rgo_referrals_given_external) AS FLOAT) / NULLIF(SUM(rgi_referrals_given_internal + rgo_referrals_given_external), 0) * 100, 1) as external_rate,
+            SUM(v_visitors) as visitors,
+            SUM(one_to_ones) as one_to_ones,
+            SUM(ceu) as ceu,
+            COUNT(DISTINCT member_id) as member_count
+          FROM palms_reports
+          GROUP BY start_date, end_date
+          ORDER BY end_date DESC, days_diff ASC;
+        `;
+        const allGroups = runSqlJson(sqlPeriods);
+
+        let oneMonthRaw = null;
+        let sixMonthsRaw = null;
+        let allTimeRaw = null;
+
+        allGroups.forEach(row => {
+          const diff = Number(row.days_diff) || 0;
+          if (diff >= 20 && diff <= 45 && !oneMonthRaw) {
+            oneMonthRaw = row;
+          }
+          if (diff >= 120 && diff <= 210 && !sixMonthsRaw) {
+            sixMonthsRaw = row;
+          }
+          if (diff >= 300 && !allTimeRaw) {
+            allTimeRaw = row;
+          }
+        });
+
+        const formatPeriodData = (raw, label) => {
+          if (!raw) {
+            return {
+              label: label,
+              period_label: '--',
+              start_date: null,
+              end_date: null,
+              tyfcb_yen: 0,
+              tyfcb_formatted: '0 万円',
+              total_referrals: 0,
+              internal_referrals: 0,
+              external_referrals: 0,
+              external_rate: 0.0,
+              visitors: 0,
+              one_to_ones: 0,
+              ceu: 0,
+              member_count: 0
+            };
+          }
+          const yen = Number(raw.tyfcb_yen) || 0;
+          let formattedTyfcb = '0 万円';
+          if (yen >= 100000000) {
+            formattedTyfcb = (yen / 100000000).toLocaleString('ja-JP', { maximumFractionDigits: 2 }) + ' 億円';
+          } else if (yen >= 10000) {
+            const man = yen / 10000;
+            formattedTyfcb = man.toLocaleString('ja-JP', { maximumFractionDigits: (man % 1 === 0 ? 0 : 1) }) + ' 万円';
+          } else {
+            formattedTyfcb = yen.toLocaleString('ja-JP') + ' 円';
+          }
+
+          return {
+            label: label,
+            period_label: `${raw.start_date || ''} 〜 ${raw.end_date || ''}`,
+            start_date: raw.start_date || null,
+            end_date: raw.end_date || null,
+            tyfcb_yen: yen,
+            tyfcb_formatted: formattedTyfcb,
+            total_referrals: Number(raw.total_referrals) || 0,
+            internal_referrals: Number(raw.internal_referrals) || 0,
+            external_referrals: Number(raw.external_referrals) || 0,
+            external_rate: Number(raw.external_rate) || 0.0,
+            visitors: Number(raw.visitors) || 0,
+            one_to_ones: Number(raw.one_to_ones) || 0,
+            ceu: Number(raw.ceu) || 0,
+            member_count: Number(raw.member_count) || 0
+          };
+        };
+
+        return res.end(JSON.stringify({
+          success: true,
+          weekly: weekly,
+          terms: terms,
+          periods_summary: {
+            one_month: formatPeriodData(oneMonthRaw, '1ヶ月の成果'),
+            six_months: formatPeriodData(sixMonthsRaw, '半年間の成果'),
+            all_time: formatPeriodData(allTimeRaw, '全期間の成果')
+          }
+        }));
+      }
+
       if (action === 'periods') {
         const sql = `SELECT DISTINCT start_date, end_date, COUNT(*) as member_count FROM palms_reports GROUP BY start_date, end_date ORDER BY end_date DESC;`;
         const periods = runSqlJson(sql);

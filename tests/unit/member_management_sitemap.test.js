@@ -92,5 +92,45 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     assert.strictEqual(indexHtml.includes('function renderChapterTrendLineChart('), true);
     assert.strictEqual(indexHtml.includes('getPalmsChapterTrendsApi'), true);
   });
+
+  it('verifies 3-period achievement cards (1 Month, 6 Months, All Time) and 6 core metrics in Growth Dashboard', () => {
+    // 3 Period Card headers & elements
+    assert.strictEqual(indexHtml.includes('1ヶ月の成果'), true);
+    assert.strictEqual(indexHtml.includes('半年間の成果'), true);
+    assert.strictEqual(indexHtml.includes('全期間の成果'), true);
+
+    // 6 Core metric elements for 1 Month
+    assert.strictEqual(indexHtml.includes('id="growth-tyfcb-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-total-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-ext-rate-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-visitors-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-oto-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ceu-1m"'), true);
+
+    // 6 Core metric elements for 6 Months
+    assert.strictEqual(indexHtml.includes('id="growth-tyfcb-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-total-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-ext-rate-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-visitors-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-oto-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ceu-6m"'), true);
+
+    // 6 Core metric elements for All Time
+    assert.strictEqual(indexHtml.includes('id="growth-tyfcb-all"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-total-all"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ref-ext-rate-all"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-visitors-all"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-oto-all"'), true);
+    assert.strictEqual(indexHtml.includes('id="growth-ceu-all"'), true);
+
+    // 6 Indicators Quick Comparison Matrix Table
+    assert.strictEqual(indexHtml.includes('6大指標 期間別実績マトリクス'), true);
+    assert.strictEqual(indexHtml.includes('id="tbl-growth-tyfcb-1m"'), true);
+    assert.strictEqual(indexHtml.includes('id="tbl-growth-tyfcb-6m"'), true);
+    assert.strictEqual(indexHtml.includes('id="tbl-growth-tyfcb-all"'), true);
+
+    // Script functions for formatting TYFCB yen
+    assert.strictEqual(indexHtml.includes('function formatTyfcbYenDisplay('), true);
+  });
 });
 

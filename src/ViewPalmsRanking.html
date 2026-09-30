@@ -164,32 +164,357 @@
       </div>
     </div>
 
-    <!-- Chapter Growth Summary Cards (TYFCB & Referrals & Visitors) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
-        <div class="text-3xs font-bold uppercase tracking-wider text-slate-400 mb-1">TYFCB 累計売上貢献</div>
-        <div class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums" id="growth-tyfcb-total">-- 万円</div>
-        <div class="mt-3 text-2xs text-slate-400 flex items-center justify-between">
-          <span>平均 <b id="growth-tyfcb-avg" class="text-slate-700">-- 万円</b></span>
+    <!-- ======================================================== -->
+    <!-- 期間別チャプター活動実績（1ヶ月 / 半年間 / 全期間）           -->
+    <!-- 6大指標：TYFCB / リファーラル数 / 外部リファーラル率 / ビジター / 1to1 / CEU -->
+    <!-- ======================================================== -->
+    <div class="mb-6">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-200/60">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          <h3 class="text-sm font-black text-slate-900 tracking-tight">チャプター活動実績（期間別）</h3>
+          <span class="text-3xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+            1ヶ月・半年・全期間
+          </span>
+        </div>
+        <div class="text-3xs text-slate-400 font-medium">
+          ※ TYFCBは千円単位入力のため1,000倍（×1,000）で自動換算
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
-        <div class="text-3xs font-bold uppercase tracking-wider text-slate-400 mb-1">リファーラル 累計件数</div>
-        <div class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums" id="growth-referral-total">-- 件</div>
-        <div class="mt-3 text-2xs text-slate-400 flex items-center justify-between">
-          <span>内部 <b id="growth-referral-internal" class="text-slate-700">--</b> / 外部 <b id="growth-referral-external" class="text-slate-700">--</b></span>
-          <span class="text-slate-900 font-bold">RPW <span id="growth-rpw-badge">--</span></span>
+      <!-- 3-Period Overview Cards Grid (1 Month / 6 Months / All Time) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-5">
+        
+        <!-- CARD 1: 1ヶ月の成果 (直近月) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <!-- Card Header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                <span class="text-xs font-black text-slate-900 tracking-tight">1ヶ月の成果</span>
+                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-100">直近月</span>
+              </div>
+              <span id="growth-period-1m-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
+            </div>
+
+            <!-- Primary Highlight KPI: TYFCB -->
+            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
+              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <span>TYFCB 売上貢献</span>
+                <span class="text-slate-400">Thank You For Closed Business</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="growth-tyfcb-1m" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
+              </div>
+            </div>
+
+            <!-- 5 Core Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <!-- リファーラル数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-total-1m" class="text-xl font-black text-blue-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">件</span>
+                </div>
+                <div class="mt-1 text-3xs text-slate-400">
+                  内 <span id="growth-ref-int-1m" class="font-bold text-slate-600">--</span> / 外 <span id="growth-ref-ext-1m" class="font-bold text-slate-600">--</span>
+                </div>
+              </div>
+
+              <!-- 外部リファーラル率 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-ext-rate-1m" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-1m" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- ビジター数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-visitors-1m" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">名</span>
+                </div>
+              </div>
+
+              <!-- 1to1 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-oto-1m" class="text-xl font-black text-amber-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">回</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CEU Full Width Metric -->
+            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
+              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+              <div class="flex items-baseline gap-1">
+                <span id="growth-ceu-1m" class="text-base font-black text-purple-600 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">pt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: 半年間の成果 (直近期) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <!-- Card Header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                <span class="text-xs font-black text-slate-900 tracking-tight">半年間の成果</span>
+                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">直近期</span>
+              </div>
+              <span id="growth-period-6m-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
+            </div>
+
+            <!-- Primary Highlight KPI: TYFCB -->
+            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
+              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <span>TYFCB 売上貢献</span>
+                <span class="text-slate-400">Thank You For Closed Business</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="growth-tyfcb-6m" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
+              </div>
+            </div>
+
+            <!-- 5 Core Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <!-- リファーラル数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-total-6m" class="text-xl font-black text-blue-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">件</span>
+                </div>
+                <div class="mt-1 text-3xs text-slate-400">
+                  内 <span id="growth-ref-int-6m" class="font-bold text-slate-600">--</span> / 外 <span id="growth-ref-ext-6m" class="font-bold text-slate-600">--</span>
+                </div>
+              </div>
+
+              <!-- 外部リファーラル率 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-ext-rate-6m" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-6m" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- ビジター数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-visitors-6m" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">名</span>
+                </div>
+              </div>
+
+              <!-- 1to1 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-oto-6m" class="text-xl font-black text-amber-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">回</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CEU Full Width Metric -->
+            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
+              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+              <div class="flex items-baseline gap-1">
+                <span id="growth-ceu-6m" class="text-base font-black text-purple-600 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">pt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: 全期間の成果 (累計) -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+          <div>
+            <!-- Card Header -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-900"></span>
+                <span class="text-xs font-black text-slate-900 tracking-tight">全期間の成果</span>
+                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">チャプター累計</span>
+              </div>
+              <span id="growth-period-all-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
+            </div>
+
+            <!-- Primary Highlight KPI: TYFCB -->
+            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
+              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                <span>TYFCB 売上貢献</span>
+                <span class="text-slate-400">Thank You For Closed Business</span>
+              </div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="growth-tyfcb-all" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
+              </div>
+            </div>
+
+            <!-- 5 Core Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2.5">
+              <!-- リファーラル数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-total-all" class="text-xl font-black text-blue-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">件</span>
+                </div>
+                <div class="mt-1 text-3xs text-slate-400">
+                  内 <span id="growth-ref-int-all" class="font-bold text-slate-600">--</span> / 外 <span id="growth-ref-ext-all" class="font-bold text-slate-600">--</span>
+                </div>
+              </div>
+
+              <!-- 外部リファーラル率 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-ref-ext-rate-all" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-all" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <!-- ビジター数 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-visitors-all" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">名</span>
+                </div>
+              </div>
+
+              <!-- 1to1 -->
+              <div class="bg-white border border-slate-100 rounded-xl p-3">
+                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+                <div class="flex items-baseline gap-1">
+                  <span id="growth-oto-all" class="text-xl font-black text-amber-600 tabular-nums">--</span>
+                  <span class="text-3xs font-bold text-slate-400">回</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CEU Full Width Metric -->
+            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
+              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+              <div class="flex items-baseline gap-1">
+                <span id="growth-ceu-all" class="text-base font-black text-purple-600 tabular-nums">--</span>
+                <span class="text-3xs font-bold text-slate-400">pt</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 6 Indicators Comparison Quick Table (ぱっと比較できるマトリクス表) -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs overflow-hidden">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+          <div class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-table-columns text-slate-400"></i>
+            <span>6大指標 期間別実績マトリクス</span>
+          </div>
+          <span class="text-3xs font-bold text-slate-400">1ヶ月 / 半年間 / 全期間</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b border-slate-100 text-3xs font-bold text-slate-400 uppercase tracking-wider">
+                <th class="py-2.5 px-3">主要指標</th>
+                <th class="py-2.5 px-3 text-right">1ヶ月の成果</th>
+                <th class="py-2.5 px-3 text-right">半年間の成果</th>
+                <th class="py-2.5 px-3 text-right">全期間の成果</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700 font-semibold tabular-nums">
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                  <span>TYFCB (売上貢献)</span>
+                </td>
+                <td id="tbl-growth-tyfcb-1m" class="py-2.5 px-3 text-right font-black text-slate-900">--</td>
+                <td id="tbl-growth-tyfcb-6m" class="py-2.5 px-3 text-right font-black text-slate-900">--</td>
+                <td id="tbl-growth-tyfcb-all" class="py-2.5 px-3 text-right font-black text-slate-900">--</td>
+              </tr>
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  <span>リファーラル数 (合計)</span>
+                </td>
+                <td id="tbl-growth-ref-1m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-ref-6m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-ref-all" class="py-2.5 px-3 text-right">--</td>
+              </tr>
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                  <span>外部リファーラル率</span>
+                </td>
+                <td id="tbl-growth-ext-1m" class="py-2.5 px-3 text-right font-bold text-indigo-600">--</td>
+                <td id="tbl-growth-ext-6m" class="py-2.5 px-3 text-right font-bold text-indigo-600">--</td>
+                <td id="tbl-growth-ext-all" class="py-2.5 px-3 text-right font-bold text-indigo-600">--</td>
+              </tr>
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>ビジター数</span>
+                </td>
+                <td id="tbl-growth-vis-1m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-vis-6m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-vis-all" class="py-2.5 px-3 text-right">--</td>
+              </tr>
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  <span>1to1 実施回数</span>
+                </td>
+                <td id="tbl-growth-oto-1m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-oto-6m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-oto-all" class="py-2.5 px-3 text-right">--</td>
+              </tr>
+              <tr class="hover:bg-slate-50/60 transition-colors">
+                <td class="py-2.5 px-3 font-bold text-slate-900 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                  <span>CEU (スキルアップ研鑽)</span>
+                </td>
+                <td id="tbl-growth-ceu-1m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-ceu-6m" class="py-2.5 px-3 text-right">--</td>
+                <td id="tbl-growth-ceu-all" class="py-2.5 px-3 text-right">--</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs">
-        <div class="text-3xs font-bold uppercase tracking-wider text-slate-400 mb-1">ビジター & 1to1 活動総量</div>
-        <div class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums" id="growth-visitor-total">-- 名</div>
-        <div class="mt-3 text-2xs text-slate-400 flex items-center justify-between">
-          <span>1to1 <b id="growth-one-to-one-total" class="text-slate-700">-- 回</b></span>
-          <span>CEU <b id="growth-ceu-total" class="text-slate-700">-- pt</b></span>
-        </div>
+      <!-- Hidden Fallback Anchors for Backward Compatibility -->
+      <div class="hidden" aria-hidden="true">
+        <span id="growth-tyfcb-total"></span>
+        <span id="growth-tyfcb-avg"></span>
+        <span id="growth-referral-total"></span>
+        <span id="growth-referral-internal"></span>
+        <span id="growth-referral-external"></span>
+        <span id="growth-visitor-total"></span>
+        <span id="growth-one-to-one-total"></span>
+        <span id="growth-ceu-total"></span>
+        <span id="growth-rpw-badge"></span>
       </div>
     </div>
   </div>
