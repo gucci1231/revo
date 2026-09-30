@@ -1214,9 +1214,10 @@ function handleApiRequest(req, res, urlObj) {
             (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
             (p.tyfcb_amount * 1000) as tyfcb_yen,
             m.category as member_category,
-            m.profession as member_profession
+            m.profession as member_profession,
+            COALESCE(m.status, '在籍') as member_status
           FROM palms_reports p
-          LEFT JOIN members m ON p.member_id = m.id
+          LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
           ${whereClause}
           ORDER BY (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) DESC, p.one_to_ones DESC, p.v_visitors DESC;
         `;
@@ -1248,9 +1249,10 @@ function handleApiRequest(req, res, urlObj) {
               (SUM(p.rri_referrals_received_internal) + SUM(p.rro_referrals_received_external)) as total_referrals_received,
               (SUM(p.tyfcb_amount) * 1000) as tyfcb_yen,
               m.category as member_category,
-              m.profession as member_profession
+              m.profession as member_profession,
+              COALESCE(m.status, '在籍') as member_status
             FROM palms_reports p
-            LEFT JOIN members m ON p.member_id = m.id
+            LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
             WHERE (julianday(p.end_date) - julianday(p.start_date)) <= 14
               AND p.end_date >= '${startDate}' AND p.start_date <= '${endDate}'
             GROUP BY p.member_id, p.member_name

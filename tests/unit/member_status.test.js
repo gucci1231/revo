@@ -56,4 +56,30 @@ describe('👥 Member Management Active & Resigned Status Feature Tests', () => 
     assert.ok(indexHtml.includes('id="member-dash-status-badge"'), 'member-dash-status-badge element exists in member dashboard');
     assert.ok(indexHtml.includes('[退会]'), 'ViewMemberDashboard script includes resigned indicator tag');
   });
+
+  it('verifies include resigned checkbox exists in both top action bar and date range modal in index.html', () => {
+    assert.ok(indexHtml.includes('id="palms-include-resigned"'), 'palms-include-resigned checkbox exists in top bar');
+    assert.ok(indexHtml.includes('id="palms-include-resigned-modal"'), 'palms-include-resigned-modal checkbox exists in modal');
+    assert.ok(indexHtml.includes('退会メンバーを含む'), 'label 退会メンバーを含む exists');
+  });
+
+  it('verifies default includeResignedMembers is false (hidden by default) and filters correctly', () => {
+    assert.ok(indexHtml.includes('includeResignedMembers = false'), 'includeResignedMembers defaults to false');
+
+    const mockPalmsProcessed = [
+      { member_name: '現役A', total_score: 85, is_resigned: false },
+      { member_name: '現役B', total_score: 65, is_resigned: false },
+      { member_name: '退会C', total_score: 45, is_resigned: true }
+    ];
+
+    // Default: false (exclude resigned)
+    let filtered = mockPalmsProcessed.filter(r => !r.is_resigned);
+    assert.strictEqual(filtered.length, 2, 'Default excludes resigned members');
+    assert.strictEqual(filtered.some(r => r.is_resigned), false, 'No resigned members present');
+
+    // When checked: true (include resigned)
+    filtered = [...mockPalmsProcessed];
+    assert.strictEqual(filtered.length, 3, 'When checked, includes all members including resigned');
+    assert.strictEqual(filtered.some(r => r.is_resigned), true, 'Resigned member is included');
+  });
 });

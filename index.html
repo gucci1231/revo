@@ -11854,7 +11854,13 @@ select.form-input, select.form-select {
     </div>
 
     <!-- Actions: Period Selector & Sync Button -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- 退会メンバーを含むチェックボックス -->
+      <label class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
+        <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
+        <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
+      </label>
+
       <!-- GA4-Style Period Trigger Button -->
       <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
         <i class="fa-regular fa-calendar text-blue-600"></i>
@@ -13064,14 +13070,20 @@ select.form-input, select.form-select {
           </div>
 
           <!-- Bottom Action Buttons -->
-          <div class="flex items-center justify-end gap-2 pt-4 mt-4 border-t border-slate-100">
-            <button type="button" onclick="closePalmsDateModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">
-              キャンセル
-            </button>
-            <button type="button" id="btn-palms-modal-apply" onclick="applyPalmsDateModal()" class="px-5 py-2 text-xs font-bold bg-slate-900 hover:bg-black active:scale-95 text-white rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
-              <i class="fa-solid fa-check text-2xs"></i>
-              <span>この期間で集計</span>
-            </button>
+          <div class="flex items-center justify-between gap-2 pt-4 mt-4 border-t border-slate-100 flex-wrap">
+            <label class="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 select-none">
+              <input type="checkbox" id="palms-include-resigned-modal" onchange="toggleIncludeResignedMembers(this.checked)" class="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
+              <span>退会メンバーを含む</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="closePalmsDateModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all cursor-pointer">
+                キャンセル
+              </button>
+              <button type="button" id="btn-palms-modal-apply" onclick="applyPalmsDateModal()" class="px-5 py-2 text-xs font-bold bg-slate-900 hover:bg-black active:scale-95 text-white rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-check text-2xs"></i>
+                <span>この期間で集計</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -26691,6 +26703,8 @@ function deleteChapterLink(linkId, title) {
  */
 
 let currentPalmsRecords = [];
+let allPalmsProcessedRecords = [];
+let includeResignedMembers = false; // デフォルトは表示しない
 let currentPalmsPeriodsList = [];
 let currentPalmsMetric = 'total';
 let currentPalmsSort = { field: 'total_score', asc: false };
@@ -26945,6 +26959,9 @@ function openPalmsDateModal() {
   syncPalmsModalInputs();
   updatePalmsModalSidebarActive(palmsDateModalState.activePreset);
   renderPalmsModalCalendars();
+
+  const cbModal = document.getElementById('palms-include-resigned-modal');
+  if (cbModal) cbModal.checked = includeResignedMembers;
 
   modal.classList.remove('hidden');
 }
@@ -27290,6 +27307,14 @@ function applyPalmsDateModal() {
 
   // Update display label
   updatePalmsPeriodDisplayLabel(sFin, eFin);
+
+  // Sync include resigned members checkbox state from modal
+  const cbModal = document.getElementById('palms-include-resigned-modal');
+  if (cbModal) {
+    includeResignedMembers = !!cbModal.checked;
+    const cbTop = document.getElementById('palms-include-resigned');
+    if (cbTop) cbTop.checked = includeResignedMembers;
+  }
 
   // Close Modal
   closePalmsDateModal();
@@ -27767,6 +27792,10 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
     const memberWeeks = Math.max(1, memberAttendanceWeeks > 0 ? memberAttendanceWeeks : Math.round(weeks));
     // 新会員判定: 定例会開催数が一定以上あり、かつ出席週数がチャプター最大より少ない場合
     const isNewMember = chapterMaxMeetings >= 6 && memberAttendanceWeeks < chapterMaxMeetings;
+    // メンバーマスタから退会ステータス判定
+    const mObj = (typeof findMemberByName === 'function') ? findMemberByName(r.member_name) : null;
+    let memberStatus = (mObj && mObj.status) ? mObj.status : (r.member_status || '在籍');
+    const isResigned = memberStatus === '退会';
 
     const parsed = {
       ...r,
@@ -27782,7 +27811,9 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
       sponsors,
       weeks_count: memberWeeks,
       attendance_weeks: memberAttendanceWeeks,
-      is_new_member: isNewMember
+      is_new_member: isNewMember,
+      is_resigned: isResigned,
+      member_status: memberStatus
     };
 
     const trafficLight = calcBniTrafficLightScore(parsed, weeks);
@@ -27796,6 +27827,8 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
       weeks_count: trafficLight.weeksCount || memberWeeks,
       attendance_weeks: memberAttendanceWeeks,
       is_new_member: isNewMember,
+      is_resigned: isResigned,
+      member_status: memberStatus,
       tier: trafficLight.tier,
       tierName: trafficLight.tierName,
       tierColor: trafficLight.tierColor,
@@ -27913,16 +27946,10 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
 
         // Process records with BNI Traffic Light Scoring System
         const rawRecords = res.records || [];
-        currentPalmsRecords = parseAndProcessPalmsRecords(rawRecords, weeks);
+        allPalmsProcessedRecords = parseAndProcessPalmsRecords(rawRecords, weeks);
 
-        // Update member count badge
-        const countBadge = document.getElementById('palms-member-count-badge');
-        if (countBadge) countBadge.textContent = `${currentPalmsRecords.length}名`;
-
-        // Render Overview KPIs & Charts & Tables
-        renderPalmsKpiCards();
-        renderPalmsCharts();
-        renderPalmsRankingView();
+        // Apply resigned filter (default: exclude resigned members)
+        applyPalmsResignedFilter();
         return currentPalmsRecords;
       } else {
         renderPalmsEmptyState(res ? res.error : 'データ取得に失敗しました');
@@ -27938,6 +27965,50 @@ function fetchPalmsRankingData(startDate = null, endDate = null) {
 
   return activePalmsFetchPromise;
 }
+
+/**
+ * Apply Resigned Member Filter on PALMS Records
+ * (Default: exclude resigned members unless includeResignedMembers is true)
+ */
+function applyPalmsResignedFilter() {
+  if (!allPalmsProcessedRecords || allPalmsProcessedRecords.length === 0) {
+    currentPalmsRecords = [];
+  } else if (includeResignedMembers) {
+    currentPalmsRecords = [...allPalmsProcessedRecords];
+  } else {
+    currentPalmsRecords = allPalmsProcessedRecords.filter(r => !r.is_resigned);
+  }
+
+  // Update member count badge
+  const countBadge = document.getElementById('palms-member-count-badge');
+  if (countBadge) countBadge.textContent = `${currentPalmsRecords.length}名`;
+
+  // Re-render KPIs, Charts, Rankings, and Subviews
+  renderPalmsKpiCards();
+  renderPalmsCharts();
+  renderPalmsRankingView();
+  if (typeof renderTrafficLightsGrid === 'function') renderTrafficLightsGrid();
+  if (typeof renderPpwRpwHub === 'function') renderPpwRpwHub();
+  if (typeof renderChapterTrafficView === 'function') renderChapterTrafficView();
+  if (typeof renderGrowthDashboardSummary === 'function') renderGrowthDashboardSummary();
+}
+window.applyPalmsResignedFilter = applyPalmsResignedFilter;
+
+/**
+ * Toggle Include Resigned Members Checkbox
+ */
+function toggleIncludeResignedMembers(checked) {
+  includeResignedMembers = !!checked;
+
+  // Synchronize both checkboxes (top action bar & modal)
+  const cbTop = document.getElementById('palms-include-resigned');
+  const cbModal = document.getElementById('palms-include-resigned-modal');
+  if (cbTop && cbTop.checked !== includeResignedMembers) cbTop.checked = includeResignedMembers;
+  if (cbModal && cbModal.checked !== includeResignedMembers) cbModal.checked = includeResignedMembers;
+
+  applyPalmsResignedFilter();
+}
+window.toggleIncludeResignedMembers = toggleIncludeResignedMembers;
 
 /**
  * Render 5 KPI Overview Cards (including PPW and RPW)
@@ -28701,8 +28772,9 @@ function renderPalmsPodium(records) {
 
         <!-- Member Info -->
         <div class="mb-4">
-          <h4 class="text-base sm:text-lg font-black text-slate-800 tracking-tight cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2 group" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
+          <h4 class="text-base sm:text-lg font-black text-slate-800 tracking-tight cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2 group flex-wrap" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
             <span class="group-hover:underline underline-offset-4 decoration-blue-500">${m.member_name}</span>
+            ${m.is_resigned ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">退会</span>' : ''}
             <i class="fa-solid fa-chevron-right text-3xs text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all"></i>
           </h4>
           <p class="text-2xs text-slate-400 mt-0.5 font-medium truncate">${memberCategory}</p>
@@ -28804,16 +28876,23 @@ function renderPalmsTable(records) {
     else if (m.total_score >= 30) scoreColorClass = 'text-rose-600';
     else scoreColorClass = 'text-slate-500';
 
+    const isResigned = !!m.is_resigned;
+    const resignedBadge = isResigned
+      ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 ml-1.5">退会</span>'
+      : '';
+    const rowClass = isResigned ? 'opacity-70 bg-slate-50/50 hover:bg-slate-100/60' : 'hover:bg-slate-50/80';
+
     html += `
-      <tr class="hover:bg-slate-50/80 transition-colors">
+      <tr class="${rowClass} transition-colors">
         <!-- 1. 順位 -->
         <td class="py-3 px-3 text-center align-middle">
           ${rankBadge}
         </td>
         <!-- 2. メンバー -->
         <td class="py-3 px-4 align-middle">
-          <div class="font-bold text-slate-800 hover:text-blue-600 cursor-pointer flex items-center gap-1.5 transition-colors group" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
+          <div class="font-bold text-slate-800 hover:text-blue-600 cursor-pointer flex items-center gap-1.5 transition-colors group flex-wrap" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
             <span class="group-hover:underline underline-offset-4 decoration-blue-500">${m.member_name}</span>
+            ${resignedBadge}
             <i class="fa-solid fa-circle-info text-3xs text-slate-300 group-hover:text-blue-500 transition-colors"></i>
           </div>
           <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[140px]">${memberCategory}</div>
@@ -30776,8 +30855,11 @@ function renderTrafficLightsGrid() {
 
     const radarSvg = renderMiniRadarSvg(scores, zoneTheme);
 
+    const isResigned = !!m.is_resigned;
+    const cardBg = isResigned ? 'bg-slate-50/50 opacity-70' : 'bg-white';
+
     html += `
-      <div onclick="navigateToMemberPersonalDashboard('${memberNameSafe}', 'traffic')" class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
+      <div onclick="navigateToMemberPersonalDashboard('${memberNameSafe}', 'traffic')" class="${cardBg} border border-slate-200/80 rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between group">
         <div>
           <!-- Top Row: Avatar, Name, Category, Score & Status Dot -->
           <div class="flex items-start justify-between gap-2.5 mb-2">
@@ -30786,8 +30868,9 @@ function renderTrafficLightsGrid() {
                 ${m.member_name ? m.member_name.charAt(0) : '名'}
               </div>
               <div class="min-w-0">
-                <div class="text-xs font-black text-slate-900 group-hover:text-blue-600 truncate transition-colors">
-                  ${m.member_name}
+                <div class="text-xs font-black text-slate-900 group-hover:text-blue-600 truncate transition-colors flex items-center gap-1">
+                  <span>${m.member_name}</span>
+                  ${isResigned ? '<span class="text-[10px] px-1 py-0.2 rounded bg-slate-100 text-slate-500 border border-slate-200 font-bold shrink-0">退会</span>' : ''}
                 </div>
                 <div class="text-3xs text-slate-400 font-semibold truncate">
                   ${m.member_category || 'メンバー'}

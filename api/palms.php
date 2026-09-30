@@ -295,7 +295,8 @@ try {
                 (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
                 (p.tyfcb_amount * 1000) as tyfcb_yen,
                 m.category as member_category,
-                m.profession as member_profession
+                m.profession as member_profession,
+                COALESCE(m.status, '在籍') as member_status
             FROM palms_reports p
             LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
             {$whereClause}
@@ -333,7 +334,8 @@ try {
                     (SUM(p.rri_referrals_received_internal) + SUM(p.rro_referrals_received_external)) as total_referrals_received,
                     (SUM(p.tyfcb_amount) * 1000) as tyfcb_yen,
                     m.category as member_category,
-                    m.profession as member_profession
+                    m.profession as member_profession,
+                    COALESCE(m.status, '在籍') as member_status
                 FROM palms_reports p
                 LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
                 WHERE (julianday(p.end_date) - julianday(p.start_date)) <= 14

@@ -425,7 +425,62 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.ok(indexHtml.includes("const sTarget = startDate || currentPalmsPeriod.startDate || '2026-09-01';"));
     assert.ok(indexHtml.includes("const eTarget = endDate || currentPalmsPeriod.endDate || '2026-09-30';"));
   });
+
+  it('verifies parseAndProcessPalmsRecords runs without ReferenceError and handles new and resigned members correctly', () => {
+    const fnMatch = indexHtml.match(/function parseAndProcessPalmsRecords\(rawRecords,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(fnMatch, 'parseAndProcessPalmsRecords function must exist');
+
+    const tlFnMatch = indexHtml.match(/function calcBniTrafficLightScore\(r,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(tlFnMatch, 'calcBniTrafficLightScore function must exist');
+
+    const parseAndProcessPalmsRecords = new Function('rawRecords', 'weeks', `
+      const calcBniTrafficLightScore = ${tlFnMatch[0]};
+      const findMemberByName = (name) => {
+        if (name === '退会テスト') return { name: '退会テスト', status: '退会' };
+        return { name, status: '在籍' };
+      };
+      ${fnMatch[1]}
+    `);
+
+    const sampleRecords = [
+      {
+        member_name: '通常メンバー',
+        p_present: 20, a_absent: 0, l_late: 0, m_medical: 0, s_substitute: 0,
+        rgi_referrals_given_internal: 10,
+        v_visitors: 2,
+        one_to_ones: 15,
+        tyfcb_amount: 500,
+        ceu: 10
+      },
+      {
+        member_name: '新会員メンバー',
+        p_present: 2, a_absent: 0, l_late: 0, m_medical: 0, s_substitute: 0,
+        rgi_referrals_given_internal: 2,
+        v_visitors: 1,
+        one_to_ones: 3,
+        tyfcb_amount: 100,
+        ceu: 2
+      },
+      {
+        member_name: '退会テスト',
+        p_present: 5, a_absent: 0, l_late: 0, m_medical: 0, s_substitute: 0,
+        rgi_referrals_given_internal: 0,
+        v_visitors: 0,
+        one_to_ones: 0,
+        tyfcb_amount: 0,
+        ceu: 0
+      }
+    ];
+
+    const processed = parseAndProcessPalmsRecords(sampleRecords, 20);
+    assert.strictEqual(processed.length, 3);
+    assert.strictEqual(processed[0].is_new_member, false);
+    assert.strictEqual(processed[0].is_resigned, false);
+    assert.strictEqual(processed[1].is_new_member, true);
+    assert.strictEqual(processed[2].is_resigned, true);
+  });
 });
+
 
 
 
