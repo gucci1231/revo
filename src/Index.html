@@ -156,11 +156,15 @@
       <button class="drawer-nav-item" id="drawer-item-lottery" onclick="switchTab('lottery')" title="定例会スロット抽選 (16:9)" data-tooltip="定例会スロット抽選">
         <i class="fa-solid fa-dice text-amber-500"></i> <span class="nav-label font-bold text-amber-600">定例会スロット抽選</span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-training" onclick="switchTab('training')" title="トレーニング日程" data-tooltip="トレーニング日程">
-        <i class="fa-solid fa-graduation-cap"></i> <span class="nav-label">トレーニング日程</span>
+      <button class="drawer-nav-item" id="drawer-item-training" onclick="switchTab('training')" title="イベント・研修カレンダー" data-tooltip="イベントカレンダー">
+        <i class="fa-solid fa-calendar-days text-blue-600"></i>
+        <span class="nav-label flex items-center justify-between flex-1 gap-1">
+          <span>イベントカレンダー</span>
+          <span class="text-3xs px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold shrink-0">全予定</span>
+        </span>
       </button>
-      <button class="drawer-nav-item" id="drawer-item-schedules" onclick="switchTab('schedules')" title="イベント・出欠" data-tooltip="イベント・出欠">
-        <i class="fa-solid fa-calendar-days"></i> <span class="nav-label">イベント・出欠</span>
+      <button class="drawer-nav-item hidden" id="drawer-item-schedules" onclick="switchTab('training')" title="イベント・出欠" data-tooltip="イベント・出欠">
+        <i class="fa-solid fa-calendar-check"></i> <span class="nav-label">イベント・出欠</span>
       </button>
 
       <!-- 公式リンク集セクション -->

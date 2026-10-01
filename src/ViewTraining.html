@@ -1,34 +1,41 @@
-<!-- Training & Event Calendar View (Kyoto City Central Region 7641) -->
+<!-- Event & Training Calendar View (REvo Chapter & Kyoto CC Region) -->
 <div id="view-training" class="view-content">
 
   <!-- Header Action Bar -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg shadow-xs">
-        <i class="fa-solid fa-graduation-cap"></i>
+      <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg shadow-xs shrink-0">
+        <i class="fa-solid fa-calendar-days"></i>
       </div>
       <div>
-        <div class="flex items-center gap-2">
-          <h2 class="text-lg font-black text-slate-900 tracking-tight">トレーニング・研修日程</h2>
+        <div class="flex items-center gap-2 flex-wrap">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight">イベント・研修カレンダー</h2>
           <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            京都CC公式連携
+            REvo定例会 ＆ 京都CC公式連携
           </span>
         </div>
-        <p class="text-xs text-slate-500 font-medium">BNI 京都シティセントラル カレンダー自動同期（毎週日曜・即時手動更新可）</p>
+        <p class="text-xs text-slate-500 font-medium">チャプター定例会・独自イベント・リージョン研修の全日程を統合管理</p>
       </div>
     </div>
 
-    <!-- Right Controls: Last synced & Manual Sync Button -->
-    <div class="flex items-center gap-2 self-start md:self-auto">
-      <div id="training-last-synced" class="text-3xs text-slate-400 font-mono hidden sm:block">
+    <!-- Right Controls: Add Event, Last Synced, Sync Button, External Link -->
+    <div class="flex items-center gap-2 self-start md:self-auto flex-wrap">
+      <button type="button" onclick="openChapterEventModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer shadow-xs active:scale-95">
+        <i class="fa-solid fa-plus text-xs"></i>
+        <span>予定を追加</span>
+      </button>
+
+      <div id="training-last-synced" class="text-3xs text-slate-400 font-mono hidden xl:block">
         最終同期: --
       </div>
-      <button type="button" id="btn-sync-training" onclick="syncTrainingEvents()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50/80 border border-blue-200/80 hover:bg-blue-100 hover:border-blue-300 transition-all cursor-pointer shadow-xs active:scale-95">
+
+      <button type="button" id="btn-sync-training" onclick="syncTrainingEvents()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50/80 border border-blue-200/80 hover:bg-blue-100 hover:border-blue-300 transition-all cursor-pointer shadow-xs active:scale-95" title="京都CC公式研修日程を即時更新">
         <i class="fa-solid fa-rotate" id="sync-training-icon"></i>
-        <span>最新情報を同期</span>
+        <span class="hidden sm:inline">研修同期</span>
       </button>
-      <a href="https://bni-ck.com/ja/events" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs" title="公式カレンダーを別タブで開く">
+
+      <a href="https://bni-ck.com/ja/events" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs" title="京都CC公式カレンダーを別タブで開く">
         <i class="fa-solid fa-arrow-up-right-from-square"></i>
       </a>
     </div>
@@ -36,22 +43,22 @@
 
   <!-- 4 Big KPI Cards (Radical Minimalism & Tabular Numerals) -->
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-    <!-- KPI 1: 次回トレーニング -->
+    <!-- KPI 1: 次回定例会 -->
     <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
-        <span>次回開催</span>
+        <span>次回定例会</span>
         <span class="w-2 h-2 rounded-full bg-blue-500"></span>
       </div>
       <div class="mt-1">
         <div id="kpi-training-next-date" class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight tabular-nums">--</div>
-        <div id="kpi-training-next-title" class="text-3xs text-slate-500 truncate mt-0.5 font-medium">--</div>
+        <div id="kpi-training-next-title" class="text-3xs text-slate-500 truncate mt-0.5 font-medium">木曜 07:00 開会</div>
       </div>
     </div>
 
-    <!-- KPI 2: 今月開催数 -->
+    <!-- KPI 2: 今月の全予定数 -->
     <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
-        <span>今月の研修</span>
+        <span>今月の全予定</span>
         <i class="fa-solid fa-calendar-check text-blue-500 text-xs"></i>
       </div>
       <div class="mt-1 flex items-baseline gap-1.5">
@@ -72,10 +79,10 @@
       </div>
     </div>
 
-    <!-- KPI 4: 対面・集合研修 -->
+    <!-- KPI 4: 対面・リアル開催 -->
     <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
-        <span>対面・集合研修</span>
+        <span>対面・集合開催</span>
         <span class="inline-flex items-center px-1.5 py-0.2 rounded text-3xs font-extrabold bg-emerald-50 text-emerald-600 border border-emerald-200">IN-PERSON</span>
       </div>
       <div class="mt-1 flex items-baseline gap-1.5">
@@ -87,60 +94,146 @@
 
   <!-- Filters & Controls Bar -->
   <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs mb-5 space-y-3">
-    <!-- Top Row: Format Pills & Search & Scope -->
+    <!-- Top Row: View Switcher (Calendar vs List), Source Type Pills, Format & Search -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <!-- Format Segmented Control -->
-      <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="training-format-filters">
-        <button type="button" class="px-3 py-1 rounded-md transition-all active-format-pill bg-white text-slate-900 shadow-xs" onclick="setTrainingFormatFilter('all', this)">
-          すべて
+      <!-- Left: View Mode Segmented Control (Calendar 📅 vs List 📋) -->
+      <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="event-view-mode-tabs">
+        <button type="button" id="btn-view-mode-calendar" class="px-3.5 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5" onclick="setEventViewMode('calendar')">
+          <i class="fa-solid fa-calendar-days text-blue-600"></i>
+          <span>カレンダー</span>
         </button>
-        <button type="button" class="px-3 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('online', this)">
-          <i class="fa-solid fa-video text-blue-500 mr-1"></i>オンライン
-        </button>
-        <button type="button" class="px-3 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('inperson', this)">
-          <i class="fa-solid fa-location-dot text-emerald-500 mr-1"></i>対面開催
+        <button type="button" id="btn-view-mode-list" class="px-3.5 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold" onclick="setEventViewMode('list')">
+          <i class="fa-solid fa-list-ul"></i>
+          <span>リスト一覧</span>
         </button>
       </div>
 
-      <!-- Keyword Search & Scope Switch -->
-      <div class="flex items-center gap-2 flex-1 sm:flex-initial min-w-[200px] justify-end">
-        <div class="relative flex-1 sm:w-64">
-          <input type="text" id="training-search-input" oninput="debounceTrainingFilter()" placeholder="講座名・担当者・会場で検索..." class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-colors">
-          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+      <!-- Center: Source Type Pills (All / Meetings / Chapter / Training) -->
+      <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs" onclick="setEventSourceFilter('', this)">
+          すべて
+        </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('meeting', this)">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>定例会
+        </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('chapter', this)">
+          <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
+        </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('training', this)">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
+        </button>
+      </div>
+
+      <!-- Right: Format Pills & Search -->
+      <div class="flex items-center gap-2 flex-1 sm:flex-initial min-w-[200px] justify-end flex-wrap">
+        <!-- Online / In-person Pill -->
+        <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="training-format-filters">
+          <button type="button" class="px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs" onclick="setTrainingFormatFilter('all', this)" title="全形式">
+            全形式
+          </button>
+          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('online', this)" title="オンラインのみ">
+            <i class="fa-solid fa-video text-blue-500"></i>
+          </button>
+          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('inperson', this)" title="対面のみ">
+            <i class="fa-solid fa-location-dot text-emerald-500"></i>
+          </button>
         </div>
-        <select id="training-scope-select" onchange="onTrainingScopeChange()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 cursor-pointer focus:outline-hidden focus:border-blue-500">
-          <option value="upcoming">開催予定のみ</option>
+
+        <!-- Search Input & Scope Select -->
+        <div class="relative min-w-[160px] sm:w-56">
+          <input type="text" id="training-search-input" oninput="debounceTrainingFilter()" placeholder="予定・講座名で検索..." class="w-full pl-7 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-colors">
+          <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-3xs"></i>
+        </div>
+        <select id="training-scope-select" class="hidden" onchange="loadCalendarAndEvents()">
+          <option value="upcoming" selected>開催予定</option>
           <option value="all">全期間</option>
-          <option value="past">過去の開催履歴</option>
         </select>
       </div>
     </div>
 
-    <!-- Bottom Row: Dynamic Month Tabs & Category Dropdown -->
-    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-      <!-- Month Tabs -->
+    <!-- Calendar Month Navigation Bar (Active in Calendar Mode) -->
+    <div id="calendar-month-toolbar" class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+      <!-- Prev / Next & Month Label -->
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="navigateCalendarMonth(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="前月">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+
+        <h3 id="calendar-current-month-label" class="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center">
+          ----年 --月
+        </h3>
+
+        <button type="button" onclick="navigateCalendarMonth(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="翌月">
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+
+        <button type="button" onclick="jumpToCurrentMonth()" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors ml-1 cursor-pointer">
+          今月
+        </button>
+      </div>
+
+      <!-- Color Legend (Apple Style Dots) -->
+      <div class="flex items-center gap-3 text-3xs font-bold text-slate-500 flex-wrap">
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-100"></span>
+          <span>定例会 (木)</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-100"></span>
+          <span>チャプター予定</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
+          <span>京都CC研修</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- List Mode Month Tabs (Active in List Mode only) -->
+    <div id="list-mode-toolbar" class="hidden flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
       <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5" id="training-month-tabs">
         <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200" onclick="setTrainingMonthFilter('', this)">
           全月
         </button>
       </div>
-
-      <!-- Category Filter Dropdown -->
       <div class="flex items-center gap-1.5 text-xs text-slate-500">
         <span class="font-bold shrink-0">カテゴリ:</span>
-        <select id="training-category-select" onchange="onTrainingCategoryChange()" class="px-2 py-1 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 cursor-pointer focus:outline-hidden focus:border-blue-500 max-w-[200px]">
-          <option value="">すべての研修カテゴリ</option>
+        <select id="training-category-select" onchange="onTrainingCategoryChange()" class="px-2 py-1 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 cursor-pointer focus:outline-hidden focus:border-blue-500 max-w-[180px]">
+          <option value="">すべて</option>
         </select>
       </div>
     </div>
   </div>
 
-  <!-- Events List Container -->
-  <div id="training-events-container" class="space-y-3">
+  <!-- ================= VIEW 1: MONTHLY CALENDAR GRID ================= -->
+  <div id="calendar-view-container" class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden mb-8">
+    <!-- Calendar Days Header (Sun - Sat) -->
+    <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50/80 text-center text-xs font-bold py-2.5 text-slate-600">
+      <div class="text-rose-500">日</div>
+      <div>月</div>
+      <div>火</div>
+      <div>水</div>
+      <div class="text-blue-600 font-black">木 (定例会)</div>
+      <div>金</div>
+      <div class="text-blue-500">土</div>
+    </div>
+
+    <!-- Calendar Grid Body (Rendered via JS) -->
+    <div id="calendar-grid" class="grid grid-cols-7 divide-x divide-y divide-slate-100 bg-slate-100">
+      <!-- Loading placeholder -->
+      <div class="col-span-7 py-24 text-center bg-white">
+        <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+        <div class="text-xs font-bold text-slate-500">カレンダーを描画中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 2: LIST VIEW ================= -->
+  <div id="list-view-container" class="hidden space-y-3 mb-8">
     <!-- Loading Skeleton -->
     <div id="training-loading-state" class="py-16 text-center">
       <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
-      <div class="text-xs font-bold text-slate-500">最新の研修日程を読み込み中...</div>
+      <div class="text-xs font-bold text-slate-500">予定一覧を読み込み中...</div>
     </div>
 
     <!-- Empty State -->
@@ -148,8 +241,8 @@
       <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
         <i class="fa-regular fa-calendar-xmark"></i>
       </div>
-      <div class="text-sm font-bold text-slate-700 mb-1">該当するトレーニングが見つかりません</div>
-      <div class="text-xs text-slate-400 max-w-sm mx-auto">条件を変更するか、右上の「最新情報を同期」ボタンを押してカレンダーを更新してください。</div>
+      <div class="text-sm font-bold text-slate-700 mb-1">該当する予定が見つかりません</div>
+      <div class="text-xs text-slate-400 max-w-sm mx-auto">条件を変更するか、右上の「予定を追加」から新しいチャプター予定を登録してください。</div>
     </div>
 
     <!-- Dynamic Event Cards will be injected here -->
@@ -158,7 +251,227 @@
 
 </div>
 
-<!-- Modal: Training Event Detail -->
+<!-- ================= MODAL 1: CHAPTER EVENT ADD/EDIT ================= -->
+<div id="modal-chapter-event" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeChapterEventModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <form id="form-chapter-event" onsubmit="handleChapterEventSubmit(event)">
+      <input type="hidden" id="ch-ev-id" value="">
+
+      <!-- Modal Header -->
+      <div class="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </div>
+          <div>
+            <h3 id="modal-chapter-event-title" class="text-base font-black text-slate-900 leading-none">チャプター予定を追加</h3>
+            <p class="text-3xs text-slate-400 mt-1">定例会・役員会・懇親会などのチャプター予定をカレンダーに登録</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeChapterEventModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-3.5 text-xs max-h-[75vh] overflow-y-auto">
+        <!-- Title -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">イベント名 / 予定タイトル <span class="text-red-500">*</span></label>
+          <input type="text" id="ch-ev-title" required placeholder="例: 第4期 役員会、秋の大懇親会、BOD準備会 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30">
+        </div>
+
+        <!-- Category & Format -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">カテゴリ</label>
+            <select id="ch-ev-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              <option value="役員会">役員会・MTG</option>
+              <option value="懇親会">懇親会・親睦会</option>
+              <option value="ビジネスオープンデー">ビジネスオープンデー (BOD)</option>
+              <option value="定例会">定例会関連</option>
+              <option value="1to1">1to1マラソン・面談</option>
+              <option value="チャプターイベント" selected>チャプターイベント</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">開催形式</label>
+            <select id="ch-ev-is-online" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              <option value="0">対面・リアル開催</option>
+              <option value="1">オンライン (Zoom)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dates & Times -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">開催日 <span class="text-red-500">*</span></label>
+            <input type="date" id="ch-ev-date" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">開始時刻</label>
+              <input type="time" id="ch-ev-start-time" value="19:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">終了時刻</label>
+              <input type="time" id="ch-ev-end-time" value="21:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Location & URL -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">会場名 / Zoom詳細</label>
+            <input type="text" id="ch-ev-location" placeholder="例: 烏丸四条会場、Zoom 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">URL / 案内リンク</label>
+            <input type="url" id="ch-ev-url" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 font-mono">
+          </div>
+        </div>
+
+        <!-- Organizer / Host -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">主催者 / 担当メンバー</label>
+          <input type="text" id="ch-ev-organizer" placeholder="例: イベント委員会、川口、桐原プレジ 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・補足</label>
+          <textarea id="ch-ev-desc" rows="3" placeholder="予定の詳細、アジェンダ、会費、参加資格などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+        <button type="button" id="btn-delete-chapter-event" onclick="handleDeleteChapterEvent()" class="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden">
+          <i class="fa-regular fa-trash-can mr-1"></i> 削除
+        </button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" onclick="closeChapterEventModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
+            キャンセル
+          </button>
+          <button type="submit" id="btn-save-chapter-event" class="px-5 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs active:scale-95">
+            保存する
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= MODAL 2: DAY EVENTS POPUP / TIMELINE ================= -->
+<div id="modal-day-events" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeDayEventsModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <!-- Header -->
+    <div class="p-4 sm:p-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <span class="text-3xs font-extrabold text-blue-600 uppercase tracking-wider block">DAY SCHEDULE</span>
+        <h3 id="modal-day-title" class="text-base sm:text-lg font-black text-slate-900 font-mono">----年--月--日</h3>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button type="button" id="btn-day-add-event" onclick="addEventOnSelectedDate()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-plus text-3xs"></i>
+          <span>予定追加</span>
+        </button>
+        <button type="button" onclick="closeDayEventsModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Events List in Day -->
+    <div class="p-4 sm:p-5 max-h-[60vh] overflow-y-auto space-y-2.5" id="modal-day-events-list">
+      <!-- Injected via JS -->
+    </div>
+
+    <!-- Footer -->
+    <div class="p-3.5 bg-slate-50 border-t border-slate-100 text-right">
+      <button type="button" onclick="closeDayEventsModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
+        閉じる
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL 3: REGULAR MEETING DETAIL ================= -->
+<div id="modal-meeting-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeMeetingDetailModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <!-- Header -->
+    <div class="p-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+            毎週木曜 定例会
+          </span>
+          <span id="modal-meeting-online-badge" class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
+            会場 ＆ Zoom
+          </span>
+        </div>
+        <h3 id="modal-meeting-title" class="text-base sm:text-lg font-black text-slate-900 leading-snug">
+          BNI REvoチャプター 定例会
+        </h3>
+      </div>
+      <button type="button" onclick="closeMeetingDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-5 space-y-4 text-xs">
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <div class="text-3xs font-bold text-slate-400 mb-0.5">開催日時</div>
+          <div id="modal-meeting-datetime" class="font-bold text-slate-800 font-mono tabular-nums">--</div>
+          <div class="text-3xs text-slate-500 mt-0.5">06:45 受付開始 / 07:00 開会</div>
+        </div>
+        <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+          <div class="text-3xs font-bold text-blue-600 mb-0.5">申込ビジター数</div>
+          <div class="flex items-baseline gap-1">
+            <span id="modal-meeting-visitor-count" class="text-2xl font-black text-blue-700 font-mono tabular-nums">0</span>
+            <span class="text-xs text-blue-500 font-bold">名</span>
+          </div>
+          <div class="text-3xs text-blue-500 mt-0.5 font-medium">システム登録済み参加予定</div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+        <div class="text-3xs font-bold text-slate-400 mb-1">会場情報</div>
+        <div class="font-bold text-slate-800" id="modal-meeting-location">REvoチャプター定例会会場 & Zoom</div>
+      </div>
+
+      <div>
+        <div class="text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+          <i class="fa-solid fa-users text-blue-600"></i>
+          <span>参加ビジター一覧</span>
+        </div>
+        <div id="modal-meeting-visitors-wrap" class="bg-slate-50 p-3 rounded-xl border border-slate-100 max-h-40 overflow-y-auto space-y-1.5 text-xs text-slate-700">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+      <button type="button" onclick="closeMeetingDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
+        閉じる
+      </button>
+      <button type="button" onclick="switchTab('dashboard'); closeMeetingDetailModal();" class="px-4 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs flex items-center gap-1.5">
+        <span>ダッシュボードで確認</span>
+        <i class="fa-solid fa-chevron-right text-3xs"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL 4: TRAINING EVENT DETAIL ================= -->
 <div id="modal-training-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeTrainingDetailModal();">
   <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
     <!-- Modal Header -->

@@ -1559,6 +1559,186 @@ function handleApiRequest(req, res, urlObj) {
         }));
       }
 
+      if (action === 'calendar') {
+        const month = urlObj.searchParams.get('month') || new Date().toISOString().substring(0, 7);
+        const format = urlObj.searchParams.get('format') || '';
+        const keyword = (urlObj.searchParams.get('keyword') || '').toLowerCase();
+        const sourceType = urlObj.searchParams.get('source_type') || '';
+
+        // Ensure chapter_events table exists
+        try {
+          execSql(`CREATE TABLE IF NOT EXISTS chapter_events (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            category TEXT DEFAULT 'チャプターイベント',
+            start_datetime TEXT NOT NULL,
+            end_datetime TEXT DEFAULT '',
+            location_name TEXT DEFAULT '',
+            location_url TEXT DEFAULT '',
+            is_online INTEGER DEFAULT 0,
+            organizer TEXT DEFAULT '',
+            description TEXT DEFAULT '',
+            created_at TEXT,
+            updated_at TEXT
+          );`);
+        } catch(e) {}
+
+        const firstDay = month + '-01';
+        const d = new Date(firstDay);
+        const startRangeD = new Date(d);
+        startRangeD.setDate(startRangeD.getDate() - 7);
+        const endRangeD = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        endRangeD.setDate(endRangeD.getDate() + 7);
+
+        const startRangeStr = startRangeD.toISOString().substring(0, 10);
+        const endRangeStr = endRangeD.toISOString().substring(0, 10);
+
+        // 1. Regular Meetings (Thursdays)
+        const meetings = [];
+        let curD = new Date(startRangeStr);
+        const endD = new Date(endRangeStr);
+        while (curD <= endD) {
+          if (curD.getDay() === 4) { // Thursday
+            const dateStr = curD.toISOString().substring(0, 10);
+            const vRow = runSqlJson(`SELECT COUNT(*) as cnt FROM visitors WHERE event_date LIKE '%${dateStr}%' OR event_date = '${dateStr.replace(/-/g, '/')}';`)[0] || {};
+            meetings.push({
+              id: 'mt_' + dateStr,
+              source_type: 'meeting',
+              title: 'REvoチャプター 定例会',
+              category: '定例会',
+              start_datetime: dateStr + ' 06:45:00',
+              end_datetime: dateStr + ' 08:30:00',
+              location_name: '通常定例会会場 & Zoom',
+              location_url: '',
+              is_online: 0,
+              organizer: 'REvoチャプター プレジデント & 運営チーム',
+              description: '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会',
+              visitor_count: parseInt(vRow.cnt || 0, 10)
+            });
+          }
+          curD.setDate(curD.getDate() + 1);
+        }
+
+        // 2. Chapter Events
+        let chapterRows = [];
+        try {
+          chapterRows = runSqlJson(`SELECT * FROM chapter_events WHERE start_datetime >= '${startRangeStr} 00:00:00' AND start_datetime <= '${endRangeStr} 23:59:59' ORDER BY start_datetime ASC;`);
+        } catch(e) {}
+        const chapterEvents = chapterRows.map(ev => ({ ...ev, source_type: 'chapter' }));
+
+        // 3. Training Events
+        let trainingRows = [];
+        try {
+          trainingRows = runSqlJson(`SELECT * FROM region_events WHERE start_datetime >= '${startRangeStr} 00:00:00' AND start_datetime <= '${endRangeStr} 23:59:59' ORDER BY start_datetime ASC;`);
+        } catch(e) {}
+        const trainingEvents = trainingRows.map(ev => ({
+          ...ev,
+          source_type: 'training',
+          category: ev.event_type_name || 'トレーニング'
+        }));
+
+        let all = [...meetings, ...chapterEvents, ...trainingEvents];
+        all.sort((a, b) => (a.start_datetime > b.start_datetime ? 1 : -1));
+
+        if (sourceType) {
+          all = all.filter(e => e.source_type === sourceType);
+        }
+        if (format === 'online') {
+          all = all.filter(e => !!e.is_online);
+        } else if (format === 'inperson') {
+          all = all.filter(e => !e.is_online);
+        }
+        if (keyword) {
+          all = all.filter(e => (
+            (e.title || '').toLowerCase().includes(keyword) ||
+            (e.description || '').toLowerCase().includes(keyword) ||
+            (e.location_name || '').toLowerCase().includes(keyword) ||
+            (e.category || '').toLowerCase().includes(keyword) ||
+            (e.organizer || '').toLowerCase().includes(keyword)
+          ));
+        }
+
+        // Summary
+        const nowIso = new Date().toISOString().substring(0, 19).replace('T', ' ');
+        const curMonth = nowIso.substring(0, 7);
+        const upcomingCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}';`)[0] || {}).c || 0, 10);
+        const monthCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime LIKE '${curMonth}%';`)[0] || {}).c || 0, 10);
+        const onlineCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}' AND is_online = 1;`)[0] || {}).c || 0, 10);
+        const inpersonCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}' AND is_online = 0;`)[0] || {}).c || 0, 10);
+        const nextEv = runSqlJson(`SELECT * FROM region_events WHERE start_datetime >= '${nowIso}' ORDER BY start_datetime ASC LIMIT 1;`)[0] || null;
+        const lastSyncRow = runSqlJson(`SELECT value FROM settings WHERE key = 'last_events_synced_at';`)[0];
+
+        return res.end(JSON.stringify({
+          success: true,
+          data: {
+            month,
+            events: all,
+            summary: {
+              totalUpcoming: upcomingCount,
+              currentMonthTotal: monthCount,
+              onlineCount,
+              inPersonCount: inpersonCount,
+              nextEvent: nextEv,
+              lastSyncedAt: lastSyncRow ? lastSyncRow.value : null
+            }
+          }
+        }));
+      }
+
+      if (action === 'save_chapter_event') {
+        const body = JSON.parse(reqBody || '{}');
+        const id = body.id || ('ch_' + Date.now());
+        const title = (body.title || '').replace(/'/g, "''");
+        const category = (body.category || 'チャプターイベント').replace(/'/g, "''");
+        const startDatetime = (body.start_datetime || '').replace(/'/g, "''");
+        const endDatetime = (body.end_datetime || '').replace(/'/g, "''");
+        const locationName = (body.location_name || '').replace(/'/g, "''");
+        const locationUrl = (body.location_url || '').replace(/'/g, "''");
+        const isOnline = body.is_online ? 1 : 0;
+        const organizer = (body.organizer || '').replace(/'/g, "''");
+        const description = (body.description || '').replace(/'/g, "''");
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+
+        try {
+          execSql(`CREATE TABLE IF NOT EXISTS chapter_events (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            category TEXT DEFAULT 'チャプターイベント',
+            start_datetime TEXT NOT NULL,
+            end_datetime TEXT DEFAULT '',
+            location_name TEXT DEFAULT '',
+            location_url TEXT DEFAULT '',
+            is_online INTEGER DEFAULT 0,
+            organizer TEXT DEFAULT '',
+            description TEXT DEFAULT '',
+            created_at TEXT,
+            updated_at TEXT
+          );`);
+          execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, created_at, updated_at)
+                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${now}', '${now}');`);
+          return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id }));
+        } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
+      }
+
+      if (action === 'delete_chapter_event') {
+        const body = JSON.parse(reqBody || '{}');
+        const id = body.id || urlObj.searchParams.get('id');
+        try {
+          execSql(`DELETE FROM chapter_events WHERE id = '${id}';`);
+          return res.end(JSON.stringify({ success: true, message: 'チャプター予定を削除しました' }));
+        } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
+      }
+
+      if (action === 'get_chapter_event') {
+        const id = urlObj.searchParams.get('id');
+        const event = runSqlJson(`SELECT * FROM chapter_events WHERE id = '${id}';`)[0] || null;
+        return res.end(JSON.stringify({ success: true, data: { event } }));
+      }
+
       if (action === 'get') {
         const id = parseInt(urlObj.searchParams.get('id'), 10);
         const event = runSqlJson(`SELECT * FROM region_events WHERE id = ${id};`)[0] || null;

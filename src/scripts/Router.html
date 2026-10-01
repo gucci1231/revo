@@ -108,8 +108,8 @@
           }
         }, 300);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'schedules'].includes(hash)) {
-      switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : hash), false);
+    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'events', 'schedules'].includes(hash)) {
+      switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : (hash === 'events' ? 'training' : hash)), false);
     }
   }
 
@@ -206,6 +206,7 @@
     'chapter-traffic': { title: 'チャプタートラフィックライト', icon: 'fa-solid fa-earth-americas' },
     'lottery': { title: '定例会スロット抽選', icon: 'fa-solid fa-dice' },
     'training': { title: 'トレーニング・研修日程', icon: 'fa-solid fa-graduation-cap' },
+    'events': { title: 'イベント・研修カレンダー', icon: 'fa-solid fa-calendar-days' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
@@ -231,12 +232,8 @@
 
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
-    if (['schedules'].includes(tabName)) {
-      const labels = {
-        'schedules': '定期イベント出欠＆調整さん自動リマインダー'
-      };
-      showToast(`「${labels[tabName]}」は次フェーズにてリリース予定です`, 'info');
-      return;
+    if (tabName === 'schedules' || tabName === 'events') {
+      tabName = 'training';
     }
 
     if (tabName !== 'visitor-detail') {
