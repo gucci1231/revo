@@ -281,6 +281,41 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     // 4. Quick delete button exists in index.html
     assert.ok(indexHtml.includes('confirmDeleteChapterEventDirect'), 'Direct delete helper is wired into index.html');
   });
+
+  it('verifies Member Event and Flyer Upload/Preview/Lightbox features across full stack', () => {
+    const eventControllerPhp = fs.readFileSync(path.join(rootDir, 'api/Controllers/EventController.php'), 'utf8');
+
+    // 1. UI Elements in index.html
+    assert.ok(indexHtml.includes('id="btn-source-member"'), 'Member Event source filter button exists');
+    assert.ok(indexHtml.includes('value="メンバーイベント"'), 'Member Event category option exists');
+    assert.ok(indexHtml.includes('id="datalist-member-names"'), 'Member names datalist exists');
+    assert.ok(indexHtml.includes('id="ch-ev-flyer-url"'), 'Flyer URL input exists');
+    assert.ok(indexHtml.includes('id="ch-ev-flyer-file"'), 'Flyer file input exists');
+    assert.ok(indexHtml.includes('id="ch-ev-flyer-preview-box"'), 'Flyer preview container exists');
+    assert.ok(indexHtml.includes('id="modal-flyer-lightbox"'), 'Flyer Lightbox modal exists in index.html');
+
+    // 2. JS Functions in viewScript
+    assert.ok(viewScript.includes('function openFlyerLightbox('), 'openFlyerLightbox defined in script');
+    assert.ok(viewScript.includes('function closeFlyerLightbox()'), 'closeFlyerLightbox defined in script');
+    assert.ok(viewScript.includes('function uploadFlyerFile('), 'uploadFlyerFile defined in script');
+    assert.ok(viewScript.includes('function setFlyerPreview('), 'setFlyerPreview defined in script');
+    assert.ok(viewScript.includes('function removeCurrentFlyer('), 'removeCurrentFlyer defined in script');
+    assert.ok(viewScript.includes('function populateMemberNamesDatalist()'), 'populateMemberNamesDatalist defined in script');
+
+    // 3. Database & Backend Schemas
+    assert.ok(databasePhp.includes('flyer_url'), 'Database.php includes flyer_url column and migration');
+    assert.ok(devServerJs.includes('flyer_url'), 'dev-server.js includes flyer_url column and migration');
+
+    // 4. Repositories & Controllers
+    assert.ok(eventRepoPhp.includes('flyer_url'), 'EventRepository saves flyer_url');
+    assert.ok(eventRepoPhp.includes("? 'member' : 'chapter'"), 'EventRepository tags member events as source_type member');
+    assert.ok(eventControllerPhp.includes('function uploadFlyer()'), 'EventController implements uploadFlyer endpoint');
+    assert.ok(devServerJs.includes("action === 'upload_flyer'"), 'dev-server supports upload_flyer action');
+    assert.ok(apiService.includes("case 'uploadFlyerApi':"), 'ApiService maps uploadFlyerApi');
+
+    // 5. Share text & styling
+    assert.ok(viewScript.includes('■ チラシ・告知画像:'), 'Share text includes flyer URL');
+  });
 });
 
 

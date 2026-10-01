@@ -114,25 +114,25 @@
 
       <!-- Center: Source Type Pills (All / Meetings / Chapter / Training / Visitor Action / Deadline) -->
       <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
+        <button id="btn-source-all" type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
           すべて
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
+        <button id="btn-source-meeting" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
           <span class="w-2 h-2 rounded-full bg-blue-500"></span>定例会
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
+        <button id="btn-source-chapter" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
           <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
+        <button id="btn-source-member" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
           <span class="w-2 h-2 rounded-full bg-orange-500"></span>メンバーイベント
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
+        <button id="btn-source-training" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
+        <button id="btn-source-action" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
           <span class="w-2 h-2 rounded-full bg-amber-500"></span>ビジターアクション
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
+        <button id="btn-source-deadline" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
           <span class="w-2 h-2 rounded-full bg-rose-500"></span>締切
         </button>
       </div>

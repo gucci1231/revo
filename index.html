@@ -14220,25 +14220,25 @@ select.form-input, select.form-select {
 
       <!-- Center: Source Type Pills (All / Meetings / Chapter / Training / Visitor Action / Deadline) -->
       <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
+        <button id="btn-source-all" type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
           すべて
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
+        <button id="btn-source-meeting" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
           <span class="w-2 h-2 rounded-full bg-blue-500"></span>定例会
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
+        <button id="btn-source-chapter" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
           <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
+        <button id="btn-source-member" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
           <span class="w-2 h-2 rounded-full bg-orange-500"></span>メンバーイベント
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
+        <button id="btn-source-training" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
+        <button id="btn-source-action" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
           <span class="w-2 h-2 rounded-full bg-amber-500"></span>ビジターアクション
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
+        <button id="btn-source-deadline" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
           <span class="w-2 h-2 rounded-full bg-rose-500"></span>締切
         </button>
       </div>
@@ -38131,7 +38131,9 @@ function renderWeekView() {
 
       const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
       let cardStyle = '';
-      if (ev.source_type === 'meeting') {
+      if (ev.source_type === 'member') {
+        cardStyle = 'bg-orange-50/95 border-l-[3px] border-orange-500 text-orange-950 hover:bg-orange-100 hover:border-orange-600';
+      } else if (ev.source_type === 'meeting') {
         cardStyle = 'bg-blue-50/95 border-l-[3px] border-blue-600 text-blue-950 hover:bg-blue-100 hover:border-blue-700';
       } else if (ev.source_type === 'action') {
         if (ev.is_completed) {
@@ -38152,7 +38154,9 @@ function renderWeekView() {
         : '';
 
       let typeTag = '';
-      if (ev.source_type === 'action') {
+      if (ev.source_type === 'member') {
+        typeTag = `<span class="text-[9px] font-bold text-orange-700 bg-orange-100 px-1 py-0 rounded shrink-0 leading-none">メンバー</span>`;
+      } else if (ev.source_type === 'action') {
         typeTag = ev.is_completed
           ? `<span class="text-[9px] font-bold text-slate-600 bg-slate-200 px-1 py-0 rounded shrink-0 leading-none"><i class="fa-solid fa-check mr-0.5"></i>済</span>`
           : `<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0 rounded shrink-0 leading-none">ACT</span>`;
@@ -38163,6 +38167,10 @@ function renderWeekView() {
       const formatTag = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
         ? `<span class="text-[9px] font-bold text-blue-600 bg-blue-100/70 px-1 py-0 rounded shrink-0 leading-none">Zoom</span>`
         : `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none">対面</span>`);
+
+      const flyerTag = ev.flyer_url
+        ? `<span class="text-[9px] font-bold text-orange-600 bg-orange-100/90 px-1 py-0 rounded shrink-0 leading-none" title="チラシあり"><i class="fa-solid fa-file-image"></i></span>`
+        : '';
 
       return `
         <div onclick="handleCalendarEventClick('${ev.id}', event)"
@@ -38178,6 +38186,7 @@ function renderWeekView() {
                 <span>${timeStr}${endTimeStr}</span>
               </div>
               <div class="flex items-center gap-1 shrink-0">
+                ${flyerTag}
                 ${typeTag}
                 ${formatTag}
                 ${visitorTag}
@@ -38258,6 +38267,7 @@ function renderWeekView() {
     // Indicator dots
     const dots = [];
     if (dayEvs.some(e => e.source_type === 'meeting')) dots.push('bg-blue-500');
+    if (dayEvs.some(e => e.source_type === 'member')) dots.push('bg-orange-500');
     if (dayEvs.some(e => e.source_type === 'chapter')) dots.push('bg-purple-500');
     if (dayEvs.some(e => e.source_type === 'training')) dots.push('bg-emerald-500');
     if (dayEvs.some(e => e.source_type === 'action')) dots.push('bg-amber-500');
@@ -38320,7 +38330,10 @@ function renderWeekView() {
 
           let borderBar = 'border-l-blue-600';
           let tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
-          if (ev.source_type === 'action') {
+          if (ev.source_type === 'member') {
+            borderBar = 'border-l-orange-500';
+            tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200">メンバー</span>';
+          } else if (ev.source_type === 'action') {
             borderBar = ev.is_completed ? 'border-l-slate-300' : 'border-l-amber-500';
             tagBadge = ev.is_completed
               ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">完了ACT</span>'
@@ -38344,6 +38357,12 @@ function renderWeekView() {
             ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
             : '';
 
+          const flyerActionBtn = ev.flyer_url
+            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="px-2 py-0.5 rounded text-3xs font-bold bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 inline-flex items-center gap-1 cursor-pointer shrink-0" title="チラシを表示">
+                <i class="fa-solid fa-file-image"></i> チラシ
+              </button>`
+            : '';
+
           return `
             <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-3 rounded-xl border border-slate-200 bg-white border-l-[4px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]">
               <div class="flex-1 min-w-0">
@@ -38361,7 +38380,10 @@ function renderWeekView() {
                   </div>
                 ` : ''}
               </div>
-              <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+              <div class="flex items-center gap-2 shrink-0">
+                ${flyerActionBtn}
+                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+              </div>
             </div>
           `;
         }).join('')}
@@ -40668,6 +40690,7 @@ function buildEventShareText(ev) {
   if (ev.location_url) text += `■ 参加/案内URL: ${ev.location_url}\n`;
   if (ev.cost_member) text += `■ 費用: ${ev.cost_member}\n`;
   if (ev.organizer) text += `■ 主催・担当: ${ev.organizer}\n`;
+  if (ev.flyer_url) text += `■ チラシ・告知画像: ${ev.flyer_url}\n`;
 
   if (ev.description) {
     const cleanDesc = ev.description.replace(/<[^>]*>/g, '').trim();
@@ -40706,6 +40729,7 @@ function getGoogleCalendarUrl(ev) {
     const deepLink = getEventDeepLink(ev);
     const descParts = [];
     if (ev.description) descParts.push(ev.description.replace(/<[^>]*>/g, '').trim());
+    if (ev.flyer_url) descParts.push(`チラシ・告知画像: ${ev.flyer_url}`);
     if (ev.location_url) descParts.push(`参加URL: ${ev.location_url}`);
     if (ev.registration_url || ev.detail_url) descParts.push(`公式リンク: ${ev.registration_url || ev.detail_url}`);
     descParts.push(`▼ REvoカレンダー:\n${deepLink}`);
@@ -40747,7 +40771,10 @@ function openEventShareModal(eventOrId, evt) {
   // Set Modal Badge & Info
   const badgeEl = document.getElementById('share-modal-badge');
   if (badgeEl) {
-    if (ev.source_type === 'meeting') {
+    if (ev.source_type === 'member') {
+      badgeEl.innerText = 'メンバーイベント';
+      badgeEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-orange-50 text-orange-700 border border-orange-200';
+    } else if (ev.source_type === 'meeting') {
       badgeEl.innerText = '定例会';
       badgeEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200';
     } else if (ev.source_type === 'chapter') {
