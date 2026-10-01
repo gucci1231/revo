@@ -116,7 +116,11 @@ function updatePalmsPickerTabsUi() {
   }
 
   if (guideText) {
-    guideText.textContent = isStart ? 'カレンダーまたは日付入力で開始日を選択' : 'カレンダーまたは日付入力で終了日を選択';
+    if (palmsDateModalState.start && palmsDateModalState.end && isStart) {
+      guideText.textContent = '選択完了：右下の「この期間で集計」をクリック';
+    } else {
+      guideText.textContent = isStart ? 'カレンダーまたは日付入力で開始日を選択' : 'カレンダーまたは日付入力で終了日を選択';
+    }
   }
 }
 
