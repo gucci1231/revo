@@ -33,6 +33,55 @@ function runSqlExec(sql) {
   }
 }
 
+function initDatabase() {
+  runSqlExec(`
+    CREATE TABLE IF NOT EXISTS chapter_events (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT DEFAULT 'チャプターイベント',
+      start_datetime TEXT NOT NULL,
+      end_datetime TEXT DEFAULT '',
+      location_name TEXT DEFAULT '',
+      location_url TEXT DEFAULT '',
+      is_online INTEGER DEFAULT 0,
+      organizer TEXT DEFAULT '',
+      description TEXT DEFAULT '',
+      recurrence_group_id TEXT DEFAULT '',
+      recurrence_rule TEXT DEFAULT '',
+      created_at TEXT,
+      updated_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS region_events (
+      id INTEGER PRIMARY KEY,
+      event_id_enc TEXT,
+      title TEXT NOT NULL,
+      event_type_name TEXT,
+      event_type_id INTEGER DEFAULT 0,
+      event_category TEXT,
+      start_datetime TEXT NOT NULL,
+      end_datetime TEXT,
+      location_name TEXT,
+      location_address TEXT,
+      location_map_url TEXT,
+      is_online INTEGER DEFAULT 0,
+      cost_member TEXT,
+      cost_visitor TEXT,
+      contact_name TEXT,
+      contact_phone TEXT,
+      max_attendees INTEGER DEFAULT 0,
+      num_registered INTEGER DEFAULT 0,
+      detail_url TEXT,
+      registration_url TEXT,
+      body_html TEXT,
+      created_at TEXT,
+      updated_at TEXT
+    );
+  `);
+  try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
+  try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
+}
+initDatabase();
+
 function buildHtml() {
   let indexContent = fs.readFileSync(path.join(SRC_DIR, 'Index.html'), 'utf8');
 
@@ -1686,7 +1735,7 @@ function handleApiRequest(req, res, urlObj) {
       }
 
       if (action === 'save_chapter_event') {
-        const body = JSON.parse(reqBody || '{}');
+        const body = input || {};
         const id = body.id || ('ch_' + Date.now());
         const title = (body.title || '').replace(/'/g, "''");
         const category = (body.category || 'チャプターイベント').replace(/'/g, "''");
@@ -1703,25 +1752,6 @@ function handleApiRequest(req, res, urlObj) {
         const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
 
         try {
-          execSql(`CREATE TABLE IF NOT EXISTS chapter_events (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            category TEXT DEFAULT 'チャプターイベント',
-            start_datetime TEXT NOT NULL,
-            end_datetime TEXT DEFAULT '',
-            location_name TEXT DEFAULT '',
-            location_url TEXT DEFAULT '',
-            is_online INTEGER DEFAULT 0,
-            organizer TEXT DEFAULT '',
-            description TEXT DEFAULT '',
-            recurrence_group_id TEXT DEFAULT '',
-            recurrence_rule TEXT DEFAULT '',
-            created_at TEXT,
-            updated_at TEXT
-          );`);
-          try { execSql(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
-          try { execSql(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
-
           if (!body.id && ['weekly', 'biweekly', 'monthly'].includes(recurrenceRule)) {
             const groupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
             const startTimeStr = startDatetime.length >= 11 ? startDatetime.substring(11) : '00:00:00';
@@ -1750,7 +1780,7 @@ function handleApiRequest(req, res, urlObj) {
               const curId = 'ch_' + Date.now() + '_' + createdCount;
               if (createdCount === 0) firstId = curId;
 
-              execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
+              runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
                        VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${groupId}', '${recurrenceRule}', '${now}', '${now}');`);
 
               createdCount++;
@@ -1773,7 +1803,7 @@ function handleApiRequest(req, res, urlObj) {
             }));
           }
 
-          execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
+          runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
                    VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${now}', '${now}');`);
           return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id, count: 1 }));
         } catch(e) {
@@ -1782,18 +1812,18 @@ function handleApiRequest(req, res, urlObj) {
       }
 
       if (action === 'delete_chapter_event') {
-        const body = JSON.parse(reqBody || '{}');
+        const body = input || {};
         const id = body.id || urlObj.searchParams.get('id');
         const deleteSeries = body.delete_series || urlObj.searchParams.get('delete_series') === '1' || urlObj.searchParams.get('delete_series') === 'true';
         try {
           if (deleteSeries) {
             const ev = runSqlJson(`SELECT recurrence_group_id FROM chapter_events WHERE id = '${id}';`)[0];
             if (ev && ev.recurrence_group_id) {
-              execSql(`DELETE FROM chapter_events WHERE recurrence_group_id = '${ev.recurrence_group_id}';`);
+              runSqlExec(`DELETE FROM chapter_events WHERE recurrence_group_id = '${ev.recurrence_group_id}';`);
               return res.end(JSON.stringify({ success: true, message: '繰り返し予定を一括削除しました' }));
             }
           }
-          execSql(`DELETE FROM chapter_events WHERE id = '${id}';`);
+          runSqlExec(`DELETE FROM chapter_events WHERE id = '${id}';`);
           return res.end(JSON.stringify({ success: true, message: 'チャプター予定を削除しました' }));
         } catch(e) {
           return res.end(JSON.stringify({ success: false, message: e.message }));
