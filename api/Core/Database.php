@@ -225,12 +225,7 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_region_events_start ON region_events(start_datetime);
             CREATE INDEX IF NOT EXISTS idx_region_events_type ON region_events(event_type_id);
             CREATE INDEX IF NOT EXISTS idx_chapter_events_start ON chapter_events(start_datetime);
-            CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);
         ");
-
-        $this->seedDefaultEmailTemplates();
-        $this->seedDefaultLinks();
-        $this->seedDefaultChapterEvents();
 
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN action_type TEXT DEFAULT ''");
@@ -286,6 +281,13 @@ class Database {
         try {
             $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT ''");
         } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);");
+        } catch (\PDOException $e) {}
+
+        $this->seedDefaultEmailTemplates();
+        $this->seedDefaultLinks();
+        $this->seedDefaultChapterEvents();
     }
 
     private function seedDefaultEmailTemplates(): void {
