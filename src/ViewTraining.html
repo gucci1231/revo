@@ -51,7 +51,7 @@
       </div>
       <div class="mt-1">
         <div id="kpi-training-next-date" class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight tabular-nums">--</div>
-        <div id="kpi-training-next-title" class="text-3xs text-slate-500 truncate mt-0.5 font-medium">木曜 07:00 開会</div>
+        <div id="kpi-training-next-title" class="text-3xs text-slate-500 truncate mt-0.5 font-medium">07:00 開会 (メンバー 6:00 / ビジター 6:40)</div>
       </div>
     </div>
 
@@ -480,14 +480,14 @@
     <!-- Header -->
     <div class="p-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3">
       <div>
-        <div class="flex items-center gap-2 mb-1">
-          <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200" id="modal-meeting-category-badge">
-            毎週木曜 定例会
+        <div class="flex items-center gap-1.5 mb-1">
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200" id="modal-meeting-category-badge">
+            定例会
           </span>
-          <span id="modal-meeting-online-badge" class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
-            会場 ＆ Zoom
+          <span id="modal-meeting-online-badge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+            Zoom
           </span>
-          <span id="modal-meeting-custom-badge" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hidden">
+          <span id="modal-meeting-custom-badge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hidden">
             特別情報設定済
           </span>
         </div>
@@ -516,7 +516,7 @@
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
           <div class="text-3xs font-bold text-slate-400 mb-0.5">開催日時</div>
           <div id="modal-meeting-datetime" class="font-bold text-slate-800 font-mono tabular-nums">--</div>
-          <div class="text-3xs text-slate-500 mt-0.5">06:45 受付開始 / 07:00 開会</div>
+          <div class="text-3xs text-slate-500 mt-0.5">メンバー 06:00 / ビジター 06:40 受付 (07:00 開会)</div>
         </div>
         <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
           <div class="text-3xs font-bold text-blue-600 mb-0.5">申込ビジター数</div>
@@ -603,9 +603,9 @@
           <input type="text" id="mt-edit-title" required placeholder="例: REvoチャプター 定例会、モメンタム、BOD ONLINE 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30">
           <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
             <span class="text-3xs text-slate-400 font-bold">プリセット:</span>
-            <button type="button" onclick="setMeetingTitlePreset('REvoチャプター 定例会', '定例会', 0, '通常定例会会場 & Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">通常定例会</button>
-            <button type="button" onclick="setMeetingTitlePreset('モメンタム', 'モメンタム', 0, '通常定例会会場 & Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">モメンタム</button>
-            <button type="button" onclick="setMeetingTitlePreset('BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom オンライン')" class="px-2 py-0.5 rounded text-3xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-colors">BOD ONLINE</button>
+            <button type="button" onclick="setMeetingTitlePreset('REvoチャプター 定例会', '定例会', 1, 'Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors">通常定例会 (Zoom)</button>
+            <button type="button" onclick="setMeetingTitlePreset('モメンタム', 'モメンタム', 1, 'Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">モメンタム (Zoom)</button>
+            <button type="button" onclick="setMeetingTitlePreset('BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-colors">BOD ONLINE</button>
             <button type="button" onclick="setMeetingTitlePreset('BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂')" class="px-2 py-0.5 rounded text-3xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors">BOD 対面 (スター食堂)</button>
           </div>
         </div>
@@ -626,8 +626,8 @@
           <div>
             <label class="block font-bold text-slate-700 mb-1">開催形式</label>
             <select id="mt-edit-is-online" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-              <option value="0">対面・リアル開催 (会場)</option>
               <option value="1">オンライン (Zoom)</option>
+              <option value="0">対面・リアル会場</option>
             </select>
           </div>
         </div>
@@ -636,7 +636,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">会場名 / 場所</label>
-            <input type="text" id="mt-edit-location" placeholder="例: スター食堂、通常定例会会場 & Zoom 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            <input type="text" id="mt-edit-location" placeholder="例: Zoom、スター食堂 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Zoom URL / 案内リンク</label>
@@ -648,7 +648,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">開始時刻</label>
-            <input type="time" id="mt-edit-start-time" value="06:45" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+            <input type="time" id="mt-edit-start-time" value="06:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">終了時刻</label>

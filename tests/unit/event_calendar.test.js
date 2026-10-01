@@ -169,6 +169,31 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('function checkUrlEventDeepLink('), 'checkUrlEventDeepLink is defined');
     assert.ok(viewScript.includes('function getEventDeepLink('), 'getEventDeepLink is defined');
   });
+
+  it('verifies Regular Meeting defaults to Zoom (online) and badges are compact and minimal', () => {
+    // Backend: EventRepository.php and dev-server.js default is_online to 1 (Zoom)
+    assert.ok(eventRepoPhp.includes("'is_online' => $custom ? (int)$custom['is_online'] : 1"), 'EventRepository defaults meeting is_online to 1');
+    assert.ok(eventRepoPhp.includes("'location_name' => $custom ? ($custom['location_name'] ?? 'Zoom') : 'Zoom'"), 'EventRepository defaults location_name to Zoom');
+    assert.ok(devServerJs.includes("is_online: custom ? (custom.is_online ? 1 : 0) : 1"), 'dev-server defaults meeting is_online to 1');
+
+    // UI: ViewTraining script renders compact tags for V:count, Zoom/In-person
+    assert.ok(viewScript.includes("text-[9px] font-extrabold text-blue-700 bg-blue-100/80 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact V:count badge');
+    assert.ok(viewScript.includes("text-[9px] font-bold text-blue-600 bg-blue-100/70 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact Zoom badge');
+    assert.ok(viewScript.includes("text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact In-person badge');
+
+    // Month view pill V:count
+    assert.ok(viewScript.includes("text-[9px] font-extrabold bg-blue-600 text-white shrink-0 leading-none"), 'Month view pill uses compact V:count badge');
+
+    // Meeting detail modal badges
+    assert.ok(indexHtml.includes('id="modal-meeting-online-badge"'), 'Meeting online badge exists in index.html');
+    assert.ok(viewScript.includes("onlineBadge.innerText = 'Zoom';"), 'Meeting modal labels online meeting as Zoom');
+    assert.ok(viewScript.includes("onlineBadge.innerText = '対面・会場';"), 'Meeting modal labels inperson meeting as 対面・会場');
+
+    // Meeting edit preset buttons
+    assert.ok(indexHtml.includes("setMeetingTitlePreset('REvoチャプター 定例会', '定例会', 1, 'Zoom')"), 'Preset for regular meeting uses Zoom (1)');
+    assert.ok(indexHtml.includes("setMeetingTitlePreset('モメンタム', 'モメンタム', 1, 'Zoom')"), 'Preset for momentum uses Zoom (1)');
+    assert.ok(indexHtml.includes("setMeetingTitlePreset('BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂')"), 'Preset for BOD in-person uses in-person (0)');
+  });
 });
 
 

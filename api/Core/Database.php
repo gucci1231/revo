@@ -300,6 +300,15 @@ class Database {
         try {
             $this->pdo->exec("CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);");
         } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
+                UPDATE meeting_customizations 
+                SET is_online = 1, location_name = 'Zoom オンライン' 
+                WHERE (title = 'モメンタム' OR title LIKE '%通常%') 
+                  AND (location_name LIKE '%通常定例会会場%' OR is_online = 0) 
+                  AND meeting_date != '2026-11-19'
+            ");
+        } catch (\PDOException $e) {}
 
         $this->seedDefaultEmailTemplates();
         $this->seedDefaultLinks();
@@ -364,7 +373,7 @@ class Database {
                 'body' => '{$name} 様' . "\n\n" .
                     'BNI REvoチャプター ビジターホストチームです。' . "\n" .
                     '{$event_date} 開催の定例会が、いよいよ明後日となりました！' . "\n\n" .
-                    '【開催日時】{$event_date} 6:45受付開始 / 7:00開会' . "\n" .
+                    '【開催日時】{$event_date} 6:40受付開始 / 7:00開会' . "\n" .
                     '【メインプレゼンター】{$main_presenter} 様' . "\n" .
                     '【求めている紹介】{$wanted}' . "\n\n" .
                     '当日は名刺・筆記用具をご準備の上、お気をつけてお越しくださいませ。' . "\n" .
@@ -379,7 +388,7 @@ class Database {
                 'body' => '{$name} 様' . "\n\n" .
                     'BNI REvoチャプター ビジターホストチームです。' . "\n" .
                     'いよいよ明日 {$event_date}、定例会が開催されます！' . "\n\n" .
-                    '【開催日時】明日 {$event_date} 6:45受付開始 / 7:00開会' . "\n\n" .
+                    '【開催日時】明日 {$event_date} 6:40受付開始 / 7:00開会' . "\n\n" .
                     '朝早い時間帯となりますが、充実したビジネス交流の場となるよう準備を整えております。' . "\n" .
                     '道中どうぞお気をつけてお越しください。' . "\n" .
                     '明日お会いできることを楽しみにしております！'
@@ -660,13 +669,13 @@ class Database {
                 'meeting_date' => '2026-10-22',
                 'title' => 'モメンタム',
                 'category' => 'モメンタム',
-                'is_online' => 0,
-                'location_name' => '通常定例会会場 & Zoom',
+                'is_online' => 1,
+                'location_name' => 'Zoom オンライン',
                 'location_url' => '',
-                'start_datetime' => '2026-10-22 06:45:00',
+                'start_datetime' => '2026-10-22 06:00:00',
                 'end_datetime' => '2026-10-22 08:30:00',
                 'organizer' => 'REvoチャプター プレジデント & 運営チーム',
-                'description' => "【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\n6:45受付開始 / 7:00開会 / 8:30閉会"
+                'description' => "【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会"
             ],
             [
                 'meeting_date' => '2026-11-05',
@@ -675,10 +684,10 @@ class Database {
                 'is_online' => 1,
                 'location_name' => 'Zoom オンライン',
                 'location_url' => '',
-                'start_datetime' => '2026-11-05 06:45:00',
+                'start_datetime' => '2026-11-05 06:00:00',
                 'end_datetime' => '2026-11-05 08:30:00',
                 'organizer' => 'REvoチャプター メンバー全員',
-                'description' => "【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\n6:45受付開始 / 7:00開会 / 8:30閉会"
+                'description' => "【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会"
             ],
             [
                 'meeting_date' => '2026-11-19',
@@ -687,10 +696,10 @@ class Database {
                 'is_online' => 0,
                 'location_name' => 'スター食堂',
                 'location_url' => '',
-                'start_datetime' => '2026-11-19 06:45:00',
+                'start_datetime' => '2026-11-19 06:00:00',
                 'end_datetime' => '2026-11-19 08:30:00',
                 'organizer' => 'REvoチャプター メンバー全員',
-                'description' => "【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\n6:45受付開始 / 7:00開会 / 8:30閉会"
+                'description' => "【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会"
             ]
         ];
 

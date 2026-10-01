@@ -237,7 +237,7 @@ class EventController extends Controller {
             'meeting_date' => $meetingDate,
             'title' => $title,
             'category' => (string)$this->getParam('category', '定例会'),
-            'is_online' => (int)$this->getParam('is_online', 0),
+            'is_online' => (int)$this->getParam('is_online', 1),
             'location_name' => (string)$this->getParam('location_name', ''),
             'location_url' => (string)$this->getParam('location_url', ''),
             'start_datetime' => (string)$this->getParam('start_datetime', $meetingDate . ' 06:45:00'),

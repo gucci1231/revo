@@ -99,13 +99,15 @@ function initDatabase() {
     const nowIso = new Date().toISOString().substring(0, 19).replace('T', ' ');
     runSqlExec(`
       INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
-      VALUES ('2026-10-22', 'モメンタム', 'モメンタム', 0, '通常定例会会場 & Zoom', '', '2026-10-22 06:45:00', '2026-10-22 08:30:00', 'REvoチャプター プレジデント & 運営チーム', '【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+      VALUES ('2026-10-22', 'モメンタム', 'モメンタム', 1, 'Zoom オンライン', '', '2026-10-22 06:00:00', '2026-10-22 08:30:00', 'REvoチャプター プレジデント & 運営チーム', '【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
 
       INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
-      VALUES ('2026-11-05', 'BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom オンライン', '', '2026-11-05 06:45:00', '2026-11-05 08:30:00', 'REvoチャプター メンバー全員', '【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+      VALUES ('2026-11-05', 'BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom オンライン', '', '2026-11-05 06:00:00', '2026-11-05 08:30:00', 'REvoチャプター メンバー全員', '【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
 
       INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
-      VALUES ('2026-11-19', 'BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂', '', '2026-11-19 06:45:00', '2026-11-19 08:30:00', 'REvoチャプター メンバー全員', '【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+      VALUES ('2026-11-19', 'BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂', '', '2026-11-19 06:00:00', '2026-11-19 08:30:00', 'REvoチャプター メンバー全員', '【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\nメンバー 6:00 / ビジター 6:40受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+
+      UPDATE meeting_customizations SET is_online = 1, location_name = 'Zoom オンライン' WHERE (title = 'モメンタム' OR title LIKE '%通常%') AND (location_name LIKE '%通常定例会会場%' OR is_online = 0) AND meeting_date != '2026-11-19';
     `);
   } catch(e){}
 }
@@ -1718,13 +1720,13 @@ function handleApiRequest(req, res, urlObj) {
               source_type: 'meeting',
               title: custom ? (custom.title || 'REvoチャプター 定例会') : 'REvoチャプター 定例会',
               category: custom ? (custom.category || '定例会') : '定例会',
-              start_datetime: (custom && custom.start_datetime) ? custom.start_datetime : (dateStr + ' 06:45:00'),
+              start_datetime: (custom && custom.start_datetime) ? custom.start_datetime : (dateStr + ' 06:00:00'),
               end_datetime: (custom && custom.end_datetime) ? custom.end_datetime : (dateStr + ' 08:30:00'),
-              location_name: custom ? (custom.location_name || '通常定例会会場 & Zoom') : '通常定例会会場 & Zoom',
+              location_name: custom ? (custom.location_name || 'Zoom') : 'Zoom',
               location_url: custom ? (custom.location_url || '') : '',
-              is_online: custom ? (custom.is_online ? 1 : 0) : 0,
+              is_online: custom ? (custom.is_online ? 1 : 0) : 1, // 基本Zoom
               organizer: custom ? (custom.organizer || 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
-              description: custom ? (custom.description || '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会') : '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会',
+              description: custom ? (custom.description || '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\nメンバー 6:00 / ビジター 6:40 受付開始 / 7:00 開会 / 8:30 閉会') : '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\nメンバー 6:00 / ビジター 6:40 受付開始 / 7:00 開会 / 8:30 閉会',
               visitor_count: dayVisitors.length,
               visitors: dayVisitors,
               is_customized: custom ? 1 : 0
@@ -1928,7 +1930,7 @@ function handleApiRequest(req, res, urlObj) {
         const isOnline = body.is_online ? 1 : 0;
         const locationName = (body.location_name || '').replace(/'/g, "''");
         const locationUrl = (body.location_url || '').replace(/'/g, "''");
-        const startDatetime = (body.start_datetime || (meetingDate + ' 06:45:00')).replace(/'/g, "''");
+        const startDatetime = (body.start_datetime || (meetingDate + ' 06:00:00')).replace(/'/g, "''");
         const endDatetime = (body.end_datetime || (meetingDate + ' 08:30:00')).replace(/'/g, "''");
         const organizer = (body.organizer || 'REvoチャプター プレジデント & 運営チーム').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");

@@ -500,12 +500,12 @@ function renderWeekView() {
       }
 
       const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
-        ? `<span class="inline-flex items-center gap-1 text-3xs font-extrabold text-blue-700 bg-blue-100/70 px-1 py-0.2 rounded shrink-0">V:${ev.visitor_count}</span>`
+        ? `<span class="inline-flex items-center text-[9px] font-extrabold text-blue-700 bg-blue-100/80 px-1 py-0 rounded shrink-0 leading-none">V:${ev.visitor_count}</span>`
         : '';
 
       const formatTag = ev.is_online
-        ? `<span class="text-3xs font-extrabold text-blue-600 bg-blue-100/60 px-1 py-0.2 rounded shrink-0">Zoom</span>`
-        : '';
+        ? `<span class="text-[9px] font-bold text-blue-600 bg-blue-100/70 px-1 py-0 rounded shrink-0 leading-none">Zoom</span>`
+        : `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none">対面</span>`;
 
       return `
         <div onclick="handleCalendarEventClick('${ev.id}', event)"
@@ -725,12 +725,17 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
     }
 
     const visitorPrefix = (ev.visitor_count !== undefined && ev.visitor_count > 0)
-      ? `<span class="px-1 py-0.2 rounded text-3xs font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+      ? `<span class="px-1 py-0 rounded text-[9px] font-extrabold bg-blue-600 text-white shrink-0 leading-none">V:${ev.visitor_count}</span>`
+      : '';
+
+    const formatPrefix = (!ev.is_online && ev.source_type === 'meeting')
+      ? `<span class="px-1 py-0 rounded text-[9px] font-bold bg-emerald-600 text-white shrink-0 leading-none">対面</span>`
       : '';
 
     return `
-      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]">
+      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]">
         <span class="font-mono font-bold tabular-nums text-xs shrink-0 text-slate-800">${timeStr}</span>
+        ${formatPrefix}
         ${visitorPrefix}
         <span class="truncate font-semibold text-xs text-slate-900">${escapeHtml(ev.title)}</span>
       </div>
@@ -825,18 +830,28 @@ function openDayEventsModal(dateKey) {
       const endTimeStr = ev.end_datetime ? ` ～ ${ev.end_datetime.substring(11, 16)}` : '';
       let badge = '';
       if (ev.source_type === 'meeting') {
-        badge = '<span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
+        badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
       } else if (ev.source_type === 'chapter') {
-        badge = '<span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">チャプター予定</span>';
+        badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
       } else {
-        badge = '<span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">京都CC研修</span>';
+        badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">京都CC研修</span>';
       }
+
+      const formatTag = ev.is_online
+        ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200/60">Zoom</span>'
+        : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">対面</span>';
+
+      const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+        ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+        : '';
 
       return `
         <div onclick="closeDayEventsModal(); handleCalendarEventClick('${ev.id}');" class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 group">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1.5 mb-1 flex-wrap">
               ${badge}
+              ${formatTag}
+              ${visitorTag}
               <span class="text-3xs font-bold text-slate-500">${escapeHtml(ev.category || '')}</span>
             </div>
             <!-- Unified Font Size: Time and Title -->
@@ -1158,7 +1173,7 @@ function openMeetingDetailModal(meeting) {
 
   const d = new Date(meeting.start_datetime.replace(/-/g, '/'));
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '07:00';
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '06:00';
   const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
   const formattedDate = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${dayNames[d.getDay()]}) ${startTime} ～ ${endTime}`;
 
@@ -1166,21 +1181,25 @@ function openMeetingDetailModal(meeting) {
   if (titleEl) titleEl.innerText = meeting.title || 'BNI REvoチャプター 定例会';
 
   const catBadge = document.getElementById('modal-meeting-category-badge');
-  if (catBadge) catBadge.innerText = meeting.category || '毎週木曜 定例会';
+  if (catBadge) {
+    catBadge.innerText = meeting.category || '定例会';
+    catBadge.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200';
+  }
 
   const onlineBadge = document.getElementById('modal-meeting-online-badge');
   if (onlineBadge) {
     if (meeting.is_online) {
-      onlineBadge.innerText = 'Zoom オンライン';
-      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200';
+      onlineBadge.innerText = 'Zoom';
+      onlineBadge.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200';
     } else {
-      onlineBadge.innerText = '対面・リアル会場';
-      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200';
+      onlineBadge.innerText = '対面・会場';
+      onlineBadge.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200';
     }
   }
 
   const customBadge = document.getElementById('modal-meeting-custom-badge');
   if (customBadge) {
+    customBadge.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200';
     if (meeting.is_customized) {
       customBadge.classList.remove('hidden');
     } else {
@@ -1378,11 +1397,11 @@ function openMeetingEditModal(meeting) {
   document.getElementById('mt-edit-date-val').value = dateKey;
   document.getElementById('mt-edit-title').value = meeting.title || 'REvoチャプター 定例会';
   document.getElementById('mt-edit-category').value = meeting.category || '定例会';
-  document.getElementById('mt-edit-is-online').value = meeting.is_online ? '1' : '0';
-  document.getElementById('mt-edit-location').value = meeting.location_name || '通常定例会会場 & Zoom';
+  document.getElementById('mt-edit-is-online').value = meeting.is_online !== undefined ? (meeting.is_online ? '1' : '0') : '1';
+  document.getElementById('mt-edit-location').value = meeting.location_name || 'Zoom';
   document.getElementById('mt-edit-url').value = meeting.location_url || '';
 
-  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '06:45';
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '06:00';
   const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
   document.getElementById('mt-edit-start-time').value = startTime;
   document.getElementById('mt-edit-end-time').value = endTime;
@@ -1431,7 +1450,7 @@ async function handleMeetingEditSubmit(evt) {
   const isOnline = parseInt(document.getElementById('mt-edit-is-online').value, 10);
   const locationName = document.getElementById('mt-edit-location').value.trim();
   const locationUrl = document.getElementById('mt-edit-url').value.trim();
-  const startTime = document.getElementById('mt-edit-start-time').value || '06:45';
+  const startTime = document.getElementById('mt-edit-start-time').value || '06:00';
   const endTime = document.getElementById('mt-edit-end-time').value || '08:30';
   const organizer = document.getElementById('mt-edit-organizer').value.trim();
   const desc = document.getElementById('mt-edit-desc').value.trim();
@@ -1519,7 +1538,7 @@ function renderTrainingKpis(summary) {
   const nextThuStr = `${nextThu.getMonth() + 1}/${nextThu.getDate()} (木)`;
 
   if (nextDateEl) nextDateEl.innerText = nextThuStr;
-  if (nextTitleEl) nextTitleEl.innerText = '07:00 開会 / 6:45受付';
+  if (nextTitleEl) nextTitleEl.innerText = '07:00 開会 (メンバー 6:00 / ビジター 6:40)';
 
   // Count total events this month in calendar
   const totalEventsInMonth = allCalendarEvents.length;
@@ -1575,16 +1594,20 @@ function renderFilteredTrainingEvents() {
     // Badges
     let sourceBadge = '';
     if (ev.source_type === 'meeting') {
-      sourceBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">🔵 定例会</span>';
+      sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">定例会</span>';
     } else if (ev.source_type === 'chapter') {
-      sourceBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">🟣 チャプター</span>';
+      sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80">チャプター</span>';
     } else {
-      sourceBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">🟢 京都CC研修</span>';
+      sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80">京都CC研修</span>';
     }
 
     const formatBadge = ev.is_online
-      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200"><i class="fa-solid fa-video text-3xs"></i> ONLINE</span>`
-      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-location-dot text-3xs"></i> 対面</span>`;
+      ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200/80"><i class="fa-solid fa-video text-[9px]"></i> Zoom</span>`
+      : `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><i class="fa-solid fa-location-dot text-[9px]"></i> 対面</span>`;
+
+    const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+      ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+      : '';
 
     return `
       <div class="bg-white border ${isToday ? 'border-blue-500/80 shadow-xs ring-1 ring-blue-500/20' : 'border-slate-200'} rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex flex-col justify-between group">
@@ -1601,6 +1624,7 @@ function renderFilteredTrainingEvents() {
               <div class="flex items-center gap-1.5 flex-wrap mb-1">
                 ${sourceBadge}
                 ${formatBadge}
+                ${visitorBadge}
                 ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
               </div>
               <h3 onclick="handleCalendarEventClick('${ev.id}')" class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 leading-snug">
@@ -1674,11 +1698,11 @@ function openTrainingDetailModal(eventId) {
 
   const formatEl = document.getElementById('modal-ev-format');
   if (ev.is_online) {
-    formatEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200';
-    formatEl.innerHTML = '<i class="fa-solid fa-video"></i> ONLINE';
+    formatEl.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200';
+    formatEl.innerHTML = '<i class="fa-solid fa-video text-[9px]"></i> Zoom';
   } else {
-    formatEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200';
-    formatEl.innerHTML = '<i class="fa-solid fa-location-dot"></i> 対面研修';
+    formatEl.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+    formatEl.innerHTML = '<i class="fa-solid fa-location-dot text-[9px]"></i> 対面';
   }
 
   const startDate = new Date(ev.start_datetime.replace(/-/g, '/'));
@@ -1822,6 +1846,9 @@ function buildEventShareText(ev) {
   text += `━━━━━━━━━━━━━━━━━━━━\n`;
   text += `■ タイトル: ${ev.title || 'イベント'}\n`;
   if (dtStr) text += `■ 日時: ${dtStr}\n`;
+  if (ev.source_type === 'meeting') {
+    text += `■ 受付時間: メンバー 06:00〜 / ビジター 06:40〜 (07:00開会 / 08:30閉会)\n`;
+  }
   text += `■ 形式: ${formatLabel}\n`;
   if (locText) text += `■ 会場: ${locText}\n`;
   if (ev.location_url) text += `■ 参加/案内URL: ${ev.location_url}\n`;
