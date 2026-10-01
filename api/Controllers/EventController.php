@@ -161,13 +161,22 @@ class EventController extends Controller {
             'location_url' => (string)$this->getParam('location_url', ''),
             'is_online' => (int)$this->getParam('is_online', 0),
             'organizer' => (string)$this->getParam('organizer', ''),
-            'description' => (string)$this->getParam('description', '')
+            'description' => (string)$this->getParam('description', ''),
+            'recurrence_rule' => (string)$this->getParam('recurrence_rule', $this->getParam('repeat_type', 'none')),
+            'recurrence_until' => (string)$this->getParam('recurrence_until', $this->getParam('repeat_until', '')),
+            'recurrence_count' => (int)$this->getParam('recurrence_count', $this->getParam('repeat_count', 0)),
+            'recurrence_group_id' => (string)$this->getParam('recurrence_group_id', '')
         ];
 
-        $id = $this->eventRepo->saveChapterEvent($data);
+        $res = $this->eventRepo->saveChapterEvent($data);
+        $count = $res['count'] ?? 1;
+        $message = ($count > 1) ? "{$count}件の定期予定を一括登録しました" : 'チャプター予定を保存しました';
+
         Response::success([
-            'message' => 'チャプター予定を保存しました',
-            'id' => $id
+            'message' => $message,
+            'id' => $res['id'] ?? '',
+            'count' => $count,
+            'group_id' => $res['group_id'] ?? ''
         ]);
     }
 
@@ -178,9 +187,11 @@ class EventController extends Controller {
             return;
         }
 
-        $res = $this->eventRepo->deleteChapterEvent($id);
+        $deleteSeries = (bool)$this->getParam('delete_series', false);
+        $res = $this->eventRepo->deleteChapterEvent($id, $deleteSeries);
         if ($res) {
-            Response::success(['message' => 'チャプター予定を削除しました']);
+            $msg = $deleteSeries ? '繰り返し予定を一括削除しました' : 'チャプター予定を削除しました';
+            Response::success(['message' => $msg]);
         } else {
             Response::error('指定された予定の削除に失敗しました（見つかりません）');
         }

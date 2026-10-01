@@ -1697,6 +1697,9 @@ function handleApiRequest(req, res, urlObj) {
         const isOnline = body.is_online ? 1 : 0;
         const organizer = (body.organizer || '').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");
+        const recurrenceRule = (body.recurrence_rule || body.repeat_type || 'none').replace(/'/g, "''");
+        const recurrenceUntil = (body.recurrence_until || body.repeat_until || '').replace(/'/g, "''");
+        const recurrenceCount = parseInt(body.recurrence_count || body.repeat_count || 0, 10);
         const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
 
         try {
@@ -1711,12 +1714,68 @@ function handleApiRequest(req, res, urlObj) {
             is_online INTEGER DEFAULT 0,
             organizer TEXT DEFAULT '',
             description TEXT DEFAULT '',
+            recurrence_group_id TEXT DEFAULT '',
+            recurrence_rule TEXT DEFAULT '',
             created_at TEXT,
             updated_at TEXT
           );`);
-          execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, created_at, updated_at)
-                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${now}', '${now}');`);
-          return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id }));
+          try { execSql(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
+          try { execSql(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
+
+          if (!body.id && ['weekly', 'biweekly', 'monthly'].includes(recurrenceRule)) {
+            const groupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+            const startTimeStr = startDatetime.length >= 11 ? startDatetime.substring(11) : '00:00:00';
+            const endTimeStr = endDatetime.length >= 11 ? endDatetime.substring(11) : '';
+            const startDateStr = startDatetime.substring(0, 10);
+
+            const startObj = new Date(startDateStr.replace(/-/g, '/'));
+            let untilObj = recurrenceUntil ? new Date(recurrenceUntil.replace(/-/g, '/')) : new Date(startObj.getTime() + 90 * 86400000);
+            if (isNaN(untilObj.getTime()) || untilObj < startObj) {
+              untilObj = new Date(startObj.getTime() + 90 * 86400000);
+            }
+
+            const maxCount = recurrenceCount > 0 ? Math.min(recurrenceCount, 52) : 52;
+            let currentObj = new Date(startObj.getTime());
+            let createdCount = 0;
+            let firstId = '';
+
+            while (createdCount < maxCount && currentObj <= untilObj) {
+              const y = currentObj.getFullYear();
+              const m = String(currentObj.getMonth() + 1).padStart(2, '0');
+              const d = String(currentObj.getDate()).padStart(2, '0');
+              const curDateStr = `${y}-${m}-${d}`;
+
+              const curStart = `${curDateStr} ${startTimeStr}`;
+              const curEnd = endTimeStr ? `${curDateStr} ${endTimeStr}` : '';
+              const curId = 'ch_' + Date.now() + '_' + createdCount;
+              if (createdCount === 0) firstId = curId;
+
+              execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
+                       VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${groupId}', '${recurrenceRule}', '${now}', '${now}');`);
+
+              createdCount++;
+
+              if (recurrenceRule === 'weekly') {
+                currentObj.setDate(currentObj.getDate() + 7);
+              } else if (recurrenceRule === 'biweekly') {
+                currentObj.setDate(currentObj.getDate() + 14);
+              } else if (recurrenceRule === 'monthly') {
+                currentObj.setMonth(currentObj.getMonth() + 1);
+              }
+            }
+
+            return res.end(JSON.stringify({
+              success: true,
+              message: `${createdCount}件の定期予定を一括登録しました`,
+              id: firstId,
+              count: createdCount,
+              group_id: groupId
+            }));
+          }
+
+          execSql(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
+                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${now}', '${now}');`);
+          return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id, count: 1 }));
         } catch(e) {
           return res.end(JSON.stringify({ success: false, message: e.message }));
         }
@@ -1725,7 +1784,15 @@ function handleApiRequest(req, res, urlObj) {
       if (action === 'delete_chapter_event') {
         const body = JSON.parse(reqBody || '{}');
         const id = body.id || urlObj.searchParams.get('id');
+        const deleteSeries = body.delete_series || urlObj.searchParams.get('delete_series') === '1' || urlObj.searchParams.get('delete_series') === 'true';
         try {
+          if (deleteSeries) {
+            const ev = runSqlJson(`SELECT recurrence_group_id FROM chapter_events WHERE id = '${id}';`)[0];
+            if (ev && ev.recurrence_group_id) {
+              execSql(`DELETE FROM chapter_events WHERE recurrence_group_id = '${ev.recurrence_group_id}';`);
+              return res.end(JSON.stringify({ success: true, message: '繰り返し予定を一括削除しました' }));
+            }
+          }
           execSql(`DELETE FROM chapter_events WHERE id = '${id}';`);
           return res.end(JSON.stringify({ success: true, message: 'チャプター予定を削除しました' }));
         } catch(e) {

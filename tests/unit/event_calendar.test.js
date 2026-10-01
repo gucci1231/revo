@@ -51,6 +51,15 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('function handleDeleteChapterEvent('), 'handleDeleteChapterEvent defined');
     assert.ok(viewScript.includes('function openDayEventsModal('), 'openDayEventsModal defined');
     assert.ok(viewScript.includes('function openMeetingDetailModal('), 'openMeetingDetailModal defined');
+    assert.ok(viewScript.includes('function renderWeekView()'), 'renderWeekView defined');
+    assert.ok(viewScript.includes('function navigateCalendarWeek('), 'navigateCalendarWeek defined');
+    assert.ok(viewScript.includes('function jumpToCurrentWeek()'), 'jumpToCurrentWeek defined');
+  });
+
+  it('verifies Weekly Calendar view container, week tabs, and week grid exist in index.html', () => {
+    assert.ok(indexHtml.includes('id="week-view-container"'), 'Week view container exists');
+    assert.ok(indexHtml.includes('id="week-grid"'), 'Week grid exists');
+    assert.ok(indexHtml.includes('id="btn-view-mode-week"'), 'Week view mode button exists');
   });
 
   it('verifies ApiService routes for Calendar & Chapter Events', () => {

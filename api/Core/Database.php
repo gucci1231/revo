@@ -211,6 +211,8 @@ class Database {
                 is_online INTEGER DEFAULT 0,
                 organizer TEXT DEFAULT '',
                 description TEXT DEFAULT '',
+                recurrence_group_id TEXT DEFAULT '',
+                recurrence_rule TEXT DEFAULT '',
                 created_at TEXT,
                 updated_at TEXT
             );
@@ -223,6 +225,7 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_region_events_start ON region_events(start_datetime);
             CREATE INDEX IF NOT EXISTS idx_region_events_type ON region_events(event_type_id);
             CREATE INDEX IF NOT EXISTS idx_chapter_events_start ON chapter_events(start_datetime);
+            CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);
         ");
 
         $this->seedDefaultEmailTemplates();
@@ -276,6 +279,12 @@ class Database {
                                 END))
                 WHERE remarks LIKE '%TEL:%' AND (phone IS NULL OR phone = '');
             ");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT ''");
         } catch (\PDOException $e) {}
     }
 

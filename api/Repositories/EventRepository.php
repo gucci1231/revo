@@ -179,25 +179,102 @@ class EventRepository {
     }
 
     /**
-     * Save (insert or update) chapter event
+     * Save (insert, update, or recurring batch create) chapter event(s)
      */
-    public function saveChapterEvent(array $data): string {
+    public function saveChapterEvent(array $data): array {
         $now = date('Y-m-d H:i:s');
         $id = !empty($data['id']) ? (string)$data['id'] : ('ch_' . uniqid());
+        $repeatRule = $data['recurrence_rule'] ?? ($data['repeat_type'] ?? 'none');
+        $repeatUntil = $data['recurrence_until'] ?? ($data['repeat_until'] ?? '');
+        $repeatCount = (int)($data['recurrence_count'] ?? ($data['repeat_count'] ?? 0));
 
-        $record = [
-            'id' => $id,
+        $baseRecord = [
             'title' => trim($data['title'] ?? ''),
             'category' => trim($data['category'] ?? 'チャプターイベント'),
-            'start_datetime' => trim($data['start_datetime'] ?? ''),
-            'end_datetime' => trim($data['end_datetime'] ?? ''),
             'location_name' => trim($data['location_name'] ?? ''),
             'location_url' => trim($data['location_url'] ?? ''),
             'is_online' => !empty($data['is_online']) ? 1 : 0,
             'organizer' => trim($data['organizer'] ?? ''),
             'description' => trim($data['description'] ?? ''),
+            'recurrence_rule' => $repeatRule,
             'updated_at' => $now
         ];
+
+        // If recurring creation is requested for new event
+        if (empty($data['id']) && in_array($repeatRule, ['weekly', 'biweekly', 'monthly'], true)) {
+            $groupId = 'rec_' . uniqid();
+            $startDt = trim($data['start_datetime'] ?? '');
+            $endDt = trim($data['end_datetime'] ?? '');
+
+            $startTime = strlen($startDt) >= 11 ? substr($startDt, 11) : '00:00:00';
+            $endTime = strlen($endDt) >= 11 ? substr($endDt, 11) : '';
+            $startDateStr = substr($startDt, 0, 10);
+
+            $startTs = strtotime($startDateStr);
+            if (!$startTs) {
+                $startTs = time();
+            }
+
+            $untilTs = !empty($repeatUntil) ? strtotime($repeatUntil) : strtotime('+3 months', $startTs);
+            if (!$untilTs || $untilTs < $startTs) {
+                $untilTs = strtotime('+3 months', $startTs);
+            }
+
+            $maxCount = $repeatCount > 0 ? min($repeatCount, 52) : 52;
+            $createdCount = 0;
+            $firstId = '';
+            $currentTs = $startTs;
+            $stepIndex = 0;
+
+            while ($stepIndex < $maxCount && $currentTs <= $untilTs) {
+                $dateStr = date('Y-m-d', $currentTs);
+                $curStartDt = $dateStr . ($startTime ? ' ' . $startTime : ' 00:00:00');
+                $curEndDt = ($endTime && $endTime !== '') ? ($dateStr . ' ' . $endTime) : '';
+
+                $curId = 'ch_' . uniqid() . '_' . $stepIndex;
+                if ($stepIndex === 0) {
+                    $firstId = $curId;
+                }
+
+                $record = array_merge($baseRecord, [
+                    'id' => $curId,
+                    'start_datetime' => $curStartDt,
+                    'end_datetime' => $curEndDt,
+                    'recurrence_group_id' => $groupId,
+                    'recurrence_rule' => $repeatRule,
+                    'created_at' => $now
+                ]);
+
+                $this->db->insert('chapter_events', $record);
+                $createdCount++;
+                $stepIndex++;
+
+                if ($repeatRule === 'weekly') {
+                    $currentTs = strtotime('+1 week', $currentTs);
+                } elseif ($repeatRule === 'biweekly') {
+                    $currentTs = strtotime('+2 weeks', $currentTs);
+                } elseif ($repeatRule === 'monthly') {
+                    $currentTs = strtotime('+1 month', $currentTs);
+                } else {
+                    break;
+                }
+            }
+
+            return [
+                'id' => $firstId ?: $id,
+                'count' => $createdCount,
+                'group_id' => $groupId,
+                'is_recurring' => true
+            ];
+        }
+
+        // Single event creation or update
+        $record = array_merge($baseRecord, [
+            'id' => $id,
+            'start_datetime' => trim($data['start_datetime'] ?? ''),
+            'end_datetime' => trim($data['end_datetime'] ?? ''),
+            'recurrence_group_id' => $data['recurrence_group_id'] ?? ''
+        ]);
 
         $exists = $this->db->fetchColumn("SELECT COUNT(*) FROM chapter_events WHERE id = ?", [$id]);
         if ((int)$exists > 0) {
@@ -207,13 +284,26 @@ class EventRepository {
             $this->db->insert('chapter_events', $record);
         }
 
-        return $id;
+        return [
+            'id' => $id,
+            'count' => 1,
+            'group_id' => $record['recurrence_group_id'],
+            'is_recurring' => false
+        ];
     }
 
     /**
-     * Delete chapter event
+     * Delete chapter event (single or entire recurring series)
      */
-    public function deleteChapterEvent(string $id): bool {
+    public function deleteChapterEvent(string $id, bool $deleteSeries = false): bool {
+        if ($deleteSeries) {
+            $groupId = $this->db->fetchColumn("SELECT recurrence_group_id FROM chapter_events WHERE id = ?", [$id]);
+            if (!empty($groupId)) {
+                $res = $this->db->execute("DELETE FROM chapter_events WHERE recurrence_group_id = ?", [$groupId]);
+                return $res > 0;
+            }
+        }
+
         $res = $this->db->execute("DELETE FROM chapter_events WHERE id = ?", [$id]);
         return $res > 0;
     }

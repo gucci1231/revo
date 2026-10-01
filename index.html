@@ -14200,32 +14200,36 @@ select.form-input, select.form-select {
 
   <!-- Filters & Controls Bar -->
   <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs mb-5 space-y-3">
-    <!-- Top Row: View Switcher (Calendar vs List), Source Type Pills, Format & Search -->
+    <!-- Top Row: View Switcher (Month vs Week vs List), Source Type Pills, Format & Search -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <!-- Left: View Mode Segmented Control (Calendar 📅 vs List 📋) -->
+      <!-- Left: View Mode Segmented Control (Month 📅 vs Week 📆 vs List 📋) -->
       <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="event-view-mode-tabs">
-        <button type="button" id="btn-view-mode-calendar" class="px-3.5 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5" onclick="setEventViewMode('calendar')">
+        <button type="button" id="btn-view-mode-calendar" class="px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer" onclick="setEventViewMode('calendar')">
           <i class="fa-solid fa-calendar-days text-blue-600"></i>
-          <span>カレンダー</span>
+          <span>月表示</span>
         </button>
-        <button type="button" id="btn-view-mode-list" class="px-3.5 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold" onclick="setEventViewMode('list')">
+        <button type="button" id="btn-view-mode-week" class="px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer" onclick="setEventViewMode('week')">
+          <i class="fa-solid fa-calendar-week"></i>
+          <span>週表示</span>
+        </button>
+        <button type="button" id="btn-view-mode-list" class="px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer" onclick="setEventViewMode('list')">
           <i class="fa-solid fa-list-ul"></i>
-          <span>リスト一覧</span>
+          <span>リスト</span>
         </button>
       </div>
 
       <!-- Center: Source Type Pills (All / Meetings / Chapter / Training) -->
       <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs" onclick="setEventSourceFilter('', this)">
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
           すべて
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('meeting', this)">
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
           <span class="w-2 h-2 rounded-full bg-blue-500"></span>定例会
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('chapter', this)">
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
           <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
         </button>
-        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1" onclick="setEventSourceFilter('training', this)">
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
         </button>
       </div>
@@ -14234,13 +14238,13 @@ select.form-input, select.form-select {
       <div class="flex items-center gap-2 flex-1 sm:flex-initial min-w-[200px] justify-end flex-wrap">
         <!-- Online / In-person Pill -->
         <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="training-format-filters">
-          <button type="button" class="px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs" onclick="setTrainingFormatFilter('all', this)" title="全形式">
+          <button type="button" class="px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setTrainingFormatFilter('all', this)" title="全形式">
             全形式
           </button>
-          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('online', this)" title="オンラインのみ">
+          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900 cursor-pointer" onclick="setTrainingFormatFilter('online', this)" title="オンラインのみ">
             <i class="fa-solid fa-video text-blue-500"></i>
           </button>
-          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900" onclick="setTrainingFormatFilter('inperson', this)" title="対面のみ">
+          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900 cursor-pointer" onclick="setTrainingFormatFilter('inperson', this)" title="対面のみ">
             <i class="fa-solid fa-location-dot text-emerald-500"></i>
           </button>
         </div>
@@ -14257,24 +14261,24 @@ select.form-input, select.form-select {
       </div>
     </div>
 
-    <!-- Calendar Month Navigation Bar (Active in Calendar Mode) -->
+    <!-- Calendar Month/Week Navigation Bar (Active in Month & Week Mode) -->
     <div id="calendar-month-toolbar" class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-      <!-- Prev / Next & Month Label -->
+      <!-- Prev / Next & Label -->
       <div class="flex items-center gap-2">
-        <button type="button" onclick="navigateCalendarMonth(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="前月">
+        <button type="button" onclick="navigateCalendarPeriod(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="前へ">
           <i class="fa-solid fa-chevron-left text-xs"></i>
         </button>
 
-        <h3 id="calendar-current-month-label" class="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center">
+        <h3 id="calendar-current-month-label" class="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center">
           ----年 --月
         </h3>
 
-        <button type="button" onclick="navigateCalendarMonth(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="翌月">
+        <button type="button" onclick="navigateCalendarPeriod(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="次へ">
           <i class="fa-solid fa-chevron-right text-xs"></i>
         </button>
 
-        <button type="button" onclick="jumpToCurrentMonth()" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors ml-1 cursor-pointer">
-          今月
+        <button type="button" id="btn-calendar-jump-today" onclick="jumpToCurrentCalendarPeriod()" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors ml-1 cursor-pointer">
+          今日
         </button>
       </div>
 
@@ -14298,7 +14302,7 @@ select.form-input, select.form-select {
     <!-- List Mode Month Tabs (Active in List Mode only) -->
     <div id="list-mode-toolbar" class="hidden flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
       <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5" id="training-month-tabs">
-        <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200" onclick="setTrainingMonthFilter('', this)">
+        <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 cursor-pointer" onclick="setTrainingMonthFilter('', this)">
           全月
         </button>
       </div>
@@ -14334,7 +14338,19 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- ================= VIEW 2: LIST VIEW ================= -->
+  <!-- ================= VIEW 2: WEEKLY CALENDAR VIEW ================= -->
+  <div id="week-view-container" class="hidden bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden mb-8">
+    <!-- 7 Day Columns Grid -->
+    <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x divide-slate-200 bg-white min-h-[450px]">
+      <!-- Loading placeholder -->
+      <div class="col-span-full py-24 text-center bg-white">
+        <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
+        <div class="text-xs font-bold text-slate-500">週カレンダーを描画中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 3: LIST VIEW ================= -->
   <div id="list-view-container" class="hidden space-y-3 mb-8">
     <!-- Loading Skeleton -->
     <div id="training-loading-state" class="py-16 text-center">
@@ -14451,15 +14467,67 @@ select.form-input, select.form-select {
         <!-- Description -->
         <div>
           <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・補足</label>
-          <textarea id="ch-ev-desc" rows="3" placeholder="予定の詳細、アジェンダ、会費、参加資格などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+          <textarea id="ch-ev-desc" rows="2" placeholder="予定の詳細、アジェンダ、会費、参加資格などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+        </div>
+
+        <!-- Recurrence / Repeat Settings -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3" id="ch-ev-repeat-section">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-repeat text-blue-600 text-xs"></i>
+                <span>繰り返し登録</span>
+              </span>
+              <span class="text-3xs font-medium text-slate-400">毎週・隔週の定期予定を一括作成</span>
+            </label>
+            <select id="ch-ev-repeat-type" onchange="onChapterEventRepeatTypeChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              <option value="none">繰り返しなし (1回のみ)</option>
+              <option value="weekly">毎週 (同じ曜日に繰り返す)</option>
+              <option value="biweekly">隔週 (2週間に1回繰り返す)</option>
+              <option value="monthly">毎月 (同じ日に繰り返す)</option>
+            </select>
+          </div>
+
+          <!-- Recurrence Options (Visible when repeating) -->
+          <div id="ch-ev-repeat-options" class="hidden space-y-2.5 pt-2 border-t border-slate-200/60">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">繰り返しの終了日</label>
+                <input type="date" id="ch-ev-repeat-until" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">最大登録回数</label>
+                <select id="ch-ev-repeat-count" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                  <option value="0">終了日まで全件登録</option>
+                  <option value="4">4回分</option>
+                  <option value="6">6回分</option>
+                  <option value="8">8回分</option>
+                  <option value="12" selected>12回分 (約3ヶ月)</option>
+                  <option value="24">24回分 (約半年)</option>
+                  <option value="52">52回分 (約1年)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Recurrence Summary Banner -->
+            <div id="ch-ev-repeat-summary-box" class="p-2.5 rounded-lg bg-blue-50/80 border border-blue-200/80 text-3xs font-bold text-blue-700 flex items-start gap-2">
+              <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0 text-xs"></i>
+              <span id="ch-ev-repeat-summary-text">毎週同じ曜日に定期予定が生成されます</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Modal Footer -->
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
-        <button type="button" id="btn-delete-chapter-event" onclick="handleDeleteChapterEvent()" class="px-3.5 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden">
-          <i class="fa-regular fa-trash-can mr-1"></i> 削除
-        </button>
+        <div class="flex items-center gap-1.5" id="ch-ev-delete-actions">
+          <button type="button" id="btn-delete-chapter-event" onclick="handleDeleteChapterEvent(false)" class="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden">
+            <i class="fa-regular fa-trash-can mr-1"></i> 削除
+          </button>
+          <button type="button" id="btn-delete-chapter-series" onclick="handleDeleteChapterEvent(true)" class="px-3 py-2 rounded-xl text-3xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden" title="この繰り返し予定グループをすべて削除">
+            <i class="fa-solid fa-layer-group mr-1"></i> シリーズ一括削除
+          </button>
+        </div>
         <div class="flex items-center gap-2 ml-auto">
           <button type="button" onclick="closeChapterEventModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
             キャンセル
@@ -36986,7 +37054,8 @@ function renderChapterTrafficView() {
 let allCalendarEvents = [];
 let allTrainingEvents = []; // Backward compatibility
 let currentCalendarMonth = new Date().toISOString().substring(0, 7);
-let currentEventViewMode = 'calendar'; // 'calendar' or 'list'
+let currentEventViewMode = 'calendar'; // 'calendar' (or 'month'), 'week', 'list'
+let currentWeekStartDate = getSundayOfDate(new Date());
 let selectedDayForModal = '';
 
 let currentTrainingFilter = {
@@ -36999,10 +37068,27 @@ let currentTrainingFilter = {
 };
 let trainingSearchTimeout = null;
 
+function getSundayOfDate(d) {
+  const date = new Date(d);
+  const day = date.getDay(); // 0 is Sunday
+  date.setDate(date.getDate() - day);
+  return date;
+}
+
+function formatDateToIso(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function initTrainingView() {
   // Sync initial month if not set
   if (!currentCalendarMonth) {
     currentCalendarMonth = new Date().toISOString().substring(0, 7);
+  }
+  if (!currentWeekStartDate) {
+    currentWeekStartDate = getSundayOfDate(new Date());
   }
   updateCalendarMonthHeader();
   loadCalendarAndEvents();
@@ -37024,13 +37110,38 @@ function setTrainingMonthFilter(month, btn) {
 }
 
 /**
- * Update the year/month label in calendar toolbar
+ * Update the period (month or week) label in calendar toolbar
  */
 function updateCalendarMonthHeader() {
   const label = document.getElementById('calendar-current-month-label');
-  if (!label || !currentCalendarMonth) return;
-  const parts = currentCalendarMonth.split('-');
-  label.innerText = `${parts[0]}年 ${parseInt(parts[1], 10)}月`;
+  if (!label) return;
+
+  if (currentEventViewMode === 'week') {
+    const sun = new Date(currentWeekStartDate);
+    const sat = new Date(currentWeekStartDate);
+    sat.setDate(sat.getDate() + 6);
+
+    const sunM = sun.getMonth() + 1;
+    const sunD = sun.getDate();
+    const satM = sat.getMonth() + 1;
+    const satD = sat.getDate();
+
+    if (sun.getFullYear() === sat.getFullYear()) {
+      if (sunM === satM) {
+        label.innerText = `${sun.getFullYear()}年 ${sunM}月 ${sunD}日 - ${satD}日`;
+      } else {
+        label.innerText = `${sun.getFullYear()}年 ${sunM}月${sunD}日 - ${satM}月${satD}日`;
+      }
+    } else {
+      label.innerText = `${sun.getFullYear()}年${sunM}月${sunD}日 - ${sat.getFullYear()}年${satM}月${satD}日`;
+    }
+  } else {
+    if (!currentCalendarMonth) {
+      currentCalendarMonth = new Date().toISOString().substring(0, 7);
+    }
+    const parts = currentCalendarMonth.split('-');
+    label.innerText = `${parts[0]}年 ${parseInt(parts[1], 10)}月`;
+  }
 }
 
 /**
@@ -37062,11 +37173,14 @@ async function loadCalendarAndEvents() {
       // Render KPIs
       renderTrainingKpis(data.summary);
 
-      // Render Calendar Grid
-      renderCalendarGrid();
-
-      // Render List View
-      renderFilteredTrainingEvents();
+      // Render Active View
+      if (currentEventViewMode === 'week') {
+        renderWeekView();
+      } else if (currentEventViewMode === 'list') {
+        renderFilteredTrainingEvents();
+      } else {
+        renderCalendarGrid();
+      }
     } else {
       if (emptyEl) emptyEl.classList.remove('hidden');
       if (gridEl) {
@@ -37083,6 +37197,59 @@ async function loadCalendarAndEvents() {
     if (emptyEl) emptyEl.classList.remove('hidden');
     showToast('イベント情報の読み込みに失敗しました', 'error');
   }
+}
+
+/**
+ * Universal Period Navigation (works for both Month & Week modes)
+ */
+function navigateCalendarPeriod(delta) {
+  if (currentEventViewMode === 'week') {
+    navigateCalendarWeek(delta);
+  } else {
+    navigateCalendarMonth(delta);
+  }
+}
+
+function jumpToCurrentCalendarPeriod() {
+  if (currentEventViewMode === 'week') {
+    jumpToCurrentWeek();
+  } else {
+    jumpToCurrentMonth();
+  }
+}
+
+/**
+ * Navigate calendar week (delta = -1 or +1)
+ */
+function navigateCalendarWeek(delta) {
+  const current = new Date(currentWeekStartDate);
+  current.setDate(current.getDate() + (delta * 7));
+  currentWeekStartDate = current;
+
+  // Determine the primary month of this week (use Wednesday as midpoint)
+  const midWeek = new Date(currentWeekStartDate);
+  midWeek.setDate(midWeek.getDate() + 3);
+  const midMonth = `${midWeek.getFullYear()}-${String(midWeek.getMonth() + 1).padStart(2, '0')}`;
+
+  updateCalendarMonthHeader();
+
+  if (midMonth !== currentCalendarMonth) {
+    currentCalendarMonth = midMonth;
+    loadCalendarAndEvents();
+  } else {
+    renderWeekView();
+  }
+}
+
+/**
+ * Jump back to current week
+ */
+function jumpToCurrentWeek() {
+  currentWeekStartDate = getSundayOfDate(new Date());
+  const now = new Date();
+  currentCalendarMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  updateCalendarMonthHeader();
+  loadCalendarAndEvents();
 }
 
 /**
@@ -37108,42 +37275,67 @@ function jumpToCurrentMonth() {
 }
 
 /**
- * Set Event View Mode (Calendar vs List)
+ * Set Event View Mode (Month vs Week vs List)
  */
 function setEventViewMode(mode) {
+  // Normalize 'calendar' or 'month'
+  if (mode === 'calendar') mode = 'month';
   currentEventViewMode = mode;
+
   const calContainer = document.getElementById('calendar-view-container');
+  const weekContainer = document.getElementById('week-view-container');
   const listContainer = document.getElementById('list-view-container');
   const calToolbar = document.getElementById('calendar-month-toolbar');
   const listToolbar = document.getElementById('list-mode-toolbar');
-  const btnCal = document.getElementById('btn-view-mode-calendar');
-  const btnList = document.getElementById('btn-view-mode-list');
 
-  if (mode === 'calendar') {
+  const btnMonth = document.getElementById('btn-view-mode-calendar');
+  const btnWeek = document.getElementById('btn-view-mode-week');
+  const btnList = document.getElementById('btn-view-mode-list');
+  const btnJumpToday = document.getElementById('btn-calendar-jump-today');
+
+  const activeBtnClass = 'px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer';
+  const inactiveBtnClass = 'px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer';
+
+  if (mode === 'month') {
     if (calContainer) calContainer.classList.remove('hidden');
+    if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.add('hidden');
     if (calToolbar) calToolbar.classList.remove('hidden');
     if (listToolbar) listToolbar.classList.add('hidden');
 
-    if (btnCal) {
-      btnCal.className = 'px-3.5 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5';
-    }
-    if (btnList) {
-      btnList.className = 'px-3.5 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold';
-    }
+    if (btnMonth) btnMonth.className = activeBtnClass;
+    if (btnWeek) btnWeek.className = inactiveBtnClass;
+    if (btnList) btnList.className = inactiveBtnClass;
+    if (btnJumpToday) btnJumpToday.innerText = '今月';
+
+    updateCalendarMonthHeader();
     renderCalendarGrid();
-  } else {
+  } else if (mode === 'week') {
     if (calContainer) calContainer.classList.add('hidden');
+    if (weekContainer) weekContainer.classList.remove('hidden');
+    if (listContainer) listContainer.classList.add('hidden');
+    if (calToolbar) calToolbar.classList.remove('hidden');
+    if (listToolbar) listToolbar.classList.add('hidden');
+
+    if (btnMonth) btnMonth.className = inactiveBtnClass;
+    if (btnWeek) btnWeek.className = activeBtnClass;
+    if (btnList) btnList.className = inactiveBtnClass;
+    if (btnJumpToday) btnJumpToday.innerText = '今週';
+
+    updateCalendarMonthHeader();
+    renderWeekView();
+  } else {
+    // List mode
+    if (calContainer) calContainer.classList.add('hidden');
+    if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.remove('hidden');
     if (calToolbar) calToolbar.classList.add('hidden');
     if (listToolbar) listToolbar.classList.remove('hidden');
 
-    if (btnCal) {
-      btnCal.className = 'px-3.5 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold';
-    }
-    if (btnList) {
-      btnList.className = 'px-3.5 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5';
-    }
+    if (btnMonth) btnMonth.className = inactiveBtnClass;
+    if (btnWeek) btnWeek.className = inactiveBtnClass;
+    if (btnList) btnList.className = activeBtnClass;
+
     renderFilteredTrainingEvents();
   }
 }
@@ -37156,10 +37348,10 @@ function setEventSourceFilter(type, btn) {
   const container = document.getElementById('event-source-filters');
   if (container) {
     container.querySelectorAll('button').forEach(b => {
-      b.className = 'px-2.5 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1';
+      b.className = 'px-2.5 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1 cursor-pointer';
     });
     if (btn) {
-      btn.className = 'px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs font-bold flex items-center gap-1';
+      btn.className = 'px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs font-bold flex items-center gap-1 cursor-pointer';
     }
   }
   loadCalendarAndEvents();
@@ -37173,10 +37365,10 @@ function setTrainingFormatFilter(format, btn) {
   const container = document.getElementById('training-format-filters');
   if (container) {
     container.querySelectorAll('button').forEach(b => {
-      b.className = 'px-2 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600';
+      b.className = 'px-2 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600 cursor-pointer';
     });
     if (btn) {
-      btn.className = 'px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs font-bold';
+      btn.className = 'px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs font-bold cursor-pointer';
     }
   }
   loadCalendarAndEvents();
@@ -37192,6 +37384,160 @@ function debounceTrainingFilter() {
     currentTrainingFilter.keyword = input ? input.value.trim().toLowerCase() : '';
     loadCalendarAndEvents();
   }, 250);
+}
+
+/**
+ * Render Weekly Calendar View (7 Columns)
+ */
+function renderWeekView() {
+  const weekGrid = document.getElementById('week-grid');
+  if (!weekGrid) return;
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const todayStr = new Date().toISOString().substring(0, 10);
+
+  // Group events by YYYY-MM-DD
+  const eventsByDate = {};
+  allCalendarEvents.forEach(ev => {
+    if (!ev.start_datetime) return;
+    const dateKey = ev.start_datetime.substring(0, 10);
+    if (!eventsByDate[dateKey]) eventsByDate[dateKey] = [];
+    eventsByDate[dateKey].push(ev);
+  });
+
+  let columnsHtml = '';
+  const startDate = new Date(currentWeekStartDate);
+
+  for (let i = 0; i < 7; i++) {
+    const dayDate = new Date(startDate);
+    dayDate.setDate(dayDate.getDate() + i);
+
+    const dateKey = formatDateToIso(dayDate);
+    const dayOfWeek = dayDate.getDay();
+    const dayName = dayNames[dayOfWeek];
+    const dayNum = dayDate.getDate();
+    const monthNum = dayDate.getMonth() + 1;
+
+    const isToday = dateKey === todayStr;
+    const isThursday = dayOfWeek === 4;
+    const dayEvents = eventsByDate[dateKey] || [];
+
+    // Header styling
+    let headerBg = 'bg-slate-50/70';
+    let dayNumColor = 'text-slate-900';
+    let dayNameColor = 'text-slate-500';
+
+    if (dayOfWeek === 0) {
+      dayNameColor = 'text-rose-500 font-bold';
+      dayNumColor = 'text-rose-600';
+    } else if (dayOfWeek === 6) {
+      dayNameColor = 'text-blue-500 font-bold';
+      dayNumColor = 'text-blue-600';
+    } else if (isThursday) {
+      dayNameColor = 'text-blue-600 font-black';
+      headerBg = 'bg-blue-50/50';
+    }
+
+    if (isToday) {
+      headerBg = 'bg-blue-100/60';
+    }
+
+    // Event cards in this day column
+    let eventsHtml = '';
+    if (dayEvents.length === 0) {
+      eventsHtml = `
+        <div class="h-32 flex flex-col items-center justify-center text-center p-2 text-slate-300 group/empty">
+          <span class="text-3xs font-medium mb-1">予定なし</span>
+          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="opacity-0 group-hover/empty:opacity-100 transition-opacity px-2 py-1 rounded text-3xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 cursor-pointer flex items-center gap-1">
+            <i class="fa-solid fa-plus text-3xs"></i> 予定追加
+          </button>
+        </div>
+      `;
+    } else {
+      eventsHtml = dayEvents.map(ev => {
+        const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+        const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
+
+        let cardStyle = '';
+        let badge = '';
+        let formatBadge = '';
+
+        if (ev.source_type === 'meeting') {
+          cardStyle = 'bg-blue-50/90 border-blue-200 text-blue-950 hover:border-blue-300 hover:bg-blue-100/80';
+          badge = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span><span class="text-3xs font-extrabold text-blue-700">定例会</span>';
+        } else if (ev.source_type === 'chapter') {
+          cardStyle = 'bg-purple-50/90 border-purple-200 text-purple-950 hover:border-purple-300 hover:bg-purple-100/80';
+          badge = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0"></span><span class="text-3xs font-extrabold text-purple-700">チャプター</span>';
+        } else {
+          cardStyle = 'bg-emerald-50/90 border-emerald-200 text-emerald-950 hover:border-emerald-300 hover:bg-emerald-100/80';
+          badge = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span><span class="text-3xs font-extrabold text-emerald-800">京都CC研修</span>';
+        }
+
+        if (ev.is_online) {
+          formatBadge = '<span class="text-3xs px-1 py-0.2 rounded bg-blue-100/80 text-blue-700 font-bold">Zoom</span>';
+        } else {
+          formatBadge = '<span class="text-3xs px-1 py-0.2 rounded bg-emerald-100/80 text-emerald-700 font-bold">対面</span>';
+        }
+
+        const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+          ? `<div class="mt-1 flex items-center gap-1 text-3xs font-black text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded"><i class="fa-solid fa-users text-3xs"></i> ビジター: ${ev.visitor_count}名</div>`
+          : '';
+
+        return `
+          <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 sm:p-2.5 rounded-xl border ${cardStyle} shadow-2xs transition-all cursor-pointer hover:shadow-xs group/card relative">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <div class="flex items-center gap-1">
+                ${badge}
+              </div>
+              ${formatBadge}
+            </div>
+
+            <div class="font-mono text-3xs font-bold text-slate-600 mb-1 flex items-center gap-1">
+              <i class="fa-regular fa-clock text-slate-400 text-3xs"></i>
+              <span>${timeStr}${endTimeStr}</span>
+            </div>
+
+            <h5 class="text-xs font-bold text-slate-900 group-hover/card:text-blue-700 transition-colors line-clamp-2 leading-snug">
+              ${escapeHtml(ev.title)}
+            </h5>
+
+            ${ev.location_name ? `
+              <p class="text-3xs text-slate-500 truncate mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0"></i>
+                <span class="truncate">${escapeHtml(ev.location_name)}</span>
+              </p>
+            ` : ''}
+
+            ${visitorBadge}
+          </div>
+        `;
+      }).join('');
+    }
+
+    columnsHtml += `
+      <div class="flex flex-col min-h-[380px] bg-white ${isToday ? 'bg-blue-50/10' : ''}">
+        <!-- Day Column Header -->
+        <div class="p-2.5 border-b border-slate-200 ${headerBg} flex items-center justify-between">
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-xs font-extrabold ${dayNameColor}">${dayName}</span>
+            <span class="text-sm font-black font-mono tabular-nums ${dayNumColor}">${monthNum}/${dayNum}</span>
+            ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
+            ${isThursday ? '<span class="text-3xs font-extrabold text-blue-600 hidden xl:inline">定例会</span>' : ''}
+          </div>
+          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-6 h-6 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center text-xs cursor-pointer" title="この日に予定を追加">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+
+        <!-- Day Events List -->
+        <div class="p-2 space-y-2 flex-1 overflow-y-auto max-h-[500px]">
+          ${eventsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  weekGrid.innerHTML = columnsHtml;
 }
 
 /**
