@@ -15404,7 +15404,8 @@ const ApiService = {
       if (restConfig) {
         const fetchOptions = {
           method: restConfig.method || 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
         };
         if (restConfig.body) {
           fetchOptions.body = JSON.stringify(restConfig.body);
@@ -15683,6 +15684,7 @@ const ApiService = {
         } else if (typeof args[0] === 'string' && args[0]) {
           params.append('month', args[0]);
         }
+        params.append('_t', Date.now().toString());
         const qs = params.toString() ? '&' + params.toString() : '';
         return { url: `/api/events.php?action=calendar${qs}`, method: 'GET' };
       }
@@ -38595,13 +38597,14 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday,
   const dots = [];
   if (dayEvents.some(e => e.source_type === 'meeting')) dots.push('bg-blue-500');
   if (dayEvents.some(e => e.source_type === 'chapter')) dots.push('bg-purple-500');
+  if (dayEvents.some(e => e.source_type === 'member' || e.category === 'メンバーイベント')) dots.push('bg-orange-500');
   if (dayEvents.some(e => e.source_type === 'training')) dots.push('bg-emerald-500');
   if (dayEvents.some(e => e.source_type === 'action')) dots.push('bg-amber-500');
   if (dayEvents.some(e => e.category === '締切' || e.category === '締切・期限')) dots.push('bg-rose-500');
 
   const mobileDotsHtml = dots.length > 0 ? `
     <div class="flex sm:hidden justify-center items-center gap-0.5 mt-1">
-      ${dots.slice(0, 4).map(color => `<span class="w-1.5 h-1.5 rounded-full ${color}"></span>`).join('')}
+      ${dots.slice(0, 5).map(color => `<span class="w-1.5 h-1.5 rounded-full ${color}"></span>`).join('')}
     </div>
   ` : '<div class="h-2.5 sm:hidden"></div>';
 
@@ -38613,6 +38616,7 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday,
   const desktopPillsHtml = visibleEvents.map(ev => {
     const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
     const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
+    const isMember = (ev.source_type === 'member' || ev.category === 'メンバーイベント');
     let pillStyle = '';
 
     if (ev.source_type === 'meeting') {
@@ -38625,6 +38629,8 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday,
       }
     } else if (isDeadline) {
       pillStyle = 'bg-rose-50/90 text-rose-950 border-l-[3px] border-rose-500 hover:bg-rose-100';
+    } else if (isMember) {
+      pillStyle = 'bg-orange-50/90 text-orange-950 border-l-[3px] border-orange-500 hover:bg-orange-100';
     } else if (ev.source_type === 'chapter') {
       pillStyle = 'bg-purple-50/90 text-purple-950 border-l-[3px] border-purple-600 hover:bg-purple-100';
     } else {
@@ -38638,7 +38644,13 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday,
         : `<span class="px-1 py-0 rounded text-[9px] font-bold bg-amber-500 text-white shrink-0 leading-none">ACT</span>`;
     } else if (isDeadline) {
       typePrefix = `<span class="px-1 py-0 rounded text-[9px] font-bold bg-rose-600 text-white shrink-0 leading-none">締切</span>`;
+    } else if (isMember) {
+      typePrefix = `<span class="px-1 py-0 rounded text-[9px] font-bold bg-orange-600 text-white shrink-0 leading-none">MBR</span>`;
     }
+
+    const flyerIcon = ev.flyer_url
+      ? `<i class="fa-solid fa-file-image text-orange-600 text-[10px] shrink-0" title="チラシあり"></i>`
+      : '';
 
     const visitorPrefix = (ev.visitor_count !== undefined && ev.visitor_count > 0)
       ? `<span class="px-1 py-0 rounded text-[9px] font-extrabold bg-blue-600 text-white shrink-0 leading-none">V:${ev.visitor_count}</span>`
@@ -38652,6 +38664,7 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday,
       <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]" title="${escapeHtml(ev.title)}">
         <span class="font-mono font-bold tabular-nums text-xs shrink-0 text-slate-800">${timeStr}</span>
         ${typePrefix}
+        ${flyerIcon}
         ${formatPrefix}
         ${visitorPrefix}
         <span class="truncate font-semibold text-xs text-slate-900">${escapeHtml(ev.title)}</span>
@@ -38747,6 +38760,9 @@ function renderCalendarDayAgenda() {
           } else if (isDeadline) {
             borderBar = 'border-l-rose-500';
             tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-rose-50 text-rose-700 border border-rose-200">締切</span>';
+          } else if (ev.source_type === 'member' || ev.category === 'メンバーイベント') {
+            borderBar = 'border-l-orange-500';
+            tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-orange-50 text-orange-700 border border-orange-200">メンバーイベント</span>';
           } else if (ev.source_type === 'chapter') {
             borderBar = 'border-l-purple-600';
             tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
@@ -38761,6 +38777,12 @@ function renderCalendarDayAgenda() {
 
           const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
             ? `<span class="px-2 py-0.5 rounded-md text-3xs font-extrabold bg-blue-600 text-white shrink-0">ビジター ${ev.visitor_count}名</span>`
+            : '';
+
+          const flyerThumbnail = ev.flyer_url
+            ? `<div class="shrink-0 self-center" onclick="event.stopPropagation(); openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}');" title="クリックしてチラシを拡大表示">
+                <img src="${escapeHtml(ev.flyer_url)}" alt="チラシ" class="w-12 h-12 object-cover rounded-lg border border-slate-200 shadow-2xs hover:opacity-85 hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer">
+              </div>`
             : '';
 
           return `
@@ -38778,15 +38800,29 @@ function renderCalendarDayAgenda() {
                 <div class="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
                   ${escapeHtml(ev.title)}
                 </div>
-                ${ev.location_name ? `
+                ${ev.organizer ? `
                   <div class="text-xs text-slate-500 truncate mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-user-check text-slate-400 text-3xs shrink-0"></i>
+                    <span class="truncate">担当: ${escapeHtml(ev.organizer)}</span>
+                  </div>
+                ` : ''}
+                ${ev.location_name ? `
+                  <div class="text-xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
                     <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0"></i>
                     <span class="truncate">${escapeHtml(ev.location_name)}</span>
                   </div>
                 ` : ''}
               </div>
-              <div class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 flex items-center justify-center transition-colors shrink-0">
-                <i class="fa-solid fa-chevron-right text-xs"></i>
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${flyerThumbnail}
+                ${ev.source_type === 'chapter' ? `
+                  <button type="button" onclick="confirmDeleteChapterEventDirect('${ev.id}', event)" class="w-7 h-7 rounded-full bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-transparent hover:border-red-200 flex items-center justify-center transition-colors cursor-pointer shrink-0" title="このチャプター予定を削除">
+                    <i class="fa-regular fa-trash-can text-xs"></i>
+                  </button>
+                ` : ''}
+                <div class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 flex items-center justify-center transition-colors shrink-0">
+                  <i class="fa-solid fa-chevron-right text-xs"></i>
+                </div>
               </div>
             </div>
           `;
@@ -38887,6 +38923,8 @@ function openDayEventsModal(dateKey) {
           : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-user-clock mr-1 text-amber-500"></i>ビジターアクション</span>';
       } else if (isDeadline) {
         badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-hourglass-end mr-1 text-rose-500"></i>締切</span>';
+      } else if (ev.source_type === 'member' || ev.category === 'メンバーイベント') {
+        badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200">メンバーイベント</span>';
       } else if (ev.source_type === 'chapter') {
         badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
       } else {
@@ -38899,6 +38937,12 @@ function openDayEventsModal(dateKey) {
 
       const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
         ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+        : '';
+
+      const flyerThumb = ev.flyer_url
+        ? `<div class="shrink-0 mr-1" onclick="event.stopPropagation(); openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}');" title="チラシを拡大表示">
+            <img src="${escapeHtml(ev.flyer_url)}" alt="チラシ" class="w-10 h-10 object-cover rounded-lg border border-slate-200 hover:opacity-85 shadow-2xs cursor-pointer">
+          </div>`
         : '';
 
       return `
@@ -38915,12 +38959,19 @@ function openDayEventsModal(dateKey) {
               <span class="text-xs font-mono font-bold text-slate-800 tabular-nums shrink-0">${timeStr}${endTimeStr}</span>
               <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors truncate">${escapeHtml(ev.title)}</h4>
             </div>
-            ${ev.location_name ? `<p class="text-3xs text-slate-500 truncate mt-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${escapeHtml(ev.location_name)}</p>` : ''}
+            ${ev.organizer ? `<p class="text-3xs text-slate-500 truncate mt-0.5"><i class="fa-solid fa-user-check text-slate-400 mr-1"></i>担当: ${escapeHtml(ev.organizer)}</p>` : ''}
+            ${ev.location_name ? `<p class="text-3xs text-slate-500 truncate mt-0.5"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${escapeHtml(ev.location_name)}</p>` : ''}
           </div>
           <div class="flex items-center gap-1.5 shrink-0 self-center">
+            ${flyerThumb}
             <button type="button" onclick="event.stopPropagation(); openEventShareModal('${ev.id}', event);" class="w-7 h-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer" title="シェア">
               <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
             </button>
+            ${ev.source_type === 'chapter' ? `
+              <button type="button" onclick="confirmDeleteChapterEventDirect('${ev.id}', event);" class="w-7 h-7 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center cursor-pointer" title="この予定を削除">
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
+            ` : ''}
             <i class="fa-solid fa-chevron-right text-slate-300 text-xs group-hover:text-slate-500 transition-colors"></i>
           </div>
         </div>
@@ -38957,18 +39008,21 @@ function openChapterEventModal(eventObj = null) {
   if (!modal || !form) return;
 
   form.reset();
+  resetFlyerState();
+  populateMemberNamesDatalist();
 
   const todayStr = new Date().toISOString().substring(0, 10);
   const next3Months = new Date(Date.now() + 90 * 86400000).toISOString().substring(0, 10);
 
   if (eventObj) {
-    titleHeader.innerText = 'チャプター予定を編集';
+    const isMember = eventObj.category === 'メンバーイベント' || eventObj.source_type === 'member';
+    titleHeader.innerText = isMember ? 'メンバーイベントを編集' : '予定・イベントを編集';
     document.getElementById('modal-add-type-tabs')?.classList.add('hidden');
     switchAddEventModalTab('event');
 
     document.getElementById('ch-ev-id').value = eventObj.id || '';
     document.getElementById('ch-ev-title').value = eventObj.title || '';
-    document.getElementById('ch-ev-category').value = eventObj.category || 'チャプターイベント';
+    document.getElementById('ch-ev-category').value = eventObj.category || (isMember ? 'メンバーイベント' : 'チャプターイベント');
     onChapterEventCategoryChange();
     document.getElementById('ch-ev-is-online').value = eventObj.is_online ? '1' : '0';
 
@@ -38984,6 +39038,13 @@ function openChapterEventModal(eventObj = null) {
     document.getElementById('ch-ev-organizer').value = eventObj.organizer || '';
     document.getElementById('ch-ev-desc').value = eventObj.description || '';
 
+    // Flyer attachment if exists
+    if (eventObj.flyer_url) {
+      setFlyerPreview(eventObj.flyer_url, `${eventObj.title || 'イベント'}のチラシ`);
+    } else {
+      resetFlyerState();
+    }
+
     // Repeat section hidden on single edit
     if (repeatSection) repeatSection.classList.add('hidden');
 
@@ -38997,18 +39058,20 @@ function openChapterEventModal(eventObj = null) {
       }
     }
   } else {
-    titleHeader.innerText = '予定・締切を追加';
+    titleHeader.innerText = '予定・イベント・締切を追加';
     document.getElementById('modal-add-type-tabs')?.classList.remove('hidden');
     switchAddEventModalTab('event');
 
     if (btnShare) btnShare.classList.add('hidden');
     document.getElementById('ch-ev-id').value = '';
     document.getElementById('ch-ev-title').value = '';
-    document.getElementById('ch-ev-category').value = 'チャプターイベント';
+    document.getElementById('ch-ev-category').value = 'メンバーイベント';
     onChapterEventCategoryChange();
     document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
     document.getElementById('ch-ev-end-time').value = '21:00';
+
+    resetFlyerState();
 
     const calDueDate = document.getElementById('cal-act-due-date');
     if (calDueDate) calDueDate.value = todayStr;
@@ -39450,6 +39513,7 @@ async function handleChapterEventSubmit(evt) {
   const repeatType = document.getElementById('ch-ev-repeat-type')?.value || 'none';
   const repeatUntil = document.getElementById('ch-ev-repeat-until')?.value || '';
   const repeatCount = parseInt(document.getElementById('ch-ev-repeat-count')?.value || '0', 10);
+  const flyerUrl = document.getElementById('ch-ev-flyer-url')?.value || '';
 
   const startDatetime = `${date} ${startTime}:00`;
   const endDatetime = endTime ? `${date} ${endTime}:00` : '';
@@ -39468,11 +39532,13 @@ async function handleChapterEventSubmit(evt) {
       description: desc,
       recurrence_rule: repeatType,
       recurrence_until: repeatUntil,
-      recurrence_count: repeatCount
+      recurrence_count: repeatCount,
+      flyer_url: flyerUrl
     });
 
     if (res && res.success !== false) {
-      showToast(res.message || 'チャプター予定を保存しました', 'success');
+      const isMember = category === 'メンバーイベント';
+      showToast(res.message || (isMember ? 'メンバーイベントを保存しました' : '予定を保存しました'), 'success');
       closeChapterEventModal();
       loadCalendarAndEvents();
     } else {
@@ -39487,30 +39553,380 @@ async function handleChapterEventSubmit(evt) {
 }
 
 /**
+ * Event Flyer Handlers & Management
+ */
+function toggleFlyerUrlInput() {
+  const box = document.getElementById('ch-ev-flyer-url-box');
+  if (!box) return;
+  box.classList.toggle('hidden');
+  if (!box.classList.contains('hidden')) {
+    document.getElementById('ch-ev-flyer-url-input')?.focus();
+  }
+}
+
+function onFlyerUrlInputChanged(val) {
+  const url = (val || '').trim();
+  const hiddenInput = document.getElementById('ch-ev-flyer-url');
+  if (hiddenInput) hiddenInput.value = url;
+  if (url) {
+    setFlyerPreview(url, '外部画像 / クラウドリンク');
+  } else {
+    resetFlyerState();
+  }
+}
+
+function handleFlyerDragOver(evt) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  if (dropzone) dropzone.classList.add('border-blue-500', 'bg-blue-50/40');
+}
+
+function handleFlyerDragLeave(evt) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  if (dropzone) dropzone.classList.remove('border-blue-500', 'bg-blue-50/40');
+}
+
+function handleFlyerDrop(evt) {
+  evt.preventDefault();
+  evt.stopPropagation();
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  if (dropzone) dropzone.classList.remove('border-blue-500', 'bg-blue-50/40');
+
+  const files = evt.dataTransfer?.files;
+  if (files && files.length > 0) {
+    uploadFlyerFile(files[0]);
+  }
+}
+
+function handleFlyerFileSelected(evt) {
+  const files = evt.target.files;
+  if (files && files.length > 0) {
+    uploadFlyerFile(files[0]);
+  }
+}
+
+async function uploadFlyerFile(file) {
+  if (!file) return;
+
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+  if (!validTypes.includes(file.type) && !file.name.match(/\.(jpe?g|png|webp|gif|pdf)$/i)) {
+    showToast('対応形式は JPG, PNG, WebP, GIF, PDF のみです', 'error');
+    return;
+  }
+
+  if (file.size > 12 * 1024 * 1024) {
+    showToast('ファイルサイズは12MB以内にして手動縮小してください', 'error');
+    return;
+  }
+
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  const spinner = document.getElementById('ch-ev-flyer-uploading');
+  const hiddenInput = document.getElementById('ch-ev-flyer-url');
+  const urlInput = document.getElementById('ch-ev-flyer-url-input');
+
+  if (dropzone) dropzone.classList.add('hidden');
+  if (spinner) spinner.classList.remove('hidden');
+
+  try {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const base64Data = e.target.result;
+      const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+
+      // Immediate visual preview
+      setFlyerPreview(base64Data, file.name, isPdf);
+
+      try {
+        const res = await ApiService.call('uploadFlyerApi', {
+          file_data: base64Data,
+          file_name: file.name
+        });
+
+        if (spinner) spinner.classList.add('hidden');
+
+        if (res && res.success !== false) {
+          const publicUrl = res.url || res.data?.url || base64Data;
+          if (hiddenInput) hiddenInput.value = publicUrl;
+          if (urlInput) urlInput.value = publicUrl;
+          setFlyerPreview(publicUrl, file.name, isPdf);
+          showToast('チラシを正常に登録しました', 'success');
+        } else {
+          if (hiddenInput) hiddenInput.value = base64Data;
+          showToast(res?.message || 'サーバー保存に失敗（画像データのみ保持）', 'warning');
+        }
+      } catch (uploadErr) {
+        console.error('Flyer upload error:', uploadErr);
+        if (spinner) spinner.classList.add('hidden');
+        if (hiddenInput) hiddenInput.value = base64Data;
+      }
+    };
+    reader.readAsDataURL(file);
+  } catch (err) {
+    console.error('File reading failed:', err);
+    if (spinner) spinner.classList.add('hidden');
+    if (dropzone) dropzone.classList.remove('hidden');
+    showToast('ファイルの読み込みに失敗しました', 'error');
+  }
+}
+
+function setFlyerPreview(url, fileName = 'チラシ', isPdf = false) {
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  const previewBox = document.getElementById('ch-ev-flyer-preview-box');
+  const imgPreview = document.getElementById('ch-ev-flyer-img-preview');
+  const pdfIcon = document.getElementById('ch-ev-flyer-pdf-icon');
+  const nameEl = document.getElementById('ch-ev-flyer-name');
+  const linkEl = document.getElementById('ch-ev-flyer-link');
+  const hiddenInput = document.getElementById('ch-ev-flyer-url');
+
+  if (hiddenInput) hiddenInput.value = url;
+  if (dropzone) dropzone.classList.add('hidden');
+  if (previewBox) previewBox.classList.remove('hidden');
+  if (nameEl) nameEl.innerText = fileName || '登録済みチラシ';
+  if (linkEl) linkEl.href = url;
+
+  const isActuallyPdf = isPdf || url.endsWith('.pdf') || (url.includes('data:application/pdf'));
+  if (isActuallyPdf) {
+    if (imgPreview) imgPreview.classList.add('hidden');
+    if (pdfIcon) pdfIcon.classList.remove('hidden');
+  } else {
+    if (imgPreview) {
+      imgPreview.src = url;
+      imgPreview.classList.remove('hidden');
+    }
+    if (pdfIcon) pdfIcon.classList.add('hidden');
+  }
+}
+
+function removeCurrentFlyer() {
+  resetFlyerState();
+  showToast('チラシの登録を解除しました', 'info');
+}
+
+function resetFlyerState() {
+  const dropzone = document.getElementById('ch-ev-flyer-dropzone');
+  const spinner = document.getElementById('ch-ev-flyer-uploading');
+  const previewBox = document.getElementById('ch-ev-flyer-preview-box');
+  const hiddenInput = document.getElementById('ch-ev-flyer-url');
+  const urlInput = document.getElementById('ch-ev-flyer-url-input');
+  const fileInput = document.getElementById('ch-ev-flyer-file');
+
+  if (dropzone) dropzone.classList.remove('hidden');
+  if (spinner) spinner.classList.add('hidden');
+  if (previewBox) previewBox.classList.add('hidden');
+  if (hiddenInput) hiddenInput.value = '';
+  if (urlInput) urlInput.value = '';
+  if (fileInput) fileInput.value = '';
+}
+
+function previewCurrentFlyerInLightbox() {
+  const hiddenInput = document.getElementById('ch-ev-flyer-url');
+  const title = document.getElementById('ch-ev-title')?.value || 'チラシプレビュー';
+  if (hiddenInput && hiddenInput.value) {
+    openFlyerLightbox(hiddenInput.value, title);
+  }
+}
+
+function openFlyerLightbox(url, title = 'イベントチラシ') {
+  if (!url) return;
+  const modal = document.getElementById('modal-flyer-lightbox');
+  const imgEl = document.getElementById('flyer-lightbox-img');
+  const iframeEl = document.getElementById('flyer-lightbox-iframe');
+  const titleEl = document.getElementById('flyer-lightbox-title');
+  const dlLink = document.getElementById('flyer-lightbox-download-link');
+
+  if (!modal) return;
+  if (titleEl) titleEl.innerText = title;
+  if (dlLink) {
+    dlLink.href = url;
+    dlLink.setAttribute('download', `${title.replace(/\s+/g, '_')}_チラシ`);
+  }
+
+  const isPdf = url.endsWith('.pdf') || url.includes('data:application/pdf');
+  if (isPdf) {
+    if (imgEl) imgEl.classList.add('hidden');
+    if (iframeEl) {
+      iframeEl.src = url;
+      iframeEl.classList.remove('hidden');
+    }
+  } else {
+    if (iframeEl) {
+      iframeEl.src = '';
+      iframeEl.classList.add('hidden');
+    }
+    if (imgEl) {
+      imgEl.src = url;
+      imgEl.classList.remove('hidden');
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeFlyerLightbox() {
+  const modal = document.getElementById('modal-flyer-lightbox');
+  const imgEl = document.getElementById('flyer-lightbox-img');
+  const iframeEl = document.getElementById('flyer-lightbox-iframe');
+  if (modal) modal.classList.add('hidden');
+  if (imgEl) imgEl.src = '';
+  if (iframeEl) iframeEl.src = '';
+}
+
+function populateMemberNamesDatalist() {
+  const datalist = document.getElementById('datalist-member-names');
+  if (!datalist) return;
+
+  const members = window.cachedMembersList || [];
+  if (members.length > 0) {
+    datalist.innerHTML = members
+      .filter(m => (m.status || '在籍') !== '退会')
+      .map(m => `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${escapeHtml(m.category || m.profession || 'メンバー')})</option>`)
+      .join('');
+    return;
+  }
+
+  ApiService.call('getMembersApi').then(res => {
+    if (res && res.success !== false) {
+      const list = res.data?.members || res.members || [];
+      window.cachedMembersList = list;
+      datalist.innerHTML = list
+        .filter(m => (m.status || '在籍') !== '退会')
+        .map(m => `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)} (${escapeHtml(m.category || m.profession || 'メンバー')})</option>`)
+        .join('');
+    }
+  }).catch(() => {});
+}
+
+/**
  * Delete Chapter Event
  */
 async function handleDeleteChapterEvent(deleteSeries = false) {
   const id = document.getElementById('ch-ev-id').value;
-  if (!id) return;
+  if (!id) {
+    showToast('削除対象の予定が見つかりません', 'error');
+    return;
+  }
+
+  const evObj = currentEditingChapterEvent || allCalendarEvents.find(e => e.id == id);
+  const groupId = evObj?.recurrence_group_id || '';
+  const title = evObj ? evObj.title : 'この予定';
 
   const confirmMsg = deleteSeries
-    ? 'この繰り返し予定グループ（すべてのシリーズ予定）を一括削除してもよろしいですか？'
-    : 'このチャプター予定を削除してもよろしいですか？';
+    ? `「${title}」の繰り返し予定グループ（全件）を一括削除してもよろしいですか？`
+    : `「${title}」を削除してもよろしいですか？`;
 
   if (!confirm(confirmMsg)) return;
+
+  const btnDelete = document.getElementById('btn-delete-chapter-event');
+  const btnDeleteSeries = document.getElementById('btn-delete-chapter-series');
+  if (btnDelete) btnDelete.disabled = true;
+  if (btnDeleteSeries) btnDeleteSeries.disabled = true;
 
   try {
     const res = await ApiService.call('deleteChapterEventApi', { id, delete_series: deleteSeries });
     if (res && res.success !== false) {
-      showToast(res.message || (deleteSeries ? '繰り返し予定を一括削除しました' : 'チャプター予定を削除しました'), 'success');
+      // 即座にローカル配列から除外して画面に瞬時反映
+      if (deleteSeries && groupId) {
+        allCalendarEvents = allCalendarEvents.filter(e => e.recurrence_group_id !== groupId && e.id !== id);
+      } else {
+        allCalendarEvents = allCalendarEvents.filter(e => e.id !== id);
+      }
+      allTrainingEvents = allCalendarEvents.filter(e => e.source_type === 'training');
+
       closeChapterEventModal();
-      loadCalendarAndEvents();
+
+      // 即時再描画
+      if (currentEventViewMode === 'week') {
+        renderWeekView();
+      } else if (currentEventViewMode === 'list') {
+        renderFilteredTrainingEvents();
+      } else {
+        renderCalendarGrid();
+      }
+
+      if (selectedDayForModal) {
+        openDayEventsModal(selectedDayForModal);
+      }
+
+      showToast(res.message || (deleteSeries ? '繰り返し予定を一括削除しました' : 'チャプター予定を削除しました'), 'success');
+
+      // バックグラウンドで最新データをサーバーと同期
+      await loadCalendarAndEvents();
     } else {
       showToast(res?.message || '削除に失敗しました', 'error');
     }
   } catch (err) {
     console.error('Delete error:', err);
-    showToast('削除中にエラーが発生しました', 'error');
+    showToast(err?.message || '削除中にエラーが発生しました', 'error');
+  } finally {
+    if (btnDelete) btnDelete.disabled = false;
+    if (btnDeleteSeries) btnDeleteSeries.disabled = false;
+  }
+}
+
+/**
+ * Direct Delete Chapter Event (from List View or Day Events Modal)
+ */
+async function confirmDeleteChapterEventDirect(id, evt) {
+  if (evt) evt.stopPropagation();
+  const ev = allCalendarEvents.find(e => e.id == id);
+  if (!ev) {
+    showToast('削除対象の予定が見つかりません', 'error');
+    return;
+  }
+
+  const title = ev.title || 'この予定';
+  const hasSeries = !!ev.recurrence_group_id;
+
+  let deleteSeries = false;
+  if (hasSeries) {
+    const choice = confirm(`「${title}」は繰り返し予定です。\n\n[OK]：このシリーズ（繰り返し予定全件）を一括削除\n[キャンセル]：この日の予定1件のみ削除`);
+    if (choice) {
+      deleteSeries = true;
+    } else {
+      if (!confirm(`「${title}」（この日の予定1件のみ）を削除してもよろしいですか？`)) return;
+    }
+  } else {
+    if (!confirm(`「${title}」を削除してもよろしいですか？`)) return;
+  }
+
+  try {
+    const res = await ApiService.call('deleteChapterEventApi', { id, delete_series: deleteSeries });
+    if (res && res.success !== false) {
+      // 即座にローカル配列から除外して画面に瞬時反映
+      if (deleteSeries && ev.recurrence_group_id) {
+        const gid = ev.recurrence_group_id;
+        allCalendarEvents = allCalendarEvents.filter(e => e.recurrence_group_id !== gid && e.id !== id);
+      } else {
+        allCalendarEvents = allCalendarEvents.filter(e => e.id !== id);
+      }
+      allTrainingEvents = allCalendarEvents.filter(e => e.source_type === 'training');
+
+      // 即時再描画
+      if (currentEventViewMode === 'week') {
+        renderWeekView();
+      } else if (currentEventViewMode === 'list') {
+        renderFilteredTrainingEvents();
+      } else {
+        renderCalendarGrid();
+      }
+
+      if (selectedDayForModal) {
+        openDayEventsModal(selectedDayForModal);
+      }
+
+      showToast(res.message || (deleteSeries ? '繰り返し予定を一括削除しました' : 'チャプター予定を削除しました'), 'success');
+
+      // バックグラウンドで最新データを同期
+      await loadCalendarAndEvents();
+    } else {
+      showToast(res?.message || '削除に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    showToast(err?.message || '削除中にエラーが発生しました', 'error');
   }
 }
 
@@ -39955,6 +40371,8 @@ function renderFilteredTrainingEvents() {
         : '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80"><i class="fa-solid fa-user-clock mr-1 text-amber-500"></i>ビジターアクション</span>';
     } else if (isDeadline) {
       sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80"><i class="fa-solid fa-hourglass-end mr-1 text-rose-500"></i>締切</span>';
+    } else if (ev.source_type === 'member' || ev.category === 'メンバーイベント') {
+      sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200/80">メンバーイベント</span>';
     } else if (ev.source_type === 'chapter') {
       sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80">チャプター</span>';
     } else {
@@ -39967,6 +40385,10 @@ function renderFilteredTrainingEvents() {
 
     const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
       ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+      : '';
+
+    const flyerBadge = ev.flyer_url
+      ? `<button type="button" onclick="event.stopPropagation(); openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}');" class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold bg-orange-100/80 text-orange-800 border border-orange-200 hover:bg-orange-200 transition-colors cursor-pointer" title="クリックしてチラシを拡大表示"><i class="fa-solid fa-file-image"></i> チラシあり</button>`
       : '';
 
     return `
@@ -39983,6 +40405,7 @@ function renderFilteredTrainingEvents() {
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap mb-1">
                 ${sourceBadge}
+                ${flyerBadge}
                 ${formatBadge}
                 ${visitorBadge}
                 ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
@@ -40017,6 +40440,22 @@ function renderFilteredTrainingEvents() {
                 <span>申込ビジター: ${ev.visitor_count}名</span>
               </div>
             ` : ''}
+
+            <!-- Flyer Mini Banner if exists -->
+            ${ev.flyer_url ? `
+              <div class="mt-2.5 p-2 rounded-xl bg-orange-50/60 border border-orange-200/70 flex items-center justify-between gap-2.5 cursor-pointer hover:bg-orange-100/70 transition-colors" onclick="event.stopPropagation(); openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}');">
+                <div class="flex items-center gap-2 min-w-0">
+                  <img src="${escapeHtml(ev.flyer_url)}" alt="チラシ" class="w-10 h-10 object-cover rounded-lg border border-orange-200 shrink-0 shadow-2xs">
+                  <div class="min-w-0">
+                    <div class="text-xs font-bold text-slate-800 truncate">イベントチラシあり</div>
+                    <div class="text-3xs text-orange-700 font-bold flex items-center gap-0.5">
+                      <i class="fa-solid fa-magnifying-glass-plus text-3xs"></i> タップして拡大表示
+                    </div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-orange-400 text-xs shrink-0"></i>
+              </div>
+            ` : ''}
           </div>
         </div>
 
@@ -40041,10 +40480,15 @@ function renderFilteredTrainingEvents() {
             <button type="button" onclick="openActionDetailModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer">
               アクション確認
             </button>
-          ` : (ev.source_type === 'chapter' ? `
-            <button type="button" onclick="openChapterEventModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3 py-1.5 rounded-lg text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer">
-              編集
-            </button>
+          ` : (ev.source_type === 'chapter' || ev.source_type === 'member' ? `
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="confirmDeleteChapterEventDirect('${ev.id}', event)" class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer" title="この予定を削除">
+                <i class="fa-regular fa-trash-can text-xs"></i>
+              </button>
+              <button type="button" onclick="openChapterEventModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3 py-1.5 rounded-lg text-xs font-bold ${ev.source_type === 'member' ? 'text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} transition-colors cursor-pointer">
+                編集
+              </button>
+            </div>
           ` : ''))}
         </div>
       </div>

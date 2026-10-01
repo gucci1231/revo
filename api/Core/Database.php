@@ -605,6 +605,13 @@ class Database {
     }
 
     private function seedDefaultChapterEvents(): void {
+        try {
+            $seeded = $this->fetchColumn("SELECT value FROM settings WHERE key = 'seeded_default_chapter_events'");
+            if ($seeded === '1') {
+                return;
+            }
+        } catch (\Exception $e) {}
+
         $now = date('Y/m/d H:i');
         $defaults = [
             [
@@ -664,9 +671,19 @@ class Database {
                 ]);
             }
         }
+        try {
+            $this->execute("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('seeded_default_chapter_events', '1', ?)", [$now]);
+        } catch (\Exception $e) {}
     }
 
     private function seedDefaultMeetingCustomizations(): void {
+        try {
+            $seeded = $this->fetchColumn("SELECT value FROM settings WHERE key = 'seeded_default_meeting_customizations'");
+            if ($seeded === '1') {
+                return;
+            }
+        } catch (\Exception $e) {}
+
         $now = date('Y-m-d H:i:s');
         $defaults = [
             [
@@ -716,6 +733,9 @@ class Database {
                 ]));
             }
         }
+        try {
+            $this->execute("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('seeded_default_meeting_customizations', '1', ?)", [$now]);
+        } catch (\Exception $e) {}
     }
 
     public function transaction(callable $callback): mixed {

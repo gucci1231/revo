@@ -11,7 +11,8 @@ const ApiService = {
       if (restConfig) {
         const fetchOptions = {
           method: restConfig.method || 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store'
         };
         if (restConfig.body) {
           fetchOptions.body = JSON.stringify(restConfig.body);
@@ -290,6 +291,7 @@ const ApiService = {
         } else if (typeof args[0] === 'string' && args[0]) {
           params.append('month', args[0]);
         }
+        params.append('_t', Date.now().toString());
         const qs = params.toString() ? '&' + params.toString() : '';
         return { url: `/api/events.php?action=calendar${qs}`, method: 'GET' };
       }

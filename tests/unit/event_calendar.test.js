@@ -264,6 +264,23 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('mobilePlacedEventsHtml'), 'Mobile single-day timeline is rendered in week view');
     assert.ok(viewScript.includes('bg-slate-900 text-white'), 'Selected date uses iPhone style solid circle highlight');
   });
+
+  it('verifies robust Chapter Event Deletion, instant state removal, and seed protection', () => {
+    // 1. Direct delete function defined in script
+    assert.ok(viewScript.includes('function confirmDeleteChapterEventDirect('), 'confirmDeleteChapterEventDirect defined in script');
+    assert.ok(viewScript.includes('allCalendarEvents.filter('), 'handleDeleteChapterEvent removes deleted event instantly from local state');
+
+    // 2. ApiService includes cache: no-store and timestamp buster
+    assert.ok(apiService.includes("cache: 'no-store'"), 'ApiService enforces cache: no-store on fetch requests');
+    assert.ok(apiService.includes("params.append('_t'"), 'getCalendarEventsApi includes timestamp cache buster');
+
+    // 3. Database prevents infinite re-seeding of deleted events
+    assert.ok(databasePhp.includes('seeded_default_chapter_events'), 'Database.php records and checks seeded_default_chapter_events flag');
+    assert.ok(databasePhp.includes('seeded_default_meeting_customizations'), 'Database.php records and checks seeded_default_meeting_customizations flag');
+
+    // 4. Quick delete button exists in index.html
+    assert.ok(indexHtml.includes('confirmDeleteChapterEventDirect'), 'Direct delete helper is wired into index.html');
+  });
 });
 
 
