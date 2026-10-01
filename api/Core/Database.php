@@ -213,6 +213,7 @@ class Database {
                 description TEXT DEFAULT '',
                 recurrence_group_id TEXT DEFAULT '',
                 recurrence_rule TEXT DEFAULT '',
+                flyer_url TEXT DEFAULT '',
                 created_at TEXT,
                 updated_at TEXT
             );
@@ -296,6 +297,9 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN flyer_url TEXT DEFAULT ''");
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);");

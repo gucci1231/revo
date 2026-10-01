@@ -206,6 +206,51 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(indexHtml.includes('id="mt-edit-start-time" value="06:00"'), 'Meeting edit form defaults start time to 06:00');
     assert.ok(viewScript.includes("■ 受付時間: メンバー 06:00〜 / ビジター 06:40〜 (07:00開会 / 08:30閉会)"), 'Share text includes reception time breakdown for meeting');
   });
+
+  it('verifies Deadline registration, category, and preset buttons exist', () => {
+    // UI elements in index.html
+    assert.ok(indexHtml.includes('value="締切・期限"'), '締切・期限 category option exists in index.html');
+    assert.ok(indexHtml.includes('setDeadlinePreset('), 'setDeadlinePreset function calls exist in index.html');
+    assert.ok(indexHtml.includes('ビジター出欠確認 締切'), '出欠締切 preset button exists in index.html');
+    assert.ok(indexHtml.includes('推薦状・推薦文提出 締切'), '推薦状提出 preset button exists in index.html');
+    assert.ok(indexHtml.includes('onclick="setEventSourceFilter(\'deadline\', this)"'), 'Deadline filter pill exists in index.html');
+
+    // JS functions
+    assert.ok(viewScript.includes('function setDeadlinePreset('), 'setDeadlinePreset defined in script');
+    assert.ok(viewScript.includes('function onChapterEventCategoryChange()'), 'onChapterEventCategoryChange defined in script');
+    assert.ok(viewScript.includes("isDeadline"), 'Script checks for deadline events');
+
+    // Backend filtering
+    assert.ok(eventRepoPhp.includes("$filters['source_type'] === 'deadline'"), 'EventRepository supports deadline filter');
+    assert.ok(devServerJs.includes("sourceType === 'deadline'"), 'dev-server supports deadline filter');
+  });
+
+  it('verifies Visitor Action plan calendar aggregation, action detail modal, and creation tab exist', () => {
+    // UI elements in index.html
+    assert.ok(indexHtml.includes('id="modal-action-detail"'), 'Visitor action detail modal exists in index.html');
+    assert.ok(indexHtml.includes('id="pane-visitor-action"'), 'Visitor action form tab pane exists in index.html');
+    assert.ok(indexHtml.includes('id="tab-btn-visitor-action"'), 'Visitor action tab button exists in index.html');
+    assert.ok(indexHtml.includes('id="cal-act-visitor-id"'), 'Visitor select exists in index.html');
+    assert.ok(indexHtml.includes('id="cal-act-due-date"'), 'Due date input exists in index.html');
+    assert.ok(indexHtml.includes('id="cal-act-type"'), 'Action type select exists in index.html');
+    assert.ok(indexHtml.includes('id="btn-act-modal-toggle"'), 'Action toggle complete button exists in index.html');
+    assert.ok(indexHtml.includes('onclick="setEventSourceFilter(\'action\', this)"'), 'Action filter pill exists in index.html');
+
+    // JS functions
+    assert.ok(viewScript.includes('function switchAddEventModalTab('), 'switchAddEventModalTab defined in script');
+    assert.ok(viewScript.includes('function handleCalendarActionPlanSubmit('), 'handleCalendarActionPlanSubmit defined in script');
+    assert.ok(viewScript.includes('function openActionDetailModal('), 'openActionDetailModal defined in script');
+    assert.ok(viewScript.includes('function closeActionDetailModal('), 'closeActionDetailModal defined in script');
+    assert.ok(viewScript.includes('function handleToggleActionFromModal('), 'handleToggleActionFromModal defined in script');
+    assert.ok(viewScript.includes('function handleDeleteActionFromModal('), 'handleDeleteActionFromModal defined in script');
+    assert.ok(viewScript.includes('function jumpToVisitorDetailFromModal('), 'jumpToVisitorDetailFromModal defined in script');
+
+    // Backend: EventRepository.php & dev-server.js query action_plans
+    assert.ok(eventRepoPhp.includes('SELECT ap.*,'), 'EventRepository queries action_plans for calendar');
+    assert.ok(eventRepoPhp.includes("'source_type' => 'action'"), 'EventRepository tags action plans as source_type action');
+    assert.ok(devServerJs.includes("SELECT ap.*"), 'dev-server queries action_plans for calendar');
+    assert.ok(devServerJs.includes("source_type: 'action'"), 'dev-server tags action plans as source_type action');
+  });
 });
 
 

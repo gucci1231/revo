@@ -93,6 +93,7 @@ function initDatabase() {
   `);
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
+  try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN flyer_url TEXT DEFAULT '';`); } catch(e){}
 
   // Seed default meeting customizations if not present
   try {
@@ -1735,12 +1736,19 @@ function handleApiRequest(req, res, urlObj) {
           curD.setDate(curD.getDate() + 1);
         }
 
-        // 2. Chapter Events
+        // 2. Chapter Events & Member Events
         let chapterRows = [];
         try {
           chapterRows = runSqlJson(`SELECT * FROM chapter_events WHERE start_datetime >= '${startRangeStr} 00:00:00' AND start_datetime <= '${endRangeStr} 23:59:59' ORDER BY start_datetime ASC;`);
         } catch(e) {}
-        const chapterEvents = chapterRows.map(ev => ({ ...ev, source_type: 'chapter' }));
+        const chapterEvents = chapterRows.map(ev => {
+          const isMember = (ev.category === 'メンバーイベント' || (ev.category || '').includes('メンバー'));
+          return {
+            ...ev,
+            source_type: isMember ? 'member' : 'chapter',
+            is_member_event: isMember ? 1 : 0
+          };
+        });
 
         // 3. Training Events
         let trainingRows = [];
@@ -1753,11 +1761,73 @@ function handleApiRequest(req, res, urlObj) {
           category: ev.event_type_name || 'トレーニング'
         }));
 
-        let all = [...meetings, ...chapterEvents, ...trainingEvents];
+        // 4. Visitor Action Plans
+        let actionRows = [];
+        try {
+          actionRows = runSqlJson(`
+            SELECT ap.*, 
+                   COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                   COALESCE(v.company, '') as visitor_company, 
+                   COALESCE(v.profession, '') as visitor_profession, 
+                   COALESCE(v.inviter, '') as visitor_inviter, 
+                   COALESCE(v.event_date, '') as visitor_event_date,
+                   COALESCE(h.feel_abc, '') as feel_abc
+            FROM action_plans ap
+            LEFT JOIN visitors v ON ap.visitor_id = v.id
+            LEFT JOIN hearing_sheets h ON ap.visitor_id = h.visitor_id
+            WHERE ap.due_date >= '${startRangeStr}' AND ap.due_date <= '${endRangeStr}'
+            ORDER BY ap.due_date ASC, ap.created_at DESC;
+          `);
+        } catch(e) {}
+
+        const actionEvents = actionRows.map(ap => {
+          const dueDate = ap.due_date;
+          const vName = ap.visitor_name || 'ビジター';
+          const actType = ap.action_type || 'アクション';
+          const actText = ap.action_text || actType;
+          const assignee = ap.assignee_name || '担当未定';
+
+          return {
+            id: 'act_' + ap.id,
+            action_plan_id: String(ap.id),
+            visitor_id: String(ap.visitor_id),
+            source_type: 'action',
+            title: vName + ': ' + actText,
+            category: 'ビジターアクション',
+            action_type: actType,
+            start_datetime: dueDate + ' 10:00:00',
+            end_datetime: dueDate + ' 18:00:00',
+            due_date: dueDate,
+            location_name: ap.visitor_company || '',
+            organizer: assignee,
+            is_completed: parseInt(ap.is_completed || 0, 10),
+            completed_at: ap.completed_at || '',
+            report_text: ap.report_text || '',
+            is_online: 0,
+            description: `ビジター: ${vName} 様 (${ap.visitor_company || ''})\n担当: ${assignee}\n種別: ${actType}\n内容: ${actText}` + (ap.report_text ? `\n報告: ${ap.report_text}` : ''),
+            visitor_name: vName,
+            visitor_company: ap.visitor_company || '',
+            visitor_profession: ap.visitor_profession || '',
+            visitor_inviter: ap.visitor_inviter || '',
+            action_text: actText,
+            assignee_name: assignee,
+            feel_abc: ap.feel_abc || ''
+          };
+        });
+
+        let all = [...meetings, ...chapterEvents, ...trainingEvents, ...actionEvents];
         all.sort((a, b) => (a.start_datetime > b.start_datetime ? 1 : -1));
 
         if (sourceType) {
-          all = all.filter(e => e.source_type === sourceType);
+          if (sourceType === 'deadline') {
+            all = all.filter(e => (e.category === '締切・期限' || e.category === '締切' || (e.title || '').includes('締切')));
+          } else if (sourceType === 'member') {
+            all = all.filter(e => e.source_type === 'member' || e.is_member_event || e.category === 'メンバーイベント');
+          } else if (sourceType === 'chapter') {
+            all = all.filter(e => e.source_type === 'chapter' && !e.is_member_event && e.category !== 'メンバーイベント');
+          } else {
+            all = all.filter(e => e.source_type === sourceType);
+          }
         }
         if (format === 'online') {
           all = all.filter(e => !!e.is_online);
@@ -1770,7 +1840,10 @@ function handleApiRequest(req, res, urlObj) {
             (e.description || '').toLowerCase().includes(keyword) ||
             (e.location_name || '').toLowerCase().includes(keyword) ||
             (e.category || '').toLowerCase().includes(keyword) ||
-            (e.organizer || '').toLowerCase().includes(keyword)
+            (e.organizer || '').toLowerCase().includes(keyword) ||
+            (e.visitor_name || '').toLowerCase().includes(keyword) ||
+            (e.assignee_name || '').toLowerCase().includes(keyword) ||
+            (e.action_text || '').toLowerCase().includes(keyword)
           ));
         }
 
@@ -1844,6 +1917,7 @@ function handleApiRequest(req, res, urlObj) {
             let createdCount = 0;
             let firstId = '';
 
+            const flyerUrl = (body.flyer_url || '').replace(/'/g, "''");
             while (createdCount < maxCount && currentObj <= untilObj) {
               const y = currentObj.getFullYear();
               const m = String(currentObj.getMonth() + 1).padStart(2, '0');
@@ -1855,8 +1929,8 @@ function handleApiRequest(req, res, urlObj) {
               const curId = 'ch_' + Date.now() + '_' + createdCount;
               if (createdCount === 0) firstId = curId;
 
-              runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
-                       VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${groupId}', '${recurrenceRule}', '${now}', '${now}');`);
+              runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
+                       VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${groupId}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
 
               createdCount++;
 
@@ -1886,10 +1960,58 @@ function handleApiRequest(req, res, urlObj) {
             }));
           }
 
-          runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, created_at, updated_at)
-                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${now}', '${now}');`);
+          const flyerUrl = (body.flyer_url || '').replace(/'/g, "''");
+          runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
+                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
           return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id, count: 1 }));
         } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
+      }
+
+      if (action === 'upload_flyer') {
+        try {
+          const body = input || {};
+          const fileData = body.file_data || '';
+          const fileName = body.file_name || 'flyer.jpg';
+
+          if (!fileData) {
+            return res.end(JSON.stringify({ success: false, message: 'アップロード対象のファイルデータがありません' }));
+          }
+
+          const uploadDir = path.join(__dirname, 'uploads', 'flyers');
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+
+          let ext = path.extname(fileName).toLowerCase().replace('.', '');
+          if (!['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'].includes(ext)) {
+            ext = 'jpg';
+          }
+
+          let base64Content = fileData;
+          if (fileData.includes(';base64,')) {
+            base64Content = fileData.split(';base64,')[1];
+          }
+
+          const buffer = Buffer.from(base64Content, 'base64');
+          const timeStr = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+          const newFileName = `flyer_${timeStr}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+          const savePath = path.join(uploadDir, newFileName);
+
+          fs.writeFileSync(savePath, buffer);
+          const publicUrl = `uploads/flyers/${newFileName}`;
+
+          return res.end(JSON.stringify({
+            success: true,
+            data: {
+              url: publicUrl,
+              file_name: fileName || newFileName
+            },
+            url: publicUrl,
+            message: 'チラシを正常にアップロードしました'
+          }));
+        } catch (e) {
           return res.end(JSON.stringify({ success: false, message: e.message }));
         }
       }

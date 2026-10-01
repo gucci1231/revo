@@ -112,7 +112,7 @@
         </button>
       </div>
 
-      <!-- Center: Source Type Pills (All / Meetings / Chapter / Training) -->
+      <!-- Center: Source Type Pills (All / Meetings / Chapter / Training / Visitor Action / Deadline) -->
       <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
         <button type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
           すべて
@@ -125,6 +125,12 @@
         </button>
         <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
+        </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>ビジターアクション
+        </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>締切
         </button>
       </div>
 
@@ -190,6 +196,14 @@
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
           <span>京都CC研修</span>
         </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-amber-100"></span>
+          <span>ビジターアクション</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-100"></span>
+          <span>締切</span>
+        </span>
       </div>
     </div>
 
@@ -209,7 +223,7 @@
     </div>
   </div>
 
-  <!-- ================= VIEW 1: MONTHLY CALENDAR GRID ================= -->
+  <!-- ================= VIEW 1: MONTHLY CALENDAR GRID (iPhone Style Split Calendar) ================= -->
   <div id="calendar-view-container" class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden mb-8">
     <!-- Calendar Days Header (Sun - Sat) -->
     <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60 text-center text-xs font-semibold py-2 text-slate-500">
@@ -217,7 +231,7 @@
       <div>月</div>
       <div>火</div>
       <div>水</div>
-      <div class="text-blue-600 font-bold">木 (定例会)</div>
+      <div class="text-blue-600 font-bold"><span class="sm:hidden">木</span><span class="hidden sm:inline">木 (定例会)</span></div>
       <div>金</div>
       <div class="text-blue-500 font-bold">土</div>
     </div>
@@ -230,11 +244,16 @@
         <div class="text-xs font-bold text-slate-500">カレンダーを描画中...</div>
       </div>
     </div>
+
+    <!-- iPhone Calendar Style: Selected Day Inline Agenda List -->
+    <div id="calendar-selected-day-agenda" class="border-t border-slate-200 bg-slate-50/40 p-3 sm:p-5">
+      <!-- Populated via renderCalendarDayAgenda() -->
+    </div>
   </div>
 
-  <!-- ================= VIEW 2: WEEKLY CALENDAR VIEW (Time-Aware Timeline) ================= -->
+  <!-- ================= VIEW 2: WEEKLY CALENDAR VIEW (iPhone Week Strip & Timeline) ================= -->
   <div id="week-view-container" class="hidden bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden mb-8">
-    <div id="week-grid" class="overflow-x-auto">
+    <div id="week-grid">
       <!-- Loading placeholder -->
       <div class="py-24 text-center bg-white">
         <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
@@ -266,177 +285,343 @@
 
 </div>
 
-<!-- ================= MODAL 1: CHAPTER EVENT ADD/EDIT ================= -->
+<!-- ================= MODAL 1: CHAPTER EVENT & VISITOR ACTION ADD/EDIT ================= -->
 <div id="modal-chapter-event" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeChapterEventModal();">
   <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-    <form id="form-chapter-event" onsubmit="handleChapterEventSubmit(event)">
-      <input type="hidden" id="ch-ev-id" value="">
 
-      <!-- Modal Header -->
-      <div class="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center text-sm font-bold">
-            <i class="fa-solid fa-calendar-plus"></i>
-          </div>
+    <!-- Modal Header -->
+    <div class="p-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+          <i class="fa-solid fa-calendar-plus" id="modal-chapter-event-icon"></i>
+        </div>
+        <div>
+          <h3 id="modal-chapter-event-title" class="text-base font-black text-slate-900 leading-none">予定・締切を追加</h3>
+          <p class="text-3xs text-slate-400 mt-1" id="modal-chapter-event-sub">チャプター予定・提出締切・ビジターアクションをカレンダーに登録</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeChapterEventModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Segmented Tab Switcher (Visible when adding new) -->
+    <div id="modal-add-type-tabs" class="flex border-b border-slate-100 bg-slate-50/70 p-1.5 gap-1.5">
+      <button type="button" id="tab-btn-chapter-event" onclick="switchAddEventModalTab('event')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-blue-700 shadow-2xs border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-calendar-check text-blue-500"></i>
+        <span>予定・締切</span>
+      </button>
+      <button type="button" id="tab-btn-visitor-action" onclick="switchAddEventModalTab('action')" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 border border-transparent flex items-center justify-center gap-1.5 cursor-pointer">
+        <i class="fa-solid fa-user-clock text-amber-500"></i>
+        <span>ビジターアクション</span>
+      </button>
+    </div>
+
+    <!-- TAB PANE 1: CHAPTER EVENT & DEADLINE FORM -->
+    <div id="pane-chapter-event">
+      <form id="form-chapter-event" onsubmit="handleChapterEventSubmit(event)">
+        <input type="hidden" id="ch-ev-id" value="">
+
+        <!-- Modal Body -->
+        <div class="p-5 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto">
+          <!-- Title & Presets -->
           <div>
-            <h3 id="modal-chapter-event-title" class="text-base font-black text-slate-900 leading-none">チャプター予定を追加</h3>
-            <p class="text-3xs text-slate-400 mt-1">定例会・役員会・懇親会などのチャプター予定をカレンダーに登録</p>
+            <label class="block font-bold text-slate-700 mb-1">イベント名 / 締切タイトル <span class="text-red-500">*</span></label>
+            <input type="text" id="ch-ev-title" required placeholder="例: 第4期 役員会、秋の大懇親会、出欠締切 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30">
+            
+            <!-- Quick Deadline Presets -->
+            <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <span class="text-3xs text-slate-400 font-bold">締切プリセット:</span>
+              <button type="button" onclick="setDeadlinePreset('ビジター出欠確認 締切', '締切・期限', '23:59')" class="px-2 py-0.5 rounded text-3xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer">出欠締切 (23:59)</button>
+              <button type="button" onclick="setDeadlinePreset('推薦状・推薦文提出 締切', '締切・期限', '18:00')" class="px-2 py-0.5 rounded text-3xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer">推薦状提出 (18:00)</button>
+              <button type="button" onclick="setDeadlinePreset('イベント参加申込 締切', '締切・期限', '23:59')" class="px-2 py-0.5 rounded text-3xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-colors cursor-pointer">イベント申込締切</button>
+            </div>
+          </div>
+
+          <!-- Category & Format -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">カテゴリ</label>
+              <select id="ch-ev-category" onchange="onChapterEventCategoryChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                <option value="チャプターイベント" selected>チャプターイベント</option>
+                <option value="締切・期限">締切・提出期限</option>
+                <option value="役員会">役員会・MTG</option>
+                <option value="懇親会">懇親会・親睦会</option>
+                <option value="ビジネスオープンデー">ビジネスオープンデー (BOD)</option>
+                <option value="定例会">定例会関連</option>
+                <option value="1to1">1to1マラソン・面談</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">開催形式</label>
+              <select id="ch-ev-is-online" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                <option value="0">対面・リアル開催 / 締切</option>
+                <option value="1">オンライン (Zoom)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dates & Times -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1" id="ch-ev-date-label">開催日 / 締切日 <span class="text-red-500">*</span></label>
+              <input type="date" id="ch-ev-date" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1" id="ch-ev-start-time-label">開始時刻</label>
+                <input type="time" id="ch-ev-start-time" value="19:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1" id="ch-ev-end-time-label">終了 / 締切時刻</label>
+                <input type="time" id="ch-ev-end-time" value="21:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Location & URL -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">会場名 / 提出先 / Zoom</label>
+              <input type="text" id="ch-ev-location" placeholder="例: 烏丸四条会場、Zoom、LINEグループ 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">URL / 提出フォームリンク</label>
+              <input type="url" id="ch-ev-url" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 font-mono">
+            </div>
+          </div>
+
+          <!-- Organizer / Host -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">主催者 / 担当メンバー</label>
+            <input type="text" id="ch-ev-organizer" placeholder="例: イベント委員会、川口、ビジホスチーム 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・締切詳細</label>
+            <textarea id="ch-ev-desc" rows="2" placeholder="予定の詳細、提出内容、期限の注意事項などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+          </div>
+
+          <!-- Recurrence / Repeat Settings -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3" id="ch-ev-repeat-section">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-repeat text-blue-600 text-xs"></i>
+                  <span>繰り返し登録</span>
+                </span>
+                <span class="text-3xs font-medium text-slate-400">毎週・隔週の定期予定を一括作成</span>
+              </label>
+              <select id="ch-ev-repeat-type" onchange="onChapterEventRepeatTypeChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                <option value="none">繰り返しなし (1回のみ)</option>
+                <option value="weekdays">平日毎日 (月〜金)</option>
+                <option value="daily">毎日 (土日含む)</option>
+                <option value="weekly">毎週 (同じ曜日に繰り返す)</option>
+                <option value="biweekly">隔週 (2週間に1回繰り返す)</option>
+                <option value="monthly">毎月 (同じ日に繰り返す)</option>
+              </select>
+            </div>
+
+            <!-- Recurrence Options (Visible when repeating) -->
+            <div id="ch-ev-repeat-options" class="hidden space-y-2.5 pt-2 border-t border-slate-200/60">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">繰り返しの終了日</label>
+                  <input type="date" id="ch-ev-repeat-until" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">最大登録回数</label>
+                  <select id="ch-ev-repeat-count" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+                    <option value="0">終了日まで全件登録</option>
+                    <option value="5">5回分 (平日1週間)</option>
+                    <option value="10">10回分 (平日2週間)</option>
+                    <option value="12" selected>12回分 (週1回・約3ヶ月)</option>
+                    <option value="20">20回分 (平日約1ヶ月)</option>
+                    <option value="24">24回分 (週1回・約半年)</option>
+                    <option value="60">60回分 (平日約3ヶ月)</option>
+                    <option value="100">100回分</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Recurrence Summary Banner -->
+              <div id="ch-ev-repeat-summary-box" class="p-2.5 rounded-lg bg-blue-50/80 border border-blue-200/80 text-3xs font-bold text-blue-700 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0 text-xs"></i>
+                <span id="ch-ev-repeat-summary-text">毎週同じ曜日に定期予定が生成されます</span>
+              </div>
+            </div>
           </div>
         </div>
-        <button type="button" onclick="closeChapterEventModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
-          <i class="fa-solid fa-xmark text-sm"></i>
+
+        <!-- Modal Footer -->
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-1.5" id="ch-ev-delete-actions">
+            <button type="button" id="btn-share-chapter-event" onclick="openEventShareFromCurrentChapterEvent()" class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-colors hidden cursor-pointer" title="この予定をシェア">
+              <i class="fa-solid fa-arrow-up-from-bracket mr-1 text-slate-500"></i> シェア
+            </button>
+            <button type="button" id="btn-delete-chapter-event" onclick="handleDeleteChapterEvent(false)" class="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden cursor-pointer">
+              <i class="fa-regular fa-trash-can mr-1"></i> 削除
+            </button>
+            <button type="button" id="btn-delete-chapter-series" onclick="handleDeleteChapterEvent(true)" class="px-3 py-2 rounded-xl text-3xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden cursor-pointer" title="この繰り返し予定グループをすべて削除">
+              <i class="fa-solid fa-layer-group mr-1"></i> シリーズ一括削除
+            </button>
+          </div>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeChapterEventModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+              キャンセル
+            </button>
+            <button type="submit" id="btn-save-chapter-event" class="px-5 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs active:scale-95 cursor-pointer">
+              保存する
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- TAB PANE 2: VISITOR ACTION PLAN FORM -->
+    <div id="pane-visitor-action" class="hidden">
+      <form id="form-calendar-action-plan" onsubmit="handleCalendarActionPlanSubmit(event)">
+        <div class="p-5 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto">
+          <!-- Target Visitor -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">対象ビジター <span class="text-red-500">*</span></label>
+            <select id="cal-act-visitor-id" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-amber-500">
+              <option value="">ビジターを選択してください...</option>
+            </select>
+          </div>
+
+          <!-- Due Date & Action Type -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">期日 (締切日) <span class="text-red-500">*</span></label>
+              <input type="date" id="cal-act-due-date" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-amber-500">
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">アクション種別</label>
+              <select id="cal-act-type" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-amber-500">
+                <option value="事前連絡">事前連絡 (定例会前)</option>
+                <option value="お礼連絡">お礼連絡 (定例会後)</option>
+                <option value="1to1">1to1・面談</option>
+                <option value="オリエンテーション">オリエンテーション</option>
+                <option value="推薦状依頼">推薦状・紹介の依頼</option>
+                <option value="次回参加案内">次回参加の案内</option>
+                <option value="その他">その他アクション</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Assignee -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">担当メンバー</label>
+            <select id="cal-act-assignee" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-amber-500">
+              <option value="">担当者を選択 (任意)...</option>
+            </select>
+          </div>
+
+          <!-- Action Content -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">アクション内容・ToDo <span class="text-red-500">*</span></label>
+            <input type="text" id="cal-act-text" required placeholder="例: 前日のリマインド電話とZoom接続の事前確認" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30">
+          </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+          <button type="button" onclick="closeChapterEventModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+            キャンセル
+          </button>
+          <button type="submit" id="btn-save-calendar-action" class="px-5 py-2 rounded-xl text-xs font-black text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5">
+            <i class="fa-solid fa-plus text-3xs"></i>
+            <span>アクションを登録</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL 1-B: VISITOR ACTION PLAN DETAIL ================= -->
+<div id="modal-action-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeActionDetailModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <input type="hidden" id="act-modal-id" value="">
+    <input type="hidden" id="act-modal-visitor-id" value="">
+
+    <!-- Header -->
+    <div class="p-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
+            <i class="fa-solid fa-user-clock text-amber-500"></i> ビジターアクション
+          </span>
+          <span id="act-modal-status-badge" class="px-2 py-0.5 rounded-full text-3xs font-extrabold"></span>
+          <span id="act-modal-type-badge" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-slate-100 text-slate-600"></span>
+        </div>
+        <h3 id="act-modal-visitor-title" class="text-base sm:text-lg font-black text-slate-900 leading-snug">
+          --
+        </h3>
+        <p id="act-modal-company-sub" class="text-3xs text-slate-500 mt-0.5 font-medium"></p>
+      </div>
+      <button type="button" onclick="closeActionDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-5 space-y-3.5 text-xs">
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <div class="text-3xs font-bold text-slate-400 mb-0.5">期日 (締切日)</div>
+          <div id="act-modal-due-date" class="font-bold text-slate-800 font-mono tabular-nums text-sm">--</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+          <div class="text-3xs font-bold text-slate-400 mb-0.5">担当メンバー</div>
+          <div id="act-modal-assignee" class="font-bold text-slate-800 text-sm">--</div>
+        </div>
+      </div>
+
+      <!-- Action Content Box -->
+      <div class="p-3.5 rounded-xl bg-amber-50/60 border border-amber-100/80">
+        <div class="text-3xs font-extrabold text-amber-800 mb-1 flex items-center gap-1">
+          <i class="fa-solid fa-list-check"></i>
+          <span>アクション内容</span>
+        </div>
+        <div id="act-modal-text" class="text-xs font-bold text-slate-900 leading-relaxed whitespace-pre-wrap"></div>
+      </div>
+
+      <!-- Report Text Area -->
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">実施報告メモ・結果</label>
+        <textarea id="act-modal-report-input" rows="2" placeholder="対応結果や進捗メモを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:border-amber-500"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <button type="button" id="btn-act-modal-toggle" onclick="handleToggleActionFromModal()" class="px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer shadow-xs active:scale-95">
+          <!-- Text dynamically set via JS -->
+        </button>
+        <button type="button" onclick="handleDeleteActionFromModal()" class="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer">
+          <i class="fa-regular fa-trash-can mr-1"></i> 削除
         </button>
       </div>
 
-      <!-- Modal Body -->
-      <div class="p-5 space-y-3.5 text-xs max-h-[75vh] overflow-y-auto">
-        <!-- Title -->
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">イベント名 / 予定タイトル <span class="text-red-500">*</span></label>
-          <input type="text" id="ch-ev-title" required placeholder="例: 第4期 役員会、秋の大懇親会、BOD準備会 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30">
-        </div>
-
-        <!-- Category & Format -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">カテゴリ</label>
-            <select id="ch-ev-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-              <option value="役員会">役員会・MTG</option>
-              <option value="懇親会">懇親会・親睦会</option>
-              <option value="ビジネスオープンデー">ビジネスオープンデー (BOD)</option>
-              <option value="定例会">定例会関連</option>
-              <option value="1to1">1to1マラソン・面談</option>
-              <option value="チャプターイベント" selected>チャプターイベント</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">開催形式</label>
-            <select id="ch-ev-is-online" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-              <option value="0">対面・リアル開催</option>
-              <option value="1">オンライン (Zoom)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Dates & Times -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">開催日 <span class="text-red-500">*</span></label>
-            <input type="date" id="ch-ev-date" required class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">開始時刻</label>
-              <input type="time" id="ch-ev-start-time" value="19:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">終了時刻</label>
-              <input type="time" id="ch-ev-end-time" value="21:00" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-            </div>
-          </div>
-        </div>
-
-        <!-- Location & URL -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">会場名 / Zoom詳細</label>
-            <input type="text" id="ch-ev-location" placeholder="例: 烏丸四条会場、Zoom 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">URL / 案内リンク</label>
-            <input type="url" id="ch-ev-url" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 font-mono">
-          </div>
-        </div>
-
-        <!-- Organizer / Host -->
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">主催者 / 担当メンバー</label>
-          <input type="text" id="ch-ev-organizer" placeholder="例: イベント委員会、川口、桐原プレジ 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
-        </div>
-
-        <!-- Description -->
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・補足</label>
-          <textarea id="ch-ev-desc" rows="2" placeholder="予定の詳細、アジェンダ、会費、参加資格などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
-        </div>
-
-        <!-- Recurrence / Repeat Settings -->
-        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3" id="ch-ev-repeat-section">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1 flex items-center justify-between">
-              <span class="flex items-center gap-1.5">
-                <i class="fa-solid fa-repeat text-blue-600 text-xs"></i>
-                <span>繰り返し登録</span>
-              </span>
-              <span class="text-3xs font-medium text-slate-400">毎週・隔週の定期予定を一括作成</span>
-            </label>
-            <select id="ch-ev-repeat-type" onchange="onChapterEventRepeatTypeChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-              <option value="none">繰り返しなし (1回のみ)</option>
-              <option value="weekdays">平日毎日 (月〜金)</option>
-              <option value="daily">毎日 (土日含む)</option>
-              <option value="weekly">毎週 (同じ曜日に繰り返す)</option>
-              <option value="biweekly">隔週 (2週間に1回繰り返す)</option>
-              <option value="monthly">毎月 (同じ日に繰り返す)</option>
-            </select>
-          </div>
-
-          <!-- Recurrence Options (Visible when repeating) -->
-          <div id="ch-ev-repeat-options" class="hidden space-y-2.5 pt-2 border-t border-slate-200/60">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">繰り返しの終了日</label>
-                <input type="date" id="ch-ev-repeat-until" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">最大登録回数</label>
-                <select id="ch-ev-repeat-count" onchange="updateChapterEventRepeatSummary()" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-                  <option value="0">終了日まで全件登録</option>
-                  <option value="5">5回分 (平日1週間)</option>
-                  <option value="10">10回分 (平日2週間)</option>
-                  <option value="12" selected>12回分 (週1回・約3ヶ月)</option>
-                  <option value="20">20回分 (平日約1ヶ月)</option>
-                  <option value="24">24回分 (週1回・約半年)</option>
-                  <option value="60">60回分 (平日約3ヶ月)</option>
-                  <option value="100">100回分</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Recurrence Summary Banner -->
-            <div id="ch-ev-repeat-summary-box" class="p-2.5 rounded-lg bg-blue-50/80 border border-blue-200/80 text-3xs font-bold text-blue-700 flex items-start gap-2">
-              <i class="fa-solid fa-circle-info text-blue-500 mt-0.5 shrink-0 text-xs"></i>
-              <span id="ch-ev-repeat-summary-text">毎週同じ曜日に定期予定が生成されます</span>
-            </div>
-          </div>
-        </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button type="button" onclick="jumpToVisitorDetailFromModal()" class="px-3.5 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-user text-3xs"></i>
+          <span>ビジター詳細</span>
+        </button>
+        <button type="button" onclick="closeActionDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+          閉じる
+        </button>
       </div>
-
-      <!-- Modal Footer -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-1.5" id="ch-ev-delete-actions">
-          <button type="button" id="btn-share-chapter-event" onclick="openEventShareFromCurrentChapterEvent()" class="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 transition-colors hidden cursor-pointer" title="この予定をシェア">
-            <i class="fa-solid fa-arrow-up-from-bracket mr-1 text-slate-500"></i> シェア
-          </button>
-          <button type="button" id="btn-delete-chapter-event" onclick="handleDeleteChapterEvent(false)" class="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden">
-            <i class="fa-regular fa-trash-can mr-1"></i> 削除
-          </button>
-          <button type="button" id="btn-delete-chapter-series" onclick="handleDeleteChapterEvent(true)" class="px-3 py-2 rounded-xl text-3xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors hidden" title="この繰り返し予定グループをすべて削除">
-            <i class="fa-solid fa-layer-group mr-1"></i> シリーズ一括削除
-          </button>
-        </div>
-        <div class="flex items-center gap-2 ml-auto">
-          <button type="button" onclick="closeChapterEventModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
-            キャンセル
-          </button>
-          <button type="submit" id="btn-save-chapter-event" class="px-5 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs active:scale-95">
-            保存する
-          </button>
-        </div>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
 

@@ -35,6 +35,9 @@ class EventController extends Controller {
             case 'save_chapter_event':
                 $this->saveChapterEvent();
                 break;
+            case 'upload_flyer':
+                $this->uploadFlyer();
+                break;
             case 'delete_chapter_event':
                 $this->deleteChapterEvent();
                 break;
@@ -173,7 +176,8 @@ class EventController extends Controller {
             'recurrence_rule' => (string)$this->getParam('recurrence_rule', $this->getParam('repeat_type', 'none')),
             'recurrence_until' => (string)$this->getParam('recurrence_until', $this->getParam('repeat_until', '')),
             'recurrence_count' => (int)$this->getParam('recurrence_count', $this->getParam('repeat_count', 0)),
-            'recurrence_group_id' => (string)$this->getParam('recurrence_group_id', '')
+            'recurrence_group_id' => (string)$this->getParam('recurrence_group_id', ''),
+            'flyer_url' => trim((string)$this->getParam('flyer_url', ''))
         ];
 
         $res = $this->eventRepo->saveChapterEvent($data);
@@ -186,6 +190,82 @@ class EventController extends Controller {
             'count' => $count,
             'group_id' => $res['group_id'] ?? ''
         ]);
+    }
+
+    private function uploadFlyer(): void {
+        $uploadDir = dirname(__DIR__, 2) . '/uploads/flyers/';
+        if (!file_exists($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+
+        // Support direct Base64 JSON payload
+        $fileData = (string)$this->getParam('file_data', '');
+        $fileName = (string)$this->getParam('file_name', '');
+
+        if (!empty($fileData)) {
+            // Check base64 format (e.g. data:image/png;base64,...)
+            if (preg_match('/^data:([^;]+);base64,(.+)$/', $fileData, $matches)) {
+                $data = base64_decode($matches[2]);
+            } else {
+                $data = base64_decode($fileData);
+            }
+
+            if (!$data) {
+                Response::error('画像データのデコードに失敗しました');
+                return;
+            }
+
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'], true)) {
+                $ext = 'jpg';
+            }
+
+            $newFileName = 'flyer_' . date('Ymd_His') . '_' . substr(uniqid(), -6) . '.' . $ext;
+            $targetPath = $uploadDir . $newFileName;
+
+            if (@file_put_contents($targetPath, $data) === false) {
+                Response::error('チラシファイルの保存に失敗しました');
+                return;
+            }
+
+            $publicUrl = 'uploads/flyers/' . $newFileName;
+            Response::success([
+                'url' => $publicUrl,
+                'file_name' => $fileName ?: $newFileName,
+                'message' => 'チラシを正常にアップロードしました'
+            ]);
+            return;
+        }
+
+        // Support multipart/form-data upload
+        if (isset($_FILES['flyer']) && $_FILES['flyer']['error'] === UPLOAD_ERR_OK) {
+            $tmpName = $_FILES['flyer']['tmp_name'];
+            $origName = $_FILES['flyer']['name'];
+            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'], true)) {
+                Response::error('対応していないファイル形式です (JPG, PNG, WebP, GIF, PDFのみ)');
+                return;
+            }
+
+            $newFileName = 'flyer_' . date('Ymd_His') . '_' . substr(uniqid(), -6) . '.' . $ext;
+            $targetPath = $uploadDir . $newFileName;
+
+            if (@move_uploaded_file($tmpName, $targetPath)) {
+                $publicUrl = 'uploads/flyers/' . $newFileName;
+                Response::success([
+                    'url' => $publicUrl,
+                    'file_name' => $origName,
+                    'message' => 'チラシを正常にアップロードしました'
+                ]);
+                return;
+            } else {
+                Response::error('アップロードファイルの保存に失敗しました');
+                return;
+            }
+        }
+
+        Response::error('アップロード対象のファイルが指定されていません');
     }
 
     private function deleteChapterEvent(): void {

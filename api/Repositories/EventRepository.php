@@ -197,6 +197,7 @@ class EventRepository {
             'organizer' => trim($data['organizer'] ?? ''),
             'description' => trim($data['description'] ?? ''),
             'recurrence_rule' => $repeatRule,
+            'flyer_url' => trim($data['flyer_url'] ?? ''),
             'updated_at' => $now
         ];
 
@@ -484,13 +485,15 @@ class EventRepository {
         // 1. Regular Meetings
         $meetings = $this->getMeetingsForRange($startRange, $endRange);
 
-        // 2. Chapter Events
+        // 2. Chapter Events & Member Events
         $chapterRows = $this->db->fetchAll(
             "SELECT * FROM chapter_events WHERE start_datetime >= ? AND start_datetime <= ? ORDER BY start_datetime ASC",
             [$startRange . ' 00:00:00', $endRange . ' 23:59:59']
         );
         $chapterEvents = array_map(function($ev) {
-            $ev['source_type'] = 'chapter';
+            $isMember = ($ev['category'] === 'メンバーイベント' || str_contains($ev['category'] ?? '', 'メンバー'));
+            $ev['source_type'] = $isMember ? 'member' : 'chapter';
+            $ev['is_member_event'] = $isMember ? 1 : 0;
             return $ev;
         }, $chapterRows);
 
@@ -505,8 +508,61 @@ class EventRepository {
             return $ev;
         }, $trainingRows);
 
+        // 4. Visitor Action Plans (Due date within range)
+        $actionRows = [];
+        try {
+            $sql = "SELECT ap.*, 
+                           COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || ap.visitor_id) as visitor_name, 
+                           COALESCE(v.company, '') as visitor_company, 
+                           COALESCE(v.profession, '') as visitor_profession, 
+                           COALESCE(v.inviter, '') as visitor_inviter, 
+                           COALESCE(v.event_date, '') as visitor_event_date,
+                           COALESCE(h.feel_abc, '') as feel_abc
+                    FROM action_plans ap
+                    LEFT JOIN visitors v ON ap.visitor_id = v.id
+                    LEFT JOIN hearing_sheets h ON ap.visitor_id = h.visitor_id
+                    WHERE ap.due_date >= ? AND ap.due_date <= ?
+                    ORDER BY ap.due_date ASC, ap.created_at DESC";
+            $actionRows = $this->db->fetchAll($sql, [$startRange, $endRange]);
+        } catch (\Exception $e) {}
+
+        $actionEvents = array_map(function($ap) {
+            $dueDate = $ap['due_date'];
+            $vName = $ap['visitor_name'] ?: 'ビジター';
+            $actType = $ap['action_type'] ?: 'アクション';
+            $actText = $ap['action_text'] ?: $actType;
+            $assignee = $ap['assignee_name'] ?: '担当未定';
+
+            return [
+                'id' => 'act_' . $ap['id'],
+                'action_plan_id' => (string)$ap['id'],
+                'visitor_id' => (string)$ap['visitor_id'],
+                'source_type' => 'action',
+                'title' => $vName . ': ' . $actText,
+                'category' => 'ビジターアクション',
+                'action_type' => $actType,
+                'start_datetime' => $dueDate . ' 10:00:00',
+                'end_datetime' => $dueDate . ' 18:00:00',
+                'due_date' => $dueDate,
+                'location_name' => $ap['visitor_company'] ?: '',
+                'organizer' => $assignee,
+                'is_completed' => (int)$ap['is_completed'],
+                'completed_at' => $ap['completed_at'] ?? '',
+                'report_text' => $ap['report_text'] ?? '',
+                'is_online' => 0,
+                'description' => "ビジター: {$vName} 様 ({$ap['visitor_company']})\n担当: {$assignee}\n種別: {$actType}\n内容: {$actText}" . (!empty($ap['report_text']) ? "\n報告: {$ap['report_text']}" : ''),
+                'visitor_name' => $vName,
+                'visitor_company' => $ap['visitor_company'] ?? '',
+                'visitor_profession' => $ap['visitor_profession'] ?? '',
+                'visitor_inviter' => $ap['visitor_inviter'] ?? '',
+                'action_text' => $actText,
+                'assignee_name' => $assignee,
+                'feel_abc' => $ap['feel_abc'] ?? ''
+            ];
+        }, $actionRows);
+
         // Merge all events
-        $all = array_merge($meetings, $chapterEvents, $trainingEvents);
+        $all = array_merge($meetings, $chapterEvents, $trainingEvents, $actionEvents);
 
         // Sort by start_datetime ASC
         usort($all, function($a, $b) {
@@ -515,7 +571,21 @@ class EventRepository {
 
         // Apply filters if present
         if (!empty($filters['source_type'])) {
-            $all = array_values(array_filter($all, fn($e) => $e['source_type'] === $filters['source_type']));
+            if ($filters['source_type'] === 'deadline') {
+                $all = array_values(array_filter($all, function($e) {
+                    return ($e['category'] === '締切・期限' || $e['category'] === '締切' || str_contains($e['title'] ?? '', '締切'));
+                }));
+            } elseif ($filters['source_type'] === 'member') {
+                $all = array_values(array_filter($all, function($e) {
+                    return ($e['source_type'] === 'member' || !empty($e['is_member_event']) || ($e['category'] ?? '') === 'メンバーイベント');
+                }));
+            } elseif ($filters['source_type'] === 'chapter') {
+                $all = array_values(array_filter($all, function($e) {
+                    return ($e['source_type'] === 'chapter' && empty($e['is_member_event']) && ($e['category'] ?? '') !== 'メンバーイベント');
+                }));
+            } else {
+                $all = array_values(array_filter($all, fn($e) => $e['source_type'] === $filters['source_type']));
+            }
         }
         if (!empty($filters['format'])) {
             if ($filters['format'] === 'online') {
@@ -532,7 +602,10 @@ class EventRepository {
                     str_contains(mb_strtolower($e['description'] ?? ''), $kw) ||
                     str_contains(mb_strtolower($e['location_name'] ?? ''), $kw) ||
                     str_contains(mb_strtolower($e['category'] ?? ''), $kw) ||
-                    str_contains(mb_strtolower($e['organizer'] ?? ''), $kw)
+                    str_contains(mb_strtolower($e['organizer'] ?? ''), $kw) ||
+                    str_contains(mb_strtolower($e['visitor_name'] ?? ''), $kw) ||
+                    str_contains(mb_strtolower($e['assignee_name'] ?? ''), $kw) ||
+                    str_contains(mb_strtolower($e['action_text'] ?? ''), $kw)
                 );
             }));
         }

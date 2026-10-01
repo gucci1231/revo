@@ -8,6 +8,7 @@ let allTrainingEvents = []; // Backward compatibility
 let currentCalendarMonth = new Date().toISOString().substring(0, 7);
 let currentEventViewMode = 'calendar'; // 'calendar' (or 'month'), 'week', 'list'
 let currentWeekStartDate = getSundayOfDate(new Date());
+let selectedCalendarDate = formatDateToIso(new Date());
 let selectedDayForModal = '';
 let currentDetailTrainingEvent = null;
 let currentEditingChapterEvent = null;
@@ -184,6 +185,9 @@ function navigateCalendarWeek(delta) {
   current.setDate(current.getDate() + (delta * 7));
   currentWeekStartDate = current;
 
+  // Sync selectedCalendarDate to the Sunday of newly navigated week
+  selectedCalendarDate = formatDateToIso(currentWeekStartDate);
+
   // Determine the primary month of this week (use Wednesday as midpoint)
   const midWeek = new Date(currentWeekStartDate);
   midWeek.setDate(midWeek.getDate() + 3);
@@ -204,6 +208,7 @@ function navigateCalendarWeek(delta) {
  */
 function jumpToCurrentWeek() {
   currentWeekStartDate = getSundayOfDate(new Date());
+  selectedCalendarDate = formatDateToIso(new Date());
   const now = new Date();
   currentCalendarMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   updateCalendarMonthHeader();
@@ -219,6 +224,10 @@ function navigateCalendarMonth(delta) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   currentCalendarMonth = `${y}-${m}`;
+
+  const todayStr = formatDateToIso(new Date());
+  selectedCalendarDate = todayStr.startsWith(currentCalendarMonth) ? todayStr : `${currentCalendarMonth}-01`;
+
   updateCalendarMonthHeader();
   loadCalendarAndEvents();
 }
@@ -228,6 +237,7 @@ function navigateCalendarMonth(delta) {
  */
 function jumpToCurrentMonth() {
   currentCalendarMonth = new Date().toISOString().substring(0, 7);
+  selectedCalendarDate = formatDateToIso(new Date());
   updateCalendarMonthHeader();
   loadCalendarAndEvents();
 }
@@ -345,7 +355,8 @@ function debounceTrainingFilter() {
 }
 
 /**
- * Render Weekly Calendar View (Apple Calendar Style Time-Aware Timeline)
+/**
+ * Render Weekly Calendar View (iPhone Style Week Strip & Responsive Timeline)
  */
 function renderWeekView() {
   const weekGrid = document.getElementById('week-grid');
@@ -375,8 +386,19 @@ function renderWeekView() {
 
   const startDate = new Date(currentWeekStartDate);
 
-  // 1. Build Day Header Cells (Top Bar)
-  let headerColsHtml = '';
+  // Validate or set selectedCalendarDate within this week
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    weekDates.push(formatDateToIso(d));
+  }
+  if (!weekDates.includes(selectedCalendarDate)) {
+    selectedCalendarDate = weekDates.includes(todayStr) ? todayStr : weekDates[0];
+  }
+
+  // 1. Build Day Header Cells for Desktop (Top Bar)
+  let desktopHeaderColsHtml = '';
   const daysMeta = [];
 
   for (let i = 0; i < 7; i++) {
@@ -388,9 +410,10 @@ function renderWeekView() {
     const dayName = dayNames[dayOfWeek];
     const dayNum = dayDate.getDate();
     const isToday = dateKey === todayStr;
+    const isSelected = dateKey === selectedCalendarDate;
     const isThursday = dayOfWeek === 4;
 
-    daysMeta.push({ dayDate, dateKey, dayOfWeek, dayName, dayNum, isToday, isThursday });
+    daysMeta.push({ dayDate, dateKey, dayOfWeek, dayName, dayNum, isToday, isSelected, isThursday });
 
     let dayNameColor = 'text-slate-500';
     let dayNumDisplay = `<span class="text-sm font-semibold font-mono tabular-nums text-slate-800">${dayNum}</span>`;
@@ -411,7 +434,7 @@ function renderWeekView() {
       dayNumDisplay = `<span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs font-mono tabular-nums">${dayNum}</span>`;
     }
 
-    headerColsHtml += `
+    desktopHeaderColsHtml += `
       <div class="flex-1 min-w-[110px] sm:min-w-[120px] p-2 text-center border-r border-slate-200 last:border-r-0 ${isToday ? 'bg-blue-50/30' : (isThursday ? 'bg-blue-50/15' : 'bg-white')} flex items-center justify-between group">
         <div class="flex items-center gap-1.5 mx-auto">
           <span class="text-xs ${dayNameColor}">${dayName}</span>
@@ -438,19 +461,14 @@ function renderWeekView() {
     `;
   }
 
-  // 3. Build 7 Day Timeline Columns with Placed Events
-  let timelineColsHtml = '';
-
-  daysMeta.forEach(meta => {
-    const dayEvents = eventsByDate[meta.dateKey] || [];
-
-    // Separate timed events vs all-day events
+  // Helper function to build positioned event cards inside a timeline column
+  function buildTimelineEventsHtml(dayEvents) {
     const timedEvents = [];
     const allDayEvents = [];
 
     dayEvents.forEach(ev => {
       const timePart = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
-      if (!timePart || timePart === '00:00' && (!ev.end_datetime || ev.end_datetime.substring(11, 16) === '00:00')) {
+      if (!timePart || (timePart === '00:00' && (!ev.end_datetime || ev.end_datetime.substring(11, 16) === '00:00'))) {
         allDayEvents.push(ev);
       } else {
         const [h, m] = timePart.split(':').map(Number);
@@ -467,11 +485,10 @@ function renderWeekView() {
       }
     });
 
-    // Layout algorithm for overlapping events within the day column
+    // Layout algorithm for overlapping events within the column
     timedEvents.sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
 
-    // Calculate positions
-    const placedEventsHtml = timedEvents.map((item, idx, arr) => {
+    return timedEvents.map((item, idx, arr) => {
       const ev = item.ev;
       const startMinFromBase = item.startMin - (START_HOUR * 60);
       const durationMin = item.endMin - item.startMin;
@@ -490,9 +507,18 @@ function renderWeekView() {
       const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
       const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
 
+      const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
       let cardStyle = '';
       if (ev.source_type === 'meeting') {
         cardStyle = 'bg-blue-50/95 border-l-[3px] border-blue-600 text-blue-950 hover:bg-blue-100 hover:border-blue-700';
+      } else if (ev.source_type === 'action') {
+        if (ev.is_completed) {
+          cardStyle = 'bg-slate-100/95 border-l-[3px] border-slate-300 text-slate-500 hover:bg-slate-200 line-through';
+        } else {
+          cardStyle = 'bg-amber-50/95 border-l-[3px] border-amber-500 text-amber-950 hover:bg-amber-100 hover:border-amber-600';
+        }
+      } else if (isDeadline) {
+        cardStyle = 'bg-rose-50/95 border-l-[3px] border-rose-500 text-rose-950 hover:bg-rose-100 hover:border-rose-600';
       } else if (ev.source_type === 'chapter') {
         cardStyle = 'bg-purple-50/95 border-l-[3px] border-purple-600 text-purple-950 hover:bg-purple-100 hover:border-purple-700';
       } else {
@@ -503,9 +529,18 @@ function renderWeekView() {
         ? `<span class="inline-flex items-center text-[9px] font-extrabold text-blue-700 bg-blue-100/80 px-1 py-0 rounded shrink-0 leading-none">V:${ev.visitor_count}</span>`
         : '';
 
-      const formatTag = ev.is_online
+      let typeTag = '';
+      if (ev.source_type === 'action') {
+        typeTag = ev.is_completed
+          ? `<span class="text-[9px] font-bold text-slate-600 bg-slate-200 px-1 py-0 rounded shrink-0 leading-none"><i class="fa-solid fa-check mr-0.5"></i>済</span>`
+          : `<span class="text-[9px] font-bold text-amber-700 bg-amber-100 px-1 py-0 rounded shrink-0 leading-none">ACT</span>`;
+      } else if (isDeadline) {
+        typeTag = `<span class="text-[9px] font-bold text-rose-700 bg-rose-100 px-1 py-0 rounded shrink-0 leading-none">締切</span>`;
+      }
+
+      const formatTag = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
         ? `<span class="text-[9px] font-bold text-blue-600 bg-blue-100/70 px-1 py-0 rounded shrink-0 leading-none">Zoom</span>`
-        : `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none">対面</span>`;
+        : `<span class="text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none">対面</span>`);
 
       return `
         <div onclick="handleCalendarEventClick('${ev.id}', event)"
@@ -521,6 +556,7 @@ function renderWeekView() {
                 <span>${timeStr}${endTimeStr}</span>
               </div>
               <div class="flex items-center gap-1 shrink-0">
+                ${typeTag}
                 ${formatTag}
                 ${visitorTag}
               </div>
@@ -540,6 +576,14 @@ function renderWeekView() {
         </div>
       `;
     }).join('');
+  }
+
+  // 3. Build 7 Day Timeline Columns for Desktop
+  let desktopTimelineColsHtml = '';
+
+  daysMeta.forEach(meta => {
+    const dayEvents = eventsByDate[meta.dateKey] || [];
+    const placedEventsHtml = buildTimelineEventsHtml(dayEvents);
 
     // Current Time Red Line Indicator (if today)
     let currentTimeIndicatorHtml = '';
@@ -562,7 +606,7 @@ function renderWeekView() {
       `;
     }
 
-    timelineColsHtml += `
+    desktopTimelineColsHtml += `
       <div class="flex-1 min-w-[110px] sm:min-w-[120px] relative border-r border-slate-100 last:border-r-0 ${meta.isToday ? 'bg-blue-50/10' : (meta.isThursday ? 'bg-blue-50/5' : 'bg-white')}" style="height: ${TOTAL_HEIGHT}px;">
         <!-- Hour Grid Lines -->
         <div class="absolute inset-0 pointer-events-auto">
@@ -578,35 +622,236 @@ function renderWeekView() {
     `;
   });
 
-  // Assemble the Apple Calendar Week Timeline View
+  // 4. Build Mobile iPhone Style Week Strip & Single Day Timeline
+  const selectedDayMeta = daysMeta.find(m => m.dateKey === selectedCalendarDate) || daysMeta[0];
+  const selectedDayEvents = eventsByDate[selectedDayMeta.dateKey] || [];
+
+  // Mobile Top Week Strip (7 Days Buttons: 日〜土)
+  let mobileWeekStripHtml = '';
+  daysMeta.forEach(meta => {
+    const isSelected = meta.dateKey === selectedCalendarDate;
+    const hasEvents = (eventsByDate[meta.dateKey] || []).length > 0;
+    const dayEvs = eventsByDate[meta.dateKey] || [];
+
+    // Indicator dots
+    const dots = [];
+    if (dayEvs.some(e => e.source_type === 'meeting')) dots.push('bg-blue-500');
+    if (dayEvs.some(e => e.source_type === 'chapter')) dots.push('bg-purple-500');
+    if (dayEvs.some(e => e.source_type === 'training')) dots.push('bg-emerald-500');
+    if (dayEvs.some(e => e.source_type === 'action')) dots.push('bg-amber-500');
+    if (dayEvs.some(e => e.category === '締切' || e.category === '締切・期限')) dots.push('bg-rose-500');
+
+    const dotsHtml = dots.slice(0, 3).map(color => `<span class="w-1.5 h-1.5 rounded-full ${color}"></span>`).join('');
+
+    let nameColor = 'text-slate-400';
+    if (meta.dayOfWeek === 0) nameColor = 'text-rose-500';
+    else if (meta.dayOfWeek === 6) nameColor = 'text-blue-500';
+    else if (meta.isThursday) nameColor = 'text-blue-600 font-bold';
+
+    let numClass = 'text-slate-800';
+    if (meta.dayOfWeek === 0) numClass = 'text-rose-500';
+    else if (meta.dayOfWeek === 6) numClass = 'text-blue-500';
+    else if (meta.isThursday) numClass = 'text-blue-600 font-bold';
+
+    let circleClass = '';
+    if (isSelected) {
+      circleClass = 'bg-slate-900 text-white shadow-xs';
+      nameColor = 'text-slate-900 font-black';
+      numClass = 'text-white font-black';
+    } else if (meta.isToday) {
+      circleClass = 'bg-rose-500 text-white shadow-2xs';
+      numClass = 'text-white font-bold';
+    }
+
+    mobileWeekStripHtml += `
+      <button type="button" onclick="selectWeekDay('${meta.dateKey}')" class="flex-1 flex flex-col items-center py-2 px-0.5 rounded-xl transition-all cursor-pointer active:scale-95 ${isSelected ? 'bg-slate-100/80' : 'hover:bg-slate-50'}">
+        <span class="text-3xs font-bold ${nameColor} mb-1">${meta.dayName}</span>
+        <div class="w-7 h-7 rounded-full flex items-center justify-center font-mono font-bold text-xs tabular-nums ${circleClass}">
+          <span class="${numClass}">${meta.dayNum}</span>
+        </div>
+        <div class="h-1.5 flex items-center gap-0.5 mt-1">
+          ${dotsHtml}
+        </div>
+      </button>
+    `;
+  });
+
+  // Mobile Single Day Agenda Card List
+  let mobileDayAgendaListHtml = '';
+  if (selectedDayEvents.length === 0) {
+    mobileDayAgendaListHtml = `
+      <div class="py-6 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 p-4">
+        <i class="fa-regular fa-calendar-xmark text-2xl mb-1 text-slate-300"></i>
+        <div class="text-xs font-bold text-slate-600">この日の予定はありません</div>
+        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-plus text-3xs"></i> 予定を追加
+        </button>
+      </div>
+    `;
+  } else {
+    mobileDayAgendaListHtml = `
+      <div class="space-y-2 mb-3">
+        ${selectedDayEvents.map(ev => {
+          const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+          const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
+          const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
+
+          let borderBar = 'border-l-blue-600';
+          let tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
+          if (ev.source_type === 'action') {
+            borderBar = ev.is_completed ? 'border-l-slate-300' : 'border-l-amber-500';
+            tagBadge = ev.is_completed
+              ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-600">完了ACT</span>'
+              : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">ビジターACT</span>';
+          } else if (isDeadline) {
+            borderBar = 'border-l-rose-500';
+            tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">締切</span>';
+          } else if (ev.source_type === 'chapter') {
+            borderBar = 'border-l-purple-600';
+            tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
+          } else if (ev.source_type === 'training') {
+            borderBar = 'border-l-emerald-600';
+            tagBadge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">京都CC研修</span>';
+          }
+
+          const formatBadge = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
+            ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200/60">Zoom</span>'
+            : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">対面</span>');
+
+          const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+            ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+            : '';
+
+          return `
+            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-3 rounded-xl border border-slate-200 bg-white border-l-[4px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                  <span class="font-mono font-bold text-xs text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
+                  ${tagBadge}
+                  ${formatBadge}
+                  ${visitorBadge}
+                </div>
+                <div class="font-bold text-sm text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</div>
+                ${ev.location_name ? `
+                  <div class="text-3xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-slate-400 text-3xs"></i>
+                    <span>${escapeHtml(ev.location_name)}</span>
+                  </div>
+                ` : ''}
+              </div>
+              <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0"></i>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // Mobile Single Day Timeline Placed Events
+  const mobilePlacedEventsHtml = buildTimelineEventsHtml(selectedDayEvents);
+  let mobileCurrentTimeIndicatorHtml = '';
+  if (selectedDayMeta.isToday && currentHour >= START_HOUR && currentHour <= END_HOUR) {
+    const nowMinFromBase = (currentHour * 60 + currentMinutes) - (START_HOUR * 60);
+    const lineTopPx = (nowMinFromBase * HOUR_HEIGHT) / 60;
+    mobileCurrentTimeIndicatorHtml = `
+      <div style="top: ${lineTopPx}px;" class="absolute left-0 right-0 z-20 pointer-events-none flex items-center">
+        <div class="w-2.5 h-2.5 -ml-1.25 rounded-full bg-rose-500 ring-2 ring-white"></div>
+        <div class="flex-1 h-0.5 bg-rose-500"></div>
+      </div>
+    `;
+  }
+
+  let mobileHourLinesHtml = '';
+  for (let h = 0; h < TOTAL_HOURS; h++) {
+    mobileHourLinesHtml += `
+      <div style="height: ${HOUR_HEIGHT}px;" class="border-b border-slate-100 w-full hover:bg-slate-50/40 transition-colors cursor-pointer" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)"></div>
+    `;
+  }
+
+  const dObj = new Date(selectedDayMeta.dateKey.replace(/-/g, '/'));
+  const formattedDayTitle = `${dObj.getMonth() + 1}月 ${dObj.getDate()}日 (${dayNames[dObj.getDay()]})`;
+
+  // Assemble full HTML: Mobile iPhone layout (sm:hidden) + Desktop 7-col layout (hidden sm:block)
   weekGrid.innerHTML = `
-    <div class="min-w-[770px] bg-white">
-      <!-- Fixed Header Row (Days Sun - Sat) -->
-      <div class="flex border-b border-slate-200 bg-slate-50/50 sticky top-0 z-20">
-        <!-- Spacer for time axis -->
-        <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/80 p-2 text-center text-3xs font-bold text-slate-400 flex items-center justify-center">
-          <span>時刻</span>
-        </div>
-        <!-- 7 Day Headers -->
-        <div class="flex-1 flex">
-          ${headerColsHtml}
-        </div>
+    <!-- ================= MOBILE VIEW (iPhone Style Week Strip & Single Day Timeline) ================= -->
+    <div class="block sm:hidden bg-white">
+      <!-- 1. iPhone Top Week Strip -->
+      <div class="border-b border-slate-200 bg-slate-50/60 p-1.5 flex items-center justify-between">
+        ${mobileWeekStripHtml}
       </div>
 
-      <!-- Scrollable Timeline Body -->
-      <div class="flex overflow-y-auto max-h-[580px] sm:max-h-[640px] relative">
-        <!-- Time Axis Labels (Left Column) -->
-        <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/40 select-none" style="height: ${TOTAL_HEIGHT}px;">
+      <!-- 2. Selected Day Header & Quick Agenda -->
+      <div class="p-3 bg-slate-50/30 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
+            ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
+            <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
+          </div>
+          <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-600 bg-white border border-slate-200 shadow-2xs cursor-pointer active:scale-95">
+            <i class="fa-solid fa-plus text-3xs"></i> 予定を追加
+          </button>
+        </div>
+
+        ${mobileDayAgendaListHtml}
+      </div>
+
+      <!-- 3. Full-width Day Timeline for Mobile (No horizontal overflow!) -->
+      <div class="flex overflow-y-auto max-h-[500px] relative bg-white">
+        <!-- Time Axis Labels -->
+        <div class="w-14 shrink-0 border-r border-slate-200 bg-slate-50/40 select-none" style="height: ${TOTAL_HEIGHT}px;">
           ${timeLabelsHtml}
         </div>
 
-        <!-- 7 Day Timeline Columns Grid -->
-        <div class="flex-1 flex relative">
-          ${timelineColsHtml}
+        <!-- Full-width 1 Day Timeline Column -->
+        <div class="flex-1 relative bg-white" style="height: ${TOTAL_HEIGHT}px;">
+          <div class="absolute inset-0 pointer-events-auto">
+            ${mobileHourLinesHtml}
+          </div>
+          ${mobileCurrentTimeIndicatorHtml}
+          ${mobilePlacedEventsHtml}
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= DESKTOP VIEW (Full 7-Column Time-Aware Table) ================= -->
+    <div class="hidden sm:block overflow-x-auto bg-white">
+      <div class="min-w-[770px]">
+        <!-- Fixed Header Row (Days Sun - Sat) -->
+        <div class="flex border-b border-slate-200 bg-slate-50/50 sticky top-0 z-20">
+          <!-- Spacer for time axis -->
+          <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/80 p-2 text-center text-3xs font-bold text-slate-400 flex items-center justify-center">
+            <span>時刻</span>
+          </div>
+          <!-- 7 Day Headers -->
+          <div class="flex-1 flex">
+            ${desktopHeaderColsHtml}
+          </div>
+        </div>
+
+        <!-- Scrollable Timeline Body -->
+        <div class="flex overflow-y-auto max-h-[580px] sm:max-h-[640px] relative">
+          <!-- Time Axis Labels (Left Column) -->
+          <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/40 select-none" style="height: ${TOTAL_HEIGHT}px;">
+            ${timeLabelsHtml}
+          </div>
+
+          <!-- 7 Day Timeline Columns Grid -->
+          <div class="flex-1 flex relative">
+            ${desktopTimelineColsHtml}
+          </div>
         </div>
       </div>
     </div>
   `;
+}
+
+/**
+ * Select a specific weekday in mobile week view
+ */
+function selectWeekDay(dateKey) {
+  selectedCalendarDate = dateKey;
+  renderWeekView();
 }
 
 /**
@@ -637,6 +882,11 @@ function renderCalendarGrid() {
     eventsByDate[dateKey].push(ev);
   });
 
+  // Ensure selectedCalendarDate is set to a valid date in this month if not already
+  if (!selectedCalendarDate || !selectedCalendarDate.startsWith(currentCalendarMonth)) {
+    selectedCalendarDate = todayStr.startsWith(currentCalendarMonth) ? todayStr : `${currentCalendarMonth}-01`;
+  }
+
   let cellsHtml = '';
 
   // 1. Prev month filler cells
@@ -647,7 +897,7 @@ function renderCalendarGrid() {
     const dateKey = `${prevYearNum}-${String(prevMonthNum).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
     const dayEvents = eventsByDate[dateKey] || [];
 
-    cellsHtml += renderCalendarCell(dateKey, dayNum, dayEvents, false, dateKey === todayStr);
+    cellsHtml += renderCalendarCell(dateKey, dayNum, dayEvents, false, dateKey === todayStr, dateKey === selectedCalendarDate);
   }
 
   // 2. Current month cells
@@ -655,7 +905,7 @@ function renderCalendarGrid() {
     const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayEvents = eventsByDate[dateKey] || [];
 
-    cellsHtml += renderCalendarCell(dateKey, d, dayEvents, true, dateKey === todayStr);
+    cellsHtml += renderCalendarCell(dateKey, d, dayEvents, true, dateKey === todayStr, dateKey === selectedCalendarDate);
   }
 
   // 3. Next month filler cells to complete the 7-col grid (up to 35 or 42 cells)
@@ -669,23 +919,31 @@ function renderCalendarGrid() {
     const dateKey = `${nextYearNum}-${String(nextMonthNum).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const dayEvents = eventsByDate[dateKey] || [];
 
-    cellsHtml += renderCalendarCell(dateKey, d, dayEvents, false, dateKey === todayStr);
+    cellsHtml += renderCalendarCell(dateKey, d, dayEvents, false, dateKey === todayStr, dateKey === selectedCalendarDate);
   }
 
   gridEl.innerHTML = cellsHtml;
+
+  // Render iPhone Style Inline Day Agenda directly underneath
+  renderCalendarDayAgenda();
 }
 
 /**
- * Helper to render individual calendar cell HTML (Apple Calendar Style)
+ * Helper to render individual calendar cell HTML (iPhone & Desktop Adaptive)
  */
-function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday) {
+function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday, isSelected) {
   const dObj = new Date(dateKey.replace(/-/g, '/'));
   const dayOfWeek = dObj.getDay();
   const isThursday = dayOfWeek === 4;
 
   let bgClass = isCurrentMonth ? 'bg-white' : 'bg-slate-50/40';
-  if (isToday) bgClass = 'bg-blue-50/20';
+  if (isSelected) {
+    bgClass = 'bg-blue-50/40';
+  } else if (isToday) {
+    bgClass = 'bg-blue-50/20';
+  }
 
+  // Numbers styling for desktop & mobile
   let numDisplay = `<span class="text-xs sm:text-sm font-semibold font-mono tabular-nums text-slate-800">${dayNum}</span>`;
 
   if (!isCurrentMonth) {
@@ -698,30 +956,68 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
     numDisplay = `<span class="text-xs sm:text-sm font-bold font-mono tabular-nums text-blue-600">${dayNum}</span>`;
   }
 
-  if (isToday) {
+  // iPhone Style Selection & Today Circle
+  if (isSelected) {
     numDisplay = `
-      <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs font-mono tabular-nums">
+      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-xs font-mono tabular-nums mx-auto sm:mx-0">
+        ${dayNum}
+      </div>
+    `;
+  } else if (isToday) {
+    numDisplay = `
+      <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-2xs font-mono tabular-nums mx-auto sm:mx-0">
         ${dayNum}
       </div>
     `;
   }
 
-  // Event pills (up to 3 visible, rest collapsed)
+  // Mobile Indicator Dots (iPhone Calendar Style)
+  const dots = [];
+  if (dayEvents.some(e => e.source_type === 'meeting')) dots.push('bg-blue-500');
+  if (dayEvents.some(e => e.source_type === 'chapter')) dots.push('bg-purple-500');
+  if (dayEvents.some(e => e.source_type === 'training')) dots.push('bg-emerald-500');
+  if (dayEvents.some(e => e.source_type === 'action')) dots.push('bg-amber-500');
+  if (dayEvents.some(e => e.category === '締切' || e.category === '締切・期限')) dots.push('bg-rose-500');
+
+  const mobileDotsHtml = dots.length > 0 ? `
+    <div class="flex sm:hidden justify-center items-center gap-0.5 mt-1">
+      ${dots.slice(0, 4).map(color => `<span class="w-1.5 h-1.5 rounded-full ${color}"></span>`).join('')}
+    </div>
+  ` : '<div class="h-2.5 sm:hidden"></div>';
+
+  // Desktop Event Pills (up to 3 visible, rest collapsed)
   const maxPills = 3;
   const visibleEvents = dayEvents.slice(0, maxPills);
   const extraCount = dayEvents.length - maxPills;
 
-  const pillsHtml = visibleEvents.map(ev => {
+  const desktopPillsHtml = visibleEvents.map(ev => {
     const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+    const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
     let pillStyle = '';
 
     if (ev.source_type === 'meeting') {
       pillStyle = 'bg-blue-50/90 text-blue-950 border-l-[3px] border-blue-600 hover:bg-blue-100';
+    } else if (ev.source_type === 'action') {
+      if (ev.is_completed) {
+        pillStyle = 'bg-slate-100/90 text-slate-400 line-through border-l-[3px] border-slate-300 hover:bg-slate-200';
+      } else {
+        pillStyle = 'bg-amber-50/90 text-amber-950 border-l-[3px] border-amber-500 hover:bg-amber-100';
+      }
+    } else if (isDeadline) {
+      pillStyle = 'bg-rose-50/90 text-rose-950 border-l-[3px] border-rose-500 hover:bg-rose-100';
     } else if (ev.source_type === 'chapter') {
       pillStyle = 'bg-purple-50/90 text-purple-950 border-l-[3px] border-purple-600 hover:bg-purple-100';
     } else {
-      // Training
       pillStyle = 'bg-emerald-50/90 text-emerald-950 border-l-[3px] border-emerald-600 hover:bg-emerald-100';
+    }
+
+    let typePrefix = '';
+    if (ev.source_type === 'action') {
+      typePrefix = ev.is_completed
+        ? `<span class="px-1 py-0 rounded text-[9px] font-bold bg-slate-300 text-slate-600 shrink-0 leading-none"><i class="fa-solid fa-check mr-0.5"></i>済</span>`
+        : `<span class="px-1 py-0 rounded text-[9px] font-bold bg-amber-500 text-white shrink-0 leading-none">ACT</span>`;
+    } else if (isDeadline) {
+      typePrefix = `<span class="px-1 py-0 rounded text-[9px] font-bold bg-rose-600 text-white shrink-0 leading-none">締切</span>`;
     }
 
     const visitorPrefix = (ev.visitor_count !== undefined && ev.visitor_count > 0)
@@ -733,8 +1029,9 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
       : '';
 
     return `
-      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]">
+      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1 px-1.5 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]" title="${escapeHtml(ev.title)}">
         <span class="font-mono font-bold tabular-nums text-xs shrink-0 text-slate-800">${timeStr}</span>
+        ${typePrefix}
         ${formatPrefix}
         ${visitorPrefix}
         <span class="truncate font-semibold text-xs text-slate-900">${escapeHtml(ev.title)}</span>
@@ -749,22 +1046,25 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
   ` : '';
 
   return `
-    <div class="calendar-cell min-h-[105px] sm:min-h-[125px] p-1.5 sm:p-2 flex flex-col justify-between ${bgClass} transition-colors hover:bg-slate-50/80 group cursor-pointer relative" onclick="onCalendarCellClick('${dateKey}', event)">
+    <div class="calendar-cell min-h-[48px] sm:min-h-[125px] p-1 sm:p-2 flex flex-col justify-between ${bgClass} transition-colors hover:bg-slate-50/80 group cursor-pointer relative" onclick="onCalendarCellClick('${dateKey}', event)">
       <div>
         <!-- Top bar: Date Num & Action -->
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="flex items-center gap-1.5">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-1.5 w-full sm:w-auto justify-center sm:justify-start">
             ${numDisplay}
             ${isThursday && isCurrentMonth ? '<span class="text-3xs font-extrabold text-blue-600 hidden sm:inline">定例会</span>' : ''}
           </div>
-          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-3xs cursor-pointer" title="この日に予定を追加">
+          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center text-3xs cursor-pointer" title="この日に予定を追加">
             <i class="fa-solid fa-plus"></i>
           </button>
         </div>
 
-        <!-- Event Pills (Unified Font Size: time & title both text-xs) -->
-        <div class="space-y-1">
-          ${pillsHtml}
+        <!-- Mobile Dot Indicators (iPhone Style) -->
+        ${mobileDotsHtml}
+
+        <!-- Desktop Event Pills (Hidden on Mobile) -->
+        <div class="hidden sm:block space-y-1 mt-1">
+          ${desktopPillsHtml}
           ${extraBadge}
         </div>
       </div>
@@ -773,12 +1073,136 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
 }
 
 /**
- * Cell click -> open day detail modal
+ * Render iPhone Style Inline Day Agenda List directly below the calendar grid
+ */
+function renderCalendarDayAgenda() {
+  const agendaEl = document.getElementById('calendar-selected-day-agenda');
+  if (!agendaEl) return;
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const targetDate = selectedCalendarDate || todayStr;
+
+  const d = new Date(targetDate.replace(/-/g, '/'));
+  const dayName = dayNames[d.getDay()];
+  const formattedDate = `${d.getFullYear()}年 ${d.getMonth() + 1}月 ${d.getDate()}日 (${dayName})`;
+  const isToday = targetDate === todayStr;
+
+  const dayEvents = allCalendarEvents.filter(e => e.start_datetime && e.start_datetime.startsWith(targetDate));
+
+  // Sort events by time
+  dayEvents.sort((a, b) => {
+    const timeA = a.start_datetime || '';
+    const timeB = b.start_datetime || '';
+    return timeA.localeCompare(timeB);
+  });
+
+  let eventsListHtml = '';
+  if (dayEvents.length === 0) {
+    eventsListHtml = `
+      <div class="py-8 text-center bg-white rounded-xl border border-slate-200/80 p-6 shadow-2xs">
+        <i class="fa-regular fa-calendar-xmark text-3xl mb-2 text-slate-300"></i>
+        <div class="text-sm font-bold text-slate-700 mb-1">この日の予定はありません</div>
+        <div class="text-xs text-slate-400 max-w-xs mx-auto mb-3">チャプターのミーティングや面談予定を登録できます。</div>
+        <button type="button" onclick="openChapterEventModalOnDate('${targetDate}', event)" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs active:scale-95">
+          <i class="fa-solid fa-plus text-3xs"></i> 予定を追加する
+        </button>
+      </div>
+    `;
+  } else {
+    eventsListHtml = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        ${dayEvents.map(ev => {
+          const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+          const endTimeStr = ev.end_datetime ? ` ～ ${ev.end_datetime.substring(11, 16)}` : '';
+          const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
+
+          let borderBar = 'border-l-blue-600';
+          let tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
+          if (ev.source_type === 'action') {
+            borderBar = ev.is_completed ? 'border-l-slate-300' : 'border-l-amber-500';
+            tagBadge = ev.is_completed
+              ? '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-slate-100 text-slate-600">完了ACT</span>'
+              : '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-amber-50 text-amber-700 border border-amber-200">ビジターACT</span>';
+          } else if (isDeadline) {
+            borderBar = 'border-l-rose-500';
+            tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-rose-50 text-rose-700 border border-rose-200">締切</span>';
+          } else if (ev.source_type === 'chapter') {
+            borderBar = 'border-l-purple-600';
+            tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
+          } else if (ev.source_type === 'training') {
+            borderBar = 'border-l-emerald-600';
+            tagBadge = '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">京都CC研修</span>';
+          }
+
+          const formatBadge = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
+            ? '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center gap-1"><i class="fa-solid fa-video text-3xs"></i>Zoom</span>'
+            : '<span class="px-2 py-0.5 rounded-md text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1"><i class="fa-solid fa-location-dot text-3xs"></i>対面</span>');
+
+          const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+            ? `<span class="px-2 py-0.5 rounded-md text-3xs font-extrabold bg-blue-600 text-white shrink-0">ビジター ${ev.visitor_count}名</span>`
+            : '';
+
+          return `
+            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-3.5 rounded-xl border border-slate-200 bg-white border-l-[4px] ${borderBar} shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all cursor-pointer flex items-center justify-between gap-3 group active:scale-[0.99]">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
+                  <span class="font-mono font-bold text-xs text-slate-800 tabular-nums flex items-center gap-1">
+                    <i class="fa-regular fa-clock text-slate-400 text-3xs"></i>
+                    ${timeStr}${endTimeStr}
+                  </span>
+                  ${tagBadge}
+                  ${formatBadge}
+                  ${visitorBadge}
+                </div>
+                <div class="font-bold text-sm text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
+                  ${escapeHtml(ev.title)}
+                </div>
+                ${ev.location_name ? `
+                  <div class="text-xs text-slate-500 truncate mt-1 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0"></i>
+                    <span class="truncate">${escapeHtml(ev.location_name)}</span>
+                  </div>
+                ` : ''}
+              </div>
+              <div class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 flex items-center justify-center transition-colors shrink-0">
+                <i class="fa-solid fa-chevron-right text-xs"></i>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  agendaEl.innerHTML = `
+    <!-- iPhone Calendar Style Header -->
+    <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-200">
+      <div class="flex items-center gap-2">
+        <h4 class="text-sm sm:text-base font-black text-slate-900 tracking-tight">${formattedDate}</h4>
+        ${isToday ? '<span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-rose-500 text-white shadow-2xs">今日</span>' : ''}
+        <span class="text-xs text-slate-400 font-bold">${dayEvents.length}件の予定</span>
+      </div>
+      <button type="button" onclick="openChapterEventModalOnDate('${targetDate}', event)" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-white border border-slate-200 hover:bg-blue-50 hover:border-blue-300 shadow-2xs transition-all cursor-pointer active:scale-95">
+        <i class="fa-solid fa-plus text-3xs"></i>
+        <span>予定を追加</span>
+      </button>
+    </div>
+
+    <!-- Events List -->
+    ${eventsListHtml}
+  `;
+}
+
+/**
+ * Cell click -> Select date in iPhone style & refresh inline agenda
  */
 function onCalendarCellClick(dateKey, evt) {
-  // If target was a pill or button, don't trigger general cell click
-  if (evt.target.closest('.group\\/pill') || evt.target.closest('button')) return;
-  openDayEventsModal(dateKey);
+  // If target was a button or pill link, don't trigger general cell click
+  if (evt && (evt.target.closest('.group\\/pill') || evt.target.closest('button'))) return;
+
+  selectedCalendarDate = dateKey;
+  renderCalendarGrid();
 }
 
 /**
@@ -789,6 +1213,10 @@ function handleCalendarEventClick(eventId, evt) {
   const ev = allCalendarEvents.find(e => e.id == eventId);
   if (!ev) return;
 
+  if (ev.source_type === 'action') {
+    openActionDetailModal(ev);
+    return;
+  }
   if (ev.source_type === 'meeting') {
     openMeetingDetailModal(ev);
   } else if (ev.source_type === 'chapter') {
@@ -828,18 +1256,26 @@ function openDayEventsModal(dateKey) {
     listEl.innerHTML = dayEvents.map(ev => {
       const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
       const endTimeStr = ev.end_datetime ? ` ～ ${ev.end_datetime.substring(11, 16)}` : '';
+      const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
+
       let badge = '';
       if (ev.source_type === 'meeting') {
         badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">定例会</span>';
+      } else if (ev.source_type === 'action') {
+        badge = ev.is_completed
+          ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200"><i class="fa-solid fa-check mr-1"></i>アクション済</span>'
+          : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-user-clock mr-1 text-amber-500"></i>ビジターアクション</span>';
+      } else if (isDeadline) {
+        badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200"><i class="fa-solid fa-hourglass-end mr-1 text-rose-500"></i>締切</span>';
       } else if (ev.source_type === 'chapter') {
         badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">チャプター</span>';
       } else {
         badge = '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">京都CC研修</span>';
       }
 
-      const formatTag = ev.is_online
+      const formatTag = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
         ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200/60">Zoom</span>'
-        : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">対面</span>';
+        : '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">対面</span>');
 
       const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
         ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
@@ -907,9 +1343,13 @@ function openChapterEventModal(eventObj = null) {
 
   if (eventObj) {
     titleHeader.innerText = 'チャプター予定を編集';
+    document.getElementById('modal-add-type-tabs')?.classList.add('hidden');
+    switchAddEventModalTab('event');
+
     document.getElementById('ch-ev-id').value = eventObj.id || '';
     document.getElementById('ch-ev-title').value = eventObj.title || '';
     document.getElementById('ch-ev-category').value = eventObj.category || 'チャプターイベント';
+    onChapterEventCategoryChange();
     document.getElementById('ch-ev-is-online').value = eventObj.is_online ? '1' : '0';
 
     if (eventObj.start_datetime) {
@@ -937,12 +1377,21 @@ function openChapterEventModal(eventObj = null) {
       }
     }
   } else {
-    titleHeader.innerText = 'チャプター予定を追加';
+    titleHeader.innerText = '予定・締切を追加';
+    document.getElementById('modal-add-type-tabs')?.classList.remove('hidden');
+    switchAddEventModalTab('event');
+
     if (btnShare) btnShare.classList.add('hidden');
     document.getElementById('ch-ev-id').value = '';
+    document.getElementById('ch-ev-title').value = '';
+    document.getElementById('ch-ev-category').value = 'チャプターイベント';
+    onChapterEventCategoryChange();
     document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
     document.getElementById('ch-ev-end-time').value = '21:00';
+
+    const calDueDate = document.getElementById('cal-act-due-date');
+    if (calDueDate) calDueDate.value = todayStr;
 
     if (repeatSection) repeatSection.classList.remove('hidden');
     const repeatTypeSelect = document.getElementById('ch-ev-repeat-type');
@@ -978,6 +1427,290 @@ function openChapterEventModalOnDate(dateStr, evt) {
       if (untilInput) untilInput.value = until;
     }
     updateChapterEventRepeatSummary();
+  }
+  const actDueDateInput = document.getElementById('cal-act-due-date');
+  if (actDueDateInput) {
+    actDueDateInput.value = dateStr;
+  }
+}
+
+/**
+ * Switch modal tabs between 'event' (chapter/deadline) and 'action' (visitor action plan)
+ */
+function switchAddEventModalTab(tab) {
+  const paneEvent = document.getElementById('pane-chapter-event');
+  const paneAction = document.getElementById('pane-visitor-action');
+  const btnEvent = document.getElementById('tab-btn-chapter-event');
+  const btnAction = document.getElementById('tab-btn-visitor-action');
+  const title = document.getElementById('modal-chapter-event-title');
+  const sub = document.getElementById('modal-chapter-event-sub');
+  const icon = document.getElementById('modal-chapter-event-icon');
+
+  const activeTabClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-blue-700 shadow-2xs border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer';
+  const inactiveTabClass = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-slate-900 border border-transparent flex items-center justify-center gap-1.5 cursor-pointer';
+
+  if (tab === 'action') {
+    if (paneEvent) paneEvent.classList.add('hidden');
+    if (paneAction) paneAction.classList.remove('hidden');
+    if (btnEvent) btnEvent.className = inactiveTabClass;
+    if (btnAction) btnAction.className = activeTabClass;
+    if (title) title.innerText = 'ビジターアクションを登録';
+    if (sub) sub.innerText = '定例会前の連絡やフォローアップ等の期日を登録';
+    if (icon) {
+      icon.className = 'fa-solid fa-user-clock text-amber-500';
+      if (icon.parentElement) icon.parentElement.className = 'w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-sm font-bold';
+    }
+    populateCalendarActionSelects();
+  } else {
+    if (paneEvent) paneEvent.classList.remove('hidden');
+    if (paneAction) paneAction.classList.add('hidden');
+    if (btnEvent) btnEvent.className = activeTabClass;
+    if (btnAction) btnAction.className = inactiveTabClass;
+    if (title) title.innerText = 'チャプター予定・締切を追加';
+    if (sub) sub.innerText = '定例会・役員会・懇親会・提出締切をカレンダーに登録';
+    if (icon) {
+      icon.className = 'fa-solid fa-calendar-plus text-blue-600';
+      if (icon.parentElement) icon.parentElement.className = 'w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold';
+    }
+  }
+}
+
+/**
+ * Quick Deadline Preset button handler
+ */
+function setDeadlinePreset(presetTitle, category, dueTime) {
+  const titleInput = document.getElementById('ch-ev-title');
+  const catSelect = document.getElementById('ch-ev-category');
+  const endTimeInput = document.getElementById('ch-ev-end-time');
+  const startTimeInput = document.getElementById('ch-ev-start-time');
+  const isOnlineSelect = document.getElementById('ch-ev-is-online');
+
+  if (titleInput) titleInput.value = presetTitle;
+  if (catSelect) {
+    catSelect.value = category;
+    onChapterEventCategoryChange();
+  }
+  if (endTimeInput) endTimeInput.value = dueTime;
+  if (startTimeInput) startTimeInput.value = (dueTime === '23:59' ? '00:00' : '09:00');
+  if (isOnlineSelect) isOnlineSelect.value = '0';
+}
+
+/**
+ * Handle category change in chapter event modal (adapt labels for deadlines)
+ */
+function onChapterEventCategoryChange() {
+  const catSelect = document.getElementById('ch-ev-category');
+  const dateLabel = document.getElementById('ch-ev-date-label');
+  const endTimeLabel = document.getElementById('ch-ev-end-time-label');
+
+  if (!catSelect) return;
+  const isDeadline = (catSelect.value === '締切・期限');
+
+  if (dateLabel) {
+    dateLabel.innerHTML = isDeadline
+      ? '締切日 <span class="text-red-500">*</span>'
+      : '開催日 <span class="text-red-500">*</span>';
+  }
+  if (endTimeLabel) {
+    endTimeLabel.innerText = isDeadline ? '締切時刻' : '終了時刻';
+  }
+}
+
+/**
+ * Populate visitor and member options for the Calendar action plan form
+ */
+function populateCalendarActionSelects() {
+  const visitorSelect = document.getElementById('cal-act-visitor-id');
+  const assigneeSelect = document.getElementById('cal-act-assignee');
+  const dueDateInput = document.getElementById('cal-act-due-date');
+
+  if (dueDateInput && !dueDateInput.value) {
+    const chDate = document.getElementById('ch-ev-date')?.value;
+    dueDateInput.value = chDate || new Date().toISOString().substring(0, 10);
+  }
+
+  if (visitorSelect && visitorSelect.options.length <= 1) {
+    const visitorsList = (typeof allVisitors !== 'undefined' && Array.isArray(allVisitors)) ? allVisitors : [];
+    if (visitorsList.length > 0) {
+      const sorted = [...visitorsList].sort((a, b) => (parseInt(b.id || 0, 10) - parseInt(a.id || 0, 10)));
+      sorted.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        const comp = v.company ? ` (${v.company})` : '';
+        const date = v.event_date ? ` [${v.event_date}]` : '';
+        opt.textContent = `${v.visitor_name || 'ビジター No.' + v.id}${comp}${date}`;
+        visitorSelect.appendChild(opt);
+      });
+    }
+  }
+
+  if (assigneeSelect && assigneeSelect.options.length <= 1) {
+    const membersList = (typeof allMembers !== 'undefined' && Array.isArray(allMembers)) ? allMembers : [];
+    if (membersList.length > 0) {
+      membersList.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = m.name;
+        assigneeSelect.appendChild(opt);
+      });
+    }
+  }
+}
+
+/**
+ * Submit Visitor Action Plan from Calendar Modal
+ */
+async function handleCalendarActionPlanSubmit(evt) {
+  evt.preventDefault();
+  const vId = document.getElementById('cal-act-visitor-id')?.value;
+  const dueDate = document.getElementById('cal-act-due-date')?.value;
+  const actionType = document.getElementById('cal-act-type')?.value;
+  const assigneeName = document.getElementById('cal-act-assignee')?.value || '';
+  const actionText = document.getElementById('cal-act-text')?.value.trim();
+
+  if (!vId || !dueDate || !actionText) {
+    showToast('ビジター、期日、アクション内容を入力してください', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save-calendar-action');
+  if (btn) btn.disabled = true;
+
+  try {
+    const planData = {
+      due_date: dueDate,
+      action_type: actionType,
+      assignee_name: assigneeName,
+      action_text: actionText
+    };
+
+    const res = await ApiService.call('createActionPlanApi', vId, planData);
+    if (res && res.success !== false) {
+      showToast('ビジターアクションを登録しました', 'success');
+      closeChapterEventModal();
+      document.getElementById('form-calendar-action-plan')?.reset();
+      loadCalendarAndEvents();
+    } else {
+      showToast('登録に失敗しました: ' + (res?.message || ''), 'error');
+    }
+  } catch (err) {
+    console.error('Failed to save calendar action plan:', err);
+    showToast('登録中にエラーが発生しました', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/**
+ * Visitor Action Plan Detail Modal
+ */
+let currentDetailActionPlan = null;
+
+function openActionDetailModal(ev) {
+  currentDetailActionPlan = ev;
+  const modal = document.getElementById('modal-action-detail');
+  if (!modal) return;
+
+  document.getElementById('act-modal-id').value = ev.action_plan_id || String(ev.id).replace('act_', '');
+  document.getElementById('act-modal-visitor-id').value = ev.visitor_id || '';
+
+  const titleEl = document.getElementById('act-modal-visitor-title');
+  const compEl = document.getElementById('act-modal-company-sub');
+  const dateEl = document.getElementById('act-modal-due-date');
+  const assigneeEl = document.getElementById('act-modal-assignee');
+  const textEl = document.getElementById('act-modal-text');
+  const reportInput = document.getElementById('act-modal-report-input');
+  const statusBadge = document.getElementById('act-modal-status-badge');
+  const typeBadge = document.getElementById('act-modal-type-badge');
+  const btnToggle = document.getElementById('btn-act-modal-toggle');
+
+  if (titleEl) titleEl.innerText = `${ev.visitor_name || 'ビジター'} 様`;
+  if (compEl) {
+    const feel = ev.feel_abc ? `[感触: ランク${ev.feel_abc}] ` : '';
+    compEl.innerText = `${feel}${ev.visitor_company || ''} ${ev.visitor_profession ? '· ' + ev.visitor_profession : ''}`;
+  }
+  if (dateEl) dateEl.innerText = ev.due_date || (ev.start_datetime ? ev.start_datetime.substring(0, 10) : '--');
+  if (assigneeEl) assigneeEl.innerText = ev.assignee_name || ev.organizer || '担当未定';
+  if (textEl) textEl.innerText = ev.action_text || ev.title;
+  if (reportInput) reportInput.value = ev.report_text || '';
+  if (typeBadge) typeBadge.innerText = ev.action_type || 'アクション';
+
+  if (statusBadge && btnToggle) {
+    if (ev.is_completed) {
+      statusBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200';
+      statusBadge.innerText = '完了済み';
+      btnToggle.className = 'px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer';
+      btnToggle.innerHTML = '<i class="fa-solid fa-rotate-left mr-1"></i> 未完了に戻す';
+    } else {
+      statusBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200';
+      statusBadge.innerText = '未完了';
+      btnToggle.className = 'px-3.5 py-2 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs active:scale-95 transition-all cursor-pointer';
+      btnToggle.innerHTML = '<i class="fa-solid fa-check mr-1"></i> 完了にする';
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeActionDetailModal() {
+  const modal = document.getElementById('modal-action-detail');
+  if (modal) modal.classList.add('hidden');
+  currentDetailActionPlan = null;
+}
+
+async function handleToggleActionFromModal() {
+  if (!currentDetailActionPlan) return;
+  const id = document.getElementById('act-modal-id')?.value;
+  const reportText = document.getElementById('act-modal-report-input')?.value.trim() || '';
+  const currentStatus = currentDetailActionPlan.is_completed ? 1 : 0;
+  const newStatus = currentStatus === 1 ? 0 : 1;
+
+  try {
+    const res = await ApiService.call('toggleActionPlanApi', id, currentStatus);
+    if (res && res.success !== false) {
+      if (reportText && reportText !== (currentDetailActionPlan.report_text || '')) {
+        await ApiService.call('reportActionPlanApi', id, reportText, currentDetailActionPlan.assignee_name || '');
+      }
+      showToast(newStatus === 1 ? 'アクションを完了にしました' : 'アクションを未完了に戻しました', 'success');
+      closeActionDetailModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast('ステータスの更新に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Failed to toggle action status:', err);
+    showToast('更新中にエラーが発生しました', 'error');
+  }
+}
+
+async function handleDeleteActionFromModal() {
+  if (!currentDetailActionPlan) return;
+  if (!confirm('このビジターアクションを削除しますか？')) return;
+  const id = document.getElementById('act-modal-id')?.value;
+
+  try {
+    const res = await ApiService.call('deleteActionPlanApi', id);
+    if (res && res.success !== false) {
+      showToast('アクションを削除しました', 'success');
+      closeActionDetailModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast('削除に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Failed to delete action:', err);
+    showToast('削除中にエラーが発生しました', 'error');
+  }
+}
+
+function jumpToVisitorDetailFromModal() {
+  const vId = document.getElementById('act-modal-visitor-id')?.value;
+  if (!vId) return;
+  closeActionDetailModal();
+  if (typeof selectVisitor === 'function') {
+    selectVisitor(vId);
+  } else if (typeof switchTab === 'function') {
+    switchTab('visitors');
   }
 }
 
@@ -1592,18 +2325,25 @@ function renderFilteredTrainingEvents() {
     const endTimeStr = ev.end_datetime ? ` ～ ${ev.end_datetime.substring(11, 16)}` : '';
 
     // Badges
+    const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
     let sourceBadge = '';
     if (ev.source_type === 'meeting') {
       sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80">定例会</span>';
+    } else if (ev.source_type === 'action') {
+      sourceBadge = ev.is_completed
+        ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80"><i class="fa-solid fa-check mr-1"></i>アクション済</span>'
+        : '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80"><i class="fa-solid fa-user-clock mr-1 text-amber-500"></i>ビジターアクション</span>';
+    } else if (isDeadline) {
+      sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80"><i class="fa-solid fa-hourglass-end mr-1 text-rose-500"></i>締切</span>';
     } else if (ev.source_type === 'chapter') {
       sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200/80">チャプター</span>';
     } else {
       sourceBadge = '<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80">京都CC研修</span>';
     }
 
-    const formatBadge = ev.is_online
+    const formatBadge = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
       ? `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200/80"><i class="fa-solid fa-video text-[9px]"></i> Zoom</span>`
-      : `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><i class="fa-solid fa-location-dot text-[9px]"></i> 対面</span>`;
+      : `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80"><i class="fa-solid fa-location-dot text-[9px]"></i> 対面</span>`);
 
     const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
       ? `<span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
@@ -1639,6 +2379,12 @@ function renderFilteredTrainingEvents() {
               <i class="fa-regular fa-clock text-slate-400 text-sm shrink-0 w-3.5"></i>
               <span class="font-mono font-bold text-sm text-slate-800 tabular-nums">${timeStr}${endTimeStr}</span>
             </div>
+            ${ev.organizer ? `
+              <div class="flex items-center gap-2 truncate text-xs">
+                <i class="fa-solid fa-user-check text-slate-400 text-xs shrink-0 w-3.5"></i>
+                <span class="truncate text-slate-600">担当: ${escapeHtml(ev.organizer)}</span>
+              </div>
+            ` : ''}
             ${ev.location_name ? `
               <div class="flex items-center gap-2 truncate text-xs">
                 <i class="fa-solid fa-location-dot text-slate-400 text-xs shrink-0 w-3.5"></i>
@@ -1671,11 +2417,15 @@ function renderFilteredTrainingEvents() {
               <span>参加申込</span>
               <i class="fa-solid fa-arrow-up-right-from-square text-3xs"></i>
             </a>
+          ` : (ev.source_type === 'action' ? `
+            <button type="button" onclick="openActionDetailModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors cursor-pointer">
+              アクション確認
+            </button>
           ` : (ev.source_type === 'chapter' ? `
             <button type="button" onclick="openChapterEventModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3 py-1.5 rounded-lg text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer">
               編集
             </button>
-          ` : '')}
+          ` : ''))}
         </div>
       </div>
     `;
