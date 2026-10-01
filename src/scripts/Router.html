@@ -205,7 +205,7 @@
     'palms-ranking': { title: 'PALMSランキング', icon: 'fa-solid fa-trophy' },
     'chapter-traffic': { title: 'チャプタートラフィックライト', icon: 'fa-solid fa-earth-americas' },
     'lottery': { title: '定例会スロット抽選', icon: 'fa-solid fa-dice' },
-    'training': { title: 'トレーニング・研修日程 (開発中)', icon: 'fa-solid fa-graduation-cap' },
+    'training': { title: 'トレーニング・研修日程', icon: 'fa-solid fa-graduation-cap' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
@@ -231,9 +231,8 @@
 
   /* --- Tab Navigation Controller --- */
   function switchTab(tabName, updateHash = true) {
-    if (['training', 'schedules'].includes(tabName)) {
+    if (['schedules'].includes(tabName)) {
       const labels = {
-        'training': '京都シティセントラル トレーニング・イベント自動取得',
         'schedules': '定期イベント出欠＆調整さん自動リマインダー'
       };
       showToast(`「${labels[tabName]}」は次フェーズにてリリース予定です`, 'info');
@@ -251,7 +250,7 @@
       'dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 
       'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 
       'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic',
-      'lottery', 'visitor-detail'
+      'lottery', 'training', 'visitor-detail'
     ];
 
     allTabs.forEach(t => {
@@ -285,6 +284,10 @@
       initLotteryView();
     } else if (tabName !== 'lottery' && typeof stopLotteryAudio === 'function') {
       stopLotteryAudio();
+    }
+
+    if (tabName === 'training' && typeof initTrainingView === 'function') {
+      initTrainingView();
     }
 
     if (window.innerWidth < 1024) {

@@ -281,6 +281,30 @@ const ApiService = {
           method: 'POST',
           body: {}
         };
+      case 'getEventsListApi':
+      case 'getTrainingEventsApi': {
+        const params = new URLSearchParams();
+        if (args[0] && typeof args[0] === 'object') {
+          Object.keys(args[0]).forEach(k => {
+            if (args[0][k] !== undefined && args[0][k] !== '') params.append(k, args[0][k]);
+          });
+        }
+        const qs = params.toString() ? '&' + params.toString() : '';
+        return { url: `/api/events.php?action=list${qs}`, method: 'GET' };
+      }
+      case 'getEventDetailApi':
+        return { url: `/api/events.php?action=get&id=${encodeURIComponent(args[0] || '')}`, method: 'GET' };
+      case 'syncEventsApi':
+      case 'syncTrainingEventsApi':
+        return {
+          url: '/api/events.php?action=sync',
+          method: 'POST',
+          body: (args[0] && typeof args[0] === 'object') ? args[0] : {}
+        };
+      case 'getEventCategoriesApi':
+        return { url: '/api/events.php?action=categories', method: 'GET' };
+      case 'getEventSummaryApi':
+        return { url: '/api/events.php?action=summary', method: 'GET' };
       default:
         return null;
 

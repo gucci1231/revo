@@ -173,11 +173,39 @@ class Database {
                 created_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS region_events (
+                id INTEGER PRIMARY KEY,
+                event_id_hash TEXT,
+                title TEXT NOT NULL,
+                description TEXT,
+                event_type_id INTEGER DEFAULT 0,
+                event_type_name TEXT DEFAULT '',
+                start_datetime TEXT NOT NULL,
+                end_datetime TEXT NOT NULL,
+                location_name TEXT DEFAULT '',
+                location_address TEXT DEFAULT '',
+                location_map_url TEXT DEFAULT '',
+                is_online INTEGER DEFAULT 0,
+                cost_member TEXT DEFAULT '',
+                cost_non_member TEXT DEFAULT '',
+                contact_name TEXT DEFAULT '',
+                contact_phone TEXT DEFAULT '',
+                max_attendees INTEGER DEFAULT 0,
+                num_registered INTEGER DEFAULT 0,
+                detail_url TEXT DEFAULT '',
+                registration_url TEXT DEFAULT '',
+                body_html TEXT DEFAULT '',
+                created_at TEXT,
+                updated_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_member ON palms_reports(member_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_dates ON palms_reports(start_date, end_date);
             CREATE INDEX IF NOT EXISTS idx_lottery_history_member ON lottery_history(member_id);
             CREATE INDEX IF NOT EXISTS idx_lottery_history_date ON lottery_history(won_at);
+            CREATE INDEX IF NOT EXISTS idx_region_events_start ON region_events(start_datetime);
+            CREATE INDEX IF NOT EXISTS idx_region_events_type ON region_events(event_type_id);
         ");
 
         $this->seedDefaultEmailTemplates();

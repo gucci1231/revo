@@ -1,0 +1,484 @@
+<script>
+/**
+ * Training & Event Calendar Controller (Kyoto City Central Region 7641)
+ */
+
+let allTrainingEvents = [];
+let trainingCategories = [];
+let trainingMonths = [];
+let currentTrainingFilter = {
+  format: 'all',       // 'all', 'online', 'inperson'
+  month: '',           // '' for all, or 'YYYY-MM'
+  category: '',
+  keyword: '',
+  scope: 'upcoming'    // 'upcoming', 'all', 'past'
+};
+let trainingSearchTimeout = null;
+
+function initTrainingView() {
+  if (allTrainingEvents.length === 0) {
+    loadTrainingEvents();
+  }
+}
+
+async function loadTrainingEvents() {
+  const loadingEl = document.getElementById('training-loading-state');
+  const emptyEl = document.getElementById('training-empty-state');
+  const listEl = document.getElementById('training-events-list');
+
+  if (loadingEl) loadingEl.classList.remove('hidden');
+  if (emptyEl) emptyEl.classList.add('hidden');
+  if (listEl) listEl.innerHTML = '';
+
+  try {
+    const res = await ApiService.call('getTrainingEventsApi', {
+      scope: currentTrainingFilter.scope,
+      category: currentTrainingFilter.category,
+      keyword: currentTrainingFilter.keyword
+    });
+
+    if (loadingEl) loadingEl.classList.add('hidden');
+
+    if (res && res.success !== false && res.data) {
+      allTrainingEvents = res.data.events || [];
+      trainingCategories = res.data.categories || [];
+      trainingMonths = res.data.months || [];
+
+      // Render KPIs
+      renderTrainingKpis(res.data.summary);
+
+      // Render dynamic filters
+      renderTrainingCategorySelect(trainingCategories);
+      renderTrainingMonthTabs(trainingMonths);
+
+      // Render cards
+      renderFilteredTrainingEvents();
+    } else {
+      if (emptyEl) emptyEl.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('Failed to load training events:', err);
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (emptyEl) emptyEl.classList.remove('hidden');
+    showToast('トレーニング日程の読み込みに失敗しました', 'error');
+  }
+}
+
+function renderTrainingKpis(summary) {
+  if (!summary) return;
+
+  const nextDateEl = document.getElementById('kpi-training-next-date');
+  const nextTitleEl = document.getElementById('kpi-training-next-title');
+  const monthCountEl = document.getElementById('kpi-training-month-count');
+  const onlineCountEl = document.getElementById('kpi-training-online-count');
+  const inpersonCountEl = document.getElementById('kpi-training-inperson-count');
+  const lastSyncedEl = document.getElementById('training-last-synced');
+
+  if (summary.nextEvent) {
+    const d = new Date(summary.nextEvent.start_datetime.replace(/-/g, '/'));
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+    const w = dayNames[d.getDay()];
+    if (nextDateEl) nextDateEl.innerText = `${month}/${day} (${w})`;
+    if (nextTitleEl) nextTitleEl.innerText = summary.nextEvent.title;
+  } else {
+    if (nextDateEl) nextDateEl.innerText = '--';
+    if (nextTitleEl) nextTitleEl.innerText = '予定なし';
+  }
+
+  if (monthCountEl) monthCountEl.innerText = summary.currentMonthTotal || 0;
+  if (onlineCountEl) onlineCountEl.innerText = summary.onlineCount || 0;
+  if (inpersonCountEl) inpersonCountEl.innerText = summary.inPersonCount || 0;
+
+  if (lastSyncedEl && summary.lastSyncedAt) {
+    lastSyncedEl.innerText = `最終同期: ${summary.lastSyncedAt}`;
+  }
+}
+
+function renderTrainingCategorySelect(categories) {
+  const select = document.getElementById('training-category-select');
+  if (!select) return;
+
+  const currentVal = select.value;
+  select.innerHTML = '<option value="">すべての研修カテゴリ</option>';
+
+  categories.forEach(cat => {
+    if (!cat) return;
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.innerText = cat;
+    if (cat === currentVal) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+function renderTrainingMonthTabs(months) {
+  const tabsContainer = document.getElementById('training-month-tabs');
+  if (!tabsContainer) return;
+
+  // Filter months to remove past months unless scope is 'all' or 'past'
+  const currentMonth = new Date().toISOString().substring(0, 7);
+  let relevantMonths = months || [];
+  if (currentTrainingFilter.scope === 'upcoming') {
+    relevantMonths = relevantMonths.filter(m => m.month_val >= currentMonth);
+  }
+
+  let html = `
+    <button type="button" class="month-tab-btn px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-colors ${currentTrainingFilter.month === '' ? 'active bg-blue-50 text-blue-600 border border-blue-200' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" onclick="setTrainingMonthFilter('', this)">
+      全月
+    </button>
+  `;
+
+  relevantMonths.forEach(m => {
+    const parts = m.month_val.split('-');
+    const label = `${parseInt(parts[1], 10)}月 (${m.cnt})`;
+    const isActive = currentTrainingFilter.month === m.month_val;
+    html += `
+      <button type="button" class="month-tab-btn px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-colors ${isActive ? 'active bg-blue-50 text-blue-600 border border-blue-200' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}" onclick="setTrainingMonthFilter('${m.month_val}', this)">
+        ${label}
+      </button>
+    `;
+  });
+
+  tabsContainer.innerHTML = html;
+}
+
+function setTrainingFormatFilter(format, btn) {
+  currentTrainingFilter.format = format;
+  const container = document.getElementById('training-format-filters');
+  if (container) {
+    container.querySelectorAll('button').forEach(b => {
+      b.className = 'px-3 py-1 rounded-md transition-all hover:text-slate-900';
+    });
+    if (btn) {
+      btn.className = 'px-3 py-1 rounded-md transition-all active-format-pill bg-white text-slate-900 shadow-xs font-bold';
+    }
+  }
+  renderFilteredTrainingEvents();
+}
+
+function setTrainingMonthFilter(month, btn) {
+  currentTrainingFilter.month = month;
+  const container = document.getElementById('training-month-tabs');
+  if (container) {
+    container.querySelectorAll('.month-tab-btn').forEach(b => {
+      b.className = 'month-tab-btn px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-colors bg-white text-slate-600 border border-slate-200 hover:bg-slate-50';
+    });
+    if (btn) {
+      btn.className = 'month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap transition-colors bg-blue-50 text-blue-600 border border-blue-200';
+    }
+  }
+  renderFilteredTrainingEvents();
+}
+
+function onTrainingCategoryChange() {
+  const select = document.getElementById('training-category-select');
+  currentTrainingFilter.category = select ? select.value : '';
+  renderFilteredTrainingEvents();
+}
+
+function onTrainingScopeChange() {
+  const select = document.getElementById('training-scope-select');
+  currentTrainingFilter.scope = select ? select.value : 'upcoming';
+  loadTrainingEvents();
+}
+
+function debounceTrainingFilter() {
+  clearTimeout(trainingSearchTimeout);
+  trainingSearchTimeout = setTimeout(() => {
+    const input = document.getElementById('training-search-input');
+    currentTrainingFilter.keyword = input ? input.value.trim().toLowerCase() : '';
+    renderFilteredTrainingEvents();
+  }, 200);
+}
+
+function renderFilteredTrainingEvents() {
+  const listEl = document.getElementById('training-events-list');
+  const emptyEl = document.getElementById('training-empty-state');
+  if (!listEl) return;
+
+  const kw = currentTrainingFilter.keyword;
+  const format = currentTrainingFilter.format;
+  const month = currentTrainingFilter.month;
+  const cat = currentTrainingFilter.category;
+
+  const filtered = allTrainingEvents.filter(ev => {
+    // Format filter
+    if (format === 'online' && !ev.is_online) return false;
+    if (format === 'inperson' && ev.is_online) return false;
+
+    // Month filter
+    if (month && !ev.start_datetime.startsWith(month)) return false;
+
+    // Category filter
+    if (cat && ev.event_type_name !== cat && !ev.title.includes(cat)) return false;
+
+    // Keyword filter
+    if (kw) {
+      const matchTitle = (ev.title || '').toLowerCase().includes(kw);
+      const matchDesc = (ev.description || '').toLowerCase().includes(kw);
+      const matchLoc = (ev.location_name || '').toLowerCase().includes(kw);
+      const matchContact = (ev.contact_name || '').toLowerCase().includes(kw);
+      if (!matchTitle && !matchDesc && !matchLoc && !matchContact) return false;
+    }
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '';
+    if (emptyEl) emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  if (emptyEl) emptyEl.classList.add('hidden');
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const now = new Date();
+
+  const cardsHtml = filtered.map(ev => {
+    const startDate = new Date(ev.start_datetime.replace(/-/g, '/'));
+    const endDate = new Date(ev.end_datetime.replace(/-/g, '/'));
+
+    const monthNum = startDate.getMonth() + 1;
+    const dayNum = startDate.getDate();
+    const dayName = dayNames[startDate.getDay()];
+
+    const isPast = startDate < now;
+    const isToday = startDate.toDateString() === now.toDateString();
+
+    const startHours = String(startDate.getHours()).padStart(2, '0');
+    const startMins = String(startDate.getMinutes()).padStart(2, '0');
+    const endHours = String(endDate.getHours()).padStart(2, '0');
+    const endMins = String(endDate.getMinutes()).padStart(2, '0');
+    const timeStr = `${startHours}:${startMins} ～ ${endHours}:${endMins}`;
+
+    // Format badge
+    const formatBadge = ev.is_online
+      ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200"><i class="fa-solid fa-video text-3xs"></i> ONLINE</span>`
+      : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-location-dot text-3xs"></i> 対面研修</span>`;
+
+    // Type badge
+    const typeBadge = ev.event_type_name
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-3xs font-bold bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[140px]">${ev.event_type_name}</span>`
+      : '';
+
+    // Capacity & Registrations progress
+    let capacityHtml = '';
+    if (ev.max_attendees > 0) {
+      const pct = Math.min(100, Math.round((ev.num_registered / ev.max_attendees) * 100));
+      const isFull = ev.num_registered >= ev.max_attendees;
+      capacityHtml = `
+        <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-3xs text-slate-500">
+          <span class="font-bold flex items-center gap-1">
+            <span>定員空き:</span>
+            <span class="font-mono ${isFull ? 'text-red-600 font-extrabold' : 'text-slate-700'}">${ev.num_registered} / ${ev.max_attendees} 名</span>
+          </span>
+          <div class="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div class="h-full ${isFull ? 'bg-red-500' : 'bg-blue-500'} rounded-full" style="width: ${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Cost info
+    let costHtml = '';
+    if (ev.cost_member) {
+      costHtml = `
+        <span class="inline-flex items-center gap-1 text-slate-500 font-mono text-3xs">
+          <i class="fa-solid fa-tag text-slate-400"></i> ${ev.cost_member}
+        </span>
+      `;
+    }
+
+    // Apply URL (Prioritize BNI Connect direct URL, then bni-ck detail URL)
+    const applyUrl = ev.registration_url || ev.detail_url || `https://bni-ck.com/ja/events`;
+
+    return `
+      <div class="bg-white border ${isToday ? 'border-blue-400 shadow-md ring-1 ring-blue-400/20' : 'border-slate-200'} rounded-2xl p-4 shadow-xs hover:border-slate-300 hover:-translate-y-0.5 transition-all flex flex-col justify-between group">
+        <div>
+          <!-- Header: Date Badge & Badges -->
+          <div class="flex items-start gap-3 mb-2.5">
+            <!-- Apple-style Calendar Date Badge -->
+            <div class="w-13 h-13 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center shrink-0 text-center shadow-2xs group-hover:border-blue-200 group-hover:bg-blue-50/30 transition-colors">
+              <span class="text-3xs font-extrabold text-blue-600 uppercase tracking-wider">${monthNum}月</span>
+              <span class="text-lg font-black text-slate-900 font-mono leading-none my-0.5 tabular-nums">${dayNum}</span>
+              <span class="text-3xs font-bold text-slate-400">(${dayName})</span>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                ${formatBadge}
+                ${typeBadge}
+                ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
+              </div>
+              <h3 onclick="openTrainingDetailModal(${ev.id})" class="text-sm font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 leading-snug">
+                ${escapeHtml(ev.title)}
+              </h3>
+            </div>
+          </div>
+
+          <!-- Metadata: Time, Location, Trainer -->
+          <div class="space-y-1 text-xs text-slate-600 mt-2 pl-0.5">
+            <div class="flex items-center gap-2">
+              <i class="fa-regular fa-clock text-slate-400 text-3xs shrink-0 w-3.5"></i>
+              <span class="font-mono font-bold text-slate-700 tabular-nums">${timeStr}</span>
+            </div>
+
+            ${ev.location_name ? `
+              <div class="flex items-center gap-2 truncate">
+                <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0 w-3.5"></i>
+                <span class="truncate text-slate-600">${escapeHtml(ev.location_name)}</span>
+              </div>
+            ` : ''}
+
+            ${ev.contact_name ? `
+              <div class="flex items-center gap-2 truncate">
+                <i class="fa-regular fa-user text-slate-400 text-3xs shrink-0 w-3.5"></i>
+                <span class="truncate text-slate-600">担当: ${escapeHtml(ev.contact_name)}</span>
+                ${costHtml}
+              </div>
+            ` : (costHtml ? `<div class="flex items-center gap-2">${costHtml}</div>` : '')}
+          </div>
+
+          ${capacityHtml}
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <button type="button" onclick="openTrainingDetailModal(${ev.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1">
+            <span>詳細を見る</span>
+            <i class="fa-solid fa-chevron-right text-3xs"></i>
+          </button>
+
+          <a href="${applyUrl}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-xs flex items-center gap-1.5 no-underline">
+            <span>参加申込</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-3xs"></i>
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  listEl.innerHTML = cardsHtml;
+}
+
+async function syncTrainingEvents() {
+  const icon = document.getElementById('sync-training-icon');
+  const btn = document.getElementById('btn-sync-training');
+
+  if (icon) icon.classList.add('fa-spin');
+  if (btn) btn.disabled = true;
+
+  showToast('京都シティセントラルのイベント情報を同期中...', 'info');
+
+  try {
+    const res = await ApiService.call('syncTrainingEventsApi');
+    if (res && res.success !== false) {
+      showToast('最新のトレーニング日程を同期しました', 'success');
+      if (typeof celebrateQuestClear === 'function') {
+        celebrateQuestClear();
+      }
+      loadTrainingEvents();
+    } else {
+      showToast(res?.message || '同期に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Manual sync error:', err);
+    showToast('同期中にエラーが発生しました', 'error');
+  } finally {
+    if (icon) icon.classList.remove('fa-spin');
+    if (btn) btn.disabled = false;
+  }
+}
+
+function openTrainingDetailModal(eventId) {
+  const ev = allTrainingEvents.find(e => e.id == eventId);
+  if (!ev) return;
+
+  const modal = document.getElementById('modal-training-detail');
+  if (!modal) return;
+
+  // Title & Badges
+  document.getElementById('modal-ev-title').innerText = ev.title;
+  document.getElementById('modal-ev-type').innerText = ev.event_type_name || 'トレーニング';
+
+  const formatEl = document.getElementById('modal-ev-format');
+  if (ev.is_online) {
+    formatEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200';
+    formatEl.innerHTML = '<i class="fa-solid fa-video"></i> ONLINE';
+  } else {
+    formatEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200';
+    formatEl.innerHTML = '<i class="fa-solid fa-location-dot"></i> 対面研修';
+  }
+
+  // Date & Time
+  const startDate = new Date(ev.start_datetime.replace(/-/g, '/'));
+  const endDate = new Date(ev.end_datetime.replace(/-/g, '/'));
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dateFormatted = `${startDate.getFullYear()}年${startDate.getMonth()+1}月${startDate.getDate()}日 (${dayNames[startDate.getDay()]}) ${String(startDate.getHours()).padStart(2,'0')}:${String(startDate.getMinutes()).padStart(2,'0')} ～ ${String(endDate.getHours()).padStart(2,'0')}:${String(endDate.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('modal-ev-datetime').innerText = dateFormatted;
+
+  // Location
+  document.getElementById('modal-ev-location').innerText = ev.location_name || (ev.is_online ? 'オンライン（BNI online）' : '未定');
+  const mapWrap = document.getElementById('modal-ev-map-wrap');
+  const mapLink = document.getElementById('modal-ev-map-link');
+  if (ev.location_map_url) {
+    mapLink.href = ev.location_map_url;
+    mapWrap.classList.remove('hidden');
+  } else {
+    mapWrap.classList.add('hidden');
+  }
+
+  // Cost & Capacity
+  document.getElementById('modal-ev-cost').innerText = ev.cost_member || '無料または要確認';
+  const capEl = document.getElementById('modal-ev-capacity');
+  if (ev.max_attendees > 0) {
+    capEl.innerText = `定員: ${ev.max_attendees}名（現在 ${ev.num_registered}名 登録済）`;
+  } else {
+    capEl.innerText = '';
+  }
+
+  // Contact
+  const contactNameEl = document.getElementById('modal-ev-contact-name');
+  const contactPhoneEl = document.getElementById('modal-ev-contact-phone');
+  contactNameEl.innerText = ev.contact_name || '京都シティセントラル事務局';
+  contactPhoneEl.innerText = ev.contact_phone || '--';
+
+  // Body Description
+  const bodyEl = document.getElementById('modal-ev-body');
+  if (ev.body_html) {
+    bodyEl.innerHTML = ev.body_html;
+  } else if (ev.description) {
+    bodyEl.innerText = ev.description;
+  } else {
+    bodyEl.innerHTML = '<span class="text-slate-400">詳細情報は公式ページをご確認ください。</span>';
+  }
+
+  // Links
+  const ckLink = document.getElementById('modal-ev-ck-link');
+  ckLink.href = ev.detail_url || `https://bni-ck.com/ja/events`;
+
+  const applyBtn = document.getElementById('modal-ev-apply-btn');
+  applyBtn.href = ev.registration_url || ev.detail_url || `https://bni-ck.com/ja/events`;
+
+  modal.classList.remove('hidden');
+}
+
+function closeTrainingDetailModal() {
+  const modal = document.getElementById('modal-training-detail');
+  if (modal) modal.classList.add('hidden');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+</script>

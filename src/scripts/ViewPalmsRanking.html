@@ -335,8 +335,9 @@ function updatePalmsModalSidebarActive(presetKey) {
 
 /**
  * Preset selection from Sidebar
+ * If standard preset, auto-applies immediately for seamless 1-tap UX
  */
-function selectPalmsDatePreset(presetKey) {
+function selectPalmsDatePreset(presetKey, autoApply = true) {
   if (presetKey === 'custom') {
     palmsDateModalState.activePreset = 'custom';
     updatePalmsModalSidebarActive('custom');
@@ -357,6 +358,10 @@ function selectPalmsDatePreset(presetKey) {
   syncPalmsModalInputs();
   updatePalmsModalSidebarActive(presetKey);
   renderPalmsModalCalendars();
+
+  if (autoApply) {
+    applyPalmsDateModal();
+  }
 }
 
 /**
@@ -567,7 +572,9 @@ function applyPalmsDateModal() {
   const e = palmsDateModalState.end;
 
   if (!s || !e) {
-    showToast('開始日と終了日を両方指定してください', 'warning');
+    if (typeof showToast === 'function') {
+      showToast('開始日と終了日を両方指定してください', 'warning');
+    }
     return;
   }
 
@@ -621,8 +628,8 @@ function applyPalmsDateModal() {
   // Close Modal
   closePalmsDateModal();
 
-  // Fetch ranking data directly (backend aggregates automatically if no exact period record exists)
-  fetchPalmsRankingData(sFin, eFin);
+  // Fetch ranking data with forceRefresh: true (always fetch & re-render on period change)
+  fetchPalmsRankingData(sFin, eFin, true);
 }
 
 
@@ -718,7 +725,7 @@ function changePalmsPeriod(val) {
   } catch (err) {}
   updatePeriodPresetPillActive(s, e);
   updatePalmsPeriodDisplayLabel(s, e);
-  fetchPalmsRankingData(s, e);
+  fetchPalmsRankingData(s, e, true);
 }
 
 /**
@@ -765,7 +772,7 @@ function selectPalmsPreset(presetKey) {
       }
     }
 
-    fetchPalmsRankingData(s, e);
+    fetchPalmsRankingData(s, e, true);
   }
 }
 
@@ -1192,18 +1199,19 @@ let activePalmsFetchPromise = null;
 /**
  * Fetch PALMS records for specified or latest period
  */
-function fetchPalmsRankingData(startDate = null, endDate = null) {
+function fetchPalmsRankingData(startDate = null, endDate = null, forceRefresh = false) {
   const sTarget = startDate || currentPalmsPeriod.startDate || '2026-09-01';
   const eTarget = endDate || currentPalmsPeriod.endDate || '2026-09-30';
 
-  if (currentPalmsPeriod.startDate === sTarget &&
+  if (!forceRefresh &&
+      currentPalmsPeriod.startDate === sTarget &&
       currentPalmsPeriod.endDate === eTarget &&
       typeof currentPalmsRecords !== 'undefined' &&
       Array.isArray(currentPalmsRecords) &&
       currentPalmsRecords.length > 0) {
     return Promise.resolve(currentPalmsRecords);
   }
-  if (activePalmsFetchPromise) {
+  if (!forceRefresh && activePalmsFetchPromise) {
     return activePalmsFetchPromise;
   }
 
@@ -4582,21 +4590,77 @@ function calcAndRenderChapterTrafficScore() {
     legacyTotalScoreEl.className = `text-2xl sm:text-3xl font-black ${tierScoreClass} tabular-nums`;
   }
 
+  // 1. チャプター規模
   const legacySizeEl = document.getElementById('chapter-metric-size');
   if (legacySizeEl) legacySizeEl.textContent = chapterSize;
+  const legacySizeCurEl = document.getElementById('chapter-metric-size-cur');
+  if (legacySizeCurEl) legacySizeCurEl.textContent = `現在: ${chapterSize}名`;
+  const legacySizeBarEl = document.getElementById('chapter-metric-size-bar');
+  if (legacySizeBarEl) {
+    const sizePct = Math.min(100, Math.round((chapterSize / 45) * 100));
+    legacySizeBarEl.style.width = `${sizePct}%`;
+  }
 
+  // 2. 更新率
   const legacyRetEl = document.getElementById('chapter-metric-retention');
   if (legacyRetEl) legacyRetEl.textContent = retentionRate.toFixed(1);
+  const legacyRetCurEl = document.getElementById('chapter-metric-retention-cur');
+  if (legacyRetCurEl) legacyRetCurEl.textContent = `現在: ${retentionRate.toFixed(1)}%`;
+  const legacyRetBarEl = document.getElementById('chapter-metric-retention-bar');
+  if (legacyRetBarEl) {
+    legacyRetBarEl.style.width = `${Math.min(100, retentionRate)}%`;
+  }
 
+  // 3. 出席率
   const legacyAttEl = document.getElementById('chapter-metric-attendance');
   const attendancePct = totalMeetings > 0 ? ((totalPresent + totalSub) / totalMeetings * 100).toFixed(1) : '95.0';
   if (legacyAttEl) legacyAttEl.textContent = attendancePct;
+  const legacyAttCurEl = document.getElementById('chapter-metric-attendance-cur');
+  if (legacyAttCurEl) legacyAttCurEl.textContent = `現在: ${attendancePct}%`;
+  const legacyAttBarEl = document.getElementById('chapter-metric-attendance-bar');
+  if (legacyAttBarEl) {
+    legacyAttBarEl.style.width = `${Math.min(100, parseFloat(attendancePct))}%`;
+  }
 
+  // 4. RPW
   const legacyRpwEl = document.getElementById('chapter-metric-rpw');
   if (legacyRpwEl) legacyRpwEl.textContent = referralsPerMeeting.toFixed(2);
+  const legacyRpwCurEl = document.getElementById('chapter-metric-rpw-cur');
+  if (legacyRpwCurEl) legacyRpwCurEl.textContent = `現在: ${referralsPerMeeting.toFixed(2)}`;
+  const legacyRpwBarEl = document.getElementById('chapter-metric-rpw-bar');
+  if (legacyRpwBarEl) {
+    const rpwPct = Math.min(100, Math.round((referralsPerMeeting / 1.5) * 100));
+    legacyRpwBarEl.style.width = `${rpwPct}%`;
+  }
 
+  // 5. ビジター
+  const visitorsPerMember = (visitorsPerWeek / Math.max(1, chapterSize));
   const legacyVisEl = document.getElementById('chapter-metric-visitors');
-  if (legacyVisEl) legacyVisEl.textContent = (visitorsPerWeek / Math.max(1, chapterSize)).toFixed(2);
+  if (legacyVisEl) legacyVisEl.textContent = visitorsPerMember.toFixed(2);
+  const legacyVisCurEl = document.getElementById('chapter-metric-visitors-cur');
+  if (legacyVisCurEl) legacyVisCurEl.textContent = `現在: ${visitorsPerMember.toFixed(2)}`;
+  const legacyVisBarEl = document.getElementById('chapter-metric-visitors-bar');
+  if (legacyVisBarEl) {
+    const visPct = Math.min(100, Math.round((visitorsPerMember / 0.5) * 100));
+    legacyVisBarEl.style.width = `${visPct}%`;
+  }
+
+  // 6. マイルストーン動的更新
+  const updateMilestone = (id, target) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (chapterSize >= target) {
+      el.className = 'text-3xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded';
+      el.textContent = '達成済';
+    } else {
+      const diff = target - chapterSize;
+      el.className = 'text-3xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded';
+      el.textContent = `あと${diff}名`;
+    }
+  };
+  updateMilestone('chapter-milestone-green-badge', 35);
+  updateMilestone('chapter-milestone-platinum-badge', 45);
+  updateMilestone('chapter-milestone-titan-badge', 55);
 }
 
 /**
