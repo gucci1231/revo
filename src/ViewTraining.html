@@ -41,8 +41,8 @@
     </div>
   </div>
 
-  <!-- 4 Big KPI Cards (Radical Minimalism & Tabular Numerals) -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <!-- 4 Big KPI Cards (Radical Minimalism & Tabular Numerals - Desktop Only) -->
+  <div class="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
     <!-- KPI 1: 次回定例会 -->
     <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
@@ -184,34 +184,6 @@
           今日
         </button>
       </div>
-
-      <!-- Color Legend (Apple Style Dots) -->
-      <div class="flex items-center gap-3 text-3xs font-bold text-slate-500 flex-wrap">
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-100"></span>
-          <span>定例会 (木)</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-100"></span>
-          <span>チャプター予定</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-orange-100"></span>
-          <span>メンバーイベント</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
-          <span>京都CC研修</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-amber-100"></span>
-          <span>ビジターアクション</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-100"></span>
-          <span>締切</span>
-        </span>
-      </div>
     </div>
 
     <!-- List Mode Month Tabs (Active in List Mode only) -->
@@ -290,6 +262,129 @@
     <div id="training-events-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
   </div>
 
+</div>
+
+<!-- ================= MODAL 0: CHAPTER EVENT DETAIL (VIEW INFO) ================= -->
+<div id="modal-chapter-event-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeChapterEventDetailModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <input type="hidden" id="ch-detail-id" value="">
+
+    <!-- Modal Header -->
+    <div class="p-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span id="ch-detail-category-badge" class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500" id="ch-detail-category-dot"></span>
+            <span id="ch-detail-category-text">予定</span>
+          </span>
+          <span id="ch-detail-format-badge" class="inline-flex items-center gap-1 text-3xs font-bold text-slate-500"></span>
+        </div>
+        <h3 id="ch-detail-title" class="text-base sm:text-lg font-black text-slate-900 leading-snug break-words">
+          --
+        </h3>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" id="btn-share-chapter-detail" onclick="openEventShareFromChapterDetail()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200/80 transition-colors flex items-center gap-1 cursor-pointer" title="この予定をシェア">
+          <i class="fa-solid fa-arrow-up-from-bracket text-3xs text-slate-500"></i>
+          <span>シェア</span>
+        </button>
+        <button type="button" id="btn-open-edit-from-detail" onclick="openEditFromChapterDetail()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer" title="この予定を変更・編集">
+          <i class="fa-solid fa-pen text-3xs"></i>
+          <span>編集</span>
+        </button>
+        <button type="button" onclick="closeChapterEventDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0 cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-5 space-y-3.5 text-xs max-h-[70vh] overflow-y-auto">
+      <!-- Datetime & Time -->
+      <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex items-center justify-between">
+        <div>
+          <div class="text-3xs font-bold text-slate-400 mb-0.5">開催日時</div>
+          <div id="ch-detail-datetime" class="font-bold text-slate-900 font-mono tabular-nums text-sm">--</div>
+        </div>
+        <div id="ch-detail-format-icon" class="text-slate-400 text-base"></div>
+      </div>
+
+      <!-- Location / URL -->
+      <div id="ch-detail-location-wrap" class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+        <div class="text-3xs font-bold text-slate-400 mb-0.5">会場 / 案内リンク</div>
+        <div id="ch-detail-location" class="font-bold text-slate-800"></div>
+        <div id="ch-detail-url-wrap" class="mt-1.5 hidden">
+          <a id="ch-detail-url" href="#" target="_blank" rel="noopener noreferrer" class="text-3xs text-blue-600 hover:underline inline-flex items-center gap-1 font-bold">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> リンクを開く
+          </a>
+        </div>
+      </div>
+
+      <!-- Organizer -->
+      <div id="ch-detail-organizer-wrap" class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-center justify-between">
+        <div class="text-3xs font-bold text-slate-400">担当・主催者</div>
+        <div id="ch-detail-organizer" class="font-bold text-slate-800">--</div>
+      </div>
+
+      <!-- Flyer Preview -->
+      <div id="ch-detail-flyer-wrap" class="hidden p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+        <div class="text-3xs font-bold text-slate-400 flex items-center justify-between">
+          <span>チラシ・告知画像</span>
+          <button type="button" onclick="previewDetailFlyerInLightbox()" class="text-3xs text-blue-600 hover:underline font-bold inline-flex items-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-magnifying-glass-plus"></i> 拡大表示
+          </button>
+        </div>
+        <div class="flex items-center gap-3">
+          <img id="ch-detail-flyer-img" src="" alt="チラシ" class="w-16 h-16 object-cover rounded-xl border border-slate-200 shrink-0 cursor-pointer shadow-2xs hover:opacity-90 transition-opacity" onclick="previewDetailFlyerInLightbox()">
+          <div class="min-w-0 flex-1">
+            <div id="ch-detail-flyer-name" class="font-bold text-xs text-slate-800 truncate">チラシ</div>
+            <a id="ch-detail-flyer-link" href="#" target="_blank" rel="noopener noreferrer" class="text-3xs text-blue-600 hover:underline inline-flex items-center gap-1 mt-1 font-bold">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> 別タブで開く
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description Note -->
+      <div id="ch-detail-desc-wrap" class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hidden">
+        <div class="text-3xs font-bold text-slate-400 mb-1 flex items-center gap-1">
+          <i class="fa-solid fa-align-left text-3xs"></i>
+          <span>詳細メモ・案内</span>
+        </div>
+        <div id="ch-detail-desc" class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed"></div>
+      </div>
+
+      <!-- Recurrence Info Banner -->
+      <div id="ch-detail-repeat-wrap" class="hidden p-2.5 rounded-lg bg-blue-50/80 border border-blue-200/80 text-3xs font-bold text-blue-700 flex items-center gap-2">
+        <i class="fa-solid fa-repeat text-blue-500 shrink-0 text-xs"></i>
+        <span id="ch-detail-repeat-text">この予定は定期的に繰り返されます</span>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-1.5" id="ch-detail-delete-actions">
+        <button type="button" id="btn-detail-delete-single" onclick="handleDeleteFromDetail(false)" class="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer flex items-center gap-1">
+          <i class="fa-regular fa-trash-can text-3xs"></i>
+          <span>削除</span>
+        </button>
+        <button type="button" id="btn-detail-delete-series" onclick="handleDeleteFromDetail(true)" class="hidden px-2.5 py-2 rounded-xl text-3xs font-bold text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer flex items-center gap-1" title="この繰り返しシリーズを一括削除">
+          <i class="fa-solid fa-layer-group text-3xs"></i>
+          <span>シリーズ一括削除</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 ml-auto">
+        <button type="button" onclick="closeChapterEventDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+          閉じる
+        </button>
+        <button type="button" onclick="openEditFromChapterDetail()" class="px-4 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-pen text-3xs"></i>
+          <span>編集する</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ================= MODAL 1: CHAPTER EVENT & VISITOR ACTION ADD/EDIT ================= -->

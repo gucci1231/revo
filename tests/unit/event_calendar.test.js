@@ -176,13 +176,10 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(eventRepoPhp.includes("'location_name' => $custom ? ($custom['location_name'] ?? 'Zoom') : 'Zoom'"), 'EventRepository defaults location_name to Zoom');
     assert.ok(devServerJs.includes("is_online: custom ? (custom.is_online ? 1 : 0) : 1"), 'dev-server defaults meeting is_online to 1');
 
-    // UI: ViewTraining script renders compact tags for V:count, Zoom/In-person
-    assert.ok(viewScript.includes("text-[9px] font-extrabold text-blue-700 bg-blue-100/80 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact V:count badge');
-    assert.ok(viewScript.includes("text-[9px] font-bold text-blue-600 bg-blue-100/70 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact Zoom badge');
-    assert.ok(viewScript.includes("text-[9px] font-bold text-emerald-700 bg-emerald-100/70 px-1 py-0 rounded shrink-0 leading-none"), 'Timeline uses compact In-person badge');
-
-    // Month view pill V:count
-    assert.ok(viewScript.includes("text-[9px] font-extrabold bg-blue-600 text-white shrink-0 leading-none"), 'Month view pill uses compact V:count badge');
+    // UI: ViewTraining script renders clean minimal icons for V:count, Zoom/In-person
+    assert.ok(viewScript.includes("fa-users") && viewScript.includes("ev.visitor_count"), 'Timeline uses minimal users icon with visitor count');
+    assert.ok(viewScript.includes("fa-video text-blue-500"), 'Timeline uses video icon for Zoom');
+    assert.ok(viewScript.includes("fa-location-dot text-emerald-500"), 'Timeline uses location icon for In-person');
 
     // Meeting detail modal badges
     assert.ok(indexHtml.includes('id="modal-meeting-online-badge"'), 'Meeting online badge exists in index.html');
@@ -315,6 +312,29 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
 
     // 5. Share text & styling
     assert.ok(viewScript.includes('■ チラシ・告知画像:'), 'Share text includes flyer URL');
+  });
+
+  it('verifies Chapter Event Info Detail Modal, mobile week swipe, and radical minimalism', () => {
+    // 1. Chapter Event Detail Info Modal exists in index.html
+    assert.ok(indexHtml.includes('id="modal-chapter-event-detail"'), 'Chapter event info detail modal exists');
+    assert.ok(indexHtml.includes('id="ch-detail-title"'), 'Detail modal title exists');
+    assert.ok(indexHtml.includes('id="ch-detail-datetime"'), 'Detail modal datetime exists');
+    assert.ok(indexHtml.includes('id="btn-open-edit-from-detail"'), 'Edit button from detail modal exists');
+    assert.ok(indexHtml.includes('id="btn-share-chapter-detail"'), 'Share button from detail modal exists');
+
+    // 2. JS Functions for Info Detail Modal
+    assert.ok(viewScript.includes('function openChapterEventDetailModal('), 'openChapterEventDetailModal is defined');
+    assert.ok(viewScript.includes('function closeChapterEventDetailModal()'), 'closeChapterEventDetailModal is defined');
+    assert.ok(viewScript.includes('function openEditFromChapterDetail()'), 'openEditFromChapterDetail is defined');
+    assert.ok(viewScript.includes('openChapterEventDetailModal(ev);'), 'Event click opens detail modal instead of edit form');
+
+    // 3. Touch Swipe and Mobile Week Navigation
+    assert.ok(viewScript.includes('function initCalendarTouchSwipe()'), 'initCalendarTouchSwipe is defined');
+    assert.ok(viewScript.includes('currentEventViewMode = \'week\';'), 'Mobile defaults to week view');
+
+    // 4. Radical Minimalism: 4 KPI Cards hidden on mobile, color legend removed
+    assert.ok(indexHtml.includes('hidden md:grid grid-cols-2 lg:grid-cols-4'), 'KPI cards are hidden on mobile');
+    assert.ok(!indexHtml.includes('Color Legend (Apple Style Dots)'), 'Color legend is completely removed');
   });
 });
 
