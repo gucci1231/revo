@@ -82,9 +82,11 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
   it('verifies weekly and period granularity toggle controls and functions for Chapter Growth Trend', () => {
     // UI elements
     assert.strictEqual(indexHtml.includes('id="btn-palms-trend-weekly"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-palms-trend-monthly"'), true);
     assert.strictEqual(indexHtml.includes('id="btn-palms-trend-period"'), true);
     assert.strictEqual(indexHtml.includes('id="growth-trend-chart-title"'), true);
     assert.strictEqual(indexHtml.includes('毎週刻み'), true);
+    assert.strictEqual(indexHtml.includes('月刻み'), true);
     assert.strictEqual(indexHtml.includes('2年間期別'), true);
 
     // JS functions & API mappings
@@ -100,6 +102,11 @@ describe('Member Management Sitemap & PPW/RPW Accelerator Feature Tests', () => 
     assert.strictEqual(indexHtml.includes('pointRadius: 0,'), true);
     assert.strictEqual(indexHtml.includes('pointHoverRadius: 0,'), true);
     assert.strictEqual(indexHtml.includes('fill: false,'), true);
+
+    // Monthly mode handling
+    assert.strictEqual(indexHtml.includes('月刻みトレンド'), true);
+    assert.strictEqual(indexHtml.includes('isMonthly'), true);
+    assert.strictEqual(indexHtml.includes('月間実績・週換算平均'), true);
   });
 
   it('verifies 3-period achievement cards (1 Month, 6 Months, All Time) and 6 core metrics in Growth Dashboard', () => {

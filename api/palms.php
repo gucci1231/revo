@@ -84,6 +84,40 @@ try {
         ");
         $weekly = $stmtWeekly->fetchAll(PDO::FETCH_ASSOC);
 
+        $stmtMonthly = $pdo->query("
+            SELECT 
+                strftime('%Y-%m', end_date) as month,
+                MIN(start_date) as start_date,
+                MAX(end_date) as end_date,
+                COUNT(DISTINCT end_date) as week_count,
+                ROUND(AVG(sub.member_count), 1) as member_count,
+                SUM(sub.total_referrals) as total_referrals,
+                SUM(sub.total_referrals_internal) as total_referrals_internal,
+                SUM(sub.total_referrals_external) as total_referrals_external,
+                SUM(sub.total_oto) as total_oto,
+                SUM(sub.total_visitors) as total_visitors,
+                SUM(sub.total_ceu) as total_ceu,
+                SUM(sub.total_tyfcb) as total_tyfcb
+            FROM (
+                SELECT 
+                    start_date, end_date,
+                    SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+                    SUM(rgi_referrals_given_internal) as total_referrals_internal,
+                    SUM(rgo_referrals_given_external) as total_referrals_external,
+                    SUM(one_to_ones) as total_oto,
+                    SUM(v_visitors) as total_visitors,
+                    SUM(ceu) as total_ceu,
+                    SUM(tyfcb_amount * 1000) as total_tyfcb,
+                    COUNT(DISTINCT member_id) as member_count
+                FROM palms_reports
+                WHERE (julianday(end_date) - julianday(start_date)) <= 14
+                GROUP BY start_date, end_date
+            ) sub
+            GROUP BY month
+            ORDER BY month ASC
+        ");
+        $monthly = $stmtMonthly->fetchAll(PDO::FETCH_ASSOC);
+
         $stmtTerms = $pdo->query("
             SELECT 
                 start_date, end_date,
@@ -196,6 +230,7 @@ try {
         echo json_encode([
             'success' => true,
             'weekly' => $weekly,
+            'monthly' => $monthly,
             'terms' => $terms,
             'periods_summary' => $periodsSummary
         ]);
