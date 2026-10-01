@@ -65,7 +65,7 @@
           <td>
             <div>
               ${renderVisitorNameLinkHtml(v.id, v.name, v)}
-              ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
+              ${(v.company || v.profession || v.phone) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}${v.phone ? ` <span class="text-slate-300">|</span> <a href="tel:${escapeHtml(v.phone.replace(/[^0-9+]/g, ''))}" class="text-blue-600 hover:underline font-mono inline-flex items-center gap-1" onclick="event.stopPropagation()"><i class="fa-solid fa-phone text-[9px]"></i>${escapeHtml(v.phone)}</a>` : ''}</div>` : ''}
             </div>
           </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
@@ -112,12 +112,13 @@
             </div>
           </div>
 
-          <!-- 中段: 紹介者・担当者 -->
-          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+          <!-- 中段: 紹介者・担当者・電話番号 -->
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100 flex items-center justify-between flex-wrap gap-y-1">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
               ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
+            ${v.phone ? `<a href="tel:${escapeHtml(v.phone.replace(/[^0-9+]/g, ''))}" class="text-[11px] text-blue-600 font-mono flex items-center gap-1 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-phone text-[10px]"></i>${escapeHtml(v.phone)}</a>` : ''}
           </div>
 
           <!-- 下段: ステータスセレクター群 (共通パーツ) -->
@@ -243,9 +244,10 @@
       const inviter = (v.inviter || '').toLowerCase();
       const company = (v.company || '').toLowerCase();
       const profession = (v.profession || '').toLowerCase();
+      const phone = (v.phone || '').toLowerCase();
       const eventDate = (v.eventDate || '').replace(/\//g, '-');
 
-      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search);
+      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search) || phone.includes(search);
       
       let matchDate = true;
       if (dateFrom && eventDate < dateFrom) matchDate = false;

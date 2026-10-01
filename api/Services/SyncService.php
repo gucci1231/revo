@@ -50,7 +50,7 @@ class SyncService {
                     if (!$vId) continue;
 
                     // 1. visitors テーブル: 既存レコードがあれば空項目で上書きしない
-                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks FROM visitors WHERE id = ?", [$vId]);
+                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks, phone FROM visitors WHERE id = ?", [$vId]);
                     if (!$existingVisitor) {
                         $this->db->upsert('visitors', [
                             'id' => $vId,
@@ -62,6 +62,7 @@ class SyncService {
                             'profession' => $v['profession'] ?? '',
                             'company' => $v['company'] ?? '',
                             'email' => $v['email'] ?? '',
+                            'phone' => $v['phone'] ?? '',
                             'attendance_count' => $v['attendanceCount'] ?? $v['attendance_count'] ?? '初めて',
                             'remarks' => $v['remarks'] ?? '',
                             'category' => $v['category'] ?? 'ビジター'
@@ -75,6 +76,8 @@ class SyncService {
                             'event_date' => $v['eventDate'] ?? $v['event_date'] ?? '',
                             'inviter' => $v['inviter'] ?? ''
                         ];
+                    } else if (empty($existingVisitor['phone']) && !empty($v['phone'])) {
+                        $this->db->update('visitors', ['phone' => $v['phone']], 'id = ?', [$vId]);
                     }
 
                     // 2. visitors_status テーブル: SQLiteが正 (Master)。既存ステータスは絶対に上書きしない！
@@ -182,6 +185,29 @@ class SyncService {
         $hearingsRaw = $this->fetchSheetCsv($spreadsheetId, 'hearing_sheets');
         $membersRaw = $this->fetchSheetCsv($spreadsheetId, 'members');
         $listRaw = $this->fetchSheetCsv($spreadsheetId, 'List');
+        $totalRaw = $this->fetchSheetCsv($spreadsheetId, 'Total');
+
+        $phoneMap = [];
+        if (!empty($totalRaw)) {
+            foreach ($totalRaw as $tr) {
+                $p = $this->cleanPhone((string)($tr['連絡先'] ?? ''));
+                if ($p === '') continue;
+                $e = $this->normalizeEmail($tr['email'] ?? '');
+                $n = $this->normalizeName($tr['氏名'] ?? '');
+                if ($e) $phoneMap['email:' . $e] = $p;
+                if ($n) $phoneMap['name:' . $n] = $p;
+            }
+        }
+        if (!empty($listRaw)) {
+            foreach ($listRaw as $lr) {
+                $p = $this->cleanPhone((string)($lr['連絡先電話番号'] ?? $lr['電話番号'] ?? $lr['連絡先'] ?? ''));
+                if ($p === '') continue;
+                $e = $this->normalizeEmail($lr['メールアドレス'] ?? '');
+                $n = $this->normalizeName($lr['氏名'] ?? $lr['お名前'] ?? '');
+                if ($e) $phoneMap['email:' . $e] = $p;
+                if ($n) $phoneMap['name:' . $n] = $p;
+            }
+        }
 
         $statusMap = [];
         foreach ($statusRaw as $st) {
@@ -211,6 +237,16 @@ class SyncService {
             if ($vName && $vDate) $existingKeys["{$vName}_{$vDate}"] = true;
             if ($vEmail && $vDate) $existingKeys["{$vEmail}_{$vDate}"] = true;
 
+            $vPhone = $this->cleanPhone((string)($v['phone'] ?? $v['連絡先'] ?? ''));
+            if ($vPhone === '') {
+                $vPhone = $phoneMap['email:' . $vEmail] ?? $phoneMap['name:' . $vName] ?? '';
+            }
+            if ($vPhone === '' && !empty($v['remarks']) && str_contains($v['remarks'], 'TEL:')) {
+                if (preg_match('/TEL:\s*([0-9\-]+)/', $v['remarks'], $pm)) {
+                    $vPhone = $this->cleanPhone($pm[1]);
+                }
+            }
+
             $st = $statusMap[$vId] ?? [];
             $inviter = $this->normalizeMemberName((string)($v['inviter'] ?? ''), $membersRaw);
             $visitors[] = [
@@ -223,6 +259,7 @@ class SyncService {
                 'profession' => $v['profession'] ?? '',
                 'company' => $v['company'] ?? '',
                 'email' => $v['email'] ?? '',
+                'phone' => $vPhone,
                 'attendance_count' => $v['attendance_count'] ?? '初めて',
                 'remarks' => $v['remarks'] ?? '',
                 'category' => $v['category'] ?? 'ビジター',
@@ -273,6 +310,8 @@ class SyncService {
                 $attendanceCount = trim((string)($row['定例会へのビジター参加回数'] ?? $row['参加回数'] ?? '初めて'));
                 $isGuest = (str_contains($attendanceCount, 'ゲスト') || str_contains($profession, 'ゲスト') || str_contains($company, 'ゲスト') || str_contains($attendanceCount, '他チャプター'));
 
+                $phone = $this->cleanPhone((string)($row['連絡先電話番号'] ?? $row['電話番号'] ?? $row['連絡先'] ?? ''));
+
                 $visitors[] = [
                     'id' => $newId,
                     'created_at' => $createdAt,
@@ -283,6 +322,7 @@ class SyncService {
                     'profession' => $profession,
                     'company' => $company,
                     'email' => $email,
+                    'phone' => $phone,
                     'attendance_count' => $attendanceCount ?: '初めて',
                     'remarks' => '',
                     'category' => $isGuest ? 'ゲスト' : 'ビジター',
@@ -472,6 +512,14 @@ class SyncService {
     private function normalizeEmail(string $email): string {
         $e = str_replace('＠', '@', $email);
         return trim($e);
+    }
+
+    private function cleanPhone(string $phone): string {
+        $p = trim($phone);
+        if ($p === '') return '';
+        $p = preg_replace('/[（\(][^）\)]*[）\)]/u', '', $p);
+        $clean = preg_replace('/[^0-9\-+]/', '', $p);
+        return trim($clean, '-');
     }
 
     private function normalizeDate(string $rawDate): string {

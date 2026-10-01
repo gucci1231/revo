@@ -7539,9 +7539,14 @@ select.form-input, select.form-select {
           <input type="text" id="crud-v-company" class="form-input" placeholder="株式会社〇〇">
         </div>
         <div class="form-group">
-          <label class="form-label">メールアドレス</label>
-          <input type="email" id="crud-v-email" class="form-input" placeholder="example@email.com">
+          <label class="form-label">電話番号</label>
+          <input type="tel" id="crud-v-phone" class="form-input" placeholder="例：090-1234-5678">
         </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">メールアドレス</label>
+        <input type="email" id="crud-v-email" class="form-input" placeholder="example@email.com">
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -10024,6 +10029,15 @@ select.form-input, select.form-select {
             <i class="fa-regular fa-calendar-check text-blue-500"></i>
             <span>参加日:</span> <strong id="vd-event-date" class="text-slate-800">-</strong>
             <span id="vd-attendance-count" class="text-[11px] text-slate-400 font-normal">(-)</span>
+          </div>
+          <div class="vd-meta-chip" id="vd-phone-chip">
+            <i class="fa-solid fa-phone text-blue-500"></i>
+            <a id="vd-phone-link" href="#" class="text-slate-700 hover:text-blue-600 font-mono transition-colors flex items-center gap-1.5" title="電話をかける">
+              <span id="vd-phone" class="select-all">-</span>
+            </a>
+            <button type="button" id="vd-phone-copy-btn" class="text-slate-400 hover:text-slate-600 p-0.5 text-xs transition-colors ml-1" title="電話番号をコピー" onclick="copyVisitorPhone()">
+              <i class="fa-regular fa-copy"></i>
+            </button>
           </div>
           <div class="vd-meta-chip">
             <i class="fa-regular fa-envelope text-slate-400"></i>
@@ -21516,7 +21530,7 @@ window.CelebrationEffect = (function() {
           <td>
             <div>
               ${renderVisitorNameLinkHtml(v.id, v.name, v)}
-              ${(v.company || v.profession) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}</div>` : ''}
+              ${(v.company || v.profession || v.phone) ? `<div style="font-size:11px; color:#86868b; margin-top:1px;">${escapeHtml(v.company || '')}${v.company && v.profession ? ' · ' : ''}${escapeHtml(v.profession || '')}${v.phone ? ` <span class="text-slate-300">|</span> <a href="tel:${escapeHtml(v.phone.replace(/[^0-9+]/g, ''))}" class="text-blue-600 hover:underline font-mono inline-flex items-center gap-1" onclick="event.stopPropagation()"><i class="fa-solid fa-phone text-[9px]"></i>${escapeHtml(v.phone)}</a>` : ''}</div>` : ''}
             </div>
           </td>
           <td>${formatTruncatedCell(v.company, 12)}</td>
@@ -21563,12 +21577,13 @@ window.CelebrationEffect = (function() {
             </div>
           </div>
 
-          <!-- 中段: 紹介者・担当者 -->
-          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100">
+          <!-- 中段: 紹介者・担当者・電話番号 -->
+          <div class="dash-card-bottom-row pt-1 pb-1 border-t border-b border-slate-100 flex items-center justify-between flex-wrap gap-y-1">
             <div class="dash-card-meta-left text-[11px] text-slate-500">
               <span><i class="fa-solid fa-user-plus text-rose-500 mr-1"></i>${escapeHtml(resolvedInviter || '-')}</span>
               ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
+            ${v.phone ? `<a href="tel:${escapeHtml(v.phone.replace(/[^0-9+]/g, ''))}" class="text-[11px] text-blue-600 font-mono flex items-center gap-1 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-phone text-[10px]"></i>${escapeHtml(v.phone)}</a>` : ''}
           </div>
 
           <!-- 下段: ステータスセレクター群 (共通パーツ) -->
@@ -21694,9 +21709,10 @@ window.CelebrationEffect = (function() {
       const inviter = (v.inviter || '').toLowerCase();
       const company = (v.company || '').toLowerCase();
       const profession = (v.profession || '').toLowerCase();
+      const phone = (v.phone || '').toLowerCase();
       const eventDate = (v.eventDate || '').replace(/\//g, '-');
 
-      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search);
+      const matchSearch = !search || name.includes(search) || furigana.includes(search) || inviter.includes(search) || company.includes(search) || profession.includes(search) || phone.includes(search);
       
       let matchDate = true;
       if (dateFrom && eventDate < dateFrom) matchDate = false;
@@ -24468,6 +24484,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     return [];
   }
 
+  function copyVisitorPhone() {
+    const phoneEl = document.getElementById('vd-phone');
+    const val = (phoneEl ? phoneEl.innerText : '').trim();
+    if (!val || val === '-') {
+      if (typeof showToast === 'function') showToast('電話番号が登録されていません', 'info');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(() => {
+        if (typeof showToast === 'function') showToast('電話番号をコピーしました: ' + val, 'success');
+      }).catch(() => {
+        if (typeof showToast === 'function') showToast(val, 'info');
+      });
+    } else {
+      if (typeof showToast === 'function') showToast(val, 'info');
+    }
+  }
+
   function getAdjacentVisitors() {
     const list = getVisitorNavSequence();
     if (!list || list.length === 0 || !currentVdVisitorId) {
@@ -24565,7 +24599,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         const company = (v.company || '').toLowerCase();
         const profession = (v.profession || '').toLowerCase();
         const inviter = (v.inviter || '').toLowerCase();
-        return name.includes(q) || furigana.includes(q) || company.includes(q) || profession.includes(q) || inviter.includes(q);
+        const phone = (v.phone || '').toLowerCase();
+        return name.includes(q) || furigana.includes(q) || company.includes(q) || profession.includes(q) || inviter.includes(q) || phone.includes(q);
       });
     }
 
@@ -24788,6 +24823,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         document.getElementById('vd-inviter').innerText = resolvedInviter || '-';
         document.getElementById('vd-event-date').innerText = formatShortDate(v.eventDate) || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
+
+        // 電話番号
+        const phoneEl = document.getElementById('vd-phone');
+        const phoneLink = document.getElementById('vd-phone-link');
+        const phoneVal = (v.phone || '').trim();
+        if (phoneEl) phoneEl.innerText = phoneVal || '-';
+        if (phoneLink) {
+          if (phoneVal) {
+            phoneLink.href = 'tel:' + phoneVal.replace(/[^0-9+]/g, '');
+            phoneLink.classList.remove('pointer-events-none', 'opacity-50');
+            phoneLink.setAttribute('title', `発信: ${phoneVal}`);
+          } else {
+            phoneLink.removeAttribute('href');
+            phoneLink.classList.add('pointer-events-none', 'opacity-50');
+            phoneLink.removeAttribute('title');
+          }
+        }
+
         const count = v.visitCount || currentVdVisits.length || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
         document.getElementById('vd-attendance-count').innerText = countText;
@@ -25811,7 +25864,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 <script>
   /* --- Visitor CRUD Modal Controls --- */
   function openAddVisitorModal() {
-    document.getElementById('modal-v-title').innerText = '新規ビジター手動登録';
+    const titleEl = document.getElementById('crud-modal-title') || document.getElementById('modal-v-title');
+    if (titleEl) titleEl.innerText = '新規ビジター手動登録';
     document.getElementById('crud-v-id').value = '';
     document.getElementById('crud-v-name').value = '';
     document.getElementById('crud-v-furigana').value = '';
@@ -25819,6 +25873,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-inviter').value = '';
     document.getElementById('crud-v-profession').value = '';
     document.getElementById('crud-v-company').value = '';
+    if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = '';
     document.getElementById('crud-v-email').value = '';
     document.getElementById('crud-v-attendance-count').value = '初めて';
     if (document.getElementById('crud-v-category')) {
@@ -25833,7 +25888,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     const v = rawList.find(item => String(item.id) === String(id));
     if (!v) return;
 
-    document.getElementById('modal-v-title').innerText = 'ビジター基本情報の編集';
+    const titleEl = document.getElementById('crud-modal-title') || document.getElementById('modal-v-title');
+    if (titleEl) titleEl.innerText = 'ビジター基本情報の編集';
     document.getElementById('crud-v-id').value = v.id;
     document.getElementById('crud-v-name').value = v.name || '';
     document.getElementById('crud-v-furigana').value = v.furigana || '';
@@ -25841,6 +25897,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-inviter').value = v.inviter || '';
     document.getElementById('crud-v-profession').value = v.profession || '';
     document.getElementById('crud-v-company').value = v.company || '';
+    if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = v.phone || '';
     document.getElementById('crud-v-email').value = v.email || '';
     document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
     if (document.getElementById('crud-v-category')) {
@@ -25867,6 +25924,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       inviter: document.getElementById('crud-v-inviter').value.trim(),
       profession: document.getElementById('crud-v-profession').value.trim(),
       company: document.getElementById('crud-v-company').value.trim(),
+      phone: document.getElementById('crud-v-phone') ? document.getElementById('crud-v-phone').value.trim() : '',
       email: document.getElementById('crud-v-email').value.trim(),
       attendanceCount: document.getElementById('crud-v-attendance-count').value,
       category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'

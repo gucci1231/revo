@@ -20,6 +20,7 @@ class VisitorRepository {
                 COALESCE(v.profession, '') as profession, 
                 COALESCE(v.company, '') as company, 
                 COALESCE(v.email, '') as email, 
+                COALESCE(v.phone, '') as phone,
                 v.attendance_count as attendanceCount, v.remarks,
                 COALESCE(v.category, 'ビジター') as category,
                 COALESCE(s.is_attended, '未') as isAttended,
@@ -123,6 +124,7 @@ class VisitorRepository {
                 COALESCE(v.profession, '') as profession,
                 COALESCE(v.company, '') as company,
                 COALESCE(v.email, '') as email,
+                COALESCE(v.phone, '') as phone,
                 COALESCE(v.attendance_count, '初めて') as attendanceCount,
                 COALESCE(v.remarks, '') as remarks,
                 COALESCE(v.category, 'ビジター') as category,
@@ -231,6 +233,11 @@ class VisitorRepository {
 
     public function updateCategory(string $visitorId, string $category): int {
         return $this->db->update('visitors', ['category' => $category], 'id = ?', [$visitorId]);
+    }
+
+    public function updateVisitor(string $id, array $data): int {
+        unset($data['id']);
+        return $this->db->update('visitors', $data, 'id = ?', [$id]);
     }
 
     public function getDashboardVisitors(): array {

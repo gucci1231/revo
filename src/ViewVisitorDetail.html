@@ -186,6 +186,15 @@
             <span>参加日:</span> <strong id="vd-event-date" class="text-slate-800">-</strong>
             <span id="vd-attendance-count" class="text-[11px] text-slate-400 font-normal">(-)</span>
           </div>
+          <div class="vd-meta-chip" id="vd-phone-chip">
+            <i class="fa-solid fa-phone text-blue-500"></i>
+            <a id="vd-phone-link" href="#" class="text-slate-700 hover:text-blue-600 font-mono transition-colors flex items-center gap-1.5" title="電話をかける">
+              <span id="vd-phone" class="select-all">-</span>
+            </a>
+            <button type="button" id="vd-phone-copy-btn" class="text-slate-400 hover:text-slate-600 p-0.5 text-xs transition-colors ml-1" title="電話番号をコピー" onclick="copyVisitorPhone()">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
           <div class="vd-meta-chip">
             <i class="fa-regular fa-envelope text-slate-400"></i>
             <span id="vd-email" class="text-slate-600 select-all">-</span>

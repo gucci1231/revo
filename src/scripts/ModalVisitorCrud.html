@@ -1,7 +1,8 @@
 <script>
   /* --- Visitor CRUD Modal Controls --- */
   function openAddVisitorModal() {
-    document.getElementById('modal-v-title').innerText = '新規ビジター手動登録';
+    const titleEl = document.getElementById('crud-modal-title') || document.getElementById('modal-v-title');
+    if (titleEl) titleEl.innerText = '新規ビジター手動登録';
     document.getElementById('crud-v-id').value = '';
     document.getElementById('crud-v-name').value = '';
     document.getElementById('crud-v-furigana').value = '';
@@ -9,6 +10,7 @@
     document.getElementById('crud-v-inviter').value = '';
     document.getElementById('crud-v-profession').value = '';
     document.getElementById('crud-v-company').value = '';
+    if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = '';
     document.getElementById('crud-v-email').value = '';
     document.getElementById('crud-v-attendance-count').value = '初めて';
     if (document.getElementById('crud-v-category')) {
@@ -23,7 +25,8 @@
     const v = rawList.find(item => String(item.id) === String(id));
     if (!v) return;
 
-    document.getElementById('modal-v-title').innerText = 'ビジター基本情報の編集';
+    const titleEl = document.getElementById('crud-modal-title') || document.getElementById('modal-v-title');
+    if (titleEl) titleEl.innerText = 'ビジター基本情報の編集';
     document.getElementById('crud-v-id').value = v.id;
     document.getElementById('crud-v-name').value = v.name || '';
     document.getElementById('crud-v-furigana').value = v.furigana || '';
@@ -31,6 +34,7 @@
     document.getElementById('crud-v-inviter').value = v.inviter || '';
     document.getElementById('crud-v-profession').value = v.profession || '';
     document.getElementById('crud-v-company').value = v.company || '';
+    if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = v.phone || '';
     document.getElementById('crud-v-email').value = v.email || '';
     document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
     if (document.getElementById('crud-v-category')) {
@@ -57,6 +61,7 @@
       inviter: document.getElementById('crud-v-inviter').value.trim(),
       profession: document.getElementById('crud-v-profession').value.trim(),
       company: document.getElementById('crud-v-company').value.trim(),
+      phone: document.getElementById('crud-v-phone') ? document.getElementById('crud-v-phone').value.trim() : '',
       email: document.getElementById('crud-v-email').value.trim(),
       attendanceCount: document.getElementById('crud-v-attendance-count').value,
       category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'

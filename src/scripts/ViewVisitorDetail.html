@@ -46,6 +46,24 @@
     return [];
   }
 
+  function copyVisitorPhone() {
+    const phoneEl = document.getElementById('vd-phone');
+    const val = (phoneEl ? phoneEl.innerText : '').trim();
+    if (!val || val === '-') {
+      if (typeof showToast === 'function') showToast('電話番号が登録されていません', 'info');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(val).then(() => {
+        if (typeof showToast === 'function') showToast('電話番号をコピーしました: ' + val, 'success');
+      }).catch(() => {
+        if (typeof showToast === 'function') showToast(val, 'info');
+      });
+    } else {
+      if (typeof showToast === 'function') showToast(val, 'info');
+    }
+  }
+
   function getAdjacentVisitors() {
     const list = getVisitorNavSequence();
     if (!list || list.length === 0 || !currentVdVisitorId) {
@@ -143,7 +161,8 @@
         const company = (v.company || '').toLowerCase();
         const profession = (v.profession || '').toLowerCase();
         const inviter = (v.inviter || '').toLowerCase();
-        return name.includes(q) || furigana.includes(q) || company.includes(q) || profession.includes(q) || inviter.includes(q);
+        const phone = (v.phone || '').toLowerCase();
+        return name.includes(q) || furigana.includes(q) || company.includes(q) || profession.includes(q) || inviter.includes(q) || phone.includes(q);
       });
     }
 
@@ -366,6 +385,24 @@
         document.getElementById('vd-inviter').innerText = resolvedInviter || '-';
         document.getElementById('vd-event-date').innerText = formatShortDate(v.eventDate) || '-';
         document.getElementById('vd-email').innerText = v.email || '-';
+
+        // 電話番号
+        const phoneEl = document.getElementById('vd-phone');
+        const phoneLink = document.getElementById('vd-phone-link');
+        const phoneVal = (v.phone || '').trim();
+        if (phoneEl) phoneEl.innerText = phoneVal || '-';
+        if (phoneLink) {
+          if (phoneVal) {
+            phoneLink.href = 'tel:' + phoneVal.replace(/[^0-9+]/g, '');
+            phoneLink.classList.remove('pointer-events-none', 'opacity-50');
+            phoneLink.setAttribute('title', `発信: ${phoneVal}`);
+          } else {
+            phoneLink.removeAttribute('href');
+            phoneLink.classList.add('pointer-events-none', 'opacity-50');
+            phoneLink.removeAttribute('title');
+          }
+        }
+
         const count = v.visitCount || currentVdVisits.length || (v.allIds && v.allIds.length) || (v.attendanceCount && v.attendanceCount !== '初めて' ? v.attendanceCount : 1);
         const countText = (typeof count === 'number' && count > 1) ? `(${count}回目)` : (v.attendanceCount ? `(${v.attendanceCount})` : '(初めて)');
         document.getElementById('vd-attendance-count').innerText = countText;

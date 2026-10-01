@@ -130,6 +130,7 @@ class VisitorController extends Controller {
                 'profession' => $visitor['profession'],
                 'company' => $visitor['company'],
                 'email' => $visitor['email'],
+                'phone' => $visitor['phone'] ?? '',
                 'attendanceCount' => $visitor['attendance_count'],
                 'remarks' => $visitor['remarks'],
                 'category' => $visitor['category'] ?? 'ビジター',
@@ -155,14 +156,11 @@ class VisitorController extends Controller {
     }
 
     private function add(): void {
-        $newId = $this->visitorRepo->getNextId();
-        $now = date('Y/m/d H:i');
+        $id = $this->getParam('id', '');
         $rawInviter = $this->getParam('inviter', '');
         $inviter = \Api\Services\MemberNameResolver::resolve($rawInviter);
 
-        $this->visitorRepo->createVisitor([
-            'id' => $newId,
-            'created_at' => $now,
+        $data = [
             'inviter' => $inviter,
             'event_date' => $this->getParam('eventDate', ''),
             'visitor_name' => $this->getParam('name', ''),
@@ -170,11 +168,24 @@ class VisitorController extends Controller {
             'profession' => $this->getParam('profession', ''),
             'company' => $this->getParam('company', ''),
             'email' => $this->getParam('email', ''),
+            'phone' => $this->getParam('phone', ''),
             'attendance_count' => $this->getParam('attendanceCount', '初めて'),
-            'remarks' => $this->getParam('remarks', ''),
             'category' => $this->getParam('category', 'ビジター')
-        ]);
+        ];
 
+        if (!empty($id)) {
+            $this->visitorRepo->updateVisitor($id, $data);
+            Response::success(['visitorId' => $id]);
+            return;
+        }
+
+        $now = date('Y/m/d H:i');
+        $newId = $this->visitorRepo->getNextId();
+        $data['id'] = $newId;
+        $data['created_at'] = $now;
+        $data['remarks'] = $this->getParam('remarks', '');
+
+        $this->visitorRepo->createVisitor($data);
         $this->visitorRepo->createInitialStatus($newId, $now);
 
         Response::success(['visitorId' => $newId]);

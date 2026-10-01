@@ -52,6 +52,7 @@ class Database {
                 profession TEXT,
                 company TEXT,
                 email TEXT,
+                phone TEXT DEFAULT '',
                 attendance_count TEXT DEFAULT '初めて',
                 remarks TEXT DEFAULT '',
                 category TEXT DEFAULT 'ビジター'
@@ -243,6 +244,20 @@ class Database {
                     OR visitor_name LIKE 'メンバー%' 
                     OR (visitor_name = '豊田健司' AND company LIKE '%ライフ&ファイナンス%')
                 ) AND (category IS NULL OR category = 'ビジター' OR category = '')
+            ");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors ADD COLUMN phone TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
+                UPDATE visitors 
+                SET phone = TRIM(SUBSTR(remarks, INSTR(remarks, 'TEL: ') + 5, 
+                                CASE WHEN INSTR(SUBSTR(remarks, INSTR(remarks, 'TEL: ') + 5), ' |') > 0 
+                                     THEN INSTR(SUBSTR(remarks, INSTR(remarks, 'TEL: ') + 5), ' |') - 1
+                                     ELSE LENGTH(SUBSTR(remarks, INSTR(remarks, 'TEL: ') + 5))
+                                END))
+                WHERE remarks LIKE '%TEL:%' AND (phone IS NULL OR phone = '');
             ");
         } catch (\PDOException $e) {}
     }

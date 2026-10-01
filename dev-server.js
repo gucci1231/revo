@@ -175,7 +175,9 @@ function handleApiRequest(req, res, urlObj) {
               COALESCE(v.profession, '') as profession, 
               COALESCE(v.company, '') as company, 
               COALESCE(v.email, '') as email, 
+              COALESCE(v.phone, '') as phone,
               v.attendance_count as attendanceCount, v.remarks,
+              COALESCE(v.category, 'ビジター') as category,
               COALESCE(s.is_attended, '未') as isAttended,
               COALESCE(s.is_joined, '未') as isJoined,
               COALESCE(s.is_1to1, '未') as is1to1,
@@ -218,7 +220,8 @@ function handleApiRequest(req, res, urlObj) {
             v.id, v.created_at as createdAt, COALESCE(v.inviter, '') as inviter, COALESCE(v.event_date, '') as eventDate,
             COALESCE(NULLIF(v.visitor_name, ''), 'ビジター No.' || v.id) as name,
             COALESCE(v.furigana, '') as furigana, COALESCE(v.profession, '') as profession, COALESCE(v.company, '') as company,
-            COALESCE(v.email, '') as email, COALESCE(v.attendance_count, '初めて') as attendanceCount, COALESCE(v.remarks, '') as remarks,
+            COALESCE(v.email, '') as email, COALESCE(v.phone, '') as phone, COALESCE(v.attendance_count, '初めて') as attendanceCount, COALESCE(v.remarks, '') as remarks,
+            COALESCE(v.category, 'ビジター') as category,
             COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1, COALESCE(s.is_matched, '未') as matching
           FROM visitors v
           LEFT JOIN visitors_status s ON v.id = s.visitor_id
@@ -287,7 +290,8 @@ function handleApiRequest(req, res, urlObj) {
           visitor: {
             id: v.id, createdAt: v.created_at, inviter: v.inviter, eventDate: v.event_date,
             name: v.visitor_name, furigana: v.furigana, profession: v.profession, company: v.company,
-            email: v.email, attendanceCount: v.attendance_count, remarks: v.remarks,
+            email: v.email, phone: v.phone || '', attendanceCount: v.attendance_count, remarks: v.remarks,
+            category: v.category || 'ビジター',
             allIds: linkedIds, visitCount: visits.length
           },
           visits: visits,
@@ -313,6 +317,33 @@ function handleApiRequest(req, res, urlObj) {
           runSqlExec(sql);
         }
         return res.end(JSON.stringify({ success: true, visitorId: input.visitorId }));
+      }
+
+      if (action === 'add') {
+        const esc = s => (s || '').toString().replace(/'/g, "''");
+        const id = esc(input.id || '');
+        const name = esc(input.name || '');
+        const furigana = esc(input.furigana || '');
+        const eventDate = esc(input.eventDate || '');
+        const inviter = esc(input.inviter || '');
+        const profession = esc(input.profession || '');
+        const company = esc(input.company || '');
+        const email = esc(input.email || '');
+        const phone = esc(input.phone || '');
+        const attendanceCount = esc(input.attendanceCount || '初めて');
+        const category = esc(input.category || 'ビジター');
+
+        if (id) {
+          runSqlExec(`UPDATE visitors SET inviter='${inviter}', event_date='${eventDate}', visitor_name='${name}', furigana='${furigana}', profession='${profession}', company='${company}', email='${email}', phone='${phone}', attendance_count='${attendanceCount}', category='${category}' WHERE id='${id}';`);
+          return res.end(JSON.stringify({ success: true, visitorId: id }));
+        }
+
+        const now = new Date().toISOString().replace('T', ' ').substring(0, 16).replace(/-/g, '/');
+        const maxIdRes = runSqlJson(`SELECT MAX(CAST(id AS INTEGER)) as max_id FROM visitors;`);
+        const nextId = (parseInt(maxIdRes[0]?.max_id || 0, 10) + 1).toString();
+        runSqlExec(`INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, phone, attendance_count, remarks, category) VALUES ('${nextId}', '${now}', '${inviter}', '${eventDate}', '${name}', '${furigana}', '${profession}', '${company}', '${email}', '${phone}', '${attendanceCount}', '', '${category}');`);
+        runSqlExec(`INSERT INTO visitors_status (visitor_id, updated_at) VALUES ('${nextId}', '${now}');`);
+        return res.end(JSON.stringify({ success: true, visitorId: nextId }));
       }
     }
 
