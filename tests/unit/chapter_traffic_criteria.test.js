@@ -6,8 +6,16 @@ describe('Chapter Traffic Lights 100pt Scoring Criteria Feature Tests', () => {
   const rootDir = path.resolve(__dirname, '../../');
   const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
-  it('verifies Chapter Traffic Lights (100pt) UI elements exist in palms-subview-traffic-lights', () => {
-    // Traffic lights subview contains Chapter Traffic score header and card
+  it('verifies Chapter Traffic Lights (100pt) UI elements exist in palms-subview-chapter-traffic', () => {
+    // Assert Chapter Traffic is located in palms-subview-chapter-traffic and removed from traffic-lights
+    const trafficLightsStart = indexHtml.indexOf('id="palms-subview-traffic-lights"');
+    const chapterTrafficStart = indexHtml.indexOf('id="palms-subview-chapter-traffic"');
+    const ctlScorePos = indexHtml.indexOf('id="ctl-total-score"');
+
+    assert.ok(ctlScorePos > chapterTrafficStart, 'ctl-total-score must be in palms-subview-chapter-traffic');
+    assert.ok(ctlScorePos > trafficLightsStart, 'ctl-total-score must not precede palms-subview-traffic-lights');
+
+    // Chapter Traffic subview contains Chapter Traffic score header and card
     assert.strictEqual(indexHtml.includes('id="ctl-total-score"'), true);
     assert.strictEqual(indexHtml.includes('id="ctl-tier-badge"'), true);
     assert.strictEqual(indexHtml.includes('id="ctl-hero-dot"'), true);
