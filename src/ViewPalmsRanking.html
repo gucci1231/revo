@@ -1,30 +1,46 @@
 <!-- PALMS & Member Management View (Apple Radical Minimalism) -->
 <div id="view-palms-ranking" class="view-content">
-  <!-- Minimalist Top Navigation & Period Action Bar -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
-    <div class="flex items-center gap-2">
-      <h2 id="palms-view-title" class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+  <!-- Apple-Style Unified Navigation & Period Action Bar -->
+  <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 mb-6 pb-4 border-b border-slate-200/80">
+    <div class="flex items-center gap-3.5 flex-wrap">
+      <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight shrink-0">
         成長ダッシュボード
       </h2>
       <p id="palms-view-subtitle" class="hidden" aria-hidden="true"></p>
+
+      <!-- 4 Core Subview Segmented Pills (Apple HIG Capsule Style) -->
+      <div class="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60 shadow-2xs text-xs font-bold">
+        <button type="button" id="palms-subtab-growth-dashboard" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black">
+          ダッシュボード
+        </button>
+        <button type="button" id="palms-subtab-ppw-rpw" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
+          PPW / RPW
+        </button>
+        <button type="button" id="palms-subtab-traffic-lights" onclick="switchPalmsSubTab('traffic-lights')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
+          トラフィックライト
+        </button>
+        <button type="button" id="palms-subtab-palms-ranking" onclick="switchPalmsSubTab('palms-ranking')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
+          ランキング
+        </button>
+      </div>
     </div>
 
     <!-- Actions: Period Selector & Sync Button -->
     <div class="flex items-center gap-2 flex-wrap">
       <!-- 退会メンバーを含むチェックボックス -->
-      <label class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
+      <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
         <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
         <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
       </label>
 
       <!-- GA4-Style Period Trigger Button -->
-      <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
-        <i class="fa-regular fa-calendar text-blue-600"></i>
+      <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200/90 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
+        <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
         <span id="palms-period-display-label">期間を選択中...</span>
         <i class="fa-solid fa-chevron-down text-3xs text-slate-400 ml-0.5"></i>
       </button>
 
-      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
+      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
         <i class="fa-solid fa-arrows-rotate text-blue-600 text-xs"></i>
         <span class="btn-text hidden sm:inline">Connect同期</span>
       </button>
@@ -58,9 +74,9 @@
     <!-- Top 5 Core KPI Overview Cards (Pure White & Clean Slate) -->
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
       <!-- 1. Chapter Avg Score -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">総合平均スコア</span>
+          <span class="text-3xs font-black uppercase tracking-wider text-slate-500">総合平均スコア</span>
           <span class="w-2 h-2 rounded-full bg-blue-500"></span>
         </div>
         <div class="flex items-baseline gap-1.5">
@@ -73,9 +89,9 @@
       </div>
 
       <!-- 2. Chapter Avg PPW -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 PPW</span>
+          <span class="text-3xs font-black uppercase tracking-wider text-slate-500">平均 PPW</span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">目標 2.0</span>
         </div>
         <div class="flex items-baseline gap-1.5">
@@ -88,9 +104,9 @@
       </div>
 
       <!-- 3. Chapter Avg RPW -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
-          <span class="text-3xs font-bold uppercase tracking-wider text-slate-500">平均 RPW</span>
+          <span class="text-3xs font-black uppercase tracking-wider text-slate-500">平均 RPW</span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">目標 1.25</span>
         </div>
         <div class="flex items-baseline gap-1.5">
@@ -103,10 +119,11 @@
       </div>
 
       <!-- 4. Green Tier -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="flex items-center gap-1.5" title="グリーン (70点以上)">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs shadow-emerald-500/50"></span>
+            <span class="text-3xs font-black uppercase tracking-wider text-slate-500">GREEN</span>
           </span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">70+ pt</span>
         </div>
@@ -120,10 +137,11 @@
       </div>
 
       <!-- 5. Yellow / Red Tier -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="flex items-center gap-1.5" title="要注力 (<70点)">
             <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-2xs shadow-amber-500/50"></span>
+            <span class="text-3xs font-black uppercase tracking-wider text-slate-500">要注力</span>
           </span>
           <span class="text-3xs font-black px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100">&lt; 70 pt</span>
         </div>
@@ -140,7 +158,7 @@
     <!-- Chapter Growth Charts (Trend & Radar) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
       <!-- Line Chart -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 gap-2">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5" id="growth-trend-chart-title">
             <span>毎週刻みトレンド</span>
@@ -162,7 +180,7 @@
       </div>
 
       <!-- Radar Chart -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
           <h3 class="text-sm font-bold text-slate-900">7大指標 バランス</h3>
           <span class="text-2xs font-bold text-slate-400">満点比</span>
@@ -178,8 +196,8 @@
     <!-- 6大指標：TYFCB / リファーラル数 / 外部リファーラル率 / ビジター / 1to1 / CEU -->
     <!-- ======================================================== -->
     <div class="mb-6">
-      <!-- Section Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-200/60">
+      <!-- Section Header (Apple Radical Minimalism) -->
+      <div class="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-200/60">
         <div class="flex items-center gap-2">
           <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
           <h3 class="text-sm font-black text-slate-900 tracking-tight">チャプター活動実績（期間別）</h3>
@@ -187,32 +205,28 @@
             1ヶ月・半年・全期間
           </span>
         </div>
-        <div class="text-3xs text-slate-400 font-medium">
-          ※ TYFCBは千円単位入力のため1,000倍（×1,000）で自動換算
-        </div>
       </div>
 
       <!-- 3-Period Overview Cards Grid (1 Month / 6 Months / All Time) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 mb-5">
         
         <!-- CARD 1: 1ヶ月の成果 (直近月) -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
           <div>
             <!-- Card Header -->
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-sky-500"></span>
                 <span class="text-xs font-black text-slate-900 tracking-tight">1ヶ月の成果</span>
-                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-100">直近月</span>
+                <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-100">直近月</span>
               </div>
               <span id="growth-period-1m-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
             </div>
 
             <!-- Primary Highlight KPI: TYFCB -->
-            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
-              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                <span>TYFCB 売上貢献</span>
-                <span class="text-slate-400">Thank You For Closed Business</span>
+            <div class="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3.5 mb-3.5">
+              <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                TYFCB 売上貢献
               </div>
               <div class="flex items-baseline gap-1.5">
                 <span id="growth-tyfcb-1m" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
@@ -220,10 +234,10 @@
             </div>
 
             <!-- 5 Core Metrics Grid -->
-            <div class="grid grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-2 gap-2">
               <!-- リファーラル数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-total-1m" class="text-xl font-black text-blue-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">件</span>
@@ -234,19 +248,19 @@
               </div>
 
               <!-- 外部リファーラル率 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-ext-rate-1m" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                  <div id="growth-ref-bar-1m" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-1 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-1m" class="bg-indigo-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
 
               <!-- ビジター数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-visitors-1m" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">名</span>
@@ -254,8 +268,8 @@
               </div>
 
               <!-- 1to1 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-oto-1m" class="text-xl font-black text-amber-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">回</span>
@@ -264,8 +278,8 @@
             </div>
 
             <!-- CEU Full Width Metric -->
-            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
-              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+            <div class="mt-2 bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs flex items-center justify-between">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
               <div class="flex items-baseline gap-1">
                 <span id="growth-ceu-1m" class="text-base font-black text-purple-600 tabular-nums">--</span>
                 <span class="text-3xs font-bold text-slate-400">pt</span>
@@ -275,23 +289,22 @@
         </div>
 
         <!-- CARD 2: 半年間の成果 (直近期) -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
           <div>
             <!-- Card Header -->
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-blue-600"></span>
                 <span class="text-xs font-black text-slate-900 tracking-tight">半年間の成果</span>
-                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">直近期</span>
+                <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100">直近期</span>
               </div>
               <span id="growth-period-6m-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
             </div>
 
             <!-- Primary Highlight KPI: TYFCB -->
-            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
-              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                <span>TYFCB 売上貢献</span>
-                <span class="text-slate-400">Thank You For Closed Business</span>
+            <div class="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3.5 mb-3.5">
+              <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                TYFCB 売上貢献
               </div>
               <div class="flex items-baseline gap-1.5">
                 <span id="growth-tyfcb-6m" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
@@ -299,10 +312,10 @@
             </div>
 
             <!-- 5 Core Metrics Grid -->
-            <div class="grid grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-2 gap-2">
               <!-- リファーラル数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-total-6m" class="text-xl font-black text-blue-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">件</span>
@@ -313,19 +326,19 @@
               </div>
 
               <!-- 外部リファーラル率 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-ext-rate-6m" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                  <div id="growth-ref-bar-6m" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-1 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-6m" class="bg-indigo-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
 
               <!-- ビジター数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-visitors-6m" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">名</span>
@@ -333,8 +346,8 @@
               </div>
 
               <!-- 1to1 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-oto-6m" class="text-xl font-black text-amber-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">回</span>
@@ -343,8 +356,8 @@
             </div>
 
             <!-- CEU Full Width Metric -->
-            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
-              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+            <div class="mt-2 bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs flex items-center justify-between">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
               <div class="flex items-baseline gap-1">
                 <span id="growth-ceu-6m" class="text-base font-black text-purple-600 tabular-nums">--</span>
                 <span class="text-3xs font-bold text-slate-400">pt</span>
@@ -354,23 +367,22 @@
         </div>
 
         <!-- CARD 3: 全期間の成果 (累計) -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between">
+        <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
           <div>
             <!-- Card Header -->
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-slate-900"></span>
                 <span class="text-xs font-black text-slate-900 tracking-tight">全期間の成果</span>
-                <span class="text-3xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">チャプター累計</span>
+                <span class="text-3xs font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">累計</span>
               </div>
               <span id="growth-period-all-dates" class="text-3xs font-bold text-slate-400 tabular-nums">--</span>
             </div>
 
             <!-- Primary Highlight KPI: TYFCB -->
-            <div class="bg-slate-50/70 border border-slate-100 rounded-xl p-3.5 mb-4">
-              <div class="flex items-center justify-between text-3xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                <span>TYFCB 売上貢献</span>
-                <span class="text-slate-400">Thank You For Closed Business</span>
+            <div class="bg-slate-50/70 border border-slate-200/60 rounded-xl p-3.5 mb-3.5">
+              <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">
+                TYFCB 売上貢献
               </div>
               <div class="flex items-baseline gap-1.5">
                 <span id="growth-tyfcb-all" class="text-2xl sm:text-3xl font-black text-slate-900 tabular-nums">-- 万円</span>
@@ -378,10 +390,10 @@
             </div>
 
             <!-- 5 Core Metrics Grid -->
-            <div class="grid grid-cols-2 gap-2.5">
+            <div class="grid grid-cols-2 gap-2">
               <!-- リファーラル数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">リファーラル数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-total-all" class="text-xl font-black text-blue-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">件</span>
@@ -392,19 +404,19 @@
               </div>
 
               <!-- 外部リファーラル率 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">外部リファーラル率</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-ref-ext-rate-all" class="text-xl font-black text-indigo-600 tabular-nums">--%</span>
                 </div>
-                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden">
-                  <div id="growth-ref-bar-all" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="w-full bg-slate-100 rounded-full h-1 mt-2 overflow-hidden">
+                  <div id="growth-ref-bar-all" class="bg-indigo-500 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
                 </div>
               </div>
 
               <!-- ビジター数 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">ビジター数</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-visitors-all" class="text-xl font-black text-emerald-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">名</span>
@@ -412,8 +424,8 @@
               </div>
 
               <!-- 1to1 -->
-              <div class="bg-white border border-slate-100 rounded-xl p-3">
-                <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
+              <div class="bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs">
+                <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-1">1to1 実施</div>
                 <div class="flex items-baseline gap-1">
                   <span id="growth-oto-all" class="text-xl font-black text-amber-600 tabular-nums">--</span>
                   <span class="text-3xs font-bold text-slate-400">回</span>
@@ -422,8 +434,8 @@
             </div>
 
             <!-- CEU Full Width Metric -->
-            <div class="mt-2.5 bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between">
-              <span class="text-3xs font-bold text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
+            <div class="mt-2 bg-white border border-slate-200/70 rounded-xl p-3 shadow-2xs flex items-center justify-between">
+              <span class="text-3xs font-black text-slate-400 uppercase tracking-wider">CEU (研鑽)</span>
               <div class="flex items-baseline gap-1">
                 <span id="growth-ceu-all" class="text-base font-black text-purple-600 tabular-nums">--</span>
                 <span class="text-3xs font-bold text-slate-400">pt</span>
@@ -531,21 +543,25 @@
   <!-- ======================================================== -->
   <!-- SUBVIEW 2: RPW と PPW 改善ハブ (全員でPPW 2.0ラインへ)        -->
   <!-- ======================================================== -->
+  <!-- ======================================================== -->
+  <!-- SUBVIEW 2: RPW と PPW 改善ハブ (全員でPPW 2.0ラインへ)        -->
+  <!-- ======================================================== -->
   <div id="palms-subview-ppw-rpw" class="palms-subview hidden">
-    <!-- Header: Core Philosophy & Progress Ring (Apple Fitness Style) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <!-- Header: Core Philosophy & Progress Summary (Apple HIG Style) -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 mb-6 shadow-2xs hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+          <span class="text-3xs font-black uppercase tracking-wider text-slate-400">BENCHMARK ACCELERATOR</span>
+        </div>
         <h3 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
           数字を「評価」ではなく「改善」に使い、全員でPPW 2.0000のラインへ
         </h3>
-        <p class="text-xs text-slate-400 mt-1">
-          個別フォロー・適切な目標設定・行動共有でチャプター全員の成長を推進
-        </p>
       </div>
       <div class="flex items-center gap-3 shrink-0 self-start md:self-auto">
         <div class="text-right">
-          <div class="text-3xs font-bold uppercase tracking-wider text-slate-400">達成率</div>
-          <div class="text-xl sm:text-2xl font-black text-blue-600 tabular-nums" id="ppw-achievement-rate">--%</div>
+          <div class="text-3xs font-black uppercase tracking-wider text-slate-400">達成率</div>
+          <div class="text-2xl sm:text-3xl font-black text-blue-600 tabular-nums" id="ppw-achievement-rate">--%</div>
         </div>
         <div class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-800 text-xs font-black tabular-nums">
           <span id="ppw-qualified-count">0</span> / <span id="ppw-total-member-count">0</span> 名
@@ -554,7 +570,7 @@
     </div>
 
     <!-- Member Distribution Bar Chart (PPW & RPW) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs mb-6">
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
         <h3 class="text-sm font-bold text-slate-900">メンバー別 PPW & RPW 分布</h3>
         <div class="flex items-center gap-3 text-3xs font-bold">
@@ -575,7 +591,7 @@
     <div class="mb-6">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <!-- Tier 1: Urgent Follow (< 1.0) -->
-        <div onclick="filterPpwFollowList('urgent')" id="ppw-filter-urgent" class="ppw-tier-card cursor-pointer bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between active:scale-98">
+        <div onclick="filterPpwFollowList('urgent')" id="ppw-filter-urgent" class="ppw-tier-card cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex items-center justify-between active:scale-98">
           <div>
             <div class="text-xs font-black text-rose-600 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-rose-500"></span>
@@ -590,7 +606,7 @@
         </div>
 
         <!-- Tier 2: Step-up (1.0 <= PPW < 2.0) -->
-        <div onclick="filterPpwFollowList('stepup')" id="ppw-filter-stepup" class="ppw-tier-card cursor-pointer bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between active:scale-98">
+        <div onclick="filterPpwFollowList('stepup')" id="ppw-filter-stepup" class="ppw-tier-card cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex items-center justify-between active:scale-98">
           <div>
             <div class="text-xs font-black text-amber-600 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -605,7 +621,7 @@
         </div>
 
         <!-- Tier 3: Benchmarks (PPW >= 2.0) -->
-        <div onclick="filterPpwFollowList('benchmark')" id="ppw-filter-benchmark" class="ppw-tier-card cursor-pointer bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs transition-all flex items-center justify-between active:scale-98">
+        <div onclick="filterPpwFollowList('benchmark')" id="ppw-filter-benchmark" class="ppw-tier-card cursor-pointer bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex items-center justify-between active:scale-98">
           <div>
             <div class="text-xs font-black text-emerald-600 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -622,7 +638,7 @@
 
       <!-- Follow-up Members Card Grid -->
       <div id="ppw-follow-member-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-        <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200 rounded-2xl">
+        <div class="col-span-full p-8 text-center text-slate-400 bg-white border border-slate-200/90 rounded-2xl">
           <p class="text-xs">データを集計中...</p>
         </div>
       </div>
@@ -631,7 +647,7 @@
     <!-- Goal Setting Simulator & Top Performer Best Practice Section (2 Columns) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
       <!-- 1. Goal Setting Simulator -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
             <h4 class="text-sm font-bold text-slate-900">目標設定シミュレーター (PPW 2.0000)</h4>
@@ -647,7 +663,7 @@
             </select>
           </div>
 
-          <div id="ppw-sim-result-container" class="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
+          <div id="ppw-sim-result-container" class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4">
             <div class="text-center text-slate-400 py-4 text-xs">
               メンバーを選択するとシミュレーションが表示されます
             </div>
@@ -656,46 +672,46 @@
       </div>
 
       <!-- 2. Top Performers Knowledge & Action Sharing -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
             <h4 class="text-sm font-bold text-slate-900">上位メンバーの行動傾向・ベストプラクティス</h4>
-            <span class="text-3xs font-bold text-slate-400">PPW 2.0+ 平均</span>
+            <span class="text-3xs font-black text-slate-400 uppercase">PPW 2.0+ 平均</span>
           </div>
 
           <!-- Top Metrics Breakdown -->
           <div class="grid grid-cols-3 gap-2.5 mb-4">
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">1to1 頻度</div>
+            <div class="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3 text-center">
+              <div class="text-3xs font-black text-slate-400 mb-0.5">1to1 頻度</div>
               <div class="text-base font-black text-slate-900 tabular-nums" id="top-avg-oto">週 1.4 回</div>
             </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">外部紹介比率</div>
+            <div class="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3 text-center">
+              <div class="text-3xs font-black text-slate-400 mb-0.5">外部紹介比率</div>
               <div class="text-base font-black text-indigo-600 tabular-nums" id="top-ext-ratio">68 %</div>
             </div>
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-              <div class="text-3xs font-bold text-slate-400 mb-0.5">月ビジター招待</div>
+            <div class="bg-slate-50/80 border border-slate-200/60 rounded-xl p-3 text-center">
+              <div class="text-3xs font-black text-slate-400 mb-0.5">月ビジター招待</div>
               <div class="text-base font-black text-emerald-600 tabular-nums" id="top-avg-v">月 0.8 名</div>
             </div>
           </div>
 
           <!-- Action Tips List (Minimal) -->
           <div class="space-y-2 text-2xs text-slate-600">
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+            <div class="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/50 flex items-start gap-2.5">
               <span class="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 font-bold text-3xs">1</span>
               <div>
                 <b class="text-slate-900">1to1前の「欲しい紹介相手」の事前言語化</b>
                 <p class="text-slate-400 mt-0.5">具体的な会社名・役職を指定してヒアリングすることで外部紹介率が劇的に向上。</p>
               </div>
             </div>
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+            <div class="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/50 flex items-start gap-2.5">
               <span class="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 font-bold text-3xs">2</span>
               <div>
                 <b class="text-slate-900">自社クライアントへのヒアリング時の他社紹介</b>
                 <p class="text-slate-400 mt-0.5">普段の商談でお困りごとを拾い、即チャプターメンバーへお繋ぎする習慣化。</p>
               </div>
             </div>
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5">
+            <div class="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/50 flex items-start gap-2.5">
               <span class="w-4 h-4 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 font-bold text-3xs">3</span>
               <div>
                 <b class="text-slate-900">同伴ビジターへの事前オリエンテーション</b>
@@ -715,7 +731,7 @@
     <!-- ========================================== -->
     <!-- 1. Chapter Traffic Light (チャプターレベルスコア 100点) -->
     <!-- ========================================== -->
-    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs mb-8">
+    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-all mb-8">
       <!-- Chapter Traffic Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
         <div>
@@ -731,7 +747,7 @@
 
         <div class="flex items-center gap-4">
           <!-- Score Block -->
-          <div class="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-right shrink-0">
+          <div class="bg-slate-50/80 border border-slate-200/60 rounded-2xl px-5 py-3 text-right shrink-0">
             <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-0.5">チャプター総合点</div>
             <div class="flex items-baseline justify-end gap-1.5">
               <span id="ctl-total-score" class="text-3xl sm:text-4xl font-black text-emerald-600 tabular-nums">--</span>
@@ -744,7 +760,7 @@
           </div>
 
           <!-- Toggle Criteria Table Button -->
-          <button type="button" onclick="toggleChapterTrafficCriteriaModal()" class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0" title="チャプタートラフィックの点数基準を確認">
+          <button type="button" onclick="toggleChapterTrafficCriteriaModal()" class="px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-slate-300 rounded-xl text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0" title="チャプタートラフィックの点数基準を確認">
             <i class="fa-solid fa-table-list text-blue-600"></i>
             <span class="hidden md:inline">点数基準</span>
           </button>
@@ -753,14 +769,14 @@
 
       <!-- 7 Core Evaluated Metrics Matrix (100pt Total) -->
       <div class="pt-5">
-        <div class="text-2xs font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+        <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
           <span>7大評価指標 (100点満点)</span>
           <span class="text-3xs font-bold text-slate-400">過去6か月間データ基準</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
           <!-- 1. Chapter Size (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">サイズ</span>
@@ -771,14 +787,14 @@
                 <span class="text-3xs font-bold text-slate-400">名</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">51名≦ で満点</span>
             </div>
           </div>
 
           <!-- 2. Net Growth (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">純増数</span>
@@ -789,14 +805,14 @@
                 <span class="text-3xs font-bold text-slate-400">名</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">+5名≦ で満点</span>
             </div>
           </div>
 
           <!-- 3. Retention Rate (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">更新率</span>
@@ -807,14 +823,14 @@
                 <span class="text-3xs font-bold text-slate-400">%</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">70%≦ で満点</span>
             </div>
           </div>
 
           <!-- 4. Referrals per Meeting (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">リファーラル</span>
@@ -825,14 +841,14 @@
                 <span class="text-3xs font-bold text-slate-400">件/週・人</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">1.5超 で満点</span>
             </div>
           </div>
 
           <!-- 5. Visitors per Week (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">ビジター数</span>
@@ -843,14 +859,14 @@
                 <span class="text-3xs font-bold text-slate-400">名/週</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">8.0超 で満点</span>
             </div>
           </div>
 
           <!-- 6. Join Rate (10pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">加入率</span>
@@ -861,14 +877,14 @@
                 <span class="text-3xs font-bold text-slate-400">%</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">20%超 で満点</span>
             </div>
           </div>
 
           <!-- 7. Absenteeism Rate (15pt) -->
-          <div class="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-3.5 flex flex-col justify-between">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">欠席率</span>
@@ -879,7 +895,7 @@
                 <span class="text-3xs font-bold text-slate-400">%</span>
               </div>
             </div>
-            <div class="text-3xs text-slate-400 mt-1 pt-1.5 border-t border-slate-200/50 flex justify-between font-medium">
+            <div class="text-[10px] text-slate-400 mt-1 pt-1.5 border-t border-slate-100 flex justify-between font-medium">
               <span>基準</span>
               <span class="font-bold text-slate-600">≦1.75% で満点</span>
             </div>
@@ -887,8 +903,8 @@
         </div>
 
         <!-- 4 Reference Metrics (Not scored) -->
-        <div class="bg-slate-50/50 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">スコア対象外 (参考数値):</div>
+        <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">参考数値:</div>
           <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
             <div class="flex items-baseline gap-1.5">
               <span class="text-slate-500 font-medium">外与率:</span>
@@ -915,7 +931,7 @@
     <!-- 2. Personal Traffic Light (個人トラフィックライト 100点) -->
     <!-- ========================================== -->
     <!-- Traffic Lights Overview Card (Apple Radical Minimalism) -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs mb-6">
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <!-- Chapter Green Rate Hero -->
         <div class="flex items-center gap-4">
@@ -936,22 +952,22 @@
 
         <!-- Minimalist Filter Pills (Apple Segmented Control) -->
         <div class="flex items-center gap-1.5 flex-wrap" id="traffic-light-zone-filters">
-          <button type="button" onclick="filterTrafficLightZone('all')" data-zone="all" class="tl-filter-pill active px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-slate-900 text-white shadow-2xs">
+          <button type="button" onclick="filterTrafficLightZone('all')" data-zone="all" class="tl-filter-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-slate-900 text-white shadow-2xs">
             すべて <span id="tl-count-all" class="tabular-nums ml-0.5 opacity-70">0</span>
           </button>
-          <button type="button" onclick="filterTrafficLightZone('green')" data-zone="green" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+          <button type="button" onclick="filterTrafficLightZone('green')" data-zone="green" class="tl-filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span id="tl-count-green" class="tabular-nums text-emerald-700 font-black">0</span>
           </button>
-          <button type="button" onclick="filterTrafficLightZone('yellow')" data-zone="yellow" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+          <button type="button" onclick="filterTrafficLightZone('yellow')" data-zone="yellow" class="tl-filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <span id="tl-count-yellow" class="tabular-nums text-amber-700 font-black">0</span>
           </button>
-          <button type="button" onclick="filterTrafficLightZone('red')" data-zone="red" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+          <button type="button" onclick="filterTrafficLightZone('red')" data-zone="red" class="tl-filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-rose-500"></span>
             <span id="tl-count-red" class="tabular-nums text-rose-700 font-black">0</span>
           </button>
-          <button type="button" onclick="filterTrafficLightZone('grey')" data-zone="grey" class="tl-filter-pill px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
+          <button type="button" onclick="filterTrafficLightZone('grey')" data-zone="grey" class="tl-filter-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300 flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-slate-400"></span>
             <span id="tl-count-grey" class="tabular-nums text-slate-600 font-black">0</span>
           </button>

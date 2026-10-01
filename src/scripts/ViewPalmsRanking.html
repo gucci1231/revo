@@ -2069,14 +2069,14 @@ function renderPalmsPodium(records) {
     const memberNameSafe = (m.member_name || '').replace(/'/g, "\\'");
 
     html += `
-      <div class="bg-white rounded-2xl ${borderAccent} p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5">
+      <div class="bg-white rounded-2xl border border-slate-200/90 ${borderAccent} p-5 relative overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs shadow-2xs">
         <!-- Top Meta: Rank Badge & Traffic Light Badge -->
         <div class="flex items-center justify-between mb-3">
           <div class="flex items-center gap-1.5">
             <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs ${badgeClass}">
               ${rank}
             </span>
-            <span class="text-2xs font-extrabold uppercase tracking-wider text-slate-500">${badgeLabel}</span>
+            <span class="text-2xs font-black uppercase tracking-wider text-slate-500">${badgeLabel}</span>
           </div>
           <span class="text-xs px-2 py-0.5 rounded-full border ${tl.tierBadgeClass} flex items-center justify-center shrink-0 cursor-default" title="${tl.tierName} (${m.total_score}pt)">
             <span>${tl.tierDot}</span>
@@ -2085,7 +2085,7 @@ function renderPalmsPodium(records) {
 
         <!-- Member Info -->
         <div class="mb-4">
-          <h4 class="text-base sm:text-lg font-black text-slate-800 tracking-tight cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2 group flex-wrap" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
+          <h4 class="text-base sm:text-lg font-black text-slate-900 tracking-tight cursor-pointer hover:text-blue-600 transition-colors flex items-center gap-2 group flex-wrap" onclick="openPalmsDetailModal('${memberNameSafe}')" title="パームス詳細を表示">
             <span class="group-hover:underline underline-offset-4 decoration-blue-500">${m.member_name}</span>
             ${m.is_resigned ? '<span class="inline-flex items-center px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">退会</span>' : ''}
             <i class="fa-solid fa-chevron-right text-3xs text-slate-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all"></i>
@@ -2094,34 +2094,34 @@ function renderPalmsPodium(records) {
         </div>
 
         <!-- Total Score & PPW Highlight -->
-        <div class="mb-4 pt-2 border-t border-slate-100 flex items-baseline justify-between">
+        <div class="mb-4 pt-2.5 border-t border-slate-100 flex items-baseline justify-between">
           <div>
-            <div class="text-3xs font-bold text-slate-400 uppercase tracking-wider">トラフィックライト総合点</div>
-            <div class="text-2xl sm:text-3xl font-black font-tabular tracking-tight text-slate-800">
-              ${m.total_score} <span class="text-xs font-bold text-slate-400">/ 100 pt</span>
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">総合スコア</div>
+            <div class="text-2xl sm:text-3xl font-black font-tabular tracking-tight text-slate-900">
+              ${m.total_score} <span class="text-xs font-bold text-slate-400">/ 100</span>
             </div>
           </div>
           <div class="text-right">
-            <div class="text-3xs font-bold text-slate-400">週貢献指数 (PPW)</div>
-            <div class="text-lg sm:text-xl font-black font-tabular text-blue-600">
+            <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">PPW</div>
+            <div class="text-xl sm:text-2xl font-black font-tabular text-blue-600">
               ${m.ppw.toFixed(2)}
             </div>
           </div>
         </div>
 
-        <!-- Mini Key Stats (RPW, 1to1, Visitors, Tyfcb) -->
+        <!-- Mini Key Stats (RPW, 1to1, Visitors) -->
         <div class="grid grid-cols-3 gap-1.5 pt-3 border-t border-slate-100 text-center text-2xs">
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">RPW (週リファ)</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${m.rpw.toFixed(2)}件</div>
+          <div class="bg-slate-50/80 border border-slate-200/50 rounded-xl p-2">
+            <div class="text-3xs text-slate-400 font-black uppercase">RPW</div>
+            <div class="text-xs font-black text-slate-800 font-tabular mt-0.5">${m.rpw.toFixed(2)}</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">1to1 (週平均)</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${tl.rates.otoPerWeek.toFixed(2)}回</div>
+          <div class="bg-slate-50/80 border border-slate-200/50 rounded-xl p-2">
+            <div class="text-3xs text-slate-400 font-black uppercase">1to1</div>
+            <div class="text-xs font-black text-slate-800 font-tabular mt-0.5">${tl.rates.otoPerWeek.toFixed(2)}</div>
           </div>
-          <div class="bg-slate-50 rounded-lg p-1.5">
-            <div class="text-3xs text-slate-400 font-bold">ビジター招待</div>
-            <div class="text-xs font-black text-slate-700 font-tabular">${m.visitors}名</div>
+          <div class="bg-slate-50/80 border border-slate-200/50 rounded-xl p-2">
+            <div class="text-3xs text-slate-400 font-black uppercase">ビジター</div>
+            <div class="text-xs font-black text-slate-800 font-tabular mt-0.5">${m.visitors}</div>
           </div>
         </div>
       </div>
@@ -3388,10 +3388,11 @@ let currentPpwFilterTier = 'urgent';
 function switchPalmsSubTab(subTabName) {
   currentPalmsSubTab = subTabName;
 
-  // 1. Update Drawer Navigation Items & Subview Visibility
+  // 1. Update Drawer Navigation Items, Segmented Pills & Subview Visibility
   const subNavTabs = ['growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic'];
   subNavTabs.forEach(t => {
     const drawerItem = document.getElementById('drawer-item-' + t);
+    const segBtn = document.getElementById('palms-subtab-' + t);
     const view = document.getElementById(`palms-subview-${t}`);
 
     if (drawerItem) {
@@ -3399,6 +3400,14 @@ function switchPalmsSubTab(subTabName) {
         drawerItem.classList.add('active');
       } else {
         drawerItem.classList.remove('active');
+      }
+    }
+
+    if (segBtn) {
+      if (t === subTabName) {
+        segBtn.className = 'palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black';
+      } else {
+        segBtn.className = 'palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60';
       }
     }
 
@@ -3804,7 +3813,7 @@ function renderPpwFollowMemberGrid(tier) {
       : `<span class="text-3xs text-slate-400 font-semibold">${weeks}週</span>`;
 
     html += `
-      <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
         <div>
           <!-- Header: Name & PPW -->
           <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
@@ -3831,7 +3840,7 @@ function renderPpwFollowMemberGrid(tier) {
           </div>
 
           <!-- Quick Metrics (4 items: RPW, リファーラル, ビジター, 推薦の言葉) -->
-          <div class="grid grid-cols-4 gap-1 text-center bg-slate-50 rounded-xl p-2 mb-3 text-3xs">
+          <div class="grid grid-cols-4 gap-1 text-center bg-slate-50/80 border border-slate-200/50 rounded-xl p-2 mb-3 text-3xs">
             <div>
               <div class="text-slate-400 font-bold">RPW</div>
               <div class="font-black text-indigo-600 tabular-nums">${rpwVal}</div>
@@ -3851,7 +3860,7 @@ function renderPpwFollowMemberGrid(tier) {
           </div>
 
           <!-- Advice Banner -->
-          <div class="text-3xs font-bold text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-3 flex items-center gap-1.5">
+          <div class="text-3xs font-bold text-slate-600 bg-slate-50/80 border border-slate-200/50 rounded-xl px-2.5 py-1.5 mb-3 flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
             <span>${gapAdvice}</span>
           </div>
