@@ -34,8 +34,18 @@ try {
                 m.category as member_category,
                 m.profession as member_profession
             FROM palms_reports p
-            LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
+            LEFT JOIN (
+                SELECT name, category, profession, status
+                FROM (
+                    SELECT name, category, profession, status,
+                           CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
+                    FROM members
+                    ORDER BY priority ASC, id ASC
+                )
+                GROUP BY name
+            ) m ON p.member_name = m.name
             WHERE {$where}
+            GROUP BY p.id
             ORDER BY p.end_date DESC
         ";
         $stmt = $pdo->prepare($sql);
@@ -343,8 +353,18 @@ try {
                 m.profession as member_profession,
                 COALESCE(m.status, '在籍') as member_status
             FROM palms_reports p
-            LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
+            LEFT JOIN (
+                SELECT name, category, profession, status
+                FROM (
+                    SELECT name, category, profession, status,
+                           CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
+                    FROM members
+                    ORDER BY priority ASC, id ASC
+                )
+                GROUP BY name
+            ) m ON p.member_name = m.name
             {$whereClause}
+            GROUP BY p.id
             ORDER BY (p.rgi_referrals_given_internal + p.rgo_referrals_given_external) DESC, p.one_to_ones DESC, p.v_visitors DESC
         ";
 
@@ -392,10 +412,19 @@ try {
                     m.profession as member_profession,
                     COALESCE(m.status, '在籍') as member_status
                 FROM palms_reports p
-                LEFT JOIN members m ON (p.member_name = m.name OR p.member_id = m.id)
+                LEFT JOIN (
+                    SELECT name, category, profession, status
+                    FROM (
+                        SELECT name, category, profession, status,
+                               CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
+                        FROM members
+                        ORDER BY priority ASC, id ASC
+                    )
+                    GROUP BY name
+                ) m ON p.member_name = m.name
                 WHERE (julianday(p.end_date) - julianday(p.start_date)) <= 14
                   AND p.end_date >= :start_date AND p.start_date <= :end_date
-                GROUP BY p.member_id, p.member_name
+                GROUP BY p.member_name
                 ORDER BY (SUM(p.rgi_referrals_given_internal) + SUM(p.rgo_referrals_given_external)) DESC, SUM(p.one_to_ones) DESC, SUM(p.v_visitors) DESC
             ";
             $aggStmt = $pdo->prepare($aggSql);

@@ -482,6 +482,31 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(processed[1].is_new_member, true);
     assert.strictEqual(processed[2].is_resigned, true);
   });
+
+  it('verifies parseAndProcessPalmsRecords eliminates duplicate records for the same member', () => {
+    const fnMatch = indexHtml.match(/function parseAndProcessPalmsRecords\(rawRecords,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(fnMatch);
+    const tlFnMatch = indexHtml.match(/function calcBniTrafficLightScore\(r,\s*weeks\)\s*\{([\s\S]*?)\n\}/);
+    assert.ok(tlFnMatch);
+
+    const parseAndProcessPalmsRecords = new Function('rawRecords', 'weeks', `
+      const calcBniTrafficLightScore = ${tlFnMatch[0]};
+      const findMemberByName = (name) => ({ name, status: '在籍' });
+      ${fnMatch[1]}
+    `);
+
+    const duplicateRecords = [
+      { member_name: '小山 世次', p_present: 10, rgi_referrals_given_internal: 5 },
+      { member_name: '小山 世次', p_present: 10, rgi_referrals_given_internal: 5 },
+      { member_name: '三島 文美', p_present: 12, rgi_referrals_given_internal: 8 },
+      { member_name: '三島 文美', p_present: 12, rgi_referrals_given_internal: 8 }
+    ];
+
+    const deduplicated = parseAndProcessPalmsRecords(duplicateRecords, 13);
+    assert.strictEqual(deduplicated.length, 2, 'Duplicates must be merged so each member appears exactly once');
+    assert.strictEqual(deduplicated[0].member_name, '小山 世次');
+    assert.strictEqual(deduplicated[1].member_name, '三島 文美');
+  });
 });
 
 

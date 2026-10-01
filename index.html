@@ -28395,8 +28395,20 @@ let activePalmsHalfYearPromise = null;
  */
 function parseAndProcessPalmsRecords(rawRecords, weeks) {
   if (!Array.isArray(rawRecords)) return [];
+
+  // Deduplicate rawRecords by member_name or member_id to guarantee unique members
+  const seenMemberKeys = new Set();
+  const uniqueRawRecords = [];
+  for (const r of rawRecords) {
+    const key = (r.member_name ? r.member_name.trim() : '') || String(r.member_id || r.id || '');
+    if (key && !seenMemberKeys.has(key)) {
+      seenMemberKeys.add(key);
+      uniqueRawRecords.push(r);
+    }
+  }
+
   let chapterMaxMeetings = 0;
-  rawRecords.forEach(r => {
+  uniqueRawRecords.forEach(r => {
     const pVal = Number(r.p_present != null ? r.p_present : (r.p || 0));
     const aVal = Number(r.a_absent != null ? r.a_absent : (r.a || 0));
     const lVal = Number(r.l_late != null ? r.l_late : (r.l || 0));
@@ -28406,7 +28418,7 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
     if (mCount > chapterMaxMeetings) chapterMaxMeetings = mCount;
   });
 
-  return rawRecords.map(r => {
+  return uniqueRawRecords.map(r => {
     const p = Number(r.p_present != null ? r.p_present : (r.p || 0));
     const a = Number(r.a_absent != null ? r.a_absent : (r.a || 0));
     const l = Number(r.l_late != null ? r.l_late : (r.l || 0));

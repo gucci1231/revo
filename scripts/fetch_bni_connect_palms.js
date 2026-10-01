@@ -288,7 +288,8 @@ function savePalmsToDb(records) {
       );
 
       INSERT OR IGNORE INTO members (id, category, name, profession, updated_at)
-      VALUES ('${r.member_id}', 'その他', '${escName}', '', '${now}');
+      SELECT '${r.member_id}', 'その他', '${escName}', '', '${now}'
+      WHERE NOT EXISTS (SELECT 1 FROM members WHERE name = '${escName}');
     `);
   });
 
