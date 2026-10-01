@@ -105,4 +105,30 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(devServerJs.includes('recurrence_group_id'), 'dev-server supports recurrence_group_id');
     assert.ok(devServerJs.includes("'weekdays'"), 'dev-server supports weekdays recurrence');
   });
+
+  it('verifies Meeting Customization Edit Modal, presets, and API routes exist', () => {
+    assert.ok(indexHtml.includes('id="modal-meeting-edit"'), 'Meeting edit modal exists in index.html');
+    assert.ok(indexHtml.includes('id="form-meeting-edit"'), 'Meeting edit form exists in index.html');
+    assert.ok(indexHtml.includes('id="mt-edit-title"'), 'Meeting title input exists in index.html');
+    assert.ok(indexHtml.includes('id="mt-edit-category"'), 'Meeting category select exists in index.html');
+    assert.ok(indexHtml.includes('id="mt-edit-is-online"'), 'Meeting is_online select exists in index.html');
+    assert.ok(indexHtml.includes('id="mt-edit-location"'), 'Meeting location input exists in index.html');
+    assert.ok(indexHtml.includes('id="btn-reset-meeting"'), 'Reset meeting button exists in index.html');
+    assert.ok(indexHtml.includes('id="btn-open-edit-meeting"'), 'Open edit meeting button exists in index.html');
+
+    assert.ok(viewScript.includes('function openMeetingEditModal('), 'openMeetingEditModal defined');
+    assert.ok(viewScript.includes('function handleMeetingEditSubmit('), 'handleMeetingEditSubmit defined');
+    assert.ok(viewScript.includes('function handleMeetingReset('), 'handleMeetingReset defined');
+    assert.ok(viewScript.includes('function setMeetingTitlePreset('), 'setMeetingTitlePreset defined');
+
+    assert.ok(apiService.includes("case 'saveMeetingCustomizationApi':"), 'saveMeetingCustomizationApi route exists in ApiService');
+    assert.ok(apiService.includes("case 'resetMeetingCustomizationApi':"), 'resetMeetingCustomizationApi route exists in ApiService');
+
+    assert.ok(databasePhp.includes('CREATE TABLE IF NOT EXISTS meeting_customizations'), 'meeting_customizations table defined in Database.php');
+    assert.ok(databasePhp.includes('seedDefaultMeetingCustomizations'), 'seedDefaultMeetingCustomizations exists in Database.php');
+    assert.ok(eventRepoPhp.includes('public function saveMeetingCustomization('), 'saveMeetingCustomization defined in EventRepository');
+    assert.ok(eventRepoPhp.includes('public function resetMeetingCustomization('), 'resetMeetingCustomization defined in EventRepository');
+    assert.ok(devServerJs.includes("action === 'save_meeting_customization'"), 'dev-server supports save_meeting_customization');
+    assert.ok(devServerJs.includes("action === 'reset_meeting_customization'"), 'dev-server supports reset_meeting_customization');
+  });
 });

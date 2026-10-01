@@ -14585,20 +14585,29 @@ select.form-input, select.form-select {
     <div class="p-5 pb-4 border-b border-slate-100 flex items-start justify-between gap-3">
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+          <span class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200" id="modal-meeting-category-badge">
             毎週木曜 定例会
           </span>
           <span id="modal-meeting-online-badge" class="px-2 py-0.5 rounded-full text-3xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
             会場 ＆ Zoom
+          </span>
+          <span id="modal-meeting-custom-badge" class="px-2 py-0.5 rounded-full text-3xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hidden">
+            特別情報設定済
           </span>
         </div>
         <h3 id="modal-meeting-title" class="text-base sm:text-lg font-black text-slate-900 leading-snug">
           BNI REvoチャプター 定例会
         </h3>
       </div>
-      <button type="button" onclick="closeMeetingDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
-        <i class="fa-solid fa-xmark text-sm"></i>
-      </button>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" id="btn-open-edit-meeting" onclick="openMeetingEditModalFromDetail()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer" title="定例会情報・タイトル・会場を変更">
+          <i class="fa-solid fa-pen text-3xs"></i>
+          <span>変更</span>
+        </button>
+        <button type="button" onclick="closeMeetingDetailModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Body -->
@@ -14622,6 +14631,16 @@ select.form-input, select.form-select {
       <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
         <div class="text-3xs font-bold text-slate-400 mb-1">会場情報</div>
         <div class="font-bold text-slate-800" id="modal-meeting-location">REvoチャプター定例会会場 & Zoom</div>
+        <div id="modal-meeting-url-wrap" class="mt-1 hidden">
+          <a id="modal-meeting-url" href="#" target="_blank" rel="noopener noreferrer" class="text-3xs text-blue-600 hover:underline inline-flex items-center gap-1 font-bold">
+            <i class="fa-solid fa-link"></i> 案内リンクを開く
+          </a>
+        </div>
+      </div>
+
+      <div id="modal-meeting-desc-wrap" class="bg-slate-50/70 p-3.5 rounded-xl border border-slate-100 hidden">
+        <div class="text-3xs font-bold text-slate-400 mb-1">詳細メモ・案内</div>
+        <div id="modal-meeting-desc" class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed"></div>
       </div>
 
       <div>
@@ -14637,14 +14656,134 @@ select.form-input, select.form-select {
 
     <!-- Footer -->
     <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-      <button type="button" onclick="closeMeetingDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors">
+      <button type="button" onclick="closeMeetingDetailModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
         閉じる
       </button>
-      <button type="button" onclick="switchTab('dashboard'); closeMeetingDetailModal();" class="px-4 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs flex items-center gap-1.5">
-        <span>ダッシュボードで確認</span>
-        <i class="fa-solid fa-chevron-right text-3xs"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="openMeetingEditModalFromDetail()" class="px-3.5 py-2 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer flex items-center gap-1.5">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span>定例会情報を編集</span>
+        </button>
+        <button type="button" onclick="switchTab('dashboard'); closeMeetingDetailModal();" class="px-4 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer">
+          <span>ダッシュボード</span>
+          <i class="fa-solid fa-chevron-right text-3xs"></i>
+        </button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- ================= MODAL 3-B: MEETING CUSTOMIZATION EDIT ================= -->
+<div id="modal-meeting-edit" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeMeetingEditModal();">
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <form id="form-meeting-edit" onsubmit="handleMeetingEditSubmit(event)">
+      <input type="hidden" id="mt-edit-date-val" value="">
+
+      <!-- Modal Header -->
+      <div class="p-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900 leading-none">定例会情報を変更</h3>
+            <p class="text-3xs text-slate-400 mt-1" id="mt-edit-date-display">2026年--月--日 (木) の定例会</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeMeetingEditModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 space-y-3.5 text-xs max-h-[75vh] overflow-y-auto">
+        <!-- Title -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">定例会タイトル / イベント名 <span class="text-red-500">*</span></label>
+          <input type="text" id="mt-edit-title" required placeholder="例: REvoチャプター 定例会、モメンタム、BOD ONLINE 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30">
+          <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+            <span class="text-3xs text-slate-400 font-bold">プリセット:</span>
+            <button type="button" onclick="setMeetingTitlePreset('REvoチャプター 定例会', '定例会', 0, '通常定例会会場 & Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">通常定例会</button>
+            <button type="button" onclick="setMeetingTitlePreset('モメンタム', 'モメンタム', 0, '通常定例会会場 & Zoom')" class="px-2 py-0.5 rounded text-3xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">モメンタム</button>
+            <button type="button" onclick="setMeetingTitlePreset('BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom オンライン')" class="px-2 py-0.5 rounded text-3xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-colors">BOD ONLINE</button>
+            <button type="button" onclick="setMeetingTitlePreset('BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂')" class="px-2 py-0.5 rounded text-3xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors">BOD 対面 (スター食堂)</button>
+          </div>
+        </div>
+
+        <!-- Category & Format -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">カテゴリ</label>
+            <select id="mt-edit-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              <option value="定例会">定例会 (通常)</option>
+              <option value="ビジネスオープンデー">ビジネスオープンデー (BOD)</option>
+              <option value="モメンタム">モメンタム</option>
+              <option value="役員会">役員会・MTG</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">開催形式</label>
+            <select id="mt-edit-is-online" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+              <option value="0">対面・リアル開催 (会場)</option>
+              <option value="1">オンライン (Zoom)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Location & URL -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">会場名 / 場所</label>
+            <input type="text" id="mt-edit-location" placeholder="例: スター食堂、通常定例会会場 & Zoom 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Zoom URL / 案内リンク</label>
+            <input type="url" id="mt-edit-url" placeholder="https://zoom.us/..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 font-mono">
+          </div>
+        </div>
+
+        <!-- Times -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">開始時刻</label>
+            <input type="time" id="mt-edit-start-time" value="06:45" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">終了時刻</label>
+            <input type="time" id="mt-edit-end-time" value="08:30" class="w-full px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-mono font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
+          </div>
+        </div>
+
+        <!-- Organizer -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">主催者 / 担当チーム</label>
+          <input type="text" id="mt-edit-organizer" value="REvoチャプター プレジデント & 運営チーム" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:border-blue-500">
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">詳細案内・特記事項</label>
+          <textarea id="mt-edit-desc" rows="3" placeholder="定例会の特別プログラム、アジェンダ、持ち物などを入力..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+        <button type="button" id="btn-reset-meeting" onclick="handleMeetingReset()" class="px-3 py-2 rounded-xl text-xs font-bold text-amber-700 hover:bg-amber-50 border border-amber-200 transition-colors">
+          <i class="fa-solid fa-rotate-left mr-1"></i> デフォルトに戻す
+        </button>
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" onclick="closeMeetingEditModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+            キャンセル
+          </button>
+          <button type="submit" id="btn-save-meeting-edit" class="px-5 py-2 rounded-xl text-xs font-black text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-xs active:scale-95 cursor-pointer">
+            変更を保存する
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -15152,6 +15291,20 @@ const ApiService = {
           url: '/api/events.php?action=save_chapter_event',
           method: 'POST',
           body: args[0] || {}
+        };
+      case 'saveMeetingCustomizationApi':
+      case 'saveMeetingApi':
+        return {
+          url: '/api/events.php?action=save_meeting_customization',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'resetMeetingCustomizationApi':
+      case 'resetMeetingApi':
+        return {
+          url: '/api/events.php?action=reset_meeting_customization',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { meeting_date: args[0] }
         };
       case 'deleteChapterEventApi':
         return {
@@ -38061,19 +38214,75 @@ async function handleDeleteChapterEvent(deleteSeries = false) {
   }
 }
 
+let currentSelectedMeeting = null;
+
 /**
  * Open Regular Meeting Detail Modal
  */
 function openMeetingDetailModal(meeting) {
+  currentSelectedMeeting = meeting;
   const modal = document.getElementById('modal-meeting-detail');
   if (!modal) return;
 
   const d = new Date(meeting.start_datetime.replace(/-/g, '/'));
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-  const formattedDate = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${dayNames[d.getDay()]}) 07:00 ～ 08:30`;
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '07:00';
+  const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
+  const formattedDate = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${dayNames[d.getDay()]}) ${startTime} ～ ${endTime}`;
+
+  const titleEl = document.getElementById('modal-meeting-title');
+  if (titleEl) titleEl.innerText = meeting.title || 'BNI REvoチャプター 定例会';
+
+  const catBadge = document.getElementById('modal-meeting-category-badge');
+  if (catBadge) catBadge.innerText = meeting.category || '毎週木曜 定例会';
+
+  const onlineBadge = document.getElementById('modal-meeting-online-badge');
+  if (onlineBadge) {
+    if (meeting.is_online) {
+      onlineBadge.innerText = 'Zoom オンライン';
+      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200';
+    } else {
+      onlineBadge.innerText = '対面・リアル会場';
+      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200';
+    }
+  }
+
+  const customBadge = document.getElementById('modal-meeting-custom-badge');
+  if (customBadge) {
+    if (meeting.is_customized) {
+      customBadge.classList.remove('hidden');
+    } else {
+      customBadge.classList.add('hidden');
+    }
+  }
 
   document.getElementById('modal-meeting-datetime').innerText = formattedDate;
   document.getElementById('modal-meeting-visitor-count').innerText = meeting.visitor_count || 0;
+
+  const locEl = document.getElementById('modal-meeting-location');
+  if (locEl) locEl.innerText = meeting.location_name || 'REvoチャプター定例会会場 & Zoom';
+
+  const urlWrap = document.getElementById('modal-meeting-url-wrap');
+  const urlLink = document.getElementById('modal-meeting-url');
+  if (urlWrap && urlLink) {
+    if (meeting.location_url) {
+      urlLink.href = meeting.location_url;
+      urlWrap.classList.remove('hidden');
+    } else {
+      urlWrap.classList.add('hidden');
+    }
+  }
+
+  const descWrap = document.getElementById('modal-meeting-desc-wrap');
+  const descEl = document.getElementById('modal-meeting-desc');
+  if (descWrap && descEl) {
+    if (meeting.description) {
+      descEl.innerText = meeting.description;
+      descWrap.classList.remove('hidden');
+    } else {
+      descWrap.classList.add('hidden');
+    }
+  }
 
   // Find visitors matching this date from global visitors cache if available
   const listWrap = document.getElementById('modal-meeting-visitors-wrap');
@@ -38115,6 +38324,148 @@ function openMeetingDetailModal(meeting) {
 function closeMeetingDetailModal() {
   const modal = document.getElementById('modal-meeting-detail');
   if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Open Meeting Edit Modal
+ */
+function openMeetingEditModal(meeting) {
+  if (!meeting) return;
+  currentSelectedMeeting = meeting;
+
+  const modal = document.getElementById('modal-meeting-edit');
+  const form = document.getElementById('form-meeting-edit');
+  if (!modal || !form) return;
+
+  form.reset();
+
+  const dateKey = meeting.meeting_date || meeting.start_datetime.substring(0, 10);
+  const d = new Date(dateKey.replace(/-/g, '/'));
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dayName = dayNames[d.getDay()];
+
+  const dateDisplay = document.getElementById('mt-edit-date-display');
+  if (dateDisplay) {
+    dateDisplay.innerText = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 (${dayName}) の定例会`;
+  }
+
+  document.getElementById('mt-edit-date-val').value = dateKey;
+  document.getElementById('mt-edit-title').value = meeting.title || 'REvoチャプター 定例会';
+  document.getElementById('mt-edit-category').value = meeting.category || '定例会';
+  document.getElementById('mt-edit-is-online').value = meeting.is_online ? '1' : '0';
+  document.getElementById('mt-edit-location').value = meeting.location_name || '通常定例会会場 & Zoom';
+  document.getElementById('mt-edit-url').value = meeting.location_url || '';
+
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '06:45';
+  const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
+  document.getElementById('mt-edit-start-time').value = startTime;
+  document.getElementById('mt-edit-end-time').value = endTime;
+
+  document.getElementById('mt-edit-organizer').value = meeting.organizer || 'REvoチャプター プレジデント & 運営チーム';
+  document.getElementById('mt-edit-desc').value = meeting.description || '';
+
+  modal.classList.remove('hidden');
+}
+
+function openMeetingEditModalFromDetail() {
+  if (!currentSelectedMeeting) return;
+  closeMeetingDetailModal();
+  openMeetingEditModal(currentSelectedMeeting);
+}
+
+function closeMeetingEditModal() {
+  const modal = document.getElementById('modal-meeting-edit');
+  if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Quick Preset Fill
+ */
+function setMeetingTitlePreset(title, category, isOnline, locationName) {
+  document.getElementById('mt-edit-title').value = title;
+  document.getElementById('mt-edit-category').value = category;
+  document.getElementById('mt-edit-is-online').value = String(isOnline);
+  document.getElementById('mt-edit-location').value = locationName;
+  if (isOnline) {
+    document.getElementById('mt-edit-url').placeholder = 'https://zoom.us/j/...';
+  }
+}
+
+/**
+ * Save Meeting Edit
+ */
+async function handleMeetingEditSubmit(evt) {
+  evt.preventDefault();
+  const btn = document.getElementById('btn-save-meeting-edit');
+  if (btn) btn.disabled = true;
+
+  const meetingDate = document.getElementById('mt-edit-date-val').value;
+  const title = document.getElementById('mt-edit-title').value.trim();
+  const category = document.getElementById('mt-edit-category').value;
+  const isOnline = parseInt(document.getElementById('mt-edit-is-online').value, 10);
+  const locationName = document.getElementById('mt-edit-location').value.trim();
+  const locationUrl = document.getElementById('mt-edit-url').value.trim();
+  const startTime = document.getElementById('mt-edit-start-time').value || '06:45';
+  const endTime = document.getElementById('mt-edit-end-time').value || '08:30';
+  const organizer = document.getElementById('mt-edit-organizer').value.trim();
+  const desc = document.getElementById('mt-edit-desc').value.trim();
+
+  const startDatetime = `${meetingDate} ${startTime}:00`;
+  const endDatetime = endTime ? `${meetingDate} ${endTime}:00` : '';
+
+  try {
+    const res = await ApiService.call('saveMeetingCustomizationApi', {
+      meeting_date: meetingDate,
+      title,
+      category,
+      is_online: isOnline,
+      location_name: locationName,
+      location_url: locationUrl,
+      start_datetime: startDatetime,
+      end_datetime: endDatetime,
+      organizer,
+      description: desc
+    });
+
+    if (res && res.success !== false) {
+      showToast(res.message || '定例会情報を更新しました', 'success');
+      closeMeetingEditModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast(res?.message || '保存に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Save meeting customization error:', err);
+    showToast(err?.message || '定例会情報の保存中にエラーが発生しました', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/**
+ * Reset Meeting to Default
+ */
+async function handleMeetingReset() {
+  const meetingDate = document.getElementById('mt-edit-date-val').value;
+  if (!meetingDate) return;
+
+  if (!confirm(`${meetingDate} の定例会情報をデフォルト（通常定例会）に戻しますか？`)) {
+    return;
+  }
+
+  try {
+    const res = await ApiService.call('resetMeetingCustomizationApi', { meeting_date: meetingDate });
+    if (res && res.success !== false) {
+      showToast(res.message || '定例会情報をデフォルトに戻しました', 'success');
+      closeMeetingEditModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast(res?.message || 'リセットに失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Reset meeting error:', err);
+    showToast('定例会情報のリセット中にエラーが発生しました', 'error');
+  }
 }
 
 /**

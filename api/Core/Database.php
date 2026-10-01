@@ -217,6 +217,21 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS meeting_customizations (
+                meeting_date TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                category TEXT DEFAULT '定例会',
+                is_online INTEGER DEFAULT 0,
+                location_name TEXT DEFAULT '',
+                location_url TEXT DEFAULT '',
+                start_datetime TEXT DEFAULT '',
+                end_datetime TEXT DEFAULT '',
+                organizer TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                created_at TEXT,
+                updated_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_member ON palms_reports(member_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_dates ON palms_reports(start_date, end_date);
@@ -225,6 +240,7 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_region_events_start ON region_events(start_datetime);
             CREATE INDEX IF NOT EXISTS idx_region_events_type ON region_events(event_type_id);
             CREATE INDEX IF NOT EXISTS idx_chapter_events_start ON chapter_events(start_datetime);
+            CREATE INDEX IF NOT EXISTS idx_meeting_customizations_date ON meeting_customizations(meeting_date);
         ");
 
         try {
@@ -288,6 +304,7 @@ class Database {
         $this->seedDefaultEmailTemplates();
         $this->seedDefaultLinks();
         $this->seedDefaultChapterEvents();
+        $this->seedDefaultMeetingCustomizations();
     }
 
     private function seedDefaultEmailTemplates(): void {
@@ -632,6 +649,58 @@ class Database {
                     'created_at' => $now,
                     'updated_at' => $now
                 ]);
+            }
+        }
+    }
+
+    private function seedDefaultMeetingCustomizations(): void {
+        $now = date('Y-m-d H:i:s');
+        $defaults = [
+            [
+                'meeting_date' => '2026-10-22',
+                'title' => 'モメンタム',
+                'category' => 'モメンタム',
+                'is_online' => 0,
+                'location_name' => '通常定例会会場 & Zoom',
+                'location_url' => '',
+                'start_datetime' => '2026-10-22 06:45:00',
+                'end_datetime' => '2026-10-22 08:30:00',
+                'organizer' => 'REvoチャプター プレジデント & 運営チーム',
+                'description' => "【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\n6:45受付開始 / 7:00開会 / 8:30閉会"
+            ],
+            [
+                'meeting_date' => '2026-11-05',
+                'title' => 'BOD ONLINE',
+                'category' => 'ビジネスオープンデー',
+                'is_online' => 1,
+                'location_name' => 'Zoom オンライン',
+                'location_url' => '',
+                'start_datetime' => '2026-11-05 06:45:00',
+                'end_datetime' => '2026-11-05 08:30:00',
+                'organizer' => 'REvoチャプター メンバー全員',
+                'description' => "【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\n6:45受付開始 / 7:00開会 / 8:30閉会"
+            ],
+            [
+                'meeting_date' => '2026-11-19',
+                'title' => 'BOD 対面',
+                'category' => 'ビジネスオープンデー',
+                'is_online' => 0,
+                'location_name' => 'スター食堂',
+                'location_url' => '',
+                'start_datetime' => '2026-11-19 06:45:00',
+                'end_datetime' => '2026-11-19 08:30:00',
+                'organizer' => 'REvoチャプター メンバー全員',
+                'description' => "【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\n6:45受付開始 / 7:00開会 / 8:30閉会"
+            ]
+        ];
+
+        foreach ($defaults as $m) {
+            $exists = $this->fetchColumn("SELECT COUNT(*) FROM meeting_customizations WHERE meeting_date = ?", [$m['meeting_date']]);
+            if ((int)$exists === 0) {
+                $this->insert('meeting_customizations', array_merge($m, [
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]));
             }
         }
     }

@@ -51,6 +51,20 @@ function initDatabase() {
       created_at TEXT,
       updated_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS meeting_customizations (
+      meeting_date TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT DEFAULT '定例会',
+      is_online INTEGER DEFAULT 0,
+      location_name TEXT DEFAULT '',
+      location_url TEXT DEFAULT '',
+      start_datetime TEXT DEFAULT '',
+      end_datetime TEXT DEFAULT '',
+      organizer TEXT DEFAULT '',
+      description TEXT DEFAULT '',
+      created_at TEXT,
+      updated_at TEXT
+    );
     CREATE TABLE IF NOT EXISTS region_events (
       id INTEGER PRIMARY KEY,
       event_id_enc TEXT,
@@ -79,6 +93,21 @@ function initDatabase() {
   `);
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
+
+  // Seed default meeting customizations if not present
+  try {
+    const nowIso = new Date().toISOString().substring(0, 19).replace('T', ' ');
+    runSqlExec(`
+      INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
+      VALUES ('2026-10-22', 'モメンタム', 'モメンタム', 0, '通常定例会会場 & Zoom', '', '2026-10-22 06:45:00', '2026-10-22 08:30:00', 'REvoチャプター プレジデント & 運営チーム', '【モメンタム】定例会！チャプターの勢いを加速させる特別プログラム。\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+
+      INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
+      VALUES ('2026-11-05', 'BOD ONLINE', 'ビジネスオープンデー', 1, 'Zoom オンライン', '', '2026-11-05 06:45:00', '2026-11-05 08:30:00', 'REvoチャプター メンバー全員', '【BOD ONLINE】ビジネスオープンデー（オンラインZoom特別定例会）！\n多数のビジターをお招きしオンラインで開催。\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+
+      INSERT OR IGNORE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
+      VALUES ('2026-11-19', 'BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂', '', '2026-11-19 06:45:00', '2026-11-19 08:30:00', 'REvoチャプター メンバー全員', '【BOD 対面】ビジネスオープンデー（対面リアル特別定例会）！\n会場: スター食堂\n6:45受付開始 / 7:00開会 / 8:30閉会', '${nowIso}', '${nowIso}');
+    `);
+  } catch(e){}
 }
 initDatabase();
 
@@ -1644,27 +1673,41 @@ function handleApiRequest(req, res, urlObj) {
         const startRangeStr = startRangeD.toISOString().substring(0, 10);
         const endRangeStr = endRangeD.toISOString().substring(0, 10);
 
-        // 1. Regular Meetings (Thursdays)
+        // 1. Regular Meetings (Thursdays & Custom Overrides)
         const meetings = [];
+        let customRows = [];
+        try {
+          customRows = runSqlJson(`SELECT * FROM meeting_customizations WHERE meeting_date >= '${startRangeStr}' AND meeting_date <= '${endRangeStr}';`);
+        } catch(e) {}
+        const customMap = {};
+        customRows.forEach(cr => { customMap[cr.meeting_date] = cr; });
+
         let curD = new Date(startRangeStr);
         const endD = new Date(endRangeStr);
         while (curD <= endD) {
-          if (curD.getDay() === 4) { // Thursday
-            const dateStr = curD.toISOString().substring(0, 10);
+          const dateStr = curD.toISOString().substring(0, 10);
+          const isThursday = (curD.getDay() === 4);
+          const hasCustom = !!customMap[dateStr];
+
+          if (isThursday || hasCustom) {
             const vRow = runSqlJson(`SELECT COUNT(*) as cnt FROM visitors WHERE event_date LIKE '%${dateStr}%' OR event_date = '${dateStr.replace(/-/g, '/')}';`)[0] || {};
+            const custom = customMap[dateStr] || null;
+
             meetings.push({
               id: 'mt_' + dateStr,
+              meeting_date: dateStr,
               source_type: 'meeting',
-              title: 'REvoチャプター 定例会',
-              category: '定例会',
-              start_datetime: dateStr + ' 06:45:00',
-              end_datetime: dateStr + ' 08:30:00',
-              location_name: '通常定例会会場 & Zoom',
-              location_url: '',
-              is_online: 0,
-              organizer: 'REvoチャプター プレジデント & 運営チーム',
-              description: '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会',
-              visitor_count: parseInt(vRow.cnt || 0, 10)
+              title: custom ? (custom.title || 'REvoチャプター 定例会') : 'REvoチャプター 定例会',
+              category: custom ? (custom.category || '定例会') : '定例会',
+              start_datetime: (custom && custom.start_datetime) ? custom.start_datetime : (dateStr + ' 06:45:00'),
+              end_datetime: (custom && custom.end_datetime) ? custom.end_datetime : (dateStr + ' 08:30:00'),
+              location_name: custom ? (custom.location_name || '通常定例会会場 & Zoom') : '通常定例会会場 & Zoom',
+              location_url: custom ? (custom.location_url || '') : '',
+              is_online: custom ? (custom.is_online ? 1 : 0) : 0,
+              organizer: custom ? (custom.organizer || 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
+              description: custom ? (custom.description || '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会') : '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会',
+              visitor_count: parseInt(vRow.cnt || 0, 10),
+              is_customized: custom ? 1 : 0
             });
           }
           curD.setDate(curD.getDate() + 1);
@@ -1852,6 +1895,46 @@ function handleApiRequest(req, res, urlObj) {
         const id = urlObj.searchParams.get('id');
         const event = runSqlJson(`SELECT * FROM chapter_events WHERE id = '${id}';`)[0] || null;
         return res.end(JSON.stringify({ success: true, data: { event } }));
+      }
+
+      if (action === 'save_meeting_customization' || action === 'save_meeting') {
+        const body = input || {};
+        const meetingDate = (body.meeting_date || '').replace(/'/g, "''");
+        if (!meetingDate) {
+          return res.end(JSON.stringify({ success: false, message: '定例会の日付が指定されていません' }));
+        }
+        const title = (body.title || 'REvoチャプター 定例会').replace(/'/g, "''");
+        const category = (body.category || '定例会').replace(/'/g, "''");
+        const isOnline = body.is_online ? 1 : 0;
+        const locationName = (body.location_name || '').replace(/'/g, "''");
+        const locationUrl = (body.location_url || '').replace(/'/g, "''");
+        const startDatetime = (body.start_datetime || (meetingDate + ' 06:45:00')).replace(/'/g, "''");
+        const endDatetime = (body.end_datetime || (meetingDate + ' 08:30:00')).replace(/'/g, "''");
+        const organizer = (body.organizer || 'REvoチャプター プレジデント & 運営チーム').replace(/'/g, "''");
+        const description = (body.description || '').replace(/'/g, "''");
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+
+        try {
+          runSqlExec(`INSERT OR REPLACE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
+                     VALUES ('${meetingDate}', '${title}', '${category}', ${isOnline}, '${locationName}', '${locationUrl}', '${startDatetime}', '${endDatetime}', '${organizer}', '${description}', '${now}', '${now}');`);
+          return res.end(JSON.stringify({ success: true, message: `${meetingDate} の定例会情報を更新しました` }));
+        } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
+      }
+
+      if (action === 'reset_meeting_customization' || action === 'reset_meeting') {
+        const body = input || {};
+        const meetingDate = (body.meeting_date || urlObj.searchParams.get('meeting_date') || '').replace(/'/g, "''");
+        if (!meetingDate) {
+          return res.end(JSON.stringify({ success: false, message: '定例会の日付が指定されていません' }));
+        }
+        try {
+          runSqlExec(`DELETE FROM meeting_customizations WHERE meeting_date = '${meetingDate}';`);
+          return res.end(JSON.stringify({ success: true, message: `${meetingDate} の定例会情報をデフォルトに戻しました` }));
+        } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
       }
 
       if (action === 'get') {

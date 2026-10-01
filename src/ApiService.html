@@ -299,6 +299,20 @@ const ApiService = {
           method: 'POST',
           body: args[0] || {}
         };
+      case 'saveMeetingCustomizationApi':
+      case 'saveMeetingApi':
+        return {
+          url: '/api/events.php?action=save_meeting_customization',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'resetMeetingCustomizationApi':
+      case 'resetMeetingApi':
+        return {
+          url: '/api/events.php?action=reset_meeting_customization',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { meeting_date: args[0] }
+        };
       case 'deleteChapterEventApi':
         return {
           url: '/api/events.php?action=delete_chapter_event',

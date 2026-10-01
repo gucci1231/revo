@@ -1010,19 +1010,75 @@ async function handleDeleteChapterEvent(deleteSeries = false) {
   }
 }
 
+let currentSelectedMeeting = null;
+
 /**
  * Open Regular Meeting Detail Modal
  */
 function openMeetingDetailModal(meeting) {
+  currentSelectedMeeting = meeting;
   const modal = document.getElementById('modal-meeting-detail');
   if (!modal) return;
 
   const d = new Date(meeting.start_datetime.replace(/-/g, '/'));
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-  const formattedDate = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${dayNames[d.getDay()]}) 07:00 ～ 08:30`;
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '07:00';
+  const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
+  const formattedDate = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 (${dayNames[d.getDay()]}) ${startTime} ～ ${endTime}`;
+
+  const titleEl = document.getElementById('modal-meeting-title');
+  if (titleEl) titleEl.innerText = meeting.title || 'BNI REvoチャプター 定例会';
+
+  const catBadge = document.getElementById('modal-meeting-category-badge');
+  if (catBadge) catBadge.innerText = meeting.category || '毎週木曜 定例会';
+
+  const onlineBadge = document.getElementById('modal-meeting-online-badge');
+  if (onlineBadge) {
+    if (meeting.is_online) {
+      onlineBadge.innerText = 'Zoom オンライン';
+      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200';
+    } else {
+      onlineBadge.innerText = '対面・リアル会場';
+      onlineBadge.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200';
+    }
+  }
+
+  const customBadge = document.getElementById('modal-meeting-custom-badge');
+  if (customBadge) {
+    if (meeting.is_customized) {
+      customBadge.classList.remove('hidden');
+    } else {
+      customBadge.classList.add('hidden');
+    }
+  }
 
   document.getElementById('modal-meeting-datetime').innerText = formattedDate;
   document.getElementById('modal-meeting-visitor-count').innerText = meeting.visitor_count || 0;
+
+  const locEl = document.getElementById('modal-meeting-location');
+  if (locEl) locEl.innerText = meeting.location_name || 'REvoチャプター定例会会場 & Zoom';
+
+  const urlWrap = document.getElementById('modal-meeting-url-wrap');
+  const urlLink = document.getElementById('modal-meeting-url');
+  if (urlWrap && urlLink) {
+    if (meeting.location_url) {
+      urlLink.href = meeting.location_url;
+      urlWrap.classList.remove('hidden');
+    } else {
+      urlWrap.classList.add('hidden');
+    }
+  }
+
+  const descWrap = document.getElementById('modal-meeting-desc-wrap');
+  const descEl = document.getElementById('modal-meeting-desc');
+  if (descWrap && descEl) {
+    if (meeting.description) {
+      descEl.innerText = meeting.description;
+      descWrap.classList.remove('hidden');
+    } else {
+      descWrap.classList.add('hidden');
+    }
+  }
 
   // Find visitors matching this date from global visitors cache if available
   const listWrap = document.getElementById('modal-meeting-visitors-wrap');
@@ -1064,6 +1120,148 @@ function openMeetingDetailModal(meeting) {
 function closeMeetingDetailModal() {
   const modal = document.getElementById('modal-meeting-detail');
   if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Open Meeting Edit Modal
+ */
+function openMeetingEditModal(meeting) {
+  if (!meeting) return;
+  currentSelectedMeeting = meeting;
+
+  const modal = document.getElementById('modal-meeting-edit');
+  const form = document.getElementById('form-meeting-edit');
+  if (!modal || !form) return;
+
+  form.reset();
+
+  const dateKey = meeting.meeting_date || meeting.start_datetime.substring(0, 10);
+  const d = new Date(dateKey.replace(/-/g, '/'));
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dayName = dayNames[d.getDay()];
+
+  const dateDisplay = document.getElementById('mt-edit-date-display');
+  if (dateDisplay) {
+    dateDisplay.innerText = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 (${dayName}) の定例会`;
+  }
+
+  document.getElementById('mt-edit-date-val').value = dateKey;
+  document.getElementById('mt-edit-title').value = meeting.title || 'REvoチャプター 定例会';
+  document.getElementById('mt-edit-category').value = meeting.category || '定例会';
+  document.getElementById('mt-edit-is-online').value = meeting.is_online ? '1' : '0';
+  document.getElementById('mt-edit-location').value = meeting.location_name || '通常定例会会場 & Zoom';
+  document.getElementById('mt-edit-url').value = meeting.location_url || '';
+
+  const startTime = meeting.start_datetime ? meeting.start_datetime.substring(11, 16) : '06:45';
+  const endTime = meeting.end_datetime ? meeting.end_datetime.substring(11, 16) : '08:30';
+  document.getElementById('mt-edit-start-time').value = startTime;
+  document.getElementById('mt-edit-end-time').value = endTime;
+
+  document.getElementById('mt-edit-organizer').value = meeting.organizer || 'REvoチャプター プレジデント & 運営チーム';
+  document.getElementById('mt-edit-desc').value = meeting.description || '';
+
+  modal.classList.remove('hidden');
+}
+
+function openMeetingEditModalFromDetail() {
+  if (!currentSelectedMeeting) return;
+  closeMeetingDetailModal();
+  openMeetingEditModal(currentSelectedMeeting);
+}
+
+function closeMeetingEditModal() {
+  const modal = document.getElementById('modal-meeting-edit');
+  if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Quick Preset Fill
+ */
+function setMeetingTitlePreset(title, category, isOnline, locationName) {
+  document.getElementById('mt-edit-title').value = title;
+  document.getElementById('mt-edit-category').value = category;
+  document.getElementById('mt-edit-is-online').value = String(isOnline);
+  document.getElementById('mt-edit-location').value = locationName;
+  if (isOnline) {
+    document.getElementById('mt-edit-url').placeholder = 'https://zoom.us/j/...';
+  }
+}
+
+/**
+ * Save Meeting Edit
+ */
+async function handleMeetingEditSubmit(evt) {
+  evt.preventDefault();
+  const btn = document.getElementById('btn-save-meeting-edit');
+  if (btn) btn.disabled = true;
+
+  const meetingDate = document.getElementById('mt-edit-date-val').value;
+  const title = document.getElementById('mt-edit-title').value.trim();
+  const category = document.getElementById('mt-edit-category').value;
+  const isOnline = parseInt(document.getElementById('mt-edit-is-online').value, 10);
+  const locationName = document.getElementById('mt-edit-location').value.trim();
+  const locationUrl = document.getElementById('mt-edit-url').value.trim();
+  const startTime = document.getElementById('mt-edit-start-time').value || '06:45';
+  const endTime = document.getElementById('mt-edit-end-time').value || '08:30';
+  const organizer = document.getElementById('mt-edit-organizer').value.trim();
+  const desc = document.getElementById('mt-edit-desc').value.trim();
+
+  const startDatetime = `${meetingDate} ${startTime}:00`;
+  const endDatetime = endTime ? `${meetingDate} ${endTime}:00` : '';
+
+  try {
+    const res = await ApiService.call('saveMeetingCustomizationApi', {
+      meeting_date: meetingDate,
+      title,
+      category,
+      is_online: isOnline,
+      location_name: locationName,
+      location_url: locationUrl,
+      start_datetime: startDatetime,
+      end_datetime: endDatetime,
+      organizer,
+      description: desc
+    });
+
+    if (res && res.success !== false) {
+      showToast(res.message || '定例会情報を更新しました', 'success');
+      closeMeetingEditModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast(res?.message || '保存に失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Save meeting customization error:', err);
+    showToast(err?.message || '定例会情報の保存中にエラーが発生しました', 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+/**
+ * Reset Meeting to Default
+ */
+async function handleMeetingReset() {
+  const meetingDate = document.getElementById('mt-edit-date-val').value;
+  if (!meetingDate) return;
+
+  if (!confirm(`${meetingDate} の定例会情報をデフォルト（通常定例会）に戻しますか？`)) {
+    return;
+  }
+
+  try {
+    const res = await ApiService.call('resetMeetingCustomizationApi', { meeting_date: meetingDate });
+    if (res && res.success !== false) {
+      showToast(res.message || '定例会情報をデフォルトに戻しました', 'success');
+      closeMeetingEditModal();
+      loadCalendarAndEvents();
+    } else {
+      showToast(res?.message || 'リセットに失敗しました', 'error');
+    }
+  } catch (err) {
+    console.error('Reset meeting error:', err);
+    showToast('定例会情報のリセット中にエラーが発生しました', 'error');
+  }
 }
 
 /**

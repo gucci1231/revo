@@ -323,7 +323,7 @@ class EventRepository {
     }
 
     /**
-     * Generate regular chapter meetings for a date range (every Thursday 06:45 - 08:30)
+     * Generate regular chapter meetings for a date range (every Thursday 06:45 - 08:30) with customizations
      */
     public function getMeetingsForRange(string $startDate, string $endDate): array {
         $startTs = strtotime($startDate);
@@ -345,33 +345,103 @@ class EventRepository {
             }
         }
 
+        // Fetch meeting customizations in this range
+        $customRows = [];
+        try {
+            $customRows = $this->db->fetchAll(
+                "SELECT * FROM meeting_customizations WHERE meeting_date >= ? AND meeting_date <= ?",
+                [$startDate, $endDate]
+            );
+        } catch (\Exception $e) {}
+
+        $customMap = [];
+        foreach ($customRows as $cr) {
+            $customMap[$cr['meeting_date']] = $cr;
+        }
+
         $meetings = [];
         $cur = $startTs;
         while ($cur <= $endTs) {
-            // 4 is Thursday in PHP date('w')
-            if ((int)date('w', $cur) === 4) {
-                $dateStr = date('Y-m-d', $cur);
+            $dateStr = date('Y-m-d', $cur);
+            $isThursday = ((int)date('w', $cur) === 4);
+            $hasCustom = isset($customMap[$dateStr]);
+
+            // Include if Thursday or if explicitly customized
+            if ($isThursday || $hasCustom) {
                 $cnt = $visitorCountMap[$dateStr] ?? 0;
+                $custom = $customMap[$dateStr] ?? null;
 
                 $meetings[] = [
                     'id' => 'mt_' . $dateStr,
+                    'meeting_date' => $dateStr,
                     'source_type' => 'meeting',
-                    'title' => 'REvoチャプター 定例会',
-                    'category' => '定例会',
-                    'start_datetime' => $dateStr . ' 06:45:00',
-                    'end_datetime' => $dateStr . ' 08:30:00',
-                    'location_name' => '通常定例会会場 & Zoom',
-                    'location_url' => '',
-                    'is_online' => 0,
-                    'organizer' => 'REvoチャプター プレジデント & 運営チーム',
-                    'description' => "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会",
-                    'visitor_count' => $cnt
+                    'title' => $custom ? ($custom['title'] ?: 'REvoチャプター 定例会') : 'REvoチャプター 定例会',
+                    'category' => $custom ? ($custom['category'] ?: '定例会') : '定例会',
+                    'start_datetime' => $custom && !empty($custom['start_datetime']) ? $custom['start_datetime'] : ($dateStr . ' 06:45:00'),
+                    'end_datetime' => $custom && !empty($custom['end_datetime']) ? $custom['end_datetime'] : ($dateStr . ' 08:30:00'),
+                    'location_name' => $custom ? ($custom['location_name'] ?? '通常定例会会場 & Zoom') : '通常定例会会場 & Zoom',
+                    'location_url' => $custom ? ($custom['location_url'] ?? '') : '',
+                    'is_online' => $custom ? (int)$custom['is_online'] : 0,
+                    'organizer' => $custom ? ($custom['organizer'] ?: 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
+                    'description' => $custom ? ($custom['description'] ?: "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会") : "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会",
+                    'visitor_count' => $cnt,
+                    'is_customized' => $custom ? 1 : 0
                 ];
             }
             $cur = strtotime('+1 day', $cur);
         }
 
         return $meetings;
+    }
+
+    /**
+     * Save meeting customization
+     */
+    public function saveMeetingCustomization(array $data): array {
+        $meetingDate = trim($data['meeting_date'] ?? '');
+        if (empty($meetingDate)) {
+            throw new \InvalidArgumentException('定例会の日付が指定されていません');
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $record = [
+            'meeting_date' => $meetingDate,
+            'title' => trim($data['title'] ?? 'REvoチャプター 定例会'),
+            'category' => trim($data['category'] ?? '定例会'),
+            'is_online' => !empty($data['is_online']) ? 1 : 0,
+            'location_name' => trim($data['location_name'] ?? ''),
+            'location_url' => trim($data['location_url'] ?? ''),
+            'start_datetime' => trim($data['start_datetime'] ?? ($meetingDate . ' 06:45:00')),
+            'end_datetime' => trim($data['end_datetime'] ?? ($meetingDate . ' 08:30:00')),
+            'organizer' => trim($data['organizer'] ?? 'REvoチャプター プレジデント & 運営チーム'),
+            'description' => trim($data['description'] ?? ''),
+            'updated_at' => $now
+        ];
+
+        $exists = (int)$this->db->fetchColumn("SELECT COUNT(*) FROM meeting_customizations WHERE meeting_date = ?", [$meetingDate]);
+        if ($exists > 0) {
+            $this->db->update('meeting_customizations', $record, "meeting_date = ?", [$meetingDate]);
+        } else {
+            $record['created_at'] = $now;
+            $this->db->insert('meeting_customizations', $record);
+        }
+
+        return [
+            'success' => true,
+            'meeting_date' => $meetingDate,
+            'customization' => $record
+        ];
+    }
+
+    /**
+     * Reset/Delete meeting customization (restore default)
+     */
+    public function resetMeetingCustomization(string $meetingDate): bool {
+        if (empty($meetingDate)) {
+            return false;
+        }
+        $res = $this->db->execute("DELETE FROM meeting_customizations WHERE meeting_date = ?", [$meetingDate]);
+        return $res > 0;
     }
 
     /**

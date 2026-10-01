@@ -24,6 +24,14 @@ class EventController extends Controller {
             case 'calendar':
                 $this->getCalendarEvents();
                 break;
+            case 'save_meeting_customization':
+            case 'save_meeting':
+                $this->saveMeetingCustomization();
+                break;
+            case 'reset_meeting_customization':
+            case 'reset_meeting':
+                $this->resetMeetingCustomization();
+                break;
             case 'save_chapter_event':
                 $this->saveChapterEvent();
                 break;
@@ -211,6 +219,57 @@ class EventController extends Controller {
         }
 
         Response::success(['event' => $event]);
+    }
+
+    private function saveMeetingCustomization(): void {
+        $meetingDate = trim((string)$this->getParam('meeting_date', ''));
+        if (empty($meetingDate)) {
+            Response::error('定例会の日付が指定されていません');
+            return;
+        }
+
+        $title = trim((string)$this->getParam('title', ''));
+        if (empty($title)) {
+            $title = 'REvoチャプター 定例会';
+        }
+
+        $data = [
+            'meeting_date' => $meetingDate,
+            'title' => $title,
+            'category' => (string)$this->getParam('category', '定例会'),
+            'is_online' => (int)$this->getParam('is_online', 0),
+            'location_name' => (string)$this->getParam('location_name', ''),
+            'location_url' => (string)$this->getParam('location_url', ''),
+            'start_datetime' => (string)$this->getParam('start_datetime', $meetingDate . ' 06:45:00'),
+            'end_datetime' => (string)$this->getParam('end_datetime', $meetingDate . ' 08:30:00'),
+            'organizer' => (string)$this->getParam('organizer', 'REvoチャプター プレジデント & 運営チーム'),
+            'description' => (string)$this->getParam('description', '')
+        ];
+
+        try {
+            $res = $this->eventRepo->saveMeetingCustomization($data);
+            Response::success([
+                'message' => "{$meetingDate} の定例会情報を更新しました",
+                'customization' => $res['customization'] ?? $data
+            ]);
+        } catch (Exception $e) {
+            Response::error('定例会情報の更新に失敗しました: ' . $e->getMessage());
+        }
+    }
+
+    private function resetMeetingCustomization(): void {
+        $meetingDate = trim((string)$this->getParam('meeting_date', ''));
+        if (empty($meetingDate)) {
+            Response::error('定例会の日付が指定されていません');
+            return;
+        }
+
+        $res = $this->eventRepo->resetMeetingCustomization($meetingDate);
+        if ($res) {
+            Response::success(['message' => "{$meetingDate} の定例会情報をデフォルトに戻しました"]);
+        } else {
+            Response::error('リセット対象のカスタマイズ設定が見つかりません');
+        }
     }
 }
 
