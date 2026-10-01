@@ -118,6 +118,8 @@ class EventRepository {
             'nextEvent' => $nextEvent,
             'lastSyncedAt' => $lastSyncedAt
         ];
+    }
+
     /**
      * Get list of chapter events
      */
