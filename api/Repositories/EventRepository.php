@@ -201,7 +201,7 @@ class EventRepository {
         ];
 
         // If recurring creation is requested for new event
-        if (empty($data['id']) && in_array($repeatRule, ['weekly', 'biweekly', 'monthly'], true)) {
+        if (empty($data['id']) && in_array($repeatRule, ['weekdays', 'daily', 'weekly', 'biweekly', 'monthly'], true)) {
             $groupId = 'rec_' . uniqid();
             $startDt = trim($data['start_datetime'] ?? '');
             $endDt = trim($data['end_datetime'] ?? '');
@@ -220,10 +220,18 @@ class EventRepository {
                 $untilTs = strtotime('+3 months', $startTs);
             }
 
-            $maxCount = $repeatCount > 0 ? min($repeatCount, 52) : 52;
+            $maxCount = $repeatCount > 0 ? min($repeatCount, 120) : 120;
             $createdCount = 0;
             $firstId = '';
             $currentTs = $startTs;
+
+            // If weekdays and starting date falls on weekend, advance to next Monday
+            if ($repeatRule === 'weekdays') {
+                while ((int)date('N', $currentTs) >= 6) {
+                    $currentTs = strtotime('+1 day', $currentTs);
+                }
+            }
+
             $stepIndex = 0;
 
             while ($stepIndex < $maxCount && $currentTs <= $untilTs) {
@@ -249,7 +257,13 @@ class EventRepository {
                 $createdCount++;
                 $stepIndex++;
 
-                if ($repeatRule === 'weekly') {
+                if ($repeatRule === 'weekdays') {
+                    do {
+                        $currentTs = strtotime('+1 day', $currentTs);
+                    } while ((int)date('N', $currentTs) >= 6);
+                } elseif ($repeatRule === 'daily') {
+                    $currentTs = strtotime('+1 day', $currentTs);
+                } elseif ($repeatRule === 'weekly') {
                     $currentTs = strtotime('+1 week', $currentTs);
                 } elseif ($repeatRule === 'biweekly') {
                     $currentTs = strtotime('+2 weeks', $currentTs);

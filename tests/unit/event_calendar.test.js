@@ -89,16 +89,20 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(devServerJs.includes("action === 'delete_chapter_event'"), 'dev-server delete_chapter_event supported');
   });
 
-  it('verifies recurring event registration (weekly/biweekly) UI and logic', () => {
+  it('verifies recurring event registration (weekdays/daily/weekly/biweekly) UI and logic', () => {
     assert.ok(indexHtml.includes('id="ch-ev-repeat-section"'), 'Repeat section exists in index.html');
     assert.ok(indexHtml.includes('id="ch-ev-repeat-type"'), 'Repeat type select exists in index.html');
+    assert.ok(indexHtml.includes('value="weekdays"'), 'Weekdays option exists in repeat select');
     assert.ok(indexHtml.includes('id="ch-ev-repeat-until"'), 'Repeat until date input exists in index.html');
     assert.ok(indexHtml.includes('id="ch-ev-repeat-count"'), 'Repeat count select exists in index.html');
     assert.ok(indexHtml.includes('id="btn-delete-chapter-series"'), 'Delete series button exists in index.html');
     assert.ok(viewScript.includes('function onChapterEventRepeatTypeChange()'), 'onChapterEventRepeatTypeChange defined');
     assert.ok(viewScript.includes('function updateChapterEventRepeatSummary()'), 'updateChapterEventRepeatSummary defined');
+    assert.ok(viewScript.includes("repeatType === 'weekdays'"), 'viewScript handles weekdays recurrence');
     assert.ok(eventRepoPhp.includes('recurrence_group_id'), 'EventRepository supports recurrence_group_id');
     assert.ok(eventRepoPhp.includes('recurrence_rule'), 'EventRepository supports recurrence_rule');
+    assert.ok(eventRepoPhp.includes("'weekdays'"), 'EventRepository supports weekdays recurrence');
     assert.ok(devServerJs.includes('recurrence_group_id'), 'dev-server supports recurrence_group_id');
+    assert.ok(devServerJs.includes("'weekdays'"), 'dev-server supports weekdays recurrence');
   });
 });

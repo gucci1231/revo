@@ -1754,7 +1754,7 @@ function handleApiRequest(req, res, urlObj) {
         const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
 
         try {
-          if (!body.id && ['weekly', 'biweekly', 'monthly'].includes(recurrenceRule)) {
+          if (!body.id && ['weekdays', 'daily', 'weekly', 'biweekly', 'monthly'].includes(recurrenceRule)) {
             const groupId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
             const startTimeStr = startDatetime.length >= 11 ? startDatetime.substring(11) : '00:00:00';
             const endTimeStr = endDatetime.length >= 11 ? endDatetime.substring(11) : '';
@@ -1766,8 +1766,16 @@ function handleApiRequest(req, res, urlObj) {
               untilObj = new Date(startObj.getTime() + 90 * 86400000);
             }
 
-            const maxCount = recurrenceCount > 0 ? Math.min(recurrenceCount, 52) : 52;
+            const maxCount = recurrenceCount > 0 ? Math.min(recurrenceCount, 120) : 120;
             let currentObj = new Date(startObj.getTime());
+
+            // If weekdays and starting date falls on weekend, advance to next Monday
+            if (recurrenceRule === 'weekdays') {
+              while (currentObj.getDay() === 0 || currentObj.getDay() === 6) {
+                currentObj.setDate(currentObj.getDate() + 1);
+              }
+            }
+
             let createdCount = 0;
             let firstId = '';
 
@@ -1787,12 +1795,20 @@ function handleApiRequest(req, res, urlObj) {
 
               createdCount++;
 
-              if (recurrenceRule === 'weekly') {
+              if (recurrenceRule === 'weekdays') {
+                do {
+                  currentObj.setDate(currentObj.getDate() + 1);
+                } while (currentObj.getDay() === 0 || currentObj.getDay() === 6);
+              } else if (recurrenceRule === 'daily') {
+                currentObj.setDate(currentObj.getDate() + 1);
+              } else if (recurrenceRule === 'weekly') {
                 currentObj.setDate(currentObj.getDate() + 7);
               } else if (recurrenceRule === 'biweekly') {
                 currentObj.setDate(currentObj.getDate() + 14);
               } else if (recurrenceRule === 'monthly') {
                 currentObj.setMonth(currentObj.getMonth() + 1);
+              } else {
+                break;
               }
             }
 
