@@ -4622,26 +4622,49 @@ function calcAndRenderChapterTrafficScore() {
     if (el) el.textContent = text;
   };
 
+  // 7大指標スコアバッジの色判定 (グリーン 🟢 / イエロー 🟡 / レッド 🔴 / グレー ⚪)
+  const getTrafficMetricBadgeClass = (score, maxScore = 15) => {
+    if (maxScore === 15) {
+      if (score >= 15) return 'bg-emerald-100/80 text-emerald-700';
+      if (score >= 10) return 'bg-amber-100/80 text-amber-700';
+      if (score >= 5) return 'bg-rose-100/80 text-rose-700';
+      return 'bg-slate-100 text-slate-700';
+    } else {
+      // 10点満点 (加入率)
+      if (score >= 10) return 'bg-emerald-100/80 text-emerald-700';
+      if (score >= 5) return 'bg-amber-100/80 text-amber-700';
+      return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const setScoreBadge = (id, score, maxScore) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = `${score} / ${maxScore} pt`;
+    const colorClass = getTrafficMetricBadgeClass(score, maxScore);
+    el.className = `text-3xs font-black px-1.5 py-0.5 rounded-full tabular-nums ${colorClass}`;
+  };
+
   setEl('ctl-size-val', chapterSize);
-  setEl('ctl-size-score', `${sizeScore} / 15 pt`);
+  setScoreBadge('ctl-size-score', sizeScore, 15);
 
   setEl('ctl-growth-val', (netGrowth >= 0 ? `+${netGrowth}` : `${netGrowth}`));
-  setEl('ctl-growth-score', `${growthScore} / 15 pt`);
+  setScoreBadge('ctl-growth-score', growthScore, 15);
 
   setEl('ctl-retention-val', retentionRate.toFixed(1));
-  setEl('ctl-retention-score', `${retentionScore} / 15 pt`);
+  setScoreBadge('ctl-retention-score', retentionScore, 15);
 
   setEl('ctl-referral-val', referralsPerMeeting.toFixed(2));
-  setEl('ctl-referral-score', `${referralScore} / 15 pt`);
+  setScoreBadge('ctl-referral-score', referralScore, 15);
 
   setEl('ctl-visitor-val', visitorsPerWeek.toFixed(2));
-  setEl('ctl-visitor-score', `${visitorScore} / 15 pt`);
+  setScoreBadge('ctl-visitor-score', visitorScore, 15);
 
   setEl('ctl-join-val', joinRate.toFixed(1));
-  setEl('ctl-join-score', `${joinScore} / 10 pt`);
+  setScoreBadge('ctl-join-score', joinScore, 10);
 
   setEl('ctl-absent-val', absentRate.toFixed(2));
-  setEl('ctl-absent-score', `${absentScore} / 15 pt`);
+  setScoreBadge('ctl-absent-score', absentScore, 15);
 
   // 参考指標
   setEl('ctl-ext-val', `${extRate}%`);

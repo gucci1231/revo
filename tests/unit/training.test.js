@@ -10,6 +10,7 @@ describe('🎓 BNI Kyoto City Central Training & Event Features', () => {
 
   it('verifies Training View container and 4 KPI cards exist in compiled index.html', () => {
     assert.ok(indexContent.includes('id="view-training"'), 'view-training container exists');
+    assert.ok(!indexContent.includes('id="view-training" class="view-content" style="display: none;"'), 'view-training must not have inline display:none preventing display when active');
     assert.ok(indexContent.includes('id="kpi-training-next-date"'), 'Next event date KPI exists');
     assert.ok(indexContent.includes('id="kpi-training-month-count"'), 'Month count KPI exists');
     assert.ok(indexContent.includes('id="kpi-training-online-count"'), 'Online count KPI exists');

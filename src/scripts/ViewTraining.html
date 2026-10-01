@@ -39,13 +39,14 @@ async function loadTrainingEvents() {
 
     if (loadingEl) loadingEl.classList.add('hidden');
 
-    if (res && res.success !== false && res.data) {
-      allTrainingEvents = res.data.events || [];
-      trainingCategories = res.data.categories || [];
-      trainingMonths = res.data.months || [];
+    if (res && res.success !== false) {
+      const data = res.data || res;
+      allTrainingEvents = data.events || [];
+      trainingCategories = data.categories || [];
+      trainingMonths = data.months || [];
 
       // Render KPIs
-      renderTrainingKpis(res.data.summary);
+      renderTrainingKpis(data.summary);
 
       // Render dynamic filters
       renderTrainingCategorySelect(trainingCategories);

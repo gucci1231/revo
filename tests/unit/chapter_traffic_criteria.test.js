@@ -61,5 +61,29 @@ describe('Chapter Traffic Lights 100pt Scoring Criteria Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('function calcAndRenderChapterTrafficScore('), true);
     assert.strictEqual(indexHtml.includes('function toggleChapterTrafficCriteriaModal('), true);
     assert.strictEqual(indexHtml.includes('function closeChapterTrafficCriteriaModal('), true);
+    assert.strictEqual(indexHtml.includes('getTrafficMetricBadgeClass'), true);
+    assert.strictEqual(indexHtml.includes('setScoreBadge'), true);
+  });
+
+  it('verifies getTrafficMetricBadgeClass assigns accurate semantic colors for all score tiers', () => {
+    const fnMatch = indexHtml.match(/const getTrafficMetricBadgeClass = \(([\s\S]*?)\n  \};/);
+    assert.ok(fnMatch, 'getTrafficMetricBadgeClass must be present in compiled index.html');
+
+    const getTrafficMetricBadgeClass = new Function('score', 'maxScore', `
+      const fn = const getTrafficMetricBadgeClass = (${fnMatch[1]}
+      };
+      return fn(score, maxScore);
+    `.replace('const fn = const getTrafficMetricBadgeClass =', 'const fn ='));
+
+    // 15-Point Metrics (Size, Growth, Retention, Referral, Visitor, Absenteeism)
+    assert.ok(getTrafficMetricBadgeClass(15, 15).includes('emerald'), '15pt must be emerald (green)');
+    assert.ok(getTrafficMetricBadgeClass(10, 15).includes('amber'), '10pt must be amber (yellow)');
+    assert.ok(getTrafficMetricBadgeClass(5, 15).includes('rose'), '5pt must be rose (red)');
+    assert.ok(getTrafficMetricBadgeClass(0, 15).includes('slate'), '0pt must be slate (grey)');
+
+    // 10-Point Metric (Join Rate)
+    assert.ok(getTrafficMetricBadgeClass(10, 10).includes('emerald'), '10pt (max) must be emerald (green)');
+    assert.ok(getTrafficMetricBadgeClass(5, 10).includes('amber'), '5pt must be amber (yellow)');
+    assert.ok(getTrafficMetricBadgeClass(0, 10).includes('slate'), '0pt must be slate (grey)');
   });
 });
