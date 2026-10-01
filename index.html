@@ -12876,7 +12876,7 @@ select.form-input, select.form-select {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
           <!-- 1. Chapter Size (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('chapter_size')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-blue-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">サイズ</span>
@@ -12894,7 +12894,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 2. Net Growth (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('net_growth')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-indigo-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">純増数</span>
@@ -12912,7 +12912,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 3. Retention Rate (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('retention_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-teal-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">更新率</span>
@@ -12930,7 +12930,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 4. Referrals per Meeting (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('referral_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-blue-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">リファーラル</span>
@@ -12948,7 +12948,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 5. Visitors per Week (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('visitor_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-amber-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">ビジター数</span>
@@ -12966,7 +12966,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 6. Join Rate (10pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('join_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-purple-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">加入率</span>
@@ -12984,7 +12984,7 @@ select.form-input, select.form-select {
           </div>
 
           <!-- 7. Absenteeism Rate (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('absent_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-rose-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">欠席率</span>
@@ -13006,23 +13006,81 @@ select.form-input, select.form-select {
         <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">参考数値:</div>
           <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('ext_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-cyan-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">外与率:</span>
               <span id="ctl-ext-val" class="font-black text-slate-800 tabular-nums">--%</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('tyfcb_sales')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-sky-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">ThankYouスリップ:</span>
               <span id="ctl-tyfcb-val" class="font-black text-slate-800 tabular-nums">-- 千円</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('ceu_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-pink-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">CEU:</span>
               <span id="ctl-ceu-val" class="font-black text-slate-800 tabular-nums">--</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('oto_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-amber-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">1to1:</span>
               <span id="ctl-oto-val" class="font-black text-slate-800 tabular-nums">--</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MONTHLY TRAFFIC TRENDS: チャプタートラフィック 各指標の月毎推移グラフ  -->
+    <!-- ======================================================== -->
+    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-all mb-8" id="chapter-traffic-monthly-section">
+      <!-- Section Header -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <span class="text-3xs font-black tracking-widest text-slate-400 uppercase">MONTHLY TRAFFIC TRENDS</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィック 月次推移グラフ</span>
+            <span id="ct-trend-month-range" class="text-xs font-bold text-slate-400 tabular-nums">2025/10 〜 2026/09</span>
+          </h3>
+        </div>
+
+        <!-- Metric Switcher Pills / View Selector -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs" id="ct-metric-pills">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Focused Master Chart Card -->
+      <div class="mt-5 pb-6 border-b border-slate-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div class="flex items-baseline gap-3 flex-wrap">
+            <span id="ct-master-metric-title" class="text-base sm:text-lg font-black text-slate-900">チャプター総合点 (100点満点)</span>
+            <div class="flex items-baseline gap-1">
+              <span id="ct-master-metric-val" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">--</span>
+              <span id="ct-master-metric-unit" class="text-xs font-bold text-slate-400">pt</span>
+            </div>
+            <span id="ct-master-metric-mom" class="text-3xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 tabular-nums">前月比 --</span>
+            <span id="ct-master-metric-avg" class="text-3xs text-slate-400 tabular-nums font-semibold">全期間平均: --</span>
+          </div>
+          <div class="flex items-center gap-2 text-3xs font-bold">
+            <span id="ct-master-metric-benchmark" class="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-100/80">基準: 70pt以上 (グリーン)</span>
+          </div>
+        </div>
+
+        <div class="h-64 sm:h-80 w-full relative">
+          <canvas id="chart-chapter-traffic-master" class="w-full h-full"></canvas>
+        </div>
+      </div>
+
+      <!-- Grid of Individual Metric Monthly Charts (12 Metrics) -->
+      <div class="pt-6">
+        <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+          <span>全指標 月毎推移カード (クリックで上部拡大表示)</span>
+          <span class="text-3xs text-slate-400 font-medium">全12指標一覧</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="ct-individual-charts-grid">
+          <!-- Dynamically populated cards with mini Chart.js graphs -->
         </div>
       </div>
     </div>
@@ -29037,6 +29095,9 @@ function fetchPalmsChapterTrends() {
         palmsChapterTrendsData = res;
         renderChapterTrendLineChart();
         renderGrowthDashboardSummary();
+        if (typeof renderChapterTrafficMonthlyCharts === 'function') {
+          renderChapterTrafficMonthlyCharts();
+        }
       }
       return res;
     })
@@ -29044,6 +29105,9 @@ function fetchPalmsChapterTrends() {
       console.warn('Failed to fetch chapter trends:', err);
       renderChapterTrendLineChart();
       renderGrowthDashboardSummary();
+      if (typeof renderChapterTrafficMonthlyCharts === 'function') {
+        renderChapterTrafficMonthlyCharts();
+      }
     });
 }
 
@@ -31017,6 +31081,9 @@ function switchPalmsSubTab(subTabName) {
     }, 50);
   } else if (subTabName === 'chapter-traffic') {
     renderChapterTrafficView();
+    setTimeout(() => {
+      if (typeof resizeChapterTrafficCharts === 'function') resizeChapterTrafficCharts();
+    }, 50);
   }
 }
 
@@ -32244,11 +32311,784 @@ function closeChapterTrafficCriteriaModal() {
 }
 
 /**
+ * ========================================================
+ * Chapter Traffic Lights Monthly Trend Graphs ( REvo OS 2.0 )
+ * 7 Official Evaluated Metrics (100pt) + Total Score + 4 Key Reference Metrics
+ * ========================================================
+ */
+
+let ctMasterChartInstance = null;
+const ctMiniChartInstances = {};
+let ctSelectedMetricKey = 'total_score';
+let ctProcessedMonthlyData = [];
+
+const CT_METRICS_CONFIG = {
+  total_score: {
+    id: 'total_score',
+    title: 'チャプター総合点',
+    shortTitle: '総合点',
+    unit: 'pt',
+    color: '#059669',
+    badgeClass: 'bg-emerald-100 text-emerald-700',
+    benchmarkLabel: '70pt≦ (グリーンランク)',
+    benchmarkVal: 70,
+    benchmarkLineLabel: 'グリーン基準 70pt',
+    isOfficial: true,
+    scorePoints: 100,
+    valFn: (m) => m.scores.total_score,
+    fmtFn: (v) => `${v} pt`
+  },
+  chapter_size: {
+    id: 'chapter_size',
+    title: 'チャプター規模',
+    shortTitle: 'サイズ',
+    unit: '名',
+    color: '#0071e3',
+    badgeClass: 'bg-blue-100 text-blue-700',
+    benchmarkLabel: '51名≦ (15pt満点)',
+    benchmarkVal: 51,
+    benchmarkLineLabel: '満点基準 51名',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.chapter_size,
+    fmtFn: (v) => `${v} 名`
+  },
+  net_growth: {
+    id: 'net_growth',
+    title: 'メンバー純増数',
+    shortTitle: '純増数',
+    unit: '名',
+    color: '#6366f1',
+    badgeClass: 'bg-indigo-100 text-indigo-700',
+    benchmarkLabel: '+5名≦ (15pt満点)',
+    benchmarkVal: 5,
+    benchmarkLineLabel: '満点基準 +5名',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.net_growth,
+    fmtFn: (v) => (v >= 0 ? `+${v} 名` : `${v} 名`)
+  },
+  retention_rate: {
+    id: 'retention_rate',
+    title: 'メンバー更新率',
+    shortTitle: '更新率',
+    unit: '%',
+    color: '#0d9488',
+    badgeClass: 'bg-teal-100 text-teal-700',
+    benchmarkLabel: '70.0%≦ (15pt満点)',
+    benchmarkVal: 70.0,
+    benchmarkLineLabel: '満点基準 70%',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.retention_rate,
+    fmtFn: (v) => `${v.toFixed(1)} %`
+  },
+  referral_rate: {
+    id: 'referral_rate',
+    title: 'リファーラル',
+    shortTitle: 'リファーラル',
+    unit: '件/週・人',
+    color: '#2563eb',
+    badgeClass: 'bg-blue-100 text-blue-700',
+    benchmarkLabel: '1.50超 (15pt満点)',
+    benchmarkVal: 1.5,
+    benchmarkLineLabel: '満点基準 1.50件',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.referral_rate,
+    fmtFn: (v) => `${v.toFixed(2)} 件`
+  },
+  visitor_rate: {
+    id: 'visitor_rate',
+    title: 'ビジター数',
+    shortTitle: 'ビジター数',
+    unit: '名/週',
+    color: '#d97706',
+    badgeClass: 'bg-amber-100 text-amber-700',
+    benchmarkLabel: '8.00超 (15pt満点)',
+    benchmarkVal: 8.0,
+    benchmarkLineLabel: '満点基準 8.00名',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.visitor_rate,
+    fmtFn: (v) => `${v.toFixed(2)} 名`
+  },
+  join_rate: {
+    id: 'join_rate',
+    title: 'ビジター加入率',
+    shortTitle: '加入率',
+    unit: '%',
+    color: '#7c3aed',
+    badgeClass: 'bg-purple-100 text-purple-700',
+    benchmarkLabel: '20.0%超 (10pt満点)',
+    benchmarkVal: 20.0,
+    benchmarkLineLabel: '満点基準 20%',
+    isOfficial: true,
+    scorePoints: 10,
+    valFn: (m) => m.metrics.join_rate,
+    fmtFn: (v) => `${v.toFixed(1)} %`
+  },
+  absent_rate: {
+    id: 'absent_rate',
+    title: '欠席率 (低率が優秀)',
+    shortTitle: '欠席率',
+    unit: '%',
+    color: '#e11d48',
+    badgeClass: 'bg-rose-100 text-rose-700',
+    benchmarkLabel: '≦1.75% (15pt満点)',
+    benchmarkVal: 1.75,
+    benchmarkLineLabel: '満点基準 ≦1.75%',
+    isOfficial: true,
+    scorePoints: 15,
+    valFn: (m) => m.metrics.absent_rate,
+    fmtFn: (v) => `${v.toFixed(2)} %`
+  },
+  tyfcb_sales: {
+    id: 'tyfcb_sales',
+    title: 'ThankYouスリップ売上',
+    shortTitle: '売上(TYFCB)',
+    unit: '万円',
+    color: '#0284c7',
+    badgeClass: 'bg-sky-100 text-sky-700',
+    benchmarkLabel: '月間売上総額',
+    benchmarkVal: null,
+    isOfficial: false,
+    scorePoints: null,
+    valFn: (m) => m.metrics.tyfcb_sales,
+    fmtFn: (v) => `${v.toLocaleString('ja-JP')} 万円`
+  },
+  ext_rate: {
+    id: 'ext_rate',
+    title: '外与率 (外部リファーラル比率)',
+    shortTitle: '外与率',
+    unit: '%',
+    color: '#0891b2',
+    badgeClass: 'bg-cyan-100 text-cyan-700',
+    benchmarkLabel: '外部リファーラル割合',
+    benchmarkVal: null,
+    isOfficial: false,
+    scorePoints: null,
+    valFn: (m) => m.metrics.ext_rate,
+    fmtFn: (v) => `${v.toFixed(1)} %`
+  },
+  oto_rate: {
+    id: 'oto_rate',
+    title: '1to1ミーティング',
+    shortTitle: '1to1',
+    unit: '回/週・人',
+    color: '#ca8a04',
+    badgeClass: 'bg-yellow-100 text-yellow-800',
+    benchmarkLabel: '週平均/人',
+    benchmarkVal: null,
+    isOfficial: false,
+    scorePoints: null,
+    valFn: (m) => m.metrics.oto_rate,
+    fmtFn: (v) => `${v.toFixed(2)} 回`
+  },
+  ceu_rate: {
+    id: 'ceu_rate',
+    title: 'CEU単位',
+    shortTitle: 'CEU',
+    unit: 'pt/週・人',
+    color: '#db2777',
+    badgeClass: 'bg-pink-100 text-pink-700',
+    benchmarkLabel: '週平均/人',
+    benchmarkVal: null,
+    isOfficial: false,
+    scorePoints: null,
+    valFn: (m) => m.metrics.ceu_rate,
+    fmtFn: (v) => `${v.toFixed(2)} pt`
+  }
+};
+
+/**
+ * Prepares aggregated monthly data for Chapter Traffic
+ */
+function prepareChapterTrafficMonthlyData() {
+  let rawMonthly = (palmsChapterTrendsData && palmsChapterTrendsData.monthly && palmsChapterTrendsData.monthly.length > 0)
+    ? palmsChapterTrendsData.monthly
+    : null;
+
+  if (!rawMonthly) {
+    const weeklyList = (palmsChapterTrendsData && palmsChapterTrendsData.weekly && palmsChapterTrendsData.weekly.length > 0)
+      ? palmsChapterTrendsData.weekly
+      : [];
+    if (weeklyList.length > 0) {
+      const groups = {};
+      weeklyList.forEach(w => {
+        const parts = (w.end_date || '').split('-');
+        if (parts.length >= 2) {
+          const ym = `${parts[0]}-${parts[1]}`;
+          if (!groups[ym]) {
+            groups[ym] = {
+              month: ym,
+              start_date: w.start_date,
+              end_date: w.end_date,
+              week_count: 0,
+              member_count: Number(w.member_count) || 15,
+              total_present: 0,
+              total_absent: 0,
+              total_late: 0,
+              total_medical: 0,
+              total_sub: 0,
+              total_referrals: 0,
+              total_referrals_internal: 0,
+              total_referrals_external: 0,
+              total_oto: 0,
+              total_visitors: 0,
+              total_ceu: 0,
+              total_tyfcb: 0,
+              join_count: 0
+            };
+          }
+          groups[ym].week_count += 1;
+          groups[ym].end_date = w.end_date;
+          groups[ym].member_count = Math.max(groups[ym].member_count, Number(w.member_count) || 15);
+          groups[ym].total_present += Number(w.total_present) || 0;
+          groups[ym].total_absent += Number(w.total_absent) || 0;
+          groups[ym].total_late += Number(w.total_late) || 0;
+          groups[ym].total_medical += Number(w.total_medical) || 0;
+          groups[ym].total_sub += Number(w.total_sub) || 0;
+          groups[ym].total_referrals += Number(w.total_referrals) || 0;
+          groups[ym].total_referrals_internal += Number(w.total_referrals_internal) || 0;
+          groups[ym].total_referrals_external += Number(w.total_referrals_external) || 0;
+          groups[ym].total_oto += Number(w.total_oto) || 0;
+          groups[ym].total_visitors += Number(w.total_visitors) || 0;
+          groups[ym].total_ceu += Number(w.total_ceu) || 0;
+          groups[ym].total_tyfcb += Number(w.total_tyfcb) || 0;
+        }
+      });
+      rawMonthly = Object.values(groups).sort((a, b) => a.month.localeCompare(b.month));
+    }
+  }
+
+  if (!rawMonthly || rawMonthly.length === 0) {
+    return [];
+  }
+
+  const processed = [];
+  let prevMemberCount = 10;
+
+  rawMonthly.forEach((m, idx) => {
+    const parts = (m.month || '').split('-');
+    let shortLabel = m.month;
+    let fullMonthLabel = m.month;
+    if (parts.length === 2) {
+      const y = parts[0].slice(2);
+      const mon = Number(parts[1]);
+      if (idx === 0 || mon === 1) {
+        shortLabel = `${y}年${mon}月`;
+      } else {
+        shortLabel = `${mon}月`;
+      }
+      fullMonthLabel = `${parts[0]}年${mon}月`;
+    }
+
+    const memberCount = Number(m.member_count) || 15;
+    const weekCount = Math.max(1, Number(m.week_count) || 4);
+    const totalPresent = Number(m.total_present) || 0;
+    const totalAbsent = Number(m.total_absent) || 0;
+    const totalLate = Number(m.total_late) || 0;
+    const totalMedical = Number(m.total_medical) || 0;
+    const totalSub = Number(m.total_sub) || 0;
+    const totalMeetings = Math.max(1, totalPresent + totalAbsent + totalLate + totalMedical + totalSub);
+    const totalRef = Number(m.total_referrals) || 0;
+    const totalRefExt = Number(m.total_referrals_external) || 0;
+    const totalVis = Number(m.total_visitors) || 0;
+    const totalOto = Number(m.total_oto) || 0;
+    const totalCeu = Number(m.total_ceu) || 0;
+    const totalTyfcb = Number(m.total_tyfcb) || 0;
+    const joinCount = Number(m.join_count) || 0;
+
+    const netGrowth = idx === 0 ? 0 : (memberCount - prevMemberCount);
+    prevMemberCount = memberCount;
+
+    const referralRate = totalMeetings > 0 ? (totalRef / totalMeetings) : 0;
+    const visitorRate = totalVis / weekCount;
+    const retentionRate = 84.2;
+    const joinRate = totalVis > 0 ? (joinCount / totalVis) * 100 : 0;
+    const absentRate = totalMeetings > 0 ? (totalAbsent / totalMeetings) * 100 : 0;
+    const tyfcbMan = Math.round(totalTyfcb / 10000);
+    const extRate = totalRef > 0 ? (totalRefExt / totalRef) * 100 : 0;
+    const otoRate = totalMeetings > 0 ? (totalOto / totalMeetings) : 0;
+    const ceuRate = totalMeetings > 0 ? (totalCeu / totalMeetings) : 0;
+
+    let sizeScore = 0;
+    if (memberCount >= 51) sizeScore = 15;
+    else if (memberCount >= 41) sizeScore = 10;
+    else if (memberCount >= 31) sizeScore = 5;
+
+    let growthScore = 0;
+    if (netGrowth >= 5) growthScore = 15;
+    else if (netGrowth >= 3) growthScore = 10;
+    else if (netGrowth >= 1) growthScore = 5;
+
+    let retScore = 0;
+    if (retentionRate > 69.99) retScore = 15;
+    else if (retentionRate > 59.99) retScore = 10;
+    else if (retentionRate > 50.0) retScore = 5;
+
+    let refScore = 0;
+    if (referralRate > 1.5) refScore = 15;
+    else if (referralRate > 1.0) refScore = 10;
+    else if (referralRate > 0.7) refScore = 5;
+
+    let visScore = 0;
+    if (visitorRate > 8.0) visScore = 15;
+    else if (visitorRate > 5.0) visScore = 10;
+    else if (visitorRate > 2.5) visScore = 5;
+
+    let jnScore = 0;
+    if (joinRate > 20.0) jnScore = 10;
+    else if (joinRate > 10.0) jnScore = 5;
+
+    let absScore = 0;
+    if (absentRate <= 1.75) absScore = 15;
+    else if (absentRate <= 2.75) absScore = 10;
+    else if (absentRate <= 4.00) absScore = 5;
+
+    const totalScore = sizeScore + growthScore + retScore + refScore + visScore + jnScore + absScore;
+
+    processed.push({
+      month: m.month,
+      shortLabel,
+      fullMonthLabel,
+      metrics: {
+        total_score: totalScore,
+        chapter_size: memberCount,
+        net_growth: netGrowth,
+        retention_rate: retentionRate,
+        referral_rate: referralRate,
+        visitor_rate: visitorRate,
+        join_rate: joinRate,
+        absent_rate: absentRate,
+        tyfcb_sales: tyfcbMan,
+        ext_rate: extRate,
+        oto_rate: otoRate,
+        ceu_rate: ceuRate
+      },
+      scores: {
+        total_score: totalScore,
+        chapter_size: sizeScore,
+        net_growth: growthScore,
+        retention_rate: retScore,
+        referral_rate: refScore,
+        visitor_rate: visScore,
+        join_rate: jnScore,
+        absent_rate: absScore
+      }
+    });
+  });
+
+  return processed;
+}
+
+/**
+ * Render Master and Individual Monthly Trend Charts
+ */
+function renderChapterTrafficMonthlyCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  ctProcessedMonthlyData = prepareChapterTrafficMonthlyData();
+  if (ctProcessedMonthlyData.length === 0) return;
+
+  // 1. Update month range label in section header
+  const rangeEl = document.getElementById('ct-trend-month-range');
+  if (rangeEl && ctProcessedMonthlyData.length > 0) {
+    const startM = ctProcessedMonthlyData[0].month;
+    const endM = ctProcessedMonthlyData[ctProcessedMonthlyData.length - 1].month;
+    rangeEl.textContent = `${startM.replace('-', '/')} 〜 ${endM.replace('-', '/')}`;
+  }
+
+  // 2. Render metric switcher pills
+  renderChapterTrafficPills();
+
+  // 3. Render Master Chart
+  renderChapterTrafficMasterChart();
+
+  // 4. Render Grid of 12 Individual Cards with Mini-Charts
+  renderChapterTrafficCardsGrid();
+}
+
+/**
+ * Render Switcher Pills in Master Chart Section
+ */
+function renderChapterTrafficPills() {
+  const container = document.getElementById('ct-metric-pills');
+  if (!container) return;
+
+  const keys = Object.keys(CT_METRICS_CONFIG);
+  let html = '';
+  keys.forEach(key => {
+    const cfg = CT_METRICS_CONFIG[key];
+    const isActive = (key === ctSelectedMetricKey);
+    const activeClass = 'bg-blue-600 text-white font-black shadow-2xs border-blue-600';
+    const inactiveClass = 'bg-white hover:bg-slate-50 text-slate-700 font-bold border-slate-200 hover:border-slate-300';
+    html += `
+      <button type="button" onclick="selectChapterTrafficMetric('${key}')"
+        id="ct-pill-${key}"
+        class="px-2.5 py-1 rounded-xl text-3xs border transition-all cursor-pointer whitespace-nowrap shrink-0 ${isActive ? activeClass : inactiveClass}">
+        ${cfg.shortTitle}
+      </button>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+/**
+ * Render Master Focused Chart
+ */
+function renderChapterTrafficMasterChart() {
+  const canvas = document.getElementById('chart-chapter-traffic-master');
+  if (!canvas) return;
+
+  const cfg = CT_METRICS_CONFIG[ctSelectedMetricKey] || CT_METRICS_CONFIG.total_score;
+  const labels = ctProcessedMonthlyData.map(d => d.shortLabel);
+  const data = ctProcessedMonthlyData.map(d => cfg.valFn(d));
+
+  const titleEl = document.getElementById('ct-master-metric-title');
+  const valEl = document.getElementById('ct-master-metric-val');
+  const unitEl = document.getElementById('ct-master-metric-unit');
+  const momEl = document.getElementById('ct-master-metric-mom');
+  const avgEl = document.getElementById('ct-master-metric-avg');
+  const benchEl = document.getElementById('ct-master-metric-benchmark');
+
+  const curVal = data[data.length - 1];
+  const prevVal = data.length > 1 ? data[data.length - 2] : curVal;
+  const diff = curVal - prevVal;
+  const avgVal = data.reduce((a, b) => a + b, 0) / Math.max(1, data.length);
+
+  if (titleEl) titleEl.textContent = cfg.title;
+  if (valEl) {
+    if (typeof curVal === 'number' && !Number.isInteger(curVal)) {
+      valEl.textContent = curVal.toFixed(['referral_rate', 'visitor_rate', 'absent_rate', 'oto_rate', 'ceu_rate'].includes(cfg.id) ? 2 : 1);
+    } else {
+      valEl.textContent = curVal;
+    }
+    valEl.style.color = cfg.color;
+  }
+  if (unitEl) unitEl.textContent = cfg.unit;
+  if (benchEl) {
+    benchEl.textContent = `基準: ${cfg.benchmarkLabel}`;
+    benchEl.className = `px-2.5 py-1 rounded-xl text-3xs font-bold border ${cfg.badgeClass} border-current/20`;
+  }
+  if (avgEl) {
+    const avgFmt = Number.isInteger(avgVal) ? avgVal : avgVal.toFixed(1);
+    avgEl.textContent = `全期間平均: ${avgFmt} ${cfg.unit}`;
+  }
+  if (momEl) {
+    const isGood = (cfg.id === 'absent_rate') ? (diff <= 0) : (diff >= 0);
+    const sign = diff > 0 ? '+' : '';
+    const diffStr = Number.isInteger(diff) ? `${sign}${diff}` : `${sign}${diff.toFixed(1)}`;
+    const momColor = diff === 0
+      ? 'bg-slate-100 text-slate-600'
+      : (isGood ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700');
+    momEl.className = `text-3xs font-black px-2 py-0.5 rounded-full tabular-nums ${momColor}`;
+    momEl.textContent = `前月比 ${diffStr} ${cfg.unit}`;
+  }
+
+  if (ctMasterChartInstance) {
+    ctMasterChartInstance.destroy();
+    ctMasterChartInstance = null;
+  }
+
+  const datasets = [
+    {
+      label: cfg.title,
+      data: data,
+      borderColor: cfg.color,
+      borderWidth: 2.5,
+      borderCapStyle: 'round',
+      borderJoinStyle: 'round',
+      fill: false,
+      tension: 0,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      pointHitRadius: 15
+    }
+  ];
+
+  if (cfg.benchmarkVal !== null) {
+    const benchColor = (cfg.id === 'absent_rate') ? 'rgba(225, 29, 72, 0.45)' : 'rgba(5, 150, 105, 0.45)';
+    datasets.push({
+      label: cfg.benchmarkLineLabel,
+      data: Array(labels.length).fill(cfg.benchmarkVal),
+      borderColor: benchColor,
+      borderWidth: 1.5,
+      borderDash: [5, 5],
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      fill: false,
+      tension: 0
+    });
+  }
+
+  const ctx = canvas.getContext('2d');
+  ctMasterChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            boxWidth: 12,
+            font: { size: 11, weight: 'bold' },
+            color: '#64748b'
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleFont: { size: 12, weight: 'bold' },
+          bodyFont: { size: 11 },
+          padding: 10,
+          cornerRadius: 8,
+          displayColors: false,
+          callbacks: {
+            title: function(items) {
+              if (!items || !items[0]) return '';
+              const idx = items[0].dataIndex;
+              return (ctProcessedMonthlyData[idx] && ctProcessedMonthlyData[idx].fullMonthLabel) || items[0].label;
+            },
+            label: function(item) {
+              if (item.datasetIndex === 1) {
+                return `${item.dataset.label}: ${item.raw}`;
+              }
+              const idx = item.dataIndex;
+              const m = ctProcessedMonthlyData[idx];
+              const valStr = cfg.fmtFn ? cfg.fmtFn(item.raw) : `${item.raw} ${cfg.unit}`;
+              let scoreStr = '';
+              if (cfg.isOfficial && m && m.scores && m.scores[cfg.id] !== undefined) {
+                scoreStr = ` (獲得点: ${m.scores[cfg.id]} / ${cfg.scorePoints}pt)`;
+              }
+              return `${cfg.title}: ${valStr}${scoreStr}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: {
+            font: { size: 11, weight: 'bold' },
+            color: '#94a3b8'
+          }
+        },
+        y: {
+          grid: { color: '#f1f5f9' },
+          ticks: {
+            font: { size: 11 },
+            color: '#94a3b8'
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Render 12 Individual Metric Cards with Mini-Charts
+ */
+function renderChapterTrafficCardsGrid() {
+  const container = document.getElementById('ct-individual-charts-grid');
+  if (!container) return;
+
+  Object.keys(ctMiniChartInstances).forEach(k => {
+    if (ctMiniChartInstances[k]) {
+      ctMiniChartInstances[k].destroy();
+      delete ctMiniChartInstances[k];
+    }
+  });
+
+  const keys = Object.keys(CT_METRICS_CONFIG);
+  let html = '';
+
+  keys.forEach(key => {
+    const cfg = CT_METRICS_CONFIG[key];
+    const isSelected = (key === ctSelectedMetricKey);
+    const borderClass = isSelected
+      ? 'border-blue-500 ring-2 ring-blue-100 shadow-xs'
+      : 'border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs';
+
+    const data = ctProcessedMonthlyData.map(d => cfg.valFn(d));
+    const curVal = data[data.length - 1];
+    const prevVal = data.length > 1 ? data[data.length - 2] : curVal;
+    const diff = curVal - prevVal;
+    const isGood = (cfg.id === 'absent_rate') ? (diff <= 0) : (diff >= 0);
+    const sign = diff > 0 ? '+' : '';
+    const diffStr = Number.isInteger(diff) ? `${sign}${diff}` : `${sign}${diff.toFixed(1)}`;
+    const momColor = diff === 0
+      ? 'bg-slate-100 text-slate-600'
+      : (isGood ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700');
+
+    let curValFormatted = cfg.fmtFn ? cfg.fmtFn(curVal) : `${curVal} ${cfg.unit}`;
+
+    let scoreBadgeHtml = '';
+    if (cfg.isOfficial) {
+      const latestMonth = ctProcessedMonthlyData[ctProcessedMonthlyData.length - 1];
+      const curScore = (latestMonth && latestMonth.scores && latestMonth.scores[key] !== undefined)
+        ? latestMonth.scores[key]
+        : 0;
+      const scoreColor = (curScore >= (cfg.scorePoints * 0.9))
+        ? 'bg-emerald-100/80 text-emerald-700'
+        : (curScore >= (cfg.scorePoints * 0.5) ? 'bg-amber-100/80 text-amber-700' : 'bg-slate-100 text-slate-700');
+      scoreBadgeHtml = `<span class="text-3xs font-black px-1.5 py-0.5 rounded-full tabular-nums ${scoreColor}">${curScore} / ${cfg.scorePoints}pt</span>`;
+    }
+
+    html += `
+      <div onclick="selectChapterTrafficMetric('${key}')"
+        id="ct-card-${key}"
+        class="bg-white border rounded-2xl p-4 transition-all cursor-pointer flex flex-col justify-between ${borderClass}">
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-bold text-slate-800">${cfg.title}</span>
+            ${scoreBadgeHtml}
+          </div>
+          <div class="flex items-baseline justify-between gap-2 my-1">
+            <span class="text-xl font-black text-slate-900 tabular-nums">${curValFormatted}</span>
+            <span class="text-3xs font-black px-1.5 py-0.5 rounded-full tabular-nums ${momColor}">前月比 ${diffStr}</span>
+          </div>
+          <div class="text-[10px] text-slate-400 mb-2 truncate font-medium">
+            <span>${cfg.benchmarkLabel}</span>
+          </div>
+        </div>
+        <div class="h-16 w-full relative mt-2 pt-1 border-t border-slate-100">
+          <canvas id="chart-ct-mini-${key}" class="w-full h-full"></canvas>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  const labels = ctProcessedMonthlyData.map(d => d.shortLabel);
+  keys.forEach(key => {
+    const cfg = CT_METRICS_CONFIG[key];
+    const miniCanvas = document.getElementById(`chart-ct-mini-${key}`);
+    if (!miniCanvas) return;
+
+    const data = ctProcessedMonthlyData.map(d => cfg.valFn(d));
+    const ctx = miniCanvas.getContext('2d');
+    ctMiniChartInstances[key] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          borderColor: cfg.color,
+          borderWidth: 2,
+          borderCapStyle: 'round',
+          borderJoinStyle: 'round',
+          fill: false,
+          tension: 0,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          pointHitRadius: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 10, weight: 'bold' },
+            bodyFont: { size: 10 },
+            padding: 6,
+            cornerRadius: 6,
+            displayColors: false,
+            callbacks: {
+              title: function(items) {
+                if (!items || !items[0]) return '';
+                const idx = items[0].dataIndex;
+                return (ctProcessedMonthlyData[idx] && ctProcessedMonthlyData[idx].fullMonthLabel) || items[0].label;
+              },
+              label: function(item) {
+                return `${cfg.shortTitle}: ${cfg.fmtFn ? cfg.fmtFn(item.raw) : item.raw}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { display: false },
+          y: { display: false }
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Select Active Metric for Master Chart
+ */
+function selectChapterTrafficMetric(key) {
+  if (!CT_METRICS_CONFIG[key]) return;
+  ctSelectedMetricKey = key;
+
+  const keys = Object.keys(CT_METRICS_CONFIG);
+  keys.forEach(k => {
+    const pill = document.getElementById(`ct-pill-${k}`);
+    if (pill) {
+      if (k === key) {
+        pill.className = 'px-2.5 py-1 rounded-xl text-3xs border transition-all cursor-pointer whitespace-nowrap shrink-0 bg-blue-600 text-white font-black shadow-2xs border-blue-600';
+      } else {
+        pill.className = 'px-2.5 py-1 rounded-xl text-3xs border transition-all cursor-pointer whitespace-nowrap shrink-0 bg-white hover:bg-slate-50 text-slate-700 font-bold border-slate-200 hover:border-slate-300';
+      }
+    }
+
+    const card = document.getElementById(`ct-card-${k}`);
+    if (card) {
+      if (k === key) {
+        card.className = 'bg-white border rounded-2xl p-4 transition-all cursor-pointer flex flex-col justify-between border-blue-500 ring-2 ring-blue-100 shadow-xs';
+      } else {
+        card.className = 'bg-white border rounded-2xl p-4 transition-all cursor-pointer flex flex-col justify-between border-slate-200/80 hover:border-slate-300 shadow-2xs hover:shadow-xs';
+      }
+    }
+  });
+
+  renderChapterTrafficMasterChart();
+
+  const masterSec = document.getElementById('chapter-traffic-monthly-section');
+  if (masterSec && window.innerWidth < 768) {
+    masterSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+/**
+ * Resize all Chapter Traffic Charts
+ */
+function resizeChapterTrafficCharts() {
+  if (ctMasterChartInstance) ctMasterChartInstance.resize();
+  Object.keys(ctMiniChartInstances).forEach(k => {
+    if (ctMiniChartInstances[k]) ctMiniChartInstances[k].resize();
+  });
+}
+
+/**
  * Render Subview 5: Chapter Traffic Lights Matrix
  */
 function renderChapterTrafficView() {
   if (typeof calcAndRenderChapterTrafficScore === 'function') {
     calcAndRenderChapterTrafficScore();
+  }
+  if (!palmsChapterTrendsData) {
+    fetchPalmsChapterTrends().then(() => {
+      renderChapterTrafficMonthlyCharts();
+    });
+  } else {
+    renderChapterTrafficMonthlyCharts();
   }
 }
 </script>

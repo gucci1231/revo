@@ -985,7 +985,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-5">
           <!-- 1. Chapter Size (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('chapter_size')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-blue-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">サイズ</span>
@@ -1003,7 +1003,7 @@
           </div>
 
           <!-- 2. Net Growth (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('net_growth')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-indigo-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">純増数</span>
@@ -1021,7 +1021,7 @@
           </div>
 
           <!-- 3. Retention Rate (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('retention_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-teal-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">更新率</span>
@@ -1039,7 +1039,7 @@
           </div>
 
           <!-- 4. Referrals per Meeting (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('referral_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-blue-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">リファーラル</span>
@@ -1057,7 +1057,7 @@
           </div>
 
           <!-- 5. Visitors per Week (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('visitor_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-amber-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">ビジター数</span>
@@ -1075,7 +1075,7 @@
           </div>
 
           <!-- 6. Join Rate (10pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('join_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-purple-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">加入率</span>
@@ -1093,7 +1093,7 @@
           </div>
 
           <!-- 7. Absenteeism Rate (15pt) -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
+          <div onclick="selectChapterTrafficMetric('absent_rate')" class="bg-white border border-slate-200/80 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs hover:-translate-y-0.5 hover:border-rose-300 transition-all flex flex-col justify-between cursor-pointer">
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-xs font-bold text-slate-700">欠席率</span>
@@ -1115,23 +1115,81 @@
         <div class="bg-slate-50/70 border border-slate-200/60 rounded-2xl p-3 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="text-3xs font-black text-slate-400 uppercase tracking-wider">参考数値:</div>
           <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('ext_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-cyan-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">外与率:</span>
               <span id="ctl-ext-val" class="font-black text-slate-800 tabular-nums">--%</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('tyfcb_sales')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-sky-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">ThankYouスリップ:</span>
               <span id="ctl-tyfcb-val" class="font-black text-slate-800 tabular-nums">-- 千円</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('ceu_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-pink-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">CEU:</span>
               <span id="ctl-ceu-val" class="font-black text-slate-800 tabular-nums">--</span>
             </div>
-            <div class="flex items-baseline gap-1.5">
+            <div onclick="selectChapterTrafficMetric('oto_rate')" class="flex items-baseline gap-1.5 cursor-pointer hover:text-amber-700 transition-colors" title="月次グラフを表示">
               <span class="text-slate-500 font-medium">1to1:</span>
               <span id="ctl-oto-val" class="font-black text-slate-800 tabular-nums">--</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MONTHLY TRAFFIC TRENDS: チャプタートラフィック 各指標の月毎推移グラフ  -->
+    <!-- ======================================================== -->
+    <div class="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-all mb-8" id="chapter-traffic-monthly-section">
+      <!-- Section Header -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+            <span class="text-3xs font-black tracking-widest text-slate-400 uppercase">MONTHLY TRAFFIC TRENDS</span>
+          </div>
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>チャプタートラフィック 月次推移グラフ</span>
+            <span id="ct-trend-month-range" class="text-xs font-bold text-slate-400 tabular-nums">2025/10 〜 2026/09</span>
+          </h3>
+        </div>
+
+        <!-- Metric Switcher Pills / View Selector -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full text-xs" id="ct-metric-pills">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Focused Master Chart Card -->
+      <div class="mt-5 pb-6 border-b border-slate-100">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div class="flex items-baseline gap-3 flex-wrap">
+            <span id="ct-master-metric-title" class="text-base sm:text-lg font-black text-slate-900">チャプター総合点 (100点満点)</span>
+            <div class="flex items-baseline gap-1">
+              <span id="ct-master-metric-val" class="text-2xl sm:text-3xl font-black text-emerald-600 tabular-nums">--</span>
+              <span id="ct-master-metric-unit" class="text-xs font-bold text-slate-400">pt</span>
+            </div>
+            <span id="ct-master-metric-mom" class="text-3xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 tabular-nums">前月比 --</span>
+            <span id="ct-master-metric-avg" class="text-3xs text-slate-400 tabular-nums font-semibold">全期間平均: --</span>
+          </div>
+          <div class="flex items-center gap-2 text-3xs font-bold">
+            <span id="ct-master-metric-benchmark" class="px-2.5 py-1 rounded-xl bg-blue-50 text-blue-700 border border-blue-100/80">基準: 70pt以上 (グリーン)</span>
+          </div>
+        </div>
+
+        <div class="h-64 sm:h-80 w-full relative">
+          <canvas id="chart-chapter-traffic-master" class="w-full h-full"></canvas>
+        </div>
+      </div>
+
+      <!-- Grid of Individual Metric Monthly Charts (12 Metrics) -->
+      <div class="pt-6">
+        <div class="text-3xs font-black text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
+          <span>全指標 月毎推移カード (クリックで上部拡大表示)</span>
+          <span class="text-3xs text-slate-400 font-medium">全12指標一覧</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="ct-individual-charts-grid">
+          <!-- Dynamically populated cards with mini Chart.js graphs -->
         </div>
       </div>
     </div>

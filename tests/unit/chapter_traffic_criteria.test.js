@@ -86,4 +86,40 @@ describe('Chapter Traffic Lights 100pt Scoring Criteria Feature Tests', () => {
     assert.ok(getTrafficMetricBadgeClass(5, 10).includes('amber'), '5pt must be amber (yellow)');
     assert.ok(getTrafficMetricBadgeClass(0, 10).includes('slate'), '0pt must be slate (grey)');
   });
+
+  it('verifies Chapter Traffic Monthly Trends UI elements exist in compiled index.html', () => {
+    assert.strictEqual(indexHtml.includes('id="chapter-traffic-monthly-section"'), true);
+    assert.strictEqual(indexHtml.includes('チャプタートラフィック 月次推移グラフ'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-trend-month-range"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-metric-pills"'), true);
+    assert.strictEqual(indexHtml.includes('id="chart-chapter-traffic-master"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-master-metric-title"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-master-metric-val"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-master-metric-unit"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-master-metric-mom"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-master-metric-benchmark"'), true);
+    assert.strictEqual(indexHtml.includes('id="ct-individual-charts-grid"'), true);
+  });
+
+  it('verifies Chapter Traffic Monthly Trend functions and configuration exist in script', () => {
+    assert.strictEqual(indexHtml.includes('function prepareChapterTrafficMonthlyData('), true);
+    assert.strictEqual(indexHtml.includes('function renderChapterTrafficMonthlyCharts('), true);
+    assert.strictEqual(indexHtml.includes('function renderChapterTrafficPills('), true);
+    assert.strictEqual(indexHtml.includes('function renderChapterTrafficMasterChart('), true);
+    assert.strictEqual(indexHtml.includes('function renderChapterTrafficCardsGrid('), true);
+    assert.strictEqual(indexHtml.includes('function selectChapterTrafficMetric('), true);
+    assert.strictEqual(indexHtml.includes('function resizeChapterTrafficCharts('), true);
+    assert.strictEqual(indexHtml.includes('const CT_METRICS_CONFIG ='), true);
+
+    // Verify all 12 indicators are configured in CT_METRICS_CONFIG
+    const indicators = [
+      'total_score', 'chapter_size', 'net_growth', 'retention_rate',
+      'referral_rate', 'visitor_rate', 'join_rate', 'absent_rate',
+      'tyfcb_sales', 'ext_rate', 'oto_rate', 'ceu_rate'
+    ];
+    indicators.forEach(key => {
+      assert.strictEqual(indexHtml.includes(`${key}:`), true, `Missing metric key in CT_METRICS_CONFIG: ${key}`);
+    });
+  });
 });
+
