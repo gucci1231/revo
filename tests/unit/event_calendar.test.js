@@ -131,4 +131,14 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(devServerJs.includes("action === 'save_meeting_customization'"), 'dev-server supports save_meeting_customization');
     assert.ok(devServerJs.includes("action === 'reset_meeting_customization'"), 'dev-server supports reset_meeting_customization');
   });
+
+  it('verifies Apple Calendar style week timeline view and unified font sizes', () => {
+    assert.ok(viewScript.includes('HOUR_HEIGHT'), 'Week view defines time slot height');
+    assert.ok(viewScript.includes('START_HOUR'), 'Week view defines timeline start hour');
+    assert.ok(viewScript.includes('END_HOUR'), 'Week view defines timeline end hour');
+    assert.ok(viewScript.includes('font-mono font-bold text-xs tabular-nums'), 'Week view uses text-xs for event time');
+    assert.ok(viewScript.includes('font-bold text-xs text-slate-900'), 'Week view uses text-xs for event title');
+  });
 });
+
+

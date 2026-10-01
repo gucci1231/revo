@@ -14316,16 +14316,16 @@ select.form-input, select.form-select {
   </div>
 
   <!-- ================= VIEW 1: MONTHLY CALENDAR GRID ================= -->
-  <div id="calendar-view-container" class="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden mb-8">
+  <div id="calendar-view-container" class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden mb-8">
     <!-- Calendar Days Header (Sun - Sat) -->
-    <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50/80 text-center text-xs font-bold py-2.5 text-slate-600">
-      <div class="text-rose-500">日</div>
+    <div class="grid grid-cols-7 border-b border-slate-200 bg-slate-50/60 text-center text-xs font-semibold py-2 text-slate-500">
+      <div class="text-rose-500 font-bold">日</div>
       <div>月</div>
       <div>火</div>
       <div>水</div>
-      <div class="text-blue-600 font-black">木 (定例会)</div>
+      <div class="text-blue-600 font-bold">木 (定例会)</div>
       <div>金</div>
-      <div class="text-blue-500">土</div>
+      <div class="text-blue-500 font-bold">土</div>
     </div>
 
     <!-- Calendar Grid Body (Rendered via JS) -->
@@ -14338,12 +14338,11 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- ================= VIEW 2: WEEKLY CALENDAR VIEW ================= -->
-  <div id="week-view-container" class="hidden bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden mb-8">
-    <!-- 7 Day Columns Grid -->
-    <div id="week-grid" class="grid grid-cols-1 md:grid-cols-7 divide-y md:divide-y-0 md:divide-x divide-slate-200 bg-white min-h-[450px]">
+  <!-- ================= VIEW 2: WEEKLY CALENDAR VIEW (Time-Aware Timeline) ================= -->
+  <div id="week-view-container" class="hidden bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden mb-8">
+    <div id="week-grid" class="overflow-x-auto">
       <!-- Loading placeholder -->
-      <div class="col-span-full py-24 text-center bg-white">
+      <div class="py-24 text-center bg-white">
         <i class="fa-solid fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
         <div class="text-xs font-bold text-slate-500">週カレンダーを描画中...</div>
       </div>
@@ -37543,7 +37542,7 @@ function debounceTrainingFilter() {
 }
 
 /**
- * Render Weekly Calendar View (7 Columns)
+ * Render Weekly Calendar View (Apple Calendar Style Time-Aware Timeline)
  */
 function renderWeekView() {
   const weekGrid = document.getElementById('week-grid');
@@ -37551,6 +37550,16 @@ function renderWeekView() {
 
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
   const todayStr = new Date().toISOString().substring(0, 10);
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinutes = now.getMinutes();
+
+  // Timeline configuration (06:00 to 22:00 = 17 hours)
+  const START_HOUR = 6;
+  const END_HOUR = 22;
+  const TOTAL_HOURS = END_HOUR - START_HOUR + 1;
+  const HOUR_HEIGHT = 56; // px per hour
+  const TOTAL_HEIGHT = TOTAL_HOURS * HOUR_HEIGHT;
 
   // Group events by YYYY-MM-DD
   const eventsByDate = {};
@@ -37561,8 +37570,11 @@ function renderWeekView() {
     eventsByDate[dateKey].push(ev);
   });
 
-  let columnsHtml = '';
   const startDate = new Date(currentWeekStartDate);
+
+  // 1. Build Day Header Cells (Top Bar)
+  let headerColsHtml = '';
+  const daysMeta = [];
 
   for (let i = 0; i < 7; i++) {
     const dayDate = new Date(startDate);
@@ -37572,132 +37584,230 @@ function renderWeekView() {
     const dayOfWeek = dayDate.getDay();
     const dayName = dayNames[dayOfWeek];
     const dayNum = dayDate.getDate();
-    const monthNum = dayDate.getMonth() + 1;
-
     const isToday = dateKey === todayStr;
     const isThursday = dayOfWeek === 4;
-    const dayEvents = eventsByDate[dateKey] || [];
 
-    // Header styling
-    let headerBg = 'bg-slate-50/70';
-    let dayNumColor = 'text-slate-900';
+    daysMeta.push({ dayDate, dateKey, dayOfWeek, dayName, dayNum, isToday, isThursday });
+
     let dayNameColor = 'text-slate-500';
+    let dayNumDisplay = `<span class="text-sm font-semibold font-mono tabular-nums text-slate-800">${dayNum}</span>`;
 
     if (dayOfWeek === 0) {
       dayNameColor = 'text-rose-500 font-bold';
-      dayNumColor = 'text-rose-600';
+      dayNumDisplay = `<span class="text-sm font-semibold font-mono tabular-nums text-rose-500">${dayNum}</span>`;
     } else if (dayOfWeek === 6) {
       dayNameColor = 'text-blue-500 font-bold';
-      dayNumColor = 'text-blue-600';
+      dayNumDisplay = `<span class="text-sm font-semibold font-mono tabular-nums text-blue-500">${dayNum}</span>`;
     } else if (isThursday) {
-      dayNameColor = 'text-blue-600 font-black';
-      headerBg = 'bg-blue-50/50';
+      dayNameColor = 'text-blue-600 font-bold';
+      dayNumDisplay = `<span class="text-sm font-bold font-mono tabular-nums text-blue-600">${dayNum}</span>`;
     }
 
     if (isToday) {
-      headerBg = 'bg-blue-100/60';
+      dayNameColor = 'text-blue-600 font-bold';
+      dayNumDisplay = `<span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs font-mono tabular-nums">${dayNum}</span>`;
     }
 
-    // Event cards in this day column
-    let eventsHtml = '';
-    if (dayEvents.length === 0) {
-      eventsHtml = `
-        <div class="h-32 flex flex-col items-center justify-center text-center p-2 text-slate-300 group/empty">
-          <span class="text-3xs font-medium mb-1">予定なし</span>
-          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="opacity-0 group-hover/empty:opacity-100 transition-opacity px-2 py-1 rounded text-3xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 cursor-pointer flex items-center gap-1">
-            <i class="fa-solid fa-plus text-3xs"></i> 予定追加
-          </button>
+    headerColsHtml += `
+      <div class="flex-1 min-w-[110px] sm:min-w-[120px] p-2 text-center border-r border-slate-200 last:border-r-0 ${isToday ? 'bg-blue-50/30' : (isThursday ? 'bg-blue-50/15' : 'bg-white')} flex items-center justify-between group">
+        <div class="flex items-center gap-1.5 mx-auto">
+          <span class="text-xs ${dayNameColor}">${dayName}</span>
+          ${dayNumDisplay}
+          ${isThursday ? '<span class="text-3xs font-extrabold text-blue-600 hidden xl:inline ml-0.5">定例会</span>' : ''}
         </div>
-      `;
-    } else {
-      eventsHtml = dayEvents.map(ev => {
-        const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
-        const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
-
-        let cardStyle = '';
-        let badge = '';
-        let formatBadge = '';
-
-        if (ev.source_type === 'meeting') {
-          cardStyle = 'bg-blue-50/90 border-blue-200 text-blue-950 hover:border-blue-300 hover:bg-blue-100/80';
-          badge = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span><span class="text-3xs font-extrabold text-blue-700">定例会</span>';
-        } else if (ev.source_type === 'chapter') {
-          cardStyle = 'bg-purple-50/90 border-purple-200 text-purple-950 hover:border-purple-300 hover:bg-purple-100/80';
-          badge = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0"></span><span class="text-3xs font-extrabold text-purple-700">チャプター</span>';
-        } else {
-          cardStyle = 'bg-emerald-50/90 border-emerald-200 text-emerald-950 hover:border-emerald-300 hover:bg-emerald-100/80';
-          badge = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span><span class="text-3xs font-extrabold text-emerald-800">京都CC研修</span>';
-        }
-
-        if (ev.is_online) {
-          formatBadge = '<span class="text-3xs px-1 py-0.2 rounded bg-blue-100/80 text-blue-700 font-bold">Zoom</span>';
-        } else {
-          formatBadge = '<span class="text-3xs px-1 py-0.2 rounded bg-emerald-100/80 text-emerald-700 font-bold">対面</span>';
-        }
-
-        const visitorBadge = (ev.visitor_count !== undefined && ev.visitor_count > 0)
-          ? `<div class="mt-1 flex items-center gap-1 text-3xs font-black text-blue-700 bg-blue-100/60 px-1.5 py-0.5 rounded"><i class="fa-solid fa-users text-3xs"></i> ビジター: ${ev.visitor_count}名</div>`
-          : '';
-
-        return `
-          <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 sm:p-2.5 rounded-xl border ${cardStyle} shadow-2xs transition-all cursor-pointer hover:shadow-xs group/card relative">
-            <div class="flex items-center justify-between gap-1 mb-1">
-              <div class="flex items-center gap-1">
-                ${badge}
-              </div>
-              ${formatBadge}
-            </div>
-
-            <div class="font-mono text-3xs font-bold text-slate-600 mb-1 flex items-center gap-1">
-              <i class="fa-regular fa-clock text-slate-400 text-3xs"></i>
-              <span>${timeStr}${endTimeStr}</span>
-            </div>
-
-            <h5 class="text-xs font-bold text-slate-900 group-hover/card:text-blue-700 transition-colors line-clamp-2 leading-snug">
-              ${escapeHtml(ev.title)}
-            </h5>
-
-            ${ev.location_name ? `
-              <p class="text-3xs text-slate-500 truncate mt-1 flex items-center gap-1">
-                <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0"></i>
-                <span class="truncate">${escapeHtml(ev.location_name)}</span>
-              </p>
-            ` : ''}
-
-            ${visitorBadge}
-          </div>
-        `;
-      }).join('');
-    }
-
-    columnsHtml += `
-      <div class="flex flex-col min-h-[380px] bg-white ${isToday ? 'bg-blue-50/10' : ''}">
-        <!-- Day Column Header -->
-        <div class="p-2.5 border-b border-slate-200 ${headerBg} flex items-center justify-between">
-          <div class="flex items-baseline gap-1.5">
-            <span class="text-xs font-extrabold ${dayNameColor}">${dayName}</span>
-            <span class="text-sm font-black font-mono tabular-nums ${dayNumColor}">${monthNum}/${dayNum}</span>
-            ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
-            ${isThursday ? '<span class="text-3xs font-extrabold text-blue-600 hidden xl:inline">定例会</span>' : ''}
-          </div>
-          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-6 h-6 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-700 transition-colors flex items-center justify-center text-xs cursor-pointer" title="この日に予定を追加">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-
-        <!-- Day Events List -->
-        <div class="p-2 space-y-2 flex-1 overflow-y-auto max-h-[500px]">
-          ${eventsHtml}
-        </div>
+        <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-5 h-5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-3xs shrink-0 cursor-pointer" title="この日に予定を追加">
+          <i class="fa-solid fa-plus"></i>
+        </button>
       </div>
     `;
   }
 
-  weekGrid.innerHTML = columnsHtml;
+  // 2. Build Time Labels Column (Left Column)
+  let timeLabelsHtml = '';
+  for (let h = START_HOUR; h <= END_HOUR; h++) {
+    const timeStr = `${String(h).padStart(2, '0')}:00`;
+    timeLabelsHtml += `
+      <div style="height: ${HOUR_HEIGHT}px;" class="relative border-b border-transparent">
+        <span class="absolute -top-2.5 right-2 font-mono font-bold text-xs tabular-nums text-slate-400 select-none">
+          ${timeStr}
+        </span>
+      </div>
+    `;
+  }
+
+  // 3. Build 7 Day Timeline Columns with Placed Events
+  let timelineColsHtml = '';
+
+  daysMeta.forEach(meta => {
+    const dayEvents = eventsByDate[meta.dateKey] || [];
+
+    // Separate timed events vs all-day events
+    const timedEvents = [];
+    const allDayEvents = [];
+
+    dayEvents.forEach(ev => {
+      const timePart = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+      if (!timePart || timePart === '00:00' && (!ev.end_datetime || ev.end_datetime.substring(11, 16) === '00:00')) {
+        allDayEvents.push(ev);
+      } else {
+        const [h, m] = timePart.split(':').map(Number);
+        const startMin = h * 60 + m;
+
+        let endMin = startMin + 60; // Default 1 hour duration
+        if (ev.end_datetime && ev.end_datetime.length >= 16) {
+          const [eh, em] = ev.end_datetime.substring(11, 16).split(':').map(Number);
+          const calculatedEnd = eh * 60 + em;
+          if (calculatedEnd > startMin) endMin = calculatedEnd;
+        }
+
+        timedEvents.push({ ev, startMin, endMin });
+      }
+    });
+
+    // Layout algorithm for overlapping events within the day column
+    timedEvents.sort((a, b) => a.startMin - b.startMin || (b.endMin - b.startMin) - (a.endMin - a.startMin));
+
+    // Calculate positions
+    const placedEventsHtml = timedEvents.map((item, idx, arr) => {
+      const ev = item.ev;
+      const startMinFromBase = item.startMin - (START_HOUR * 60);
+      const durationMin = item.endMin - item.startMin;
+
+      const topPx = Math.max(0, (startMinFromBase * HOUR_HEIGHT) / 60);
+      const heightPx = Math.max(34, (durationMin * HOUR_HEIGHT) / 60);
+
+      // Overlap detection
+      const overlapping = arr.filter(other => (other.startMin < item.endMin && other.endMin > item.startMin));
+      const colIndex = overlapping.indexOf(item);
+      const colCount = Math.max(1, overlapping.length);
+
+      const widthPct = 100 / colCount;
+      const leftPct = colIndex * widthPct;
+
+      const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
+      const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
+
+      let cardStyle = '';
+      if (ev.source_type === 'meeting') {
+        cardStyle = 'bg-blue-50/95 border-l-[3px] border-blue-600 text-blue-950 hover:bg-blue-100 hover:border-blue-700';
+      } else if (ev.source_type === 'chapter') {
+        cardStyle = 'bg-purple-50/95 border-l-[3px] border-purple-600 text-purple-950 hover:bg-purple-100 hover:border-purple-700';
+      } else {
+        cardStyle = 'bg-emerald-50/95 border-l-[3px] border-emerald-600 text-emerald-950 hover:bg-emerald-100 hover:border-emerald-700';
+      }
+
+      const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+        ? `<span class="inline-flex items-center gap-1 text-3xs font-extrabold text-blue-700 bg-blue-100/70 px-1 py-0.2 rounded shrink-0">V:${ev.visitor_count}</span>`
+        : '';
+
+      const formatTag = ev.is_online
+        ? `<span class="text-3xs font-extrabold text-blue-600 bg-blue-100/60 px-1 py-0.2 rounded shrink-0">Zoom</span>`
+        : '';
+
+      return `
+        <div onclick="handleCalendarEventClick('${ev.id}', event)"
+             style="top: ${topPx}px; height: ${heightPx}px; left: calc(${leftPct}% + 1px); width: calc(${widthPct}% - 2px);"
+             class="absolute z-10 rounded-lg p-1.5 sm:p-2 border ${cardStyle} shadow-2xs transition-all cursor-pointer overflow-hidden flex flex-col justify-between group/card hover:shadow-xs active:scale-[0.99]"
+             title="${escapeHtml(ev.title)} (${timeStr}${endTimeStr})">
+
+          <div>
+            <!-- Unified Font Size: Time in tabular-nums and Title in same size -->
+            <div class="flex items-center justify-between gap-1 mb-0.5">
+              <div class="font-mono font-bold text-xs tabular-nums text-slate-800 flex items-center gap-1 shrink-0">
+                <i class="fa-regular fa-clock text-slate-400 text-xs"></i>
+                <span>${timeStr}${endTimeStr}</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                ${formatTag}
+                ${visitorTag}
+              </div>
+            </div>
+
+            <h5 class="font-bold text-xs text-slate-900 leading-snug line-clamp-2 group-hover/card:text-blue-700 transition-colors">
+              ${escapeHtml(ev.title)}
+            </h5>
+          </div>
+
+          ${ev.location_name && heightPx > 50 ? `
+            <p class="text-3xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
+              <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0"></i>
+              <span class="truncate">${escapeHtml(ev.location_name)}</span>
+            </p>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+
+    // Current Time Red Line Indicator (if today)
+    let currentTimeIndicatorHtml = '';
+    if (meta.isToday && currentHour >= START_HOUR && currentHour <= END_HOUR) {
+      const nowMinFromBase = (currentHour * 60 + currentMinutes) - (START_HOUR * 60);
+      const lineTopPx = (nowMinFromBase * HOUR_HEIGHT) / 60;
+      currentTimeIndicatorHtml = `
+        <div style="top: ${lineTopPx}px;" class="absolute left-0 right-0 z-20 pointer-events-none flex items-center">
+          <div class="w-2.5 h-2.5 -ml-1.25 rounded-full bg-rose-500 ring-2 ring-white"></div>
+          <div class="flex-1 h-0.5 bg-rose-500"></div>
+        </div>
+      `;
+    }
+
+    // Grid Horizontal Lines for each hour
+    let hourLinesHtml = '';
+    for (let h = 0; h < TOTAL_HOURS; h++) {
+      hourLinesHtml += `
+        <div style="height: ${HOUR_HEIGHT}px;" class="border-b border-slate-100 w-full hover:bg-slate-50/40 transition-colors cursor-pointer" onclick="openChapterEventModalOnDate('${meta.dateKey}', event)"></div>
+      `;
+    }
+
+    timelineColsHtml += `
+      <div class="flex-1 min-w-[110px] sm:min-w-[120px] relative border-r border-slate-100 last:border-r-0 ${meta.isToday ? 'bg-blue-50/10' : (meta.isThursday ? 'bg-blue-50/5' : 'bg-white')}" style="height: ${TOTAL_HEIGHT}px;">
+        <!-- Hour Grid Lines -->
+        <div class="absolute inset-0 pointer-events-auto">
+          ${hourLinesHtml}
+        </div>
+
+        <!-- Current Time Line -->
+        ${currentTimeIndicatorHtml}
+
+        <!-- Positioned Events -->
+        ${placedEventsHtml}
+      </div>
+    `;
+  });
+
+  // Assemble the Apple Calendar Week Timeline View
+  weekGrid.innerHTML = `
+    <div class="min-w-[770px] bg-white">
+      <!-- Fixed Header Row (Days Sun - Sat) -->
+      <div class="flex border-b border-slate-200 bg-slate-50/50 sticky top-0 z-20">
+        <!-- Spacer for time axis -->
+        <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/80 p-2 text-center text-3xs font-bold text-slate-400 flex items-center justify-center">
+          <span>時刻</span>
+        </div>
+        <!-- 7 Day Headers -->
+        <div class="flex-1 flex">
+          ${headerColsHtml}
+        </div>
+      </div>
+
+      <!-- Scrollable Timeline Body -->
+      <div class="flex overflow-y-auto max-h-[580px] sm:max-h-[640px] relative">
+        <!-- Time Axis Labels (Left Column) -->
+        <div class="w-14 sm:w-16 shrink-0 border-r border-slate-200 bg-slate-50/40 select-none" style="height: ${TOTAL_HEIGHT}px;">
+          ${timeLabelsHtml}
+        </div>
+
+        <!-- 7 Day Timeline Columns Grid -->
+        <div class="flex-1 flex relative">
+          ${timelineColsHtml}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /**
- * Render the 7-day Month Grid
+ * Render the 7-day Month Grid (Apple Calendar Radical Minimalism)
  */
 function renderCalendarGrid() {
   const gridEl = document.getElementById('calendar-grid');
@@ -37763,19 +37873,35 @@ function renderCalendarGrid() {
 }
 
 /**
- * Helper to render individual calendar cell HTML
+ * Helper to render individual calendar cell HTML (Apple Calendar Style)
  */
 function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday) {
   const dObj = new Date(dateKey.replace(/-/g, '/'));
   const dayOfWeek = dObj.getDay();
   const isThursday = dayOfWeek === 4;
 
-  let bgClass = isCurrentMonth ? 'bg-white' : 'bg-slate-50/50';
+  let bgClass = isCurrentMonth ? 'bg-white' : 'bg-slate-50/40';
   if (isToday) bgClass = 'bg-blue-50/20';
 
-  let numColorClass = isCurrentMonth ? 'text-slate-800' : 'text-slate-300';
-  if (dayOfWeek === 0) numColorClass = isCurrentMonth ? 'text-rose-500 font-bold' : 'text-rose-200';
-  if (dayOfWeek === 6) numColorClass = isCurrentMonth ? 'text-blue-500 font-bold' : 'text-blue-200';
+  let numDisplay = `<span class="text-xs sm:text-sm font-semibold font-mono tabular-nums text-slate-800">${dayNum}</span>`;
+
+  if (!isCurrentMonth) {
+    numDisplay = `<span class="text-xs sm:text-sm font-normal font-mono tabular-nums text-slate-300">${dayNum}</span>`;
+  } else if (dayOfWeek === 0) {
+    numDisplay = `<span class="text-xs sm:text-sm font-bold font-mono tabular-nums text-rose-500">${dayNum}</span>`;
+  } else if (dayOfWeek === 6) {
+    numDisplay = `<span class="text-xs sm:text-sm font-bold font-mono tabular-nums text-blue-500">${dayNum}</span>`;
+  } else if (isThursday) {
+    numDisplay = `<span class="text-xs sm:text-sm font-bold font-mono tabular-nums text-blue-600">${dayNum}</span>`;
+  }
+
+  if (isToday) {
+    numDisplay = `
+      <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-2xs font-mono tabular-nums">
+        ${dayNum}
+      </div>
+    `;
+  }
 
   // Event pills (up to 3 visible, rest collapsed)
   const maxPills = 3;
@@ -37785,56 +37911,50 @@ function renderCalendarCell(dateKey, dayNum, dayEvents, isCurrentMonth, isToday)
   const pillsHtml = visibleEvents.map(ev => {
     const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
     let pillStyle = '';
-    let icon = '';
-    let titlePrefix = '';
 
     if (ev.source_type === 'meeting') {
-      pillStyle = 'bg-blue-50 text-blue-800 border border-blue-200/80 hover:bg-blue-100';
-      icon = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>';
-      if (ev.visitor_count > 0) {
-        titlePrefix = `<span class="px-1 py-0.2 rounded text-3xs font-black bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span> `;
-      }
+      pillStyle = 'bg-blue-50/90 text-blue-950 border-l-[3px] border-blue-600 hover:bg-blue-100';
     } else if (ev.source_type === 'chapter') {
-      pillStyle = 'bg-purple-50 text-purple-800 border border-purple-200/80 hover:bg-purple-100';
-      icon = '<span class="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0"></span>';
+      pillStyle = 'bg-purple-50/90 text-purple-950 border-l-[3px] border-purple-600 hover:bg-purple-100';
     } else {
       // Training
-      pillStyle = 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 hover:bg-emerald-100';
-      icon = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>';
+      pillStyle = 'bg-emerald-50/90 text-emerald-950 border-l-[3px] border-emerald-600 hover:bg-emerald-100';
     }
 
+    const visitorPrefix = (ev.visitor_count !== undefined && ev.visitor_count > 0)
+      ? `<span class="px-1 py-0.2 rounded text-3xs font-extrabold bg-blue-600 text-white shrink-0">V:${ev.visitor_count}</span>`
+      : '';
+
     return `
-      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1 px-1.5 py-0.5 rounded text-3xs font-bold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:scale-[1.02]">
-        ${icon}
-        <span class="font-mono text-3xs opacity-75 shrink-0">${timeStr}</span>
-        ${titlePrefix}
-        <span class="truncate">${escapeHtml(ev.title)}</span>
+      <div onclick="handleCalendarEventClick('${ev.id}', event)" class="group/pill flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold ${pillStyle} transition-all cursor-pointer truncate shadow-2xs hover:shadow-xs active:scale-[0.99]">
+        <span class="font-mono font-bold tabular-nums text-xs shrink-0 text-slate-800">${timeStr}</span>
+        ${visitorPrefix}
+        <span class="truncate font-semibold text-xs text-slate-900">${escapeHtml(ev.title)}</span>
       </div>
     `;
   }).join('');
 
   const extraBadge = extraCount > 0 ? `
-    <div onclick="openDayEventsModal('${dateKey}')" class="text-3xs font-extrabold text-slate-500 hover:text-blue-600 cursor-pointer pt-0.5 pl-1">
+    <div onclick="openDayEventsModal('${dateKey}')" class="text-3xs font-extrabold text-slate-500 hover:text-blue-600 cursor-pointer pt-0.5 pl-1.5">
       + 他 ${extraCount} 件
     </div>
   ` : '';
 
   return `
-    <div class="calendar-cell min-h-[105px] sm:min-h-[125px] p-1.5 sm:p-2 flex flex-col justify-between ${bgClass} transition-colors hover:bg-slate-50/80 group cursor-pointer relative ${isToday ? 'ring-2 ring-blue-500 ring-inset z-10' : ''}" onclick="onCalendarCellClick('${dateKey}', event)">
+    <div class="calendar-cell min-h-[105px] sm:min-h-[125px] p-1.5 sm:p-2 flex flex-col justify-between ${bgClass} transition-colors hover:bg-slate-50/80 group cursor-pointer relative" onclick="onCalendarCellClick('${dateKey}', event)">
       <div>
-        <!-- Top bar: Date Num & Badges -->
-        <div class="flex items-center justify-between mb-1">
-          <div class="flex items-center gap-1">
-            <span class="text-xs sm:text-sm font-black font-mono tabular-nums ${numColorClass}">${dayNum}</span>
-            ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white leading-none">TODAY</span>' : ''}
-            ${isThursday && isCurrentMonth ? '<span class="text-3xs font-extrabold text-blue-500 hidden sm:inline">定例会</span>' : ''}
+        <!-- Top bar: Date Num & Action -->
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-1.5">
+            ${numDisplay}
+            ${isThursday && isCurrentMonth ? '<span class="text-3xs font-extrabold text-blue-600 hidden sm:inline">定例会</span>' : ''}
           </div>
-          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-3xs" title="この日に予定を追加">
+          <button type="button" onclick="openChapterEventModalOnDate('${dateKey}', event)" class="w-5 h-5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-3xs cursor-pointer" title="この日に予定を追加">
             <i class="fa-solid fa-plus"></i>
           </button>
         </div>
 
-        <!-- Event Pills -->
+        <!-- Event Pills (Unified Font Size: time & title both text-xs) -->
         <div class="space-y-1">
           ${pillsHtml}
           ${extraBadge}
@@ -37910,20 +38030,20 @@ function openDayEventsModal(dateKey) {
       }
 
       return `
-        <div onclick="closeDayEventsModal(); handleCalendarEventClick('${ev.id}');" class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition-all cursor-pointer flex items-start gap-3">
-          <div class="text-center font-mono shrink-0 pt-0.5">
-            <span class="text-xs font-black text-slate-800 block">${timeStr}</span>
-            <span class="text-3xs text-slate-400 font-bold">${ev.is_online ? 'Zoom' : '対面'}</span>
-          </div>
+        <div onclick="closeDayEventsModal(); handleCalendarEventClick('${ev.id}');" class="p-3 rounded-xl border border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 group">
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-1.5 mb-1">
+            <div class="flex items-center gap-1.5 mb-1 flex-wrap">
               ${badge}
               <span class="text-3xs font-bold text-slate-500">${escapeHtml(ev.category || '')}</span>
             </div>
-            <h4 class="text-xs sm:text-sm font-bold text-slate-900 truncate">${escapeHtml(ev.title)}</h4>
-            ${ev.location_name ? `<p class="text-3xs text-slate-500 truncate mt-0.5"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${escapeHtml(ev.location_name)}</p>` : ''}
+            <!-- Unified Font Size: Time and Title -->
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="text-xs font-mono font-bold text-slate-800 tabular-nums shrink-0">${timeStr}${endTimeStr}</span>
+              <h4 class="text-xs font-bold text-slate-900 group-hover:text-blue-700 transition-colors truncate">${escapeHtml(ev.title)}</h4>
+            </div>
+            ${ev.location_name ? `<p class="text-3xs text-slate-500 truncate mt-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${escapeHtml(ev.location_name)}</p>` : ''}
           </div>
-          <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 self-center"></i>
+          <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 self-center group-hover:text-slate-500 transition-colors"></i>
         </div>
       `;
     }).join('');
@@ -38561,14 +38681,14 @@ function renderFilteredTrainingEvents() {
       : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-location-dot text-3xs"></i> 対面</span>`;
 
     return `
-      <div class="bg-white border ${isToday ? 'border-blue-400 shadow-md ring-1 ring-blue-400/20' : 'border-slate-200'} rounded-2xl p-4 shadow-xs hover:border-slate-300 hover:-translate-y-0.5 transition-all flex flex-col justify-between group">
+      <div class="bg-white border ${isToday ? 'border-blue-500/80 shadow-xs ring-1 ring-blue-500/20' : 'border-slate-200'} rounded-2xl p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex flex-col justify-between group">
         <div>
           <!-- Header: Date Badge & Badges -->
           <div class="flex items-start gap-3 mb-2.5">
-            <div class="w-13 h-13 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center shrink-0 text-center shadow-2xs group-hover:border-blue-200 group-hover:bg-blue-50/30 transition-colors">
-              <span class="text-3xs font-extrabold text-blue-600 uppercase tracking-wider">${monthNum}月</span>
-              <span class="text-lg font-black text-slate-900 font-mono leading-none my-0.5 tabular-nums">${dayNum}</span>
-              <span class="text-3xs font-bold text-slate-400">(${dayName})</span>
+            <div class="w-12 h-12 rounded-xl bg-slate-50/80 border border-slate-200/80 flex flex-col items-center justify-center shrink-0 text-center shadow-2xs group-hover:border-blue-200 group-hover:bg-blue-50/30 transition-colors">
+              <span class="text-3xs font-extrabold ${isToday ? 'text-blue-600' : 'text-slate-500'} uppercase tracking-wider">${monthNum}月</span>
+              <span class="text-base font-black text-slate-900 font-mono leading-none my-0.5 tabular-nums">${dayNum}</span>
+              <span class="text-3xs font-semibold text-slate-400">(${dayName})</span>
             </div>
 
             <div class="flex-1 min-w-0">
@@ -38577,27 +38697,27 @@ function renderFilteredTrainingEvents() {
                 ${formatBadge}
                 ${isToday ? '<span class="px-1.5 py-0.2 rounded text-3xs font-black bg-blue-600 text-white">TODAY</span>' : ''}
               </div>
-              <h3 onclick="handleCalendarEventClick('${ev.id}')" class="text-sm font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 leading-snug">
+              <h3 onclick="handleCalendarEventClick('${ev.id}')" class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors cursor-pointer line-clamp-2 leading-snug">
                 ${escapeHtml(ev.title)}
               </h3>
             </div>
           </div>
 
-          <!-- Metadata -->
-          <div class="space-y-1 text-xs text-slate-600 mt-2 pl-0.5">
+          <!-- Metadata (Time font size matches title font size) -->
+          <div class="space-y-1.5 text-xs text-slate-600 mt-2 pl-0.5">
             <div class="flex items-center gap-2">
-              <i class="fa-regular fa-clock text-slate-400 text-3xs shrink-0 w-3.5"></i>
-              <span class="font-mono font-bold text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
+              <i class="fa-regular fa-clock text-slate-400 text-sm shrink-0 w-3.5"></i>
+              <span class="font-mono font-bold text-sm text-slate-800 tabular-nums">${timeStr}${endTimeStr}</span>
             </div>
             ${ev.location_name ? `
-              <div class="flex items-center gap-2 truncate">
-                <i class="fa-solid fa-location-dot text-slate-400 text-3xs shrink-0 w-3.5"></i>
+              <div class="flex items-center gap-2 truncate text-xs">
+                <i class="fa-solid fa-location-dot text-slate-400 text-xs shrink-0 w-3.5"></i>
                 <span class="truncate text-slate-600">${escapeHtml(ev.location_name)}</span>
               </div>
             ` : ''}
             ${ev.visitor_count !== undefined && ev.visitor_count > 0 ? `
-              <div class="flex items-center gap-1.5 text-blue-600 font-bold">
-                <i class="fa-solid fa-users text-blue-500 text-3xs"></i>
+              <div class="flex items-center gap-1.5 text-blue-600 font-bold text-xs">
+                <i class="fa-solid fa-users text-blue-500 text-xs"></i>
                 <span>申込ビジター: ${ev.visitor_count}名</span>
               </div>
             ` : ''}
@@ -38606,17 +38726,17 @@ function renderFilteredTrainingEvents() {
 
         <!-- Footer Actions -->
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-          <button type="button" onclick="handleCalendarEventClick('${ev.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1">
+          <button type="button" onclick="handleCalendarEventClick('${ev.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1 cursor-pointer">
             <span>詳細を見る</span>
             <i class="fa-solid fa-chevron-right text-3xs"></i>
           </button>
           ${ev.source_type === 'training' ? `
-            <a href="${ev.registration_url || ev.detail_url || 'https://bni-ck.com/ja/events'}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-xs flex items-center gap-1.5 no-underline">
+            <a href="${ev.registration_url || ev.detail_url || 'https://bni-ck.com/ja/events'}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 no-underline">
               <span>参加申込</span>
               <i class="fa-solid fa-arrow-up-right-from-square text-3xs"></i>
             </a>
           ` : (ev.source_type === 'chapter' ? `
-            <button type="button" onclick="openChapterEventModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3 py-1.5 rounded-lg text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors">
+            <button type="button" onclick="openChapterEventModal(allCalendarEvents.find(e => e.id == '${ev.id}'))" class="px-3 py-1.5 rounded-lg text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 transition-colors cursor-pointer">
               編集
             </button>
           ` : '')}
