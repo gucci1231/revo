@@ -1690,8 +1690,27 @@ function handleApiRequest(req, res, urlObj) {
           const hasCustom = !!customMap[dateStr];
 
           if (isThursday || hasCustom) {
-            const vRow = runSqlJson(`SELECT COUNT(*) as cnt FROM visitors WHERE event_date LIKE '%${dateStr}%' OR event_date = '${dateStr.replace(/-/g, '/')}';`)[0] || {};
+            const visitorRows = runSqlJson(`
+              SELECT v.id, v.event_date, v.visitor_name, v.furigana, v.company, v.profession, v.inviter,
+                     COALESCE(v.category, 'ビジター') as category,
+                     COALESCE(s.is_attended, '未') as is_attended,
+                     COALESCE(s.is_joined, '未') as is_joined
+              FROM visitors v
+              LEFT JOIN visitors_status s ON v.id = s.visitor_id
+              WHERE v.event_date LIKE '%${dateStr}%' OR v.event_date = '${dateStr.replace(/-/g, '/')}';
+            `);
             const custom = customMap[dateStr] || null;
+            const dayVisitors = visitorRows.map(r => ({
+              id: String(r.id),
+              name: r.visitor_name || ('ビジター No.' + r.id),
+              furigana: r.furigana || '',
+              company: r.company || '',
+              profession: r.profession || '',
+              inviter: r.inviter || '',
+              category: r.category || 'ビジター',
+              is_attended: r.is_attended || '未',
+              is_joined: r.is_joined || '未'
+            }));
 
             meetings.push({
               id: 'mt_' + dateStr,
@@ -1706,7 +1725,8 @@ function handleApiRequest(req, res, urlObj) {
               is_online: custom ? (custom.is_online ? 1 : 0) : 0,
               organizer: custom ? (custom.organizer || 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
               description: custom ? (custom.description || '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会') : '毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会',
-              visitor_count: parseInt(vRow.cnt || 0, 10),
+              visitor_count: dayVisitors.length,
+              visitors: dayVisitors,
               is_customized: custom ? 1 : 0
             });
           }

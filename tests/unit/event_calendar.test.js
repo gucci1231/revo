@@ -139,6 +139,13 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('font-mono font-bold text-xs tabular-nums'), 'Week view uses text-xs for event time');
     assert.ok(viewScript.includes('font-bold text-xs text-slate-900'), 'Week view uses text-xs for event title');
   });
+
+  it('verifies Meeting Detail Modal renders visitor list with visitors array and links', () => {
+    assert.ok(viewScript.includes('function renderMeetingModalVisitors('), 'renderMeetingModalVisitors is defined');
+    assert.ok(viewScript.includes('function navigateToVisitorFromMeeting('), 'navigateToVisitorFromMeeting is defined');
+    assert.ok(eventRepoPhp.includes("'visitors' => $dayVisitors"), 'EventRepository provides visitors array in meeting');
+    assert.ok(devServerJs.includes('visitors: dayVisitors'), 'dev-server provides visitors array in meeting');
+  });
 });
 
 

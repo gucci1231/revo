@@ -9,6 +9,9 @@ let currentCalendarMonth = new Date().toISOString().substring(0, 7);
 let currentEventViewMode = 'calendar'; // 'calendar' (or 'month'), 'week', 'list'
 let currentWeekStartDate = getSundayOfDate(new Date());
 let selectedDayForModal = '';
+let currentDetailTrainingEvent = null;
+let currentEditingChapterEvent = null;
+let currentSharingEvent = null;
 
 let currentTrainingFilter = {
   sourceType: '',      // '' (all), 'meeting', 'chapter', 'training'
@@ -133,6 +136,9 @@ async function loadCalendarAndEvents() {
       } else {
         renderCalendarGrid();
       }
+
+      // Check URL deep link for opening event modal
+      checkUrlEventDeepLink();
     } else {
       if (emptyEl) emptyEl.classList.remove('hidden');
       if (gridEl) {
@@ -840,7 +846,12 @@ function openDayEventsModal(dateKey) {
             </div>
             ${ev.location_name ? `<p class="text-3xs text-slate-500 truncate mt-1"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${escapeHtml(ev.location_name)}</p>` : ''}
           </div>
-          <i class="fa-solid fa-chevron-right text-slate-300 text-xs shrink-0 self-center group-hover:text-slate-500 transition-colors"></i>
+          <div class="flex items-center gap-1.5 shrink-0 self-center">
+            <button type="button" onclick="event.stopPropagation(); openEventShareModal('${ev.id}', event);" class="w-7 h-7 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer" title="シェア">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs group-hover:text-slate-500 transition-colors"></i>
+          </div>
         </div>
       `;
     }).join('');
@@ -864,11 +875,13 @@ function addEventOnSelectedDate() {
  * Chapter Event Modal Management
  */
 function openChapterEventModal(eventObj = null) {
+  currentEditingChapterEvent = eventObj;
   const modal = document.getElementById('modal-chapter-event');
   const form = document.getElementById('form-chapter-event');
   const titleHeader = document.getElementById('modal-chapter-event-title');
   const btnDelete = document.getElementById('btn-delete-chapter-event');
   const btnDeleteSeries = document.getElementById('btn-delete-chapter-series');
+  const btnShare = document.getElementById('btn-share-chapter-event');
   const repeatSection = document.getElementById('ch-ev-repeat-section');
   if (!modal || !form) return;
 
@@ -899,6 +912,7 @@ function openChapterEventModal(eventObj = null) {
     // Repeat section hidden on single edit
     if (repeatSection) repeatSection.classList.add('hidden');
 
+    if (btnShare) btnShare.classList.remove('hidden');
     if (btnDelete) btnDelete.classList.remove('hidden');
     if (btnDeleteSeries) {
       if (eventObj.recurrence_group_id) {
@@ -909,6 +923,7 @@ function openChapterEventModal(eventObj = null) {
     }
   } else {
     titleHeader.innerText = 'チャプター予定を追加';
+    if (btnShare) btnShare.classList.add('hidden');
     document.getElementById('ch-ev-id').value = '';
     document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
@@ -1174,7 +1189,6 @@ function openMeetingDetailModal(meeting) {
   }
 
   document.getElementById('modal-meeting-datetime').innerText = formattedDate;
-  document.getElementById('modal-meeting-visitor-count').innerText = meeting.visitor_count || 0;
 
   const locEl = document.getElementById('modal-meeting-location');
   if (locEl) locEl.innerText = meeting.location_name || 'REvoチャプター定例会会場 & Zoom';
@@ -1201,41 +1215,136 @@ function openMeetingDetailModal(meeting) {
     }
   }
 
-  // Find visitors matching this date from global visitors cache if available
+  // Render meeting visitors
+  renderMeetingModalVisitors(meeting);
+
+  modal.classList.remove('hidden');
+}
+
+/**
+ * Render Visitors in Meeting Detail Modal
+ */
+function renderMeetingModalVisitors(meeting) {
   const listWrap = document.getElementById('modal-meeting-visitors-wrap');
+  const countEl = document.getElementById('modal-meeting-visitor-count');
+  if (!listWrap) return;
+
   const dateKey = meeting.start_datetime.substring(0, 10);
   const slashDate = dateKey.replace(/-/g, '/');
 
   let matchedVisitors = [];
-  if (typeof StateService !== 'undefined' && StateService.getVisitorList) {
-    const list = StateService.getVisitorList();
-    if (Array.isArray(list)) {
-      matchedVisitors = list.filter(v => {
+
+  if (Array.isArray(meeting.visitors) && meeting.visitors.length > 0) {
+    matchedVisitors = meeting.visitors;
+  } else {
+    let sourceList = [];
+    if (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors) && cachedAllVisitors.length > 0) {
+      sourceList = cachedAllVisitors;
+    } else if (typeof StateService !== 'undefined' && StateService.getVisitorList) {
+      sourceList = StateService.getVisitorList();
+    }
+    if (Array.isArray(sourceList) && sourceList.length > 0) {
+      matchedVisitors = sourceList.filter(v => {
         const vDate = (v.eventDate || v.event_date || '').substring(0, 10);
         return vDate === dateKey || vDate === slashDate;
       });
     }
   }
 
+  const totalCount = Math.max(meeting.visitor_count || 0, matchedVisitors.length);
+  if (countEl) countEl.innerText = totalCount;
+
   if (matchedVisitors.length === 0) {
-    listWrap.innerHTML = `
-      <div class="text-slate-400 py-3 text-center text-xs">
-        ${meeting.visitor_count > 0 ? `システム集計: ${meeting.visitor_count}名 登録あり` : '現在、この定例会へのビジター申込はありません'}
-      </div>
-    `;
-  } else {
-    listWrap.innerHTML = matchedVisitors.map(v => `
-      <div class="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
-        <div>
-          <span class="font-bold text-slate-800">${escapeHtml(v.name || v.visitor_name || '')} 様</span>
-          <span class="text-3xs text-slate-400 ml-1.5">(${escapeHtml(v.profession || 'ビジター')})</span>
+    if (totalCount > 0) {
+      listWrap.innerHTML = `
+        <div class="p-3 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin text-blue-500"></i>
+          <span>ビジター情報を取得中...</span>
         </div>
-        <span class="text-3xs text-slate-500">紹介: ${escapeHtml(v.inviter || '-')}</span>
-      </div>
-    `).join('');
+      `;
+      // Fetch visitors if not cached
+      if (typeof ApiService !== 'undefined') {
+        ApiService.call('getAllVisitorsDataApi').then(res => {
+          if (res && res.success) {
+            const list = res.visitors || res.list || [];
+            if (typeof cachedAllVisitors !== 'undefined') cachedAllVisitors = list;
+            if (typeof StateService !== 'undefined' && StateService.setAllVisitors) StateService.setAllVisitors(list);
+            const refiltered = list.filter(v => {
+              const vDate = (v.eventDate || v.event_date || '').substring(0, 10);
+              return vDate === dateKey || vDate === slashDate;
+            });
+            meeting.visitors = refiltered;
+            renderMeetingModalVisitors(meeting);
+          }
+        }).catch(() => {
+          listWrap.innerHTML = `
+            <div class="text-slate-400 py-3 text-center text-xs">
+              システム登録: ${totalCount}名
+            </div>
+          `;
+        });
+      }
+    } else {
+      listWrap.innerHTML = `
+        <div class="text-slate-400 py-4 text-center text-xs">
+          <i class="fa-regular fa-user text-slate-300 text-sm mb-1 block"></i>
+          現在、この定例会へのビジター申込はありません
+        </div>
+      `;
+    }
+    return;
   }
 
-  modal.classList.remove('hidden');
+  listWrap.innerHTML = matchedVisitors.map(v => {
+    const vId = v.id || '';
+    const vName = escapeHtml(v.name || v.visitor_name || 'ビジター');
+    const vProf = escapeHtml(v.profession || '');
+    const vCompany = escapeHtml(v.company || '');
+    const vInviter = escapeHtml(v.inviter || '-');
+    const isGuest = (v.category === 'ゲスト');
+    const isAttended = (v.is_attended === '参加' || v.isAttended === '参加');
+
+    const badgeCat = isGuest
+      ? '<span class="px-1.5 py-0.2 rounded text-3xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200 shrink-0">ゲスト</span>'
+      : '<span class="px-1.5 py-0.2 rounded text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">ビジター</span>';
+
+    const badgeAtt = isAttended
+      ? '<span class="px-1.5 py-0.2 rounded text-3xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0"><i class="fa-solid fa-check text-3xs mr-0.5"></i>参加</span>'
+      : '<span class="px-1.5 py-0.2 rounded text-3xs font-medium bg-slate-100 text-slate-500 shrink-0">申込済</span>';
+
+    const subInfo = [vCompany, vProf].filter(Boolean).join(' / ');
+
+    return `
+      <div onclick="navigateToVisitorFromMeeting('${vId}')" class="p-2.5 rounded-xl border border-slate-200/80 bg-white hover:border-blue-300 hover:shadow-2xs transition-all flex items-center justify-between gap-2.5 group cursor-pointer">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+            ${badgeCat}
+            ${badgeAtt}
+            <span class="font-bold text-xs text-slate-900 group-hover:text-blue-600 transition-colors">${vName} 様</span>
+          </div>
+          ${subInfo ? `<div class="text-3xs text-slate-500 truncate">${subInfo}</div>` : ''}
+        </div>
+        <div class="text-right shrink-0">
+          <span class="text-3xs text-slate-400 block font-medium">紹介: ${vInviter}</span>
+          <span class="text-3xs font-bold text-blue-600 group-hover:underline inline-flex items-center gap-0.5 mt-0.5">
+            詳細 <i class="fa-solid fa-chevron-right text-3xs"></i>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function navigateToVisitorFromMeeting(visitorId) {
+  if (!visitorId) return;
+  closeMeetingDetailModal();
+  if (typeof openVisitorDetailView === 'function') {
+    openVisitorDetailView(visitorId, true);
+  } else if (typeof openVisitorDetail === 'function') {
+    openVisitorDetail(visitorId);
+  } else if (typeof switchTab === 'function') {
+    switchTab('visitors');
+  }
 }
 
 function closeMeetingDetailModal() {

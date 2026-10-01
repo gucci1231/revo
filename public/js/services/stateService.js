@@ -21,6 +21,9 @@ const StateService = {
   },
   setScheduledEmails: function(list) {
     this.cachedScheduledEmails = list || [];
+  },
+  getVisitorList: function() {
+    return this.cachedAllVisitors || [];
   }
 };
 

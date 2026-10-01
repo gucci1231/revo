@@ -332,16 +332,36 @@ class EventRepository {
             return [];
         }
 
-        // Fetch visitor counts grouped by event_date
-        $visitorCountRows = $this->db->fetchAll(
-            "SELECT event_date, COUNT(*) as cnt FROM visitors WHERE event_date != '' GROUP BY event_date"
+        // Fetch visitors grouped by event_date
+        $visitorRows = $this->db->fetchAll(
+            "SELECT v.id, v.event_date, v.visitor_name, v.furigana, v.company, v.profession, v.inviter, 
+                    COALESCE(v.category, 'ビジター') as category, 
+                    COALESCE(s.is_attended, '未') as is_attended,
+                    COALESCE(s.is_joined, '未') as is_joined
+             FROM visitors v
+             LEFT JOIN visitors_status s ON v.id = s.visitor_id
+             WHERE v.event_date != ''
+             ORDER BY CAST(v.id AS INTEGER) ASC"
         );
-        $visitorCountMap = [];
-        foreach ($visitorCountRows as $row) {
+        $visitorsMap = [];
+        foreach ($visitorRows as $row) {
             $cleanDate = str_replace('/', '-', trim($row['event_date']));
             if (preg_match('/^(\d{4})-(\d{1,2})-(\d{1,2})$/', $cleanDate, $m)) {
                 $norm = sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
-                $visitorCountMap[$norm] = (int)$row['cnt'];
+                if (!isset($visitorsMap[$norm])) {
+                    $visitorsMap[$norm] = [];
+                }
+                $visitorsMap[$norm][] = [
+                    'id' => (string)$row['id'],
+                    'name' => $row['visitor_name'] ?: ('ビジター No.' . $row['id']),
+                    'furigana' => $row['furigana'] ?? '',
+                    'company' => $row['company'] ?? '',
+                    'profession' => $row['profession'] ?? '',
+                    'inviter' => $row['inviter'] ?? '',
+                    'category' => $row['category'] ?? 'ビジター',
+                    'is_attended' => $row['is_attended'] ?? '未',
+                    'is_joined' => $row['is_joined'] ?? '未'
+                ];
             }
         }
 
@@ -368,7 +388,8 @@ class EventRepository {
 
             // Include if Thursday or if explicitly customized
             if ($isThursday || $hasCustom) {
-                $cnt = $visitorCountMap[$dateStr] ?? 0;
+                $dayVisitors = $visitorsMap[$dateStr] ?? [];
+                $cnt = count($dayVisitors);
                 $custom = $customMap[$dateStr] ?? null;
 
                 $meetings[] = [
@@ -385,6 +406,7 @@ class EventRepository {
                     'organizer' => $custom ? ($custom['organizer'] ?: 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
                     'description' => $custom ? ($custom['description'] ?: "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会") : "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\n6:45受付開始 / 7:00開会 / 8:30閉会",
                     'visitor_count' => $cnt,
+                    'visitors' => $dayVisitors,
                     'is_customized' => $custom ? 1 : 0
                 ];
             }
