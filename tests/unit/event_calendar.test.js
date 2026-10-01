@@ -251,6 +251,19 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(devServerJs.includes("SELECT ap.*"), 'dev-server queries action_plans for calendar');
     assert.ok(devServerJs.includes("source_type: 'action'"), 'dev-server tags action plans as source_type action');
   });
+
+  it('verifies iPhone Calendar design: inline Day Agenda, mobile week strip, and single day timeline', () => {
+    // UI elements in index.html
+    assert.ok(indexHtml.includes('id="calendar-selected-day-agenda"'), 'Selected day inline agenda exists in index.html');
+
+    // JS functions & indicators in viewScript
+    assert.ok(viewScript.includes('function renderCalendarDayAgenda()'), 'renderCalendarDayAgenda is defined in script');
+    assert.ok(viewScript.includes('function selectWeekDay('), 'selectWeekDay is defined in script');
+    assert.ok(viewScript.includes('mobileWeekStripHtml'), 'Mobile week strip is rendered in week view');
+    assert.ok(viewScript.includes('mobileDotsHtml'), 'Mobile color indicator dots are rendered in calendar cells');
+    assert.ok(viewScript.includes('mobilePlacedEventsHtml'), 'Mobile single-day timeline is rendered in week view');
+    assert.ok(viewScript.includes('bg-slate-900 text-white'), 'Selected date uses iPhone style solid circle highlight');
+  });
 });
 
 

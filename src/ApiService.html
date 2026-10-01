@@ -299,6 +299,12 @@ const ApiService = {
           method: 'POST',
           body: args[0] || {}
         };
+      case 'uploadFlyerApi':
+        return {
+          url: '/api/events.php?action=upload_flyer',
+          method: 'POST',
+          body: args[0] || {}
+        };
       case 'saveMeetingCustomizationApi':
       case 'saveMeetingApi':
         return {

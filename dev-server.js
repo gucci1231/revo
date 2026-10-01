@@ -2127,6 +2127,17 @@ const server = http.createServer((req, res) => {
       }
     }
 
+    // Serve uploads static assets (flyers, images, pdfs)
+    if (urlObj.pathname.startsWith('/uploads/')) {
+      const staticPath = path.join(__dirname, urlObj.pathname);
+      if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
+        const ext = path.extname(staticPath).toLowerCase();
+        const mimeTypes = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.pdf': 'application/pdf' };
+        res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
+        return fs.createReadStream(staticPath).pipe(res);
+      }
+    }
+
     // Fallback: serve built HTML
     const html = buildHtml();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

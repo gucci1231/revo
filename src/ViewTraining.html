@@ -123,6 +123,9 @@
         <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
           <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
         </button>
+        <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
+          <span class="w-2 h-2 rounded-full bg-orange-500"></span>メンバーイベント
+        </button>
         <button type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
         </button>
@@ -191,6 +194,10 @@
         <span class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-100"></span>
           <span>チャプター予定</span>
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-orange-500 ring-2 ring-orange-100"></span>
+          <span>メンバーイベント</span>
         </span>
         <span class="flex items-center gap-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
@@ -343,7 +350,8 @@
             <div>
               <label class="block font-bold text-slate-700 mb-1">カテゴリ</label>
               <select id="ch-ev-category" onchange="onChapterEventCategoryChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 focus:outline-hidden focus:border-blue-500">
-                <option value="チャプターイベント" selected>チャプターイベント</option>
+                <option value="メンバーイベント" selected>メンバーイベント (セミナー・展示会・出店等)</option>
+                <option value="チャプターイベント">チャプターイベント</option>
                 <option value="締切・期限">締切・提出期限</option>
                 <option value="役員会">役員会・MTG</option>
                 <option value="懇親会">懇親会・親睦会</option>
@@ -389,7 +397,7 @@
               <input type="text" id="ch-ev-location" placeholder="例: 烏丸四条会場、Zoom、LINEグループ 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
             </div>
             <div>
-              <label class="block font-bold text-slate-700 mb-1">URL / 提出フォームリンク</label>
+              <label class="block font-bold text-slate-700 mb-1">URL / 案内リンク</label>
               <input type="url" id="ch-ev-url" placeholder="https://..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 font-mono">
             </div>
           </div>
@@ -397,13 +405,80 @@
           <!-- Organizer / Host -->
           <div>
             <label class="block font-bold text-slate-700 mb-1">主催者 / 担当メンバー</label>
-            <input type="text" id="ch-ev-organizer" placeholder="例: イベント委員会、川口、ビジホスチーム 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            <input type="text" id="ch-ev-organizer" list="datalist-member-names" placeholder="例: 川口 陽平、桐原 卓也、イベント委員会 等" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            <datalist id="datalist-member-names">
+              <!-- Dynamically populated via JS -->
+            </datalist>
+          </div>
+
+          <!-- Flyer / Leaflet Attachment -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="block font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-image text-blue-600 text-xs"></i>
+                <span>チラシ・告知画像</span>
+              </label>
+              <button type="button" onclick="toggleFlyerUrlInput()" class="text-3xs text-blue-600 hover:underline font-bold cursor-pointer">
+                URL直接入力
+              </button>
+            </div>
+
+            <!-- Drag & Drop Upload Box -->
+            <div id="ch-ev-flyer-dropzone" onclick="document.getElementById('ch-ev-flyer-file').click()" ondragover="handleFlyerDragOver(event)" ondragleave="handleFlyerDragLeave(event)" ondrop="handleFlyerDrop(event)" class="border-2 border-dashed border-slate-300 hover:border-blue-400 bg-white hover:bg-blue-50/20 rounded-xl p-3 text-center cursor-pointer transition-all group">
+              <input type="file" id="ch-ev-flyer-file" accept="image/*,.pdf" class="hidden" onchange="handleFlyerFileSelected(event)">
+              <div class="flex flex-col items-center justify-center gap-1">
+                <i class="fa-solid fa-cloud-arrow-up text-slate-400 group-hover:text-blue-500 text-xl transition-colors"></i>
+                <div class="text-xs font-bold text-slate-700 group-hover:text-blue-600">
+                  チラシ画像をアップロード
+                </div>
+                <div class="text-3xs text-slate-400">
+                  クリックまたはドラッグ＆ドロップ (JPG, PNG, WebP, PDF)
+                </div>
+              </div>
+            </div>
+
+            <!-- Uploading spinner state -->
+            <div id="ch-ev-flyer-uploading" class="hidden py-3 text-center text-xs font-bold text-blue-600">
+              <i class="fa-solid fa-spinner fa-spin mr-1.5"></i> チラシをアップロード中...
+            </div>
+
+            <!-- Flyer Preview Area (Visible when flyer exists) -->
+            <div id="ch-ev-flyer-preview-box" class="hidden flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img id="ch-ev-flyer-img-preview" src="" alt="チラシ" class="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0 cursor-pointer shadow-2xs hover:opacity-90" onclick="openFlyerLightbox(this.src)" title="クリックして拡大表示">
+                <div id="ch-ev-flyer-pdf-icon" class="hidden w-12 h-12 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center text-xl shrink-0">
+                  <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div class="min-w-0">
+                  <div id="ch-ev-flyer-name" class="font-bold text-xs text-slate-800 truncate">チラシファイル</div>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <button type="button" onclick="previewCurrentFlyerInLightbox()" class="text-3xs text-blue-600 hover:underline font-bold inline-flex items-center gap-1 cursor-pointer">
+                      <i class="fa-solid fa-magnifying-glass-plus"></i> 拡大表示
+                    </button>
+                    <a id="ch-ev-flyer-link" href="#" target="_blank" rel="noopener noreferrer" class="text-3xs text-slate-500 hover:underline inline-flex items-center gap-1">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> 別タブ
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <button type="button" onclick="removeCurrentFlyer()" class="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors flex items-center justify-center shrink-0 cursor-pointer" title="チラシを削除">
+                <i class="fa-solid fa-xmark text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Direct URL Input (Collapsible) -->
+            <div id="ch-ev-flyer-url-box" class="hidden pt-1">
+              <input type="text" id="ch-ev-flyer-url-input" oninput="onFlyerUrlInputChanged(this.value)" placeholder="Googleドライブの共有リンクや画像のURL (https://...)" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            </div>
+
+            <!-- Hidden field to hold flyer_url -->
+            <input type="hidden" id="ch-ev-flyer-url" value="">
           </div>
 
           <!-- Description -->
           <div>
-            <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・締切詳細</label>
-            <textarea id="ch-ev-desc" rows="2" placeholder="予定の詳細、提出内容、期限の注意事項などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
+            <label class="block font-bold text-slate-700 mb-1">詳細メモ・持ち物・補足</label>
+            <textarea id="ch-ev-desc" rows="2" placeholder="予定の詳細、アジェンダ、会費、参加資格などを記入..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500"></textarea>
           </div>
 
           <!-- Recurrence / Repeat Settings -->
@@ -1061,6 +1136,31 @@
       <button type="button" onclick="closeEventShareModal()" class="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
         閉じる
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL 6: FLYER LIGHTBOX MODAL ================= -->
+<div id="modal-flyer-lightbox" class="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs hidden p-3 sm:p-6" onclick="if(event.target === this) closeFlyerLightbox();">
+  <div class="relative max-w-4xl max-h-[92vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="p-3 bg-slate-900 text-white flex items-center justify-between gap-3 shrink-0">
+      <div class="flex items-center gap-2 truncate">
+        <i class="fa-solid fa-file-image text-blue-400"></i>
+        <span id="flyer-lightbox-title" class="text-xs font-bold truncate">イベントチラシ</span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <a id="flyer-lightbox-download-link" href="#" target="_blank" rel="noopener noreferrer" download class="px-2.5 py-1 rounded-lg text-3xs font-bold bg-slate-800 hover:bg-slate-700 text-white transition-colors flex items-center gap-1.5 no-underline">
+          <i class="fa-solid fa-arrow-down-to-bracket"></i>
+          <span>ダウンロード</span>
+        </a>
+        <button type="button" onclick="closeFlyerLightbox()" class="w-7 h-7 rounded-full bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+    </div>
+    <div class="p-2 overflow-auto flex items-center justify-center bg-slate-100/60 max-h-[calc(92vh-50px)]">
+      <img id="flyer-lightbox-img" src="" alt="チラシ画像" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm">
+      <iframe id="flyer-lightbox-iframe" src="" class="hidden w-[80vw] h-[80vh] border-0 rounded-lg"></iframe>
     </div>
   </div>
 </div>
