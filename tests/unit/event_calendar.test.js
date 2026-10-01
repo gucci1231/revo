@@ -194,6 +194,18 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(indexHtml.includes("setMeetingTitlePreset('モメンタム', 'モメンタム', 1, 'Zoom')"), 'Preset for momentum uses Zoom (1)');
     assert.ok(indexHtml.includes("setMeetingTitlePreset('BOD 対面', 'ビジネスオープンデー', 0, 'スター食堂')"), 'Preset for BOD in-person uses in-person (0)');
   });
+
+  it('verifies Regular Meeting times: Member 6:00, Visitor 6:40, Opening 7:00', () => {
+    // Backend defaults start_datetime to 06:00:00
+    assert.ok(eventRepoPhp.includes("($dateStr . ' 06:00:00')"), 'EventRepository defaults start_datetime to 06:00');
+    assert.ok(devServerJs.includes("(dateStr + ' 06:00:00')"), 'dev-server defaults start_datetime to 06:00');
+
+    // UI displays Member 6:00 and Visitor 6:40
+    assert.ok(indexHtml.includes('07:00 開会 (メンバー 6:00 / ビジター 6:40)'), 'KPI card displays Member 6:00 and Visitor 6:40');
+    assert.ok(indexHtml.includes('メンバー 06:00 / ビジター 06:40 受付 (07:00 開会)'), 'Meeting detail modal displays Member 06:00 / Visitor 06:40 reception');
+    assert.ok(indexHtml.includes('id="mt-edit-start-time" value="06:00"'), 'Meeting edit form defaults start time to 06:00');
+    assert.ok(viewScript.includes("■ 受付時間: メンバー 06:00〜 / ビジター 06:40〜 (07:00開会 / 08:30閉会)"), 'Share text includes reception time breakdown for meeting');
+  });
 });
 
 
