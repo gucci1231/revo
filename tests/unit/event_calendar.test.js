@@ -88,4 +88,17 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(devServerJs.includes("action === 'save_chapter_event'"), 'dev-server save_chapter_event supported');
     assert.ok(devServerJs.includes("action === 'delete_chapter_event'"), 'dev-server delete_chapter_event supported');
   });
+
+  it('verifies recurring event registration (weekly/biweekly) UI and logic', () => {
+    assert.ok(indexHtml.includes('id="ch-ev-repeat-section"'), 'Repeat section exists in index.html');
+    assert.ok(indexHtml.includes('id="ch-ev-repeat-type"'), 'Repeat type select exists in index.html');
+    assert.ok(indexHtml.includes('id="ch-ev-repeat-until"'), 'Repeat until date input exists in index.html');
+    assert.ok(indexHtml.includes('id="ch-ev-repeat-count"'), 'Repeat count select exists in index.html');
+    assert.ok(indexHtml.includes('id="btn-delete-chapter-series"'), 'Delete series button exists in index.html');
+    assert.ok(viewScript.includes('function onChapterEventRepeatTypeChange()'), 'onChapterEventRepeatTypeChange defined');
+    assert.ok(viewScript.includes('function updateChapterEventRepeatSummary()'), 'updateChapterEventRepeatSummary defined');
+    assert.ok(eventRepoPhp.includes('recurrence_group_id'), 'EventRepository supports recurrence_group_id');
+    assert.ok(eventRepoPhp.includes('recurrence_rule'), 'EventRepository supports recurrence_rule');
+    assert.ok(devServerJs.includes('recurrence_group_id'), 'dev-server supports recurrence_group_id');
+  });
 });

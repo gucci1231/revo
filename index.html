@@ -37795,9 +37795,14 @@ function openChapterEventModal(eventObj = null) {
   const form = document.getElementById('form-chapter-event');
   const titleHeader = document.getElementById('modal-chapter-event-title');
   const btnDelete = document.getElementById('btn-delete-chapter-event');
+  const btnDeleteSeries = document.getElementById('btn-delete-chapter-series');
+  const repeatSection = document.getElementById('ch-ev-repeat-section');
   if (!modal || !form) return;
 
   form.reset();
+
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const next3Months = new Date(Date.now() + 90 * 86400000).toISOString().substring(0, 10);
 
   if (eventObj) {
     titleHeader.innerText = 'チャプター予定を編集';
@@ -37818,14 +37823,39 @@ function openChapterEventModal(eventObj = null) {
     document.getElementById('ch-ev-organizer').value = eventObj.organizer || '';
     document.getElementById('ch-ev-desc').value = eventObj.description || '';
 
+    // Repeat section hidden on single edit
+    if (repeatSection) repeatSection.classList.add('hidden');
+
     if (btnDelete) btnDelete.classList.remove('hidden');
+    if (btnDeleteSeries) {
+      if (eventObj.recurrence_group_id) {
+        btnDeleteSeries.classList.remove('hidden');
+      } else {
+        btnDeleteSeries.classList.add('hidden');
+      }
+    }
   } else {
     titleHeader.innerText = 'チャプター予定を追加';
     document.getElementById('ch-ev-id').value = '';
-    document.getElementById('ch-ev-date').value = new Date().toISOString().substring(0, 10);
+    document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
     document.getElementById('ch-ev-end-time').value = '21:00';
+
+    if (repeatSection) repeatSection.classList.remove('hidden');
+    const repeatTypeSelect = document.getElementById('ch-ev-repeat-type');
+    if (repeatTypeSelect) repeatTypeSelect.value = 'none';
+
+    const repeatUntilInput = document.getElementById('ch-ev-repeat-until');
+    if (repeatUntilInput) repeatUntilInput.value = next3Months;
+
+    const repeatCountSelect = document.getElementById('ch-ev-repeat-count');
+    if (repeatCountSelect) repeatCountSelect.value = '12';
+
+    const repeatOptions = document.getElementById('ch-ev-repeat-options');
+    if (repeatOptions) repeatOptions.classList.add('hidden');
+
     if (btnDelete) btnDelete.classList.add('hidden');
+    if (btnDeleteSeries) btnDeleteSeries.classList.add('hidden');
   }
 
   modal.classList.remove('hidden');
@@ -37835,7 +37865,88 @@ function openChapterEventModalOnDate(dateStr, evt) {
   if (evt) evt.stopPropagation();
   openChapterEventModal();
   const dateInput = document.getElementById('ch-ev-date');
-  if (dateInput) dateInput.value = dateStr;
+  if (dateInput) {
+    dateInput.value = dateStr;
+    // Update repeat until date to 3 months from selected date
+    const dObj = new Date(dateStr.replace(/-/g, '/'));
+    if (!isNaN(dObj.getTime())) {
+      const until = new Date(dObj.getTime() + 90 * 86400000).toISOString().substring(0, 10);
+      const untilInput = document.getElementById('ch-ev-repeat-until');
+      if (untilInput) untilInput.value = until;
+    }
+    updateChapterEventRepeatSummary();
+  }
+}
+
+function onChapterEventRepeatTypeChange() {
+  const select = document.getElementById('ch-ev-repeat-type');
+  const options = document.getElementById('ch-ev-repeat-options');
+  if (!select || !options) return;
+
+  if (select.value === 'none') {
+    options.classList.add('hidden');
+  } else {
+    options.classList.remove('hidden');
+    updateChapterEventRepeatSummary();
+  }
+}
+
+function updateChapterEventRepeatSummary() {
+  const select = document.getElementById('ch-ev-repeat-type');
+  const dateInput = document.getElementById('ch-ev-date');
+  const untilInput = document.getElementById('ch-ev-repeat-until');
+  const countSelect = document.getElementById('ch-ev-repeat-count');
+  const summaryText = document.getElementById('ch-ev-repeat-summary-text');
+  if (!select || !summaryText) return;
+
+  const repeatType = select.value;
+  if (repeatType === 'none') return;
+
+  const dateStr = dateInput?.value || new Date().toISOString().substring(0, 10);
+  const untilStr = untilInput?.value || '';
+  const maxCountLimit = parseInt(countSelect?.value || '0', 10);
+
+  const startObj = new Date(dateStr.replace(/-/g, '/'));
+  if (isNaN(startObj.getTime())) {
+    summaryText.innerText = '開始日を正しく選択してください';
+    return;
+  }
+
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dayName = dayNames[startObj.getDay()];
+
+  let untilObj = untilStr ? new Date(untilStr.replace(/-/g, '/')) : new Date(startObj.getTime() + 90 * 86400000);
+  if (isNaN(untilObj.getTime()) || untilObj < startObj) {
+    untilObj = new Date(startObj.getTime() + 90 * 86400000);
+  }
+
+  // Calculate occurrences
+  let count = 0;
+  let cur = new Date(startObj.getTime());
+  const maxSafety = maxCountLimit > 0 ? Math.min(maxCountLimit, 52) : 52;
+
+  while (count < maxSafety && cur <= untilObj) {
+    count++;
+    if (repeatType === 'weekly') {
+      cur.setDate(cur.getDate() + 7);
+    } else if (repeatType === 'biweekly') {
+      cur.setDate(cur.getDate() + 14);
+    } else if (repeatType === 'monthly') {
+      cur.setMonth(cur.getMonth() + 1);
+    } else {
+      break;
+    }
+  }
+
+  const untilFormatted = `${untilObj.getFullYear()}年${untilObj.getMonth() + 1}月${untilObj.getDate()}日`;
+
+  if (repeatType === 'weekly') {
+    summaryText.innerText = `毎週(${dayName}曜日)に計 ${count}回 登録されます（${untilFormatted} まで）`;
+  } else if (repeatType === 'biweekly') {
+    summaryText.innerText = `隔週(2週に1回 ${dayName}曜日)に計 ${count}回 登録されます（${untilFormatted} まで）`;
+  } else if (repeatType === 'monthly') {
+    summaryText.innerText = `毎月(${startObj.getDate()}日)に計 ${count}回 登録されます（${untilFormatted} まで）`;
+  }
 }
 
 function closeChapterEventModal() {
@@ -37863,6 +37974,10 @@ async function handleChapterEventSubmit(evt) {
   const organizer = document.getElementById('ch-ev-organizer').value.trim();
   const desc = document.getElementById('ch-ev-desc').value.trim();
 
+  const repeatType = document.getElementById('ch-ev-repeat-type')?.value || 'none';
+  const repeatUntil = document.getElementById('ch-ev-repeat-until')?.value || '';
+  const repeatCount = parseInt(document.getElementById('ch-ev-repeat-count')?.value || '0', 10);
+
   const startDatetime = `${date} ${startTime}:00`;
   const endDatetime = endTime ? `${date} ${endTime}:00` : '';
 
@@ -37877,7 +37992,10 @@ async function handleChapterEventSubmit(evt) {
       location_name: locationName,
       location_url: locationUrl,
       organizer,
-      description: desc
+      description: desc,
+      recurrence_rule: repeatType,
+      recurrence_until: repeatUntil,
+      recurrence_count: repeatCount
     });
 
     if (res && res.success !== false) {
@@ -37898,16 +38016,20 @@ async function handleChapterEventSubmit(evt) {
 /**
  * Delete Chapter Event
  */
-async function handleDeleteChapterEvent() {
+async function handleDeleteChapterEvent(deleteSeries = false) {
   const id = document.getElementById('ch-ev-id').value;
   if (!id) return;
 
-  if (!confirm('このチャプター予定を削除してもよろしいですか？')) return;
+  const confirmMsg = deleteSeries
+    ? 'この繰り返し予定グループ（すべてのシリーズ予定）を一括削除してもよろしいですか？'
+    : 'このチャプター予定を削除してもよろしいですか？';
+
+  if (!confirm(confirmMsg)) return;
 
   try {
-    const res = await ApiService.call('deleteChapterEventApi', { id });
+    const res = await ApiService.call('deleteChapterEventApi', { id, delete_series: deleteSeries });
     if (res && res.success !== false) {
-      showToast('チャプター予定を削除しました', 'success');
+      showToast(res.message || (deleteSeries ? '繰り返し予定を一括削除しました' : 'チャプター予定を削除しました'), 'success');
       closeChapterEventModal();
       loadCalendarAndEvents();
     } else {
