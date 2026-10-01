@@ -48,6 +48,21 @@
   - プロジェクター投影時にアスペクト比 16:9 を完全維持。
   - ワンクリック全画面切り替え（または `F` キー）、`Space` でスピン始動。Escキーで即座に復帰。
 
+### 3-3. 🎓 トレーニング・イベント自動取得 & 研修日程管理
+- **概要**: BNI 京都シティセントラル（Region ID: 7641, `https://bni-ck.com/ja/events`）公式カレンダーから、週1回定期（日曜）およびWeb画面からの即時手動更新でイベント・研修情報を自動取得・パース・蓄積。
+- **データ取得方式**:
+  - カテゴリ一覧: `/web/open/cmsViewEventTypesJson?regionIds=7641`
+  - カレンダーJSON: `/web/open/cmsViewEventsCalendarJson?regionIds=7641&eventTypeId=0&cmsv3=true&start=...&end=...`
+  - 詳細情報: `/bnicms/v3/frontend/eventdetail/display`（POST）から会場、マップURL、受講料、担当者、定員・登録数、BNI Connect直リンク等をパース。
+- **SQLiteテーブル**: `region_events` (`id`, `title`, `description`, `event_type_name`, `start_datetime`, `end_datetime`, `location_name`, `location_address`, `location_map_url`, `is_online`, `cost_member`, `cost_non_member`, `contact_name`, `contact_phone`, `max_attendees`, `num_registered`, `detail_url`, `registration_url`, `body_html`, `created_at`, `updated_at`)
+- **API**: `api/events.php` (`action=list`, `get`, `sync`, `categories`, `summary`)
+- **Cronスクリプト**: `api/scripts/fetch_region_events.php`（毎週日曜 03:00 自動実行）
+  - 設定例: `0 3 * * 0 /usr/bin/php /home/xs489303/k-d-o.biz/public_html/revo.k-d-o.biz/api/scripts/fetch_region_events.php >> /home/xs489303/k-d-o.biz/public_html/revo.k-d-o.biz/api/data/events_cron.log 2>&1`
+- **UI & 機能**:
+  - 4大KPIカード（次回開催、今月の研修数、オンライン開催数、対面・集合研修数）。
+  - スマートフィルタ（形式ピル: 全て/オンライン/対面、動的月別タブ、カテゴリ選択、キーワード検索、開催予定/全期間/過去履歴）。
+  - ワンクリック即時手動同期、詳細モーダル（会場地図、持ち物・規程、BNI Connect直リンク）。
+
 
 ### 4. サーバー & 開発環境
 - **ドメイン**: `https://revo.k-d-o.biz`

@@ -1361,6 +1361,94 @@ function handleApiRequest(req, res, urlObj) {
       }
     }
 
+    if (pathname === '/api/events.php') {
+      const action = urlObj.searchParams.get('action') || 'list';
+
+      if (action === 'list') {
+        const scope = urlObj.searchParams.get('scope') || 'upcoming';
+        const category = urlObj.searchParams.get('category') || '';
+        const format = urlObj.searchParams.get('format') || '';
+        const keyword = (urlObj.searchParams.get('keyword') || '').replace(/'/g, "''");
+
+        let conditions = [];
+        const todayStr = new Date().toISOString().substring(0, 10) + ' 00:00:00';
+        if (scope === 'upcoming') {
+          conditions.push(`start_datetime >= '${todayStr}'`);
+        } else if (scope === 'past') {
+          conditions.push(`start_datetime < '${todayStr}'`);
+        }
+
+        if (category) {
+          conditions.push(`(event_type_name = '${category.replace(/'/g, "''")}' OR title LIKE '%${category.replace(/'/g, "''")}%')`);
+        }
+
+        if (format === 'online') conditions.push(`is_online = 1`);
+        if (format === 'inperson') conditions.push(`is_online = 0`);
+
+        if (keyword) {
+          conditions.push(`(title LIKE '%${keyword}%' OR description LIKE '%${keyword}%' OR location_name LIKE '%${keyword}%' OR contact_name LIKE '%${keyword}%')`);
+        }
+
+        const whereSql = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+        const order = scope === 'past' ? 'DESC' : 'ASC';
+        const events = runSqlJson(`SELECT * FROM region_events ${whereSql} ORDER BY start_datetime ${order} LIMIT 150;`);
+
+        // Summary
+        const nowIso = new Date().toISOString().substring(0, 19).replace('T', ' ');
+        const curMonth = nowIso.substring(0, 7);
+        const upcomingCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}';`)[0] || {}).c || 0, 10);
+        const monthCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime LIKE '${curMonth}%';`)[0] || {}).c || 0, 10);
+        const onlineCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}' AND is_online = 1;`)[0] || {}).c || 0, 10);
+        const inpersonCount = parseInt((runSqlJson(`SELECT COUNT(*) as c FROM region_events WHERE start_datetime >= '${nowIso}' AND is_online = 0;`)[0] || {}).c || 0, 10);
+        const nextEv = runSqlJson(`SELECT * FROM region_events WHERE start_datetime >= '${nowIso}' ORDER BY start_datetime ASC LIMIT 1;`)[0] || null;
+        const lastSyncRow = runSqlJson(`SELECT value FROM settings WHERE key = 'last_events_synced_at';`)[0];
+
+        // Categories & Months
+        const catRows = runSqlJson(`SELECT DISTINCT event_type_name FROM region_events WHERE event_type_name != '' ORDER BY event_type_name ASC;`);
+        const categories = catRows.map(r => r.event_type_name);
+        const months = runSqlJson(`SELECT substr(start_datetime, 1, 7) as month_val, COUNT(*) as cnt FROM region_events GROUP BY month_val ORDER BY month_val ASC;`);
+
+        return res.end(JSON.stringify({
+          success: true,
+          data: {
+            events,
+            summary: {
+              totalUpcoming: upcomingCount,
+              currentMonthTotal: monthCount,
+              onlineCount,
+              inPersonCount: inpersonCount,
+              nextEvent: nextEv,
+              lastSyncedAt: lastSyncRow ? lastSyncRow.value : null
+            },
+            categories,
+            months
+          }
+        }));
+      }
+
+      if (action === 'get') {
+        const id = parseInt(urlObj.searchParams.get('id'), 10);
+        const event = runSqlJson(`SELECT * FROM region_events WHERE id = ${id};`)[0] || null;
+        return res.end(JSON.stringify({ success: true, data: { event } }));
+      }
+
+      if (action === 'sync') {
+        try {
+          const fetcher = require('./scripts/fetch_region_events');
+          if (fetcher && fetcher.run) {
+            fetcher.run().then(() => {
+              res.end(JSON.stringify({ success: true, message: 'イベント情報を同期しました' }));
+            }).catch(err => {
+              res.end(JSON.stringify({ success: false, message: err.message }));
+            });
+            return;
+          }
+        } catch(e) {
+          return res.end(JSON.stringify({ success: false, message: e.message }));
+        }
+      }
+    }
+
     return res.end(JSON.stringify({ success: false, message: 'Endpoint not found' }));
   });
 }
