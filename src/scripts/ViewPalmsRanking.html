@@ -247,6 +247,9 @@ function detectPalmsActivePreset(s, e) {
 function openPalmsDateModal() {
   const modal = document.getElementById('modal-palms-date-range');
   if (!modal) return;
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
 
   const s = currentPalmsPeriod.startDate || '2026-09-01';
   const e = currentPalmsPeriod.endDate || '2026-09-30';
@@ -4865,6 +4868,9 @@ function calcAndRenderChapterTrafficScore() {
 function toggleChapterTrafficCriteriaModal() {
   const modal = document.getElementById('modal-chapter-traffic-criteria');
   if (!modal) return;
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
   modal.classList.toggle('hidden');
 }
 

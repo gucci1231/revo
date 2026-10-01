@@ -200,6 +200,21 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS chapter_events (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                category TEXT DEFAULT 'チャプターイベント',
+                start_datetime TEXT NOT NULL,
+                end_datetime TEXT DEFAULT '',
+                location_name TEXT DEFAULT '',
+                location_url TEXT DEFAULT '',
+                is_online INTEGER DEFAULT 0,
+                organizer TEXT DEFAULT '',
+                description TEXT DEFAULT '',
+                created_at TEXT,
+                updated_at TEXT
+            );
+
             CREATE INDEX IF NOT EXISTS idx_action_plans_visitor_id ON action_plans(visitor_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_member ON palms_reports(member_id);
             CREATE INDEX IF NOT EXISTS idx_palms_reports_dates ON palms_reports(start_date, end_date);
@@ -207,10 +222,12 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_lottery_history_date ON lottery_history(won_at);
             CREATE INDEX IF NOT EXISTS idx_region_events_start ON region_events(start_datetime);
             CREATE INDEX IF NOT EXISTS idx_region_events_type ON region_events(event_type_id);
+            CREATE INDEX IF NOT EXISTS idx_chapter_events_start ON chapter_events(start_datetime);
         ");
 
         $this->seedDefaultEmailTemplates();
         $this->seedDefaultLinks();
+        $this->seedDefaultChapterEvents();
 
         try {
             $this->pdo->exec("ALTER TABLE action_plans ADD COLUMN action_type TEXT DEFAULT ''");
@@ -539,6 +556,68 @@ class Database {
                     'description' => $link['description'],
                     'icon' => $link['icon'],
                     'sort_order' => $link['sort_order'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+            }
+        }
+    }
+
+    private function seedDefaultChapterEvents(): void {
+        $now = date('Y/m/d H:i');
+        $defaults = [
+            [
+                'id' => 'CH_EV_EXEC_202610',
+                'title' => '第4期 役員会・リーダーシップミーティング',
+                'category' => '役員会',
+                'start_datetime' => '2026-10-14 19:00:00',
+                'end_datetime' => '2026-10-14 21:00:00',
+                'location_name' => 'オンライン (Zoom)',
+                'location_url' => 'https://zoom.us',
+                'is_online' => 1,
+                'organizer' => '桐原 プレジデント',
+                'description' => '月次目標進捗確認、各タスクチーム課題共有、次月イベント企画協議'
+            ],
+            [
+                'id' => 'CH_EV_PARTY_202610',
+                'title' => 'REvoチャプター 秋の大懇親会＆新入会歓迎会',
+                'category' => '懇親会',
+                'start_datetime' => '2026-10-23 19:30:00',
+                'end_datetime' => '2026-10-23 21:30:00',
+                'location_name' => '烏丸四条 会場 (京都)',
+                'location_url' => '',
+                'is_online' => 0,
+                'organizer' => 'イベント委員会',
+                'description' => 'メンバー間の親睦・信頼関係（Givers Gain）を深めるリアル懇親会'
+            ],
+            [
+                'id' => 'CH_EV_BOD_202611',
+                'title' => '秋のビジネスオープンデー（定例会特別拡大版）',
+                'category' => 'ビジネスオープンデー',
+                'start_datetime' => '2026-11-05 06:45:00',
+                'end_datetime' => '2026-11-05 09:30:00',
+                'location_name' => '通常定例会会場 & Zoom',
+                'location_url' => '',
+                'is_online' => 0,
+                'organizer' => 'REvoチャプター全員',
+                'description' => '多数のビジターをお招きし、各業界のプロフェッショナルを紹介する特別定例会'
+            ]
+        ];
+
+        foreach ($defaults as $ev) {
+            $exists = $this->fetchColumn("SELECT COUNT(*) FROM chapter_events WHERE id = ?", [$ev['id']]);
+            if ((int)$exists === 0) {
+                $this->insert('chapter_events', [
+                    'id' => $ev['id'],
+                    'title' => $ev['title'],
+                    'category' => $ev['category'],
+                    'start_datetime' => $ev['start_datetime'],
+                    'end_datetime' => $ev['end_datetime'],
+                    'location_name' => $ev['location_name'],
+                    'location_url' => $ev['location_url'],
+                    'is_online' => $ev['is_online'],
+                    'organizer' => $ev['organizer'],
+                    'description' => $ev['description'],
                     'created_at' => $now,
                     'updated_at' => $now
                 ]);

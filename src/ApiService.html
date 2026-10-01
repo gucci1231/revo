@@ -281,6 +281,32 @@ const ApiService = {
           method: 'POST',
           body: {}
         };
+      case 'getCalendarEventsApi': {
+        const params = new URLSearchParams();
+        if (args[0] && typeof args[0] === 'object') {
+          Object.keys(args[0]).forEach(k => {
+            if (args[0][k] !== undefined && args[0][k] !== '') params.append(k, args[0][k]);
+          });
+        } else if (typeof args[0] === 'string' && args[0]) {
+          params.append('month', args[0]);
+        }
+        const qs = params.toString() ? '&' + params.toString() : '';
+        return { url: `/api/events.php?action=calendar${qs}`, method: 'GET' };
+      }
+      case 'saveChapterEventApi':
+        return {
+          url: '/api/events.php?action=save_chapter_event',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterEventApi':
+        return {
+          url: '/api/events.php?action=delete_chapter_event',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
+      case 'getChapterEventDetailApi':
+        return { url: `/api/events.php?action=get_chapter_event&id=${encodeURIComponent(args[0] || '')}`, method: 'GET' };
       case 'getEventsListApi':
       case 'getTrainingEventsApi': {
         const params = new URLSearchParams();
