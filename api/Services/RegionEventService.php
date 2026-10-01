@@ -237,14 +237,16 @@ class RegionEventService {
                 $record['is_online'] = 1;
             }
 
-            // Fetch details if needed (for upcoming events or if details not yet fetched)
-            if ($fetchDetails && $eventIdHash && (!$existing || empty($existing['body_html']) || strtotime($start) >= $now - 86400)) {
+            // Fetch details if needed (new events, events missing details, or the nearest 3 upcoming events)
+            $isNearFuture = ($idx < 3 && strtotime($start) >= $now - 86400);
+            $needsDetails = (!$existing || empty($existing['body_html']) || empty($existing['location_name']) || $isNearFuture);
+            if ($fetchDetails && $eventIdHash && $needsDetails) {
                 try {
                     $details = $this->fetchEventDetail($eventIdHash);
                     if (!empty($details)) {
                         $record = array_merge($record, $details);
                     }
-                    usleep(150000); // 150ms throttle to be gentle on server
+                    usleep(60000); // 60ms throttle
                 } catch (Exception $e) {
                     // Ignore detail fetch failure and proceed
                 }

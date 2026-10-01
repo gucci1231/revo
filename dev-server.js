@@ -86,6 +86,13 @@ function buildHtml() {
             getMemberListApi: function() {
               fetch('/api/members.php?action=list').then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
             },
+            getTrainingEventsApi: function(params) {
+              const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+              fetch('/api/events.php?action=list' + qs).then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
+            },
+            syncTrainingEventsApi: function() {
+              fetch('/api/events.php?action=sync', { method: 'POST' }).then(r=>r.json()).then(d=>this._successCb && this._successCb(d)).catch(e=>this._failCb && this._failCb(e));
+            },
             logClientErrorApi: function() {}
           }
         }

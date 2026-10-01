@@ -221,6 +221,16 @@ async function run() {
   const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
   const sqlStatements = [];
 
+  let existingMap = {};
+  try {
+    const existingRows = JSON.parse(execSync(`sqlite3 -json "${DB_FILE}" "SELECT id, location_name, location_address, location_map_url, is_online, cost_member, cost_non_member, contact_name, contact_phone, max_attendees, num_registered, registration_url, body_html FROM region_events;"`, { encoding: 'utf8' }) || '[]');
+    existingRows.forEach(r => {
+      existingMap[r.id] = r;
+    });
+  } catch(e) {
+    existingMap = {};
+  }
+
   for (let i = 0; i < events.length; i++) {
     const ev = events[i];
     const eventId = parseInt(ev.id, 10);
@@ -251,11 +261,17 @@ async function run() {
       isOnline = 1;
     }
 
-    let details = {};
-    if (eventIdHash && (i < 15 || new Date(start) >= new Date())) {
+    let details = existingMap[eventId] || {};
+    const isVeryUpcoming = i < 3 && new Date(start) >= new Date();
+    const needsFetch = !details.body_html || !details.location_name || isVeryUpcoming;
+
+    if (eventIdHash && needsFetch) {
       try {
-        details = await fetchEventDetail(eventIdHash);
-        await new Promise(r => setTimeout(r, 80)); // 80ms throttle
+        const fetched = await fetchEventDetail(eventIdHash);
+        if (fetched && Object.keys(fetched).length > 0) {
+          details = Object.assign({}, details, fetched);
+        }
+        await new Promise(r => setTimeout(r, 60)); // throttle
       } catch(e) {
         // ignore
       }
