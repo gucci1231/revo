@@ -53,6 +53,7 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('function openMeetingDetailModal('), 'openMeetingDetailModal defined');
     assert.ok(viewScript.includes('function renderWeekView()'), 'renderWeekView defined');
     assert.ok(viewScript.includes('function navigateCalendarWeek('), 'navigateCalendarWeek defined');
+    assert.ok(viewScript.includes('function navigateCalendarDay('), 'navigateCalendarDay defined');
     assert.ok(viewScript.includes('function jumpToCurrentWeek()'), 'jumpToCurrentWeek defined');
   });
 
@@ -371,5 +372,63 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     // 3. Script Logic verifies toolbar remains visible and syncs modal tabs
     assert.ok(viewScript.includes('function updateModalViewModeTabs()'), 'updateModalViewModeTabs is defined');
     assert.ok(viewScript.includes('if (calToolbar) calToolbar.classList.remove(\'hidden\');'), 'calToolbar is kept visible across all modes');
+  });
+
+  it('verifies 1-day swipe navigation in week view instead of jumping full week', () => {
+    // Touch swipe calls navigateCalendarDay(1) and navigateCalendarDay(-1)
+    assert.ok(viewScript.includes('navigateCalendarDay(1)'), 'Swiped left moves 1 day forward');
+    assert.ok(viewScript.includes('navigateCalendarDay(-1)'), 'Swiped right moves 1 day backward');
+    assert.ok(!viewScript.includes('navigateCalendarWeek(1)'), 'No longer calls navigateCalendarWeek on swipe');
+
+    // Test navigateCalendarDay behavior via JS execution sandbox
+    const sandbox = {
+      selectedCalendarDate: '2026-10-01',
+      currentWeekStartDate: new Date('2026-09-27T00:00:00'),
+      currentCalendarMonth: '2026-10',
+      getSundayOfDate: function(d) {
+        const date = new Date(d);
+        const day = date.getDay();
+        date.setDate(date.getDate() - day);
+        return date;
+      },
+      formatDateToIso: function(d) {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+      },
+      updateCalendarMonthHeader: function() {},
+      renderWeekView: function() {},
+      loadCalendarAndEvents: function() {}
+    };
+
+    // Extract navigateCalendarDay implementation
+    const fnCode = viewScript.substring(
+      viewScript.indexOf('function navigateCalendarDay('),
+      viewScript.indexOf('function navigateCalendarWeek(')
+    );
+    const vm = require('vm');
+    const ctx = vm.createContext(sandbox);
+    vm.runInContext(fnCode, ctx);
+
+    // 1. Advance 1 day within same week
+    ctx.navigateCalendarDay(1);
+    assert.strictEqual(ctx.selectedCalendarDate, '2026-10-02', 'Navigates from 10-01 to 10-02');
+
+    // 2. Advance to Saturday
+    ctx.navigateCalendarDay(1);
+    assert.strictEqual(ctx.selectedCalendarDate, '2026-10-03', 'Navigates from 10-02 to 10-03 (Saturday)');
+
+    // 3. Advance crossing to next week (Sunday 10-04)
+    ctx.navigateCalendarDay(1);
+    assert.strictEqual(ctx.selectedCalendarDate, '2026-10-04', 'Navigates from 10-03 to 10-04 (Sunday)');
+    const sunStr = ctx.formatDateToIso(ctx.currentWeekStartDate);
+    assert.strictEqual(sunStr, '2026-10-04', 'currentWeekStartDate automatically adjusted to new week Sunday');
+
+    // 4. Backward 1 day crossing back to previous week
+    ctx.navigateCalendarDay(-1);
+    assert.strictEqual(ctx.selectedCalendarDate, '2026-10-03', 'Navigates backward from 10-04 to 10-03 (Saturday)');
+    const prevSunStr = ctx.formatDateToIso(ctx.currentWeekStartDate);
+    assert.strictEqual(prevSunStr, '2026-09-27', 'currentWeekStartDate automatically adjusted back to previous week Sunday');
   });
 });
