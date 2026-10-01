@@ -14213,10 +14213,18 @@ select.form-input, select.form-select {
 
   <!-- List Mode Toolbar (Active in List Mode only) -->
   <div id="list-mode-toolbar" class="hidden flex-wrap items-center justify-between gap-2 p-2.5 mb-3 bg-white border border-slate-200/90 rounded-2xl shadow-xs">
-    <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5" id="training-month-tabs">
-      <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 cursor-pointer" onclick="setTrainingMonthFilter('', this)">
-        全月
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <button type="button" onclick="setEventViewMode('month')" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer shrink-0" title="月カレンダーに戻る">
+        <i class="fa-solid fa-chevron-left text-3xs text-slate-400"></i>
+        <i class="fa-solid fa-calendar-days text-blue-600 text-xs"></i>
+        <span>月表示に戻る</span>
       </button>
+      <div class="h-4 w-px bg-slate-200 mx-0.5 shrink-0"></div>
+      <div class="flex items-center gap-1" id="training-month-tabs">
+        <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 cursor-pointer" onclick="setTrainingMonthFilter('', this)">
+          全月
+        </button>
+      </div>
     </div>
     <div class="flex items-center gap-1.5 text-xs text-slate-500">
       <span class="font-bold shrink-0">カテゴリ:</span>
@@ -14306,6 +14314,25 @@ select.form-input, select.form-select {
 
     <!-- Body -->
     <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+      <!-- 0. View Mode Selector (Month / Week / List) -->
+      <div>
+        <label class="block text-xs font-bold text-slate-500 mb-1.5">表示形式</label>
+        <div class="grid grid-cols-3 p-1 rounded-xl bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="modal-view-mode-tabs">
+          <button type="button" id="modal-tab-view-month" class="py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 font-black" onclick="setEventViewMode('month');">
+            <i class="fa-solid fa-calendar-days text-blue-500"></i>
+            <span>月表示</span>
+          </button>
+          <button type="button" id="modal-tab-view-week" class="py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5 font-bold" onclick="setEventViewMode('week');">
+            <i class="fa-solid fa-calendar-week text-blue-500"></i>
+            <span>週表示</span>
+          </button>
+          <button type="button" id="modal-tab-view-list" class="py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5 font-bold" onclick="setEventViewMode('list');">
+            <i class="fa-solid fa-list-ul text-blue-500"></i>
+            <span>リスト</span>
+          </button>
+        </div>
+      </div>
+
       <!-- 1. Search Box -->
       <div>
         <label class="block text-xs font-bold text-slate-500 mb-1.5">キーワード検索</label>
@@ -38057,15 +38084,33 @@ function jumpToCurrentMonth() {
  * Seamlessly toggles view modes like Apple Calendar with a single clean icon button.
  */
 function cycleEventViewMode() {
-  let nextMode = 'week';
+  let nextMode = 'month';
   if (currentEventViewMode === 'week') {
     nextMode = 'month';
   } else if (currentEventViewMode === 'month') {
     nextMode = 'list';
   } else {
-    nextMode = 'week';
+    // Return to month view from list mode
+    nextMode = 'month';
   }
   setEventViewMode(nextMode);
+}
+
+/**
+ * Synchronize view mode tabs inside the filter modal
+ */
+function updateModalViewModeTabs() {
+  const btnMonth = document.getElementById('modal-tab-view-month');
+  const btnWeek = document.getElementById('modal-tab-view-week');
+  const btnList = document.getElementById('modal-tab-view-list');
+  if (!btnMonth || !btnWeek || !btnList) return;
+
+  const activeClass = 'py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 font-black';
+  const inactiveClass = 'py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5 font-bold';
+
+  btnMonth.className = currentEventViewMode === 'month' ? activeClass : inactiveClass;
+  btnWeek.className = currentEventViewMode === 'week' ? activeClass : inactiveClass;
+  btnList.className = currentEventViewMode === 'list' ? activeClass : inactiveClass;
 }
 
 /**
@@ -38092,11 +38137,13 @@ function setEventViewMode(mode) {
   const activeBtnClass = 'px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer';
   const inactiveBtnClass = 'px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer';
 
+  // Always keep main toolbar visible so switcher, filter popup, and add event buttons remain accessible
+  if (calToolbar) calToolbar.classList.remove('hidden');
+
   if (mode === 'month') {
     if (calContainer) calContainer.classList.remove('hidden');
     if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.add('hidden');
-    if (calToolbar) calToolbar.classList.remove('hidden');
     if (listToolbar) listToolbar.classList.add('hidden');
 
     if (btnMonth) btnMonth.className = activeBtnClass;
@@ -38112,7 +38159,6 @@ function setEventViewMode(mode) {
     if (calContainer) calContainer.classList.add('hidden');
     if (weekContainer) weekContainer.classList.remove('hidden');
     if (listContainer) listContainer.classList.add('hidden');
-    if (calToolbar) calToolbar.classList.remove('hidden');
     if (listToolbar) listToolbar.classList.add('hidden');
 
     if (btnMonth) btnMonth.className = inactiveBtnClass;
@@ -38129,17 +38175,20 @@ function setEventViewMode(mode) {
     if (calContainer) calContainer.classList.add('hidden');
     if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.remove('hidden');
-    if (calToolbar) calToolbar.classList.add('hidden');
     if (listToolbar) listToolbar.classList.remove('hidden');
 
     if (btnMonth) btnMonth.className = inactiveBtnClass;
     if (btnWeek) btnWeek.className = inactiveBtnClass;
     if (btnList) btnList.className = activeBtnClass;
+    if (btnJumpToday) btnJumpToday.innerText = '今月';
     if (cycleIcon) cycleIcon.className = 'fa-solid fa-list-ul text-sm text-blue-600';
-    if (cycleBtn) cycleBtn.title = 'リスト表示中 (タップで週表示へ)';
+    if (cycleBtn) cycleBtn.title = 'リスト表示中 (タップで月表示へ)';
 
+    updateCalendarMonthHeader();
     renderFilteredTrainingEvents();
   }
+
+  updateModalViewModeTabs();
 }
 
 /**
@@ -38155,6 +38204,7 @@ function openCalendarFilterModal() {
       input.value = currentTrainingFilter.keyword || '';
     }
     updateCalendarFilterIndicator();
+    updateModalViewModeTabs();
   }
 }
 

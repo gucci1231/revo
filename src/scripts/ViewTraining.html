@@ -312,15 +312,33 @@ function jumpToCurrentMonth() {
  * Seamlessly toggles view modes like Apple Calendar with a single clean icon button.
  */
 function cycleEventViewMode() {
-  let nextMode = 'week';
+  let nextMode = 'month';
   if (currentEventViewMode === 'week') {
     nextMode = 'month';
   } else if (currentEventViewMode === 'month') {
     nextMode = 'list';
   } else {
-    nextMode = 'week';
+    // Return to month view from list mode
+    nextMode = 'month';
   }
   setEventViewMode(nextMode);
+}
+
+/**
+ * Synchronize view mode tabs inside the filter modal
+ */
+function updateModalViewModeTabs() {
+  const btnMonth = document.getElementById('modal-tab-view-month');
+  const btnWeek = document.getElementById('modal-tab-view-week');
+  const btnList = document.getElementById('modal-tab-view-list');
+  if (!btnMonth || !btnWeek || !btnList) return;
+
+  const activeClass = 'py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5 font-black';
+  const inactiveClass = 'py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5 font-bold';
+
+  btnMonth.className = currentEventViewMode === 'month' ? activeClass : inactiveClass;
+  btnWeek.className = currentEventViewMode === 'week' ? activeClass : inactiveClass;
+  btnList.className = currentEventViewMode === 'list' ? activeClass : inactiveClass;
 }
 
 /**
@@ -347,11 +365,13 @@ function setEventViewMode(mode) {
   const activeBtnClass = 'px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer';
   const inactiveBtnClass = 'px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer';
 
+  // Always keep main toolbar visible so switcher, filter popup, and add event buttons remain accessible
+  if (calToolbar) calToolbar.classList.remove('hidden');
+
   if (mode === 'month') {
     if (calContainer) calContainer.classList.remove('hidden');
     if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.add('hidden');
-    if (calToolbar) calToolbar.classList.remove('hidden');
     if (listToolbar) listToolbar.classList.add('hidden');
 
     if (btnMonth) btnMonth.className = activeBtnClass;
@@ -367,7 +387,6 @@ function setEventViewMode(mode) {
     if (calContainer) calContainer.classList.add('hidden');
     if (weekContainer) weekContainer.classList.remove('hidden');
     if (listContainer) listContainer.classList.add('hidden');
-    if (calToolbar) calToolbar.classList.remove('hidden');
     if (listToolbar) listToolbar.classList.add('hidden');
 
     if (btnMonth) btnMonth.className = inactiveBtnClass;
@@ -384,17 +403,20 @@ function setEventViewMode(mode) {
     if (calContainer) calContainer.classList.add('hidden');
     if (weekContainer) weekContainer.classList.add('hidden');
     if (listContainer) listContainer.classList.remove('hidden');
-    if (calToolbar) calToolbar.classList.add('hidden');
     if (listToolbar) listToolbar.classList.remove('hidden');
 
     if (btnMonth) btnMonth.className = inactiveBtnClass;
     if (btnWeek) btnWeek.className = inactiveBtnClass;
     if (btnList) btnList.className = activeBtnClass;
+    if (btnJumpToday) btnJumpToday.innerText = '今月';
     if (cycleIcon) cycleIcon.className = 'fa-solid fa-list-ul text-sm text-blue-600';
-    if (cycleBtn) cycleBtn.title = 'リスト表示中 (タップで週表示へ)';
+    if (cycleBtn) cycleBtn.title = 'リスト表示中 (タップで月表示へ)';
 
+    updateCalendarMonthHeader();
     renderFilteredTrainingEvents();
   }
+
+  updateModalViewModeTabs();
 }
 
 /**
@@ -410,6 +432,7 @@ function openCalendarFilterModal() {
       input.value = currentTrainingFilter.keyword || '';
     }
     updateCalendarFilterIndicator();
+    updateModalViewModeTabs();
   }
 }
 

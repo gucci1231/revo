@@ -357,7 +357,19 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(viewScript.includes('function updateCalendarFilterIndicator()'), 'updateCalendarFilterIndicator is defined in script');
     assert.ok(viewScript.includes('function resetCalendarFilters()'), 'resetCalendarFilters is defined in script');
   });
+
+  it('verifies view mode switcher inside filter modal and seamless return from list to month view', () => {
+    // 1. View Mode Switcher in Filter Modal (Month, Week, List)
+    assert.ok(indexHtml.includes('id="modal-view-mode-tabs"'), 'View mode switcher tabs exist inside filter modal');
+    assert.ok(indexHtml.includes('id="modal-tab-view-month"'), 'Month view button exists inside filter modal');
+    assert.ok(indexHtml.includes('id="modal-tab-view-week"'), 'Week view button exists inside filter modal');
+    assert.ok(indexHtml.includes('id="modal-tab-view-list"'), 'List view button exists inside filter modal');
+
+    // 2. Return to Calendar Button in List Mode Toolbar
+    assert.ok(indexHtml.includes('onclick="setEventViewMode(\'month\')"'), 'Direct return to month view button exists in list toolbar');
+
+    // 3. Script Logic verifies toolbar remains visible and syncs modal tabs
+    assert.ok(viewScript.includes('function updateModalViewModeTabs()'), 'updateModalViewModeTabs is defined');
+    assert.ok(viewScript.includes('if (calToolbar) calToolbar.classList.remove(\'hidden\');'), 'calToolbar is kept visible across all modes');
+  });
 });
-
-
-
