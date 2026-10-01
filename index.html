@@ -17362,8 +17362,18 @@ window.CelebrationEffect = (function() {
           }
         }, 300);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'events', 'schedules'].includes(hash)) {
-      switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : (hash === 'events' ? 'training' : hash)), false);
+    } else {
+      const cleanTab = hash.split('?')[0].split('&')[0];
+      if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'events', 'schedules'].includes(cleanTab)) {
+        switchTab(cleanTab === 'action-plans' ? 'actions' : (cleanTab === 'reports' ? 'report-manager' : (cleanTab === 'events' ? 'training' : cleanTab)), false);
+        if (cleanTab === 'training' || cleanTab === 'events') {
+          setTimeout(() => {
+            if (typeof checkUrlEventDeepLink === 'function') {
+              checkUrlEventDeepLink();
+            }
+          }, 200);
+        }
+      }
     }
   }
 
@@ -38194,11 +38204,13 @@ function addEventOnSelectedDate() {
  * Chapter Event Modal Management
  */
 function openChapterEventModal(eventObj = null) {
+  currentEditingChapterEvent = eventObj;
   const modal = document.getElementById('modal-chapter-event');
   const form = document.getElementById('form-chapter-event');
   const titleHeader = document.getElementById('modal-chapter-event-title');
   const btnDelete = document.getElementById('btn-delete-chapter-event');
   const btnDeleteSeries = document.getElementById('btn-delete-chapter-series');
+  const btnShare = document.getElementById('btn-share-chapter-event');
   const repeatSection = document.getElementById('ch-ev-repeat-section');
   if (!modal || !form) return;
 
@@ -38229,6 +38241,7 @@ function openChapterEventModal(eventObj = null) {
     // Repeat section hidden on single edit
     if (repeatSection) repeatSection.classList.add('hidden');
 
+    if (btnShare) btnShare.classList.remove('hidden');
     if (btnDelete) btnDelete.classList.remove('hidden');
     if (btnDeleteSeries) {
       if (eventObj.recurrence_group_id) {
@@ -38239,6 +38252,7 @@ function openChapterEventModal(eventObj = null) {
     }
   } else {
     titleHeader.innerText = 'チャプター予定を追加';
+    if (btnShare) btnShare.classList.add('hidden');
     document.getElementById('ch-ev-id').value = '';
     document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
@@ -38947,10 +38961,16 @@ function renderFilteredTrainingEvents() {
 
         <!-- Footer Actions -->
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-          <button type="button" onclick="handleCalendarEventClick('${ev.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1 cursor-pointer">
-            <span>詳細を見る</span>
-            <i class="fa-solid fa-chevron-right text-3xs"></i>
-          </button>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="handleCalendarEventClick('${ev.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors flex items-center gap-1 cursor-pointer">
+              <span>詳細を見る</span>
+              <i class="fa-solid fa-chevron-right text-3xs"></i>
+            </button>
+            <button type="button" onclick="openEventShareModal('${ev.id}', event)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-blue-600 hover:bg-blue-50/80 transition-colors flex items-center gap-1 cursor-pointer" title="イベントをシェア">
+              <i class="fa-solid fa-arrow-up-from-bracket text-3xs"></i>
+              <span>シェア</span>
+            </button>
+          </div>
           ${ev.source_type === 'training' ? `
             <a href="${ev.registration_url || ev.detail_url || 'https://bni-ck.com/ja/events'}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 no-underline">
               <span>参加申込</span>
@@ -38973,6 +38993,7 @@ function renderFilteredTrainingEvents() {
 function openTrainingDetailModal(eventId) {
   const ev = allCalendarEvents.find(e => e.id == eventId) || allTrainingEvents.find(e => e.id == eventId);
   if (!ev) return;
+  currentDetailTrainingEvent = ev;
 
   const modal = document.getElementById('modal-training-detail');
   if (!modal) return;
@@ -39078,6 +39099,306 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+/* ==========================================================================
+   EVENT SHARE & DEEP LINK SYSTEM
+   ========================================================================== */
+
+/**
+ * Format Date & Time for sharing text
+ */
+function formatShareDateTime(startStr, endStr) {
+  if (!startStr) return '';
+  const startDate = new Date(startStr.replace(/-/g, '/'));
+  if (isNaN(startDate.getTime())) return startStr;
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const dayName = dayNames[startDate.getDay()];
+  const yyyy = startDate.getFullYear();
+  const mm = startDate.getMonth() + 1;
+  const dd = startDate.getDate();
+  const startTime = startStr.length >= 16 ? startStr.substring(11, 16) : '';
+
+  let endTime = '';
+  if (endStr && endStr.length >= 16) {
+    endTime = ' ～ ' + endStr.substring(11, 16);
+  }
+
+  return `${yyyy}年${mm}月${dd}日(${dayName}) ${startTime}${endTime}`;
+}
+
+/**
+ * Get Deep Link URL to view this specific event
+ */
+function getEventDeepLink(ev) {
+  if (!ev || !ev.id) return window.location.href;
+  const origin = window.location.origin + window.location.pathname;
+  const cleanUrl = origin.split('?')[0].split('#')[0];
+  return `${cleanUrl}#training?event=${encodeURIComponent(ev.id)}`;
+}
+
+/**
+ * Build beautifully formatted share text
+ */
+function buildEventShareText(ev) {
+  if (!ev) return '';
+  const dtStr = formatShareDateTime(ev.start_datetime, ev.end_datetime);
+  const isOnline = !!ev.is_online;
+  const formatLabel = isOnline ? 'オンライン (Zoom)' : '対面・集合開催';
+  const locText = ev.location_name || (isOnline ? 'オンライン (Zoom)' : '');
+
+  let text = `【イベント案内】\n`;
+  text += `━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `■ タイトル: ${ev.title || 'イベント'}\n`;
+  if (dtStr) text += `■ 日時: ${dtStr}\n`;
+  text += `■ 形式: ${formatLabel}\n`;
+  if (locText) text += `■ 会場: ${locText}\n`;
+  if (ev.location_url) text += `■ 参加/案内URL: ${ev.location_url}\n`;
+  if (ev.cost_member) text += `■ 費用: ${ev.cost_member}\n`;
+  if (ev.organizer) text += `■ 主催・担当: ${ev.organizer}\n`;
+
+  if (ev.description) {
+    const cleanDesc = ev.description.replace(/<[^>]*>/g, '').trim();
+    if (cleanDesc) {
+      text += `\n■ 詳細・案内:\n${cleanDesc}\n`;
+    }
+  }
+
+  if (ev.source_type === 'training' && (ev.registration_url || ev.detail_url)) {
+    text += `\n▼ 公式申込ページ:\n${ev.registration_url || ev.detail_url}\n`;
+  }
+
+  text += `━━━━━━━━━━━━━━━━━━━━\n`;
+  text += `▼ REvoカレンダーで確認・共有:\n${getEventDeepLink(ev)}`;
+  return text;
+}
+
+/**
+ * Generate Google Calendar Event Creation URL
+ */
+function getGoogleCalendarUrl(ev) {
+  if (!ev || !ev.start_datetime) return '#';
+  try {
+    const start = new Date(ev.start_datetime.replace(/-/g, '/'));
+    if (isNaN(start.getTime())) return '#';
+    let end = ev.end_datetime ? new Date(ev.end_datetime.replace(/-/g, '/')) : new Date(start.getTime() + 90 * 60 * 1000);
+    if (isNaN(end.getTime()) || end <= start) {
+      end = new Date(start.getTime() + 90 * 60 * 1000);
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const toGCalLocal = (d) => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+    const dates = `${toGCalLocal(start)}/${toGCalLocal(end)}`;
+    const title = encodeURIComponent(ev.title || 'イベント');
+    const deepLink = getEventDeepLink(ev);
+    const descParts = [];
+    if (ev.description) descParts.push(ev.description.replace(/<[^>]*>/g, '').trim());
+    if (ev.location_url) descParts.push(`参加URL: ${ev.location_url}`);
+    if (ev.registration_url || ev.detail_url) descParts.push(`公式リンク: ${ev.registration_url || ev.detail_url}`);
+    descParts.push(`▼ REvoカレンダー:\n${deepLink}`);
+    const details = encodeURIComponent(descParts.join('\n\n'));
+    const location = encodeURIComponent(ev.location_name || (ev.is_online ? 'オンライン (Zoom)' : ''));
+
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+  } catch (e) {
+    return '#';
+  }
+}
+
+/**
+ * Open Event Share Modal
+ */
+function openEventShareModal(eventOrId, evt) {
+  if (evt) evt.stopPropagation();
+
+  let ev = null;
+  if (typeof eventOrId === 'object' && eventOrId !== null) {
+    ev = eventOrId;
+  } else if (eventOrId) {
+    ev = allCalendarEvents.find(e => e.id == eventOrId) ||
+         allTrainingEvents.find(e => e.id == eventOrId) ||
+         (currentSelectedMeeting && currentSelectedMeeting.id == eventOrId ? currentSelectedMeeting : null) ||
+         (currentDetailTrainingEvent && currentDetailTrainingEvent.id == eventOrId ? currentDetailTrainingEvent : null) ||
+         (currentEditingChapterEvent && currentEditingChapterEvent.id == eventOrId ? currentEditingChapterEvent : null);
+  }
+
+  if (!ev) {
+    showToast('イベント情報が見つかりません', 'error');
+    return;
+  }
+
+  currentSharingEvent = ev;
+  const modal = document.getElementById('modal-event-share');
+  if (!modal) return;
+
+  // Set Modal Badge & Info
+  const badgeEl = document.getElementById('share-modal-badge');
+  if (badgeEl) {
+    if (ev.source_type === 'meeting') {
+      badgeEl.innerText = '定例会';
+      badgeEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200';
+    } else if (ev.source_type === 'chapter') {
+      badgeEl.innerText = ev.category || 'チャプター予定';
+      badgeEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200';
+    } else {
+      badgeEl.innerText = ev.event_type_name || ev.category || '京都CC研修';
+      badgeEl.className = 'px-2 py-0.5 rounded-full text-3xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200';
+    }
+  }
+
+  const titleEl = document.getElementById('share-modal-title');
+  if (titleEl) titleEl.innerText = ev.title || 'イベント';
+
+  const dateEl = document.getElementById('share-modal-date');
+  if (dateEl) {
+    dateEl.innerText = formatShareDateTime(ev.start_datetime, ev.end_datetime);
+  }
+
+  // Build full text
+  const shareText = buildEventShareText(ev);
+  const previewTextarea = document.getElementById('share-modal-preview-text');
+  if (previewTextarea) {
+    previewTextarea.value = shareText;
+  }
+
+  // LINE share button
+  const lineBtn = document.getElementById('btn-share-line');
+  if (lineBtn) {
+    lineBtn.href = `https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`;
+  }
+
+  // Google Calendar button
+  const gcalBtn = document.getElementById('btn-share-gcal');
+  if (gcalBtn) {
+    gcalBtn.href = getGoogleCalendarUrl(ev);
+  }
+
+  // Reset copy button status
+  const copyBtnText = document.getElementById('share-copy-btn-text');
+  const copyIcon = document.getElementById('share-copy-icon');
+  if (copyBtnText) copyBtnText.innerText = '案内文をコピー';
+  if (copyIcon) copyIcon.className = 'fa-regular fa-copy';
+
+  modal.classList.remove('hidden');
+}
+
+function openEventShareFromCurrentMeeting() {
+  if (currentSelectedMeeting) {
+    openEventShareModal(currentSelectedMeeting);
+  } else {
+    showToast('定例会情報が見つかりません', 'error');
+  }
+}
+
+function openEventShareFromCurrentTraining() {
+  if (currentDetailTrainingEvent) {
+    openEventShareModal(currentDetailTrainingEvent);
+  } else {
+    showToast('研修情報が見つかりません', 'error');
+  }
+}
+
+function openEventShareFromCurrentChapterEvent() {
+  if (currentEditingChapterEvent) {
+    openEventShareModal(currentEditingChapterEvent);
+  } else {
+    showToast('チャプター予定が見つかりません', 'error');
+  }
+}
+
+function closeEventShareModal() {
+  const modal = document.getElementById('modal-event-share');
+  if (modal) modal.classList.add('hidden');
+  currentSharingEvent = null;
+}
+
+/**
+ * Copy Full Share Text to Clipboard
+ */
+function copyEventShareFullText() {
+  if (!currentSharingEvent) return;
+  const shareText = buildEventShareText(currentSharingEvent);
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareText).then(() => {
+      showToast('📋 イベント案内文をコピーしました！', 'success');
+      const copyBtnText = document.getElementById('share-copy-btn-text');
+      const copyIcon = document.getElementById('share-copy-icon');
+      if (copyBtnText) copyBtnText.innerText = 'コピー完了！';
+      if (copyIcon) copyIcon.className = 'fa-solid fa-check text-emerald-300';
+      setTimeout(() => {
+        if (copyBtnText) copyBtnText.innerText = '案内文をコピー';
+        if (copyIcon) copyIcon.className = 'fa-regular fa-copy';
+      }, 2500);
+    }).catch(() => {
+      prompt('以下のテキストをコピーしてください:', shareText);
+    });
+  } else {
+    prompt('以下のテキストをコピーしてください:', shareText);
+  }
+}
+
+/**
+ * Handle Native Share (Web Share API) or fallback to URL copy
+ */
+function handleNativeShareOrUrlCopy() {
+  if (!currentSharingEvent) return;
+  const deepLink = getEventDeepLink(currentSharingEvent);
+  const shareText = buildEventShareText(currentSharingEvent);
+
+  if (navigator.share) {
+    navigator.share({
+      title: currentSharingEvent.title,
+      text: shareText,
+      url: deepLink
+    }).then(() => {
+      showToast('共有が完了しました', 'success');
+    }).catch((err) => {
+      // User cancelled or share failed, fallback silently or copy URL
+      if (err.name !== 'AbortError') {
+        copyDeepLinkUrl(deepLink);
+      }
+    });
+  } else {
+    copyDeepLinkUrl(deepLink);
+  }
+}
+
+function copyDeepLinkUrl(url) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('🔗 イベント共有URLをコピーしました！', 'success');
+    }).catch(() => {
+      prompt('以下の共有URLをコピーしてください:', url);
+    });
+  } else {
+    prompt('以下の共有URLをコピーしてください:', url);
+  }
+}
+
+/**
+ * Check URL hash for direct event link (deep linking)
+ */
+function checkUrlEventDeepLink() {
+  try {
+    const rawHash = decodeURIComponent(window.location.hash || '');
+    if (!rawHash.includes('training') && !rawHash.includes('events')) return;
+
+    const match = rawHash.match(/[?&]event=([^&]+)/);
+    if (!match || !match[1]) return;
+
+    const targetEventId = decodeURIComponent(match[1]);
+    const ev = allCalendarEvents.find(e => e.id == targetEventId) || allTrainingEvents.find(e => e.id == targetEventId);
+
+    if (ev) {
+      setTimeout(() => {
+        handleCalendarEventClick(ev.id);
+      }, 100);
+    }
+  } catch (e) {
+    console.error('Deep link check error:', e);
+  }
 }
 </script>
 

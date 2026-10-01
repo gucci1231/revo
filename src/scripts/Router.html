@@ -108,8 +108,18 @@
           }
         }, 300);
       }
-    } else if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'events', 'schedules'].includes(hash)) {
-      switchTab(hash === 'action-plans' ? 'actions' : (hash === 'reports' ? 'report-manager' : (hash === 'events' ? 'training' : hash)), false);
+    } else {
+      const cleanTab = hash.split('?')[0].split('&')[0];
+      if (['dashboard', 'actions', 'action-plans', 'priority-follow', 'hearings', 'email-schedule', 'email-templates', 'report-manager', 'reports', 'links', 'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic', 'lottery', 'training', 'events', 'schedules'].includes(cleanTab)) {
+        switchTab(cleanTab === 'action-plans' ? 'actions' : (cleanTab === 'reports' ? 'report-manager' : (cleanTab === 'events' ? 'training' : cleanTab)), false);
+        if (cleanTab === 'training' || cleanTab === 'events') {
+          setTimeout(() => {
+            if (typeof checkUrlEventDeepLink === 'function') {
+              checkUrlEventDeepLink();
+            }
+          }, 200);
+        }
+      }
     }
   }
 

@@ -146,6 +146,30 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(eventRepoPhp.includes("'visitors' => $dayVisitors"), 'EventRepository provides visitors array in meeting');
     assert.ok(devServerJs.includes('visitors: dayVisitors'), 'dev-server provides visitors array in meeting');
   });
+
+  it('verifies Event Share Modal, share buttons, and helper functions exist', () => {
+    // Modal & UI Elements
+    assert.ok(indexHtml.includes('id="modal-event-share"'), 'Event share modal exists in index.html');
+    assert.ok(indexHtml.includes('id="btn-share-line"'), 'LINE share button exists');
+    assert.ok(indexHtml.includes('id="btn-share-copy-text"'), 'Copy share text button exists');
+    assert.ok(indexHtml.includes('id="btn-share-gcal"'), 'Google Calendar add button exists');
+    assert.ok(indexHtml.includes('id="btn-share-native"'), 'Native share or URL copy button exists');
+    assert.ok(indexHtml.includes('id="share-modal-preview-text"'), 'Share text preview textarea exists');
+    assert.ok(indexHtml.includes('id="btn-share-meeting-detail"'), 'Share button in meeting detail modal exists');
+    assert.ok(indexHtml.includes('id="btn-share-training-detail"'), 'Share button in training detail modal exists');
+    assert.ok(indexHtml.includes('id="btn-share-chapter-event"'), 'Share button in chapter event modal exists');
+
+    // JS Functions
+    assert.ok(viewScript.includes('function openEventShareModal('), 'openEventShareModal is defined');
+    assert.ok(viewScript.includes('function closeEventShareModal('), 'closeEventShareModal is defined');
+    assert.ok(viewScript.includes('function buildEventShareText('), 'buildEventShareText is defined');
+    assert.ok(viewScript.includes('function getGoogleCalendarUrl('), 'getGoogleCalendarUrl is defined');
+    assert.ok(viewScript.includes('function copyEventShareFullText('), 'copyEventShareFullText is defined');
+    assert.ok(viewScript.includes('function handleNativeShareOrUrlCopy('), 'handleNativeShareOrUrlCopy is defined');
+    assert.ok(viewScript.includes('function checkUrlEventDeepLink('), 'checkUrlEventDeepLink is defined');
+    assert.ok(viewScript.includes('function getEventDeepLink('), 'getEventDeepLink is defined');
+  });
 });
+
 
 
