@@ -79,6 +79,11 @@ try {
         $stmtWeekly = $pdo->query("
             SELECT 
                 start_date, end_date,
+                SUM(p_present) as total_present,
+                SUM(a_absent) as total_absent,
+                SUM(l_late) as total_late,
+                SUM(m_medical) as total_medical,
+                SUM(s_substitute) as total_sub,
                 SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
                 SUM(rgi_referrals_given_internal) as total_referrals_internal,
                 SUM(rgo_referrals_given_external) as total_referrals_external,
@@ -100,17 +105,27 @@ try {
                 MIN(start_date) as start_date,
                 MAX(end_date) as end_date,
                 COUNT(DISTINCT end_date) as week_count,
-                ROUND(AVG(sub.member_count), 1) as member_count,
-                SUM(sub.total_referrals) as total_referrals,
-                SUM(sub.total_referrals_internal) as total_referrals_internal,
-                SUM(sub.total_referrals_external) as total_referrals_external,
-                SUM(sub.total_oto) as total_oto,
-                SUM(sub.total_visitors) as total_visitors,
-                SUM(sub.total_ceu) as total_ceu,
-                SUM(sub.total_tyfcb) as total_tyfcb
+                MAX(member_count) as member_count,
+                SUM(total_present) as total_present,
+                SUM(total_absent) as total_absent,
+                SUM(total_late) as total_late,
+                SUM(total_medical) as total_medical,
+                SUM(total_sub) as total_sub,
+                SUM(total_referrals) as total_referrals,
+                SUM(total_referrals_internal) as total_referrals_internal,
+                SUM(total_referrals_external) as total_referrals_external,
+                SUM(total_oto) as total_oto,
+                SUM(total_visitors) as total_visitors,
+                SUM(total_ceu) as total_ceu,
+                SUM(total_tyfcb) as total_tyfcb
             FROM (
                 SELECT 
                     start_date, end_date,
+                    SUM(p_present) as total_present,
+                    SUM(a_absent) as total_absent,
+                    SUM(l_late) as total_late,
+                    SUM(m_medical) as total_medical,
+                    SUM(s_substitute) as total_sub,
                     SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
                     SUM(rgi_referrals_given_internal) as total_referrals_internal,
                     SUM(rgo_referrals_given_external) as total_referrals_external,
@@ -127,6 +142,27 @@ try {
             ORDER BY month ASC
         ");
         $monthly = $stmtMonthly->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtJoins = $pdo->query("
+            SELECT 
+                replace(substr(event_date, 1, 7), '/', '-') as ym,
+                COUNT(*) as join_count
+            FROM visitors v
+            JOIN visitors_status s ON v.id = s.visitor_id
+            WHERE s.is_joined IN ('入会', '入会済')
+            GROUP BY ym
+        ");
+        $joins = $stmtJoins->fetchAll(PDO::FETCH_ASSOC);
+        $joinMap = [];
+        foreach ($joins as $j) {
+            if (!empty($j['ym'])) {
+                $joinMap[$j['ym']] = (int)$j['join_count'];
+            }
+        }
+        foreach ($monthly as &$m) {
+            $m['join_count'] = $joinMap[$m['month']] ?? 0;
+        }
+        unset($m);
 
         $stmtTerms = $pdo->query("
             SELECT 

@@ -1074,6 +1074,11 @@ function handleApiRequest(req, res, urlObj) {
         const sqlWeekly = `
           SELECT 
             start_date, end_date,
+            SUM(p_present) as total_present,
+            SUM(a_absent) as total_absent,
+            SUM(l_late) as total_late,
+            SUM(m_medical) as total_medical,
+            SUM(s_substitute) as total_sub,
             SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
             SUM(rgi_referrals_given_internal) as total_referrals_internal,
             SUM(rgo_referrals_given_external) as total_referrals_external,
@@ -1088,6 +1093,66 @@ function handleApiRequest(req, res, urlObj) {
           ORDER BY end_date ASC;
         `;
         const weekly = runSqlJson(sqlWeekly);
+
+        const sqlMonthly = `
+          SELECT 
+            strftime('%Y-%m', end_date) as month,
+            MIN(start_date) as start_date,
+            MAX(end_date) as end_date,
+            COUNT(DISTINCT end_date) as week_count,
+            MAX(member_count) as member_count,
+            SUM(total_present) as total_present,
+            SUM(total_absent) as total_absent,
+            SUM(total_late) as total_late,
+            SUM(total_medical) as total_medical,
+            SUM(total_sub) as total_sub,
+            SUM(total_referrals) as total_referrals,
+            SUM(total_referrals_internal) as total_referrals_internal,
+            SUM(total_referrals_external) as total_referrals_external,
+            SUM(total_oto) as total_oto,
+            SUM(total_visitors) as total_visitors,
+            SUM(total_ceu) as total_ceu,
+            SUM(total_tyfcb) as total_tyfcb
+          FROM (
+            SELECT 
+              start_date, end_date,
+              SUM(p_present) as total_present,
+              SUM(a_absent) as total_absent,
+              SUM(l_late) as total_late,
+              SUM(m_medical) as total_medical,
+              SUM(s_substitute) as total_sub,
+              SUM(rgi_referrals_given_internal + rgo_referrals_given_external) as total_referrals,
+              SUM(rgi_referrals_given_internal) as total_referrals_internal,
+              SUM(rgo_referrals_given_external) as total_referrals_external,
+              SUM(one_to_ones) as total_oto,
+              SUM(v_visitors) as total_visitors,
+              SUM(ceu) as total_ceu,
+              SUM(tyfcb_amount * 1000) as total_tyfcb,
+              COUNT(DISTINCT member_id) as member_count
+            FROM palms_reports
+            WHERE (julianday(end_date) - julianday(start_date)) <= 14
+            GROUP BY start_date, end_date
+          ) sub
+          GROUP BY month
+          ORDER BY month ASC;
+        `;
+        const monthly = runSqlJson(sqlMonthly);
+
+        const sqlJoins = `
+          SELECT 
+            replace(substr(event_date, 1, 7), '/', '-') as ym,
+            COUNT(*) as join_count
+          FROM visitors v
+          JOIN visitors_status s ON v.id = s.visitor_id
+          WHERE s.is_joined IN ('入会', '入会済')
+          GROUP BY ym;
+        `;
+        const joins = runSqlJson(sqlJoins);
+        const joinMap = {};
+        joins.forEach(j => { if (j.ym) joinMap[j.ym] = Number(j.join_count) || 0; });
+        monthly.forEach(m => {
+          m.join_count = joinMap[m.month] || 0;
+        });
 
         const sqlTerms = `
           SELECT 
@@ -1194,6 +1259,7 @@ function handleApiRequest(req, res, urlObj) {
         return res.end(JSON.stringify({
           success: true,
           weekly: weekly,
+          monthly: monthly,
           terms: terms,
           periods_summary: {
             one_month: formatPeriodData(oneMonthRaw, '1ヶ月の成果'),
