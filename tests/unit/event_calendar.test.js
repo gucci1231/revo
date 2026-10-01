@@ -336,6 +336,27 @@ describe('📅 Event & Training Comprehensive Calendar Feature Tests', () => {
     assert.ok(indexHtml.includes('hidden md:grid grid-cols-2 lg:grid-cols-4'), 'KPI cards are hidden on mobile');
     assert.ok(!indexHtml.includes('Color Legend (Apple Style Dots)'), 'Color legend is completely removed');
   });
+
+  it('verifies Apple minimalist 1-button view cycle, icon add button, and filter popup modal', () => {
+    // 1. Navigation header controls (1-button view toggle, filter trigger, and icon add button)
+    assert.ok(indexHtml.includes('id="btn-view-mode-cycle"'), 'Single view mode switcher button exists');
+    assert.ok(indexHtml.includes('id="btn-calendar-filter-open"'), 'Filter and search popup trigger button exists');
+    assert.ok(indexHtml.includes('id="btn-calendar-add-event"'), 'Icon-only add event button exists');
+    assert.ok(indexHtml.includes('id="calendar-filter-badge-dot"'), 'Filter indicator dot exists');
+
+    // 2. Filter & Search Popup Modal
+    assert.ok(indexHtml.includes('id="modal-calendar-filters"'), 'Filter popup modal exists in index.html');
+    assert.ok(indexHtml.includes('id="training-search-input"'), 'Search input exists inside popup modal');
+    assert.ok(indexHtml.includes('id="training-format-filters"'), 'Format filters exist inside popup modal');
+    assert.ok(indexHtml.includes('id="event-source-filters"'), 'Source category filters exist inside popup modal');
+
+    // 3. Script Functions
+    assert.ok(viewScript.includes('function cycleEventViewMode()'), 'cycleEventViewMode is defined in script');
+    assert.ok(viewScript.includes('function openCalendarFilterModal()'), 'openCalendarFilterModal is defined in script');
+    assert.ok(viewScript.includes('function closeCalendarFilterModal()'), 'closeCalendarFilterModal is defined in script');
+    assert.ok(viewScript.includes('function updateCalendarFilterIndicator()'), 'updateCalendarFilterIndicator is defined in script');
+    assert.ok(viewScript.includes('function resetCalendarFilters()'), 'resetCalendarFilters is defined in script');
+  });
 });
 
 

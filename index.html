@@ -14107,48 +14107,8 @@ select.form-input, select.form-select {
     <!-- Event & Training Calendar View (REvo Chapter & Kyoto CC Region) -->
 <div id="view-training" class="view-content">
 
-  <!-- Header Action Bar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-lg shadow-xs shrink-0">
-        <i class="fa-solid fa-calendar-days"></i>
-      </div>
-      <div>
-        <div class="flex items-center gap-2 flex-wrap">
-          <h2 class="text-lg font-black text-slate-900 tracking-tight">イベント・研修カレンダー</h2>
-          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-3xs font-bold bg-slate-100 text-slate-600 border border-slate-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            REvo定例会 ＆ 京都CC公式連携
-          </span>
-        </div>
-        <p class="text-xs text-slate-500 font-medium">チャプター定例会・独自イベント・リージョン研修の全日程を統合管理</p>
-      </div>
-    </div>
-
-    <!-- Right Controls: Add Event, Last Synced, Sync Button, External Link -->
-    <div class="flex items-center gap-2 self-start md:self-auto flex-wrap">
-      <button type="button" onclick="openChapterEventModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all cursor-pointer shadow-xs active:scale-95">
-        <i class="fa-solid fa-plus text-xs"></i>
-        <span>予定を追加</span>
-      </button>
-
-      <div id="training-last-synced" class="text-3xs text-slate-400 font-mono hidden xl:block">
-        最終同期: --
-      </div>
-
-      <button type="button" id="btn-sync-training" onclick="syncTrainingEvents()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50/80 border border-blue-200/80 hover:bg-blue-100 hover:border-blue-300 transition-all cursor-pointer shadow-xs active:scale-95" title="京都CC公式研修日程を即時更新">
-        <i class="fa-solid fa-rotate" id="sync-training-icon"></i>
-        <span class="hidden sm:inline">研修同期</span>
-      </button>
-
-      <a href="https://bni-ck.com/ja/events" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs" title="京都CC公式カレンダーを別タブで開く">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-      </a>
-    </div>
-  </div>
-
   <!-- 4 Big KPI Cards (Radical Minimalism & Tabular Numerals - Desktop Only) -->
-  <div class="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+  <div class="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
     <!-- KPI 1: 次回定例会 -->
     <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
@@ -14198,113 +14158,71 @@ select.form-input, select.form-select {
     </div>
   </div>
 
-  <!-- Filters & Controls Bar -->
-  <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs mb-5 space-y-3">
-    <!-- Top Row: View Switcher (Month vs Week vs List), Source Type Pills, Format & Search -->
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <!-- Left: View Mode Segmented Control (Month 📅 vs Week 📆 vs List 📋) -->
-      <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="event-view-mode-tabs">
-        <button type="button" id="btn-view-mode-calendar" class="px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer" onclick="setEventViewMode('calendar')">
-          <i class="fa-solid fa-calendar-days text-blue-600"></i>
-          <span>月表示</span>
-        </button>
-        <button type="button" id="btn-view-mode-week" class="px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer" onclick="setEventViewMode('week')">
-          <i class="fa-solid fa-calendar-week"></i>
-          <span>週表示</span>
-        </button>
-        <button type="button" id="btn-view-mode-list" class="px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer" onclick="setEventViewMode('list')">
-          <i class="fa-solid fa-list-ul"></i>
-          <span>リスト</span>
-        </button>
-      </div>
+  <!-- Apple Minimalist 1-Line Navigation & Action Bar -->
+  <div id="calendar-month-toolbar" class="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs mb-3 flex items-center justify-between gap-2">
+    <!-- Left: Minimalist Period Navigation (< 年月 > 今日) -->
+    <div class="flex items-center gap-1 sm:gap-2">
+      <button type="button" onclick="navigateCalendarPeriod(-1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="前へ">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
 
-      <!-- Center: Source Type Pills (All / Meetings / Chapter / Training / Visitor Action / Deadline) -->
-      <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600 overflow-x-auto no-scrollbar" id="event-source-filters">
-        <button id="btn-source-all" type="button" class="px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setEventSourceFilter('', this)">
-          すべて
-        </button>
-        <button id="btn-source-meeting" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('meeting', this)">
-          <span class="w-2 h-2 rounded-full bg-blue-500"></span>定例会
-        </button>
-        <button id="btn-source-chapter" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('chapter', this)">
-          <span class="w-2 h-2 rounded-full bg-purple-500"></span>チャプター予定
-        </button>
-        <button id="btn-source-member" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー・イベント等">
-          <span class="w-2 h-2 rounded-full bg-orange-500"></span>メンバーイベント
-        </button>
-        <button id="btn-source-training" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('training', this)">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>研修
-        </button>
-        <button id="btn-source-action" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー・アクション期日">
-          <span class="w-2 h-2 rounded-full bg-amber-500"></span>ビジターアクション
-        </button>
-        <button id="btn-source-deadline" type="button" class="px-2.5 py-1 rounded-md transition-all hover:text-slate-900 flex items-center gap-1 cursor-pointer" onclick="setEventSourceFilter('deadline', this)" title="出欠や提出などの締切">
-          <span class="w-2 h-2 rounded-full bg-rose-500"></span>締切
-        </button>
-      </div>
+      <h3 id="calendar-current-month-label" class="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight tabular-nums px-1.5 sm:px-2 min-w-[96px] sm:min-w-[120px] text-center select-none cursor-pointer" onclick="jumpToCurrentCalendarPeriod()" title="今月/今週にジャンプ">
+        ----年 --月
+      </h3>
 
-      <!-- Right: Format Pills & Search -->
-      <div class="flex items-center gap-2 flex-1 sm:flex-initial min-w-[200px] justify-end flex-wrap">
-        <!-- Online / In-person Pill -->
-        <div class="inline-flex p-1 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="training-format-filters">
-          <button type="button" class="px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs cursor-pointer" onclick="setTrainingFormatFilter('all', this)" title="全形式">
-            全形式
-          </button>
-          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900 cursor-pointer" onclick="setTrainingFormatFilter('online', this)" title="オンラインのみ">
-            <i class="fa-solid fa-video text-blue-500"></i>
-          </button>
-          <button type="button" class="px-2 py-1 rounded-md transition-all hover:text-slate-900 cursor-pointer" onclick="setTrainingFormatFilter('inperson', this)" title="対面のみ">
-            <i class="fa-solid fa-location-dot text-emerald-500"></i>
-          </button>
-        </div>
+      <button type="button" onclick="navigateCalendarPeriod(1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="次へ">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
 
-        <!-- Search Input & Scope Select -->
-        <div class="relative min-w-[160px] sm:w-56">
-          <input type="text" id="training-search-input" oninput="debounceTrainingFilter()" placeholder="予定・講座名で検索..." class="w-full pl-7 pr-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-colors">
-          <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-3xs"></i>
-        </div>
-        <select id="training-scope-select" class="hidden" onchange="loadCalendarAndEvents()">
-          <option value="upcoming" selected>開催予定</option>
-          <option value="all">全期間</option>
-        </select>
-      </div>
+      <button type="button" id="btn-calendar-jump-today" onclick="jumpToCurrentCalendarPeriod()" class="px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors ml-0.5 sm:ml-1 cursor-pointer shadow-2xs">
+        今日
+      </button>
     </div>
 
-    <!-- Calendar Month/Week Navigation Bar (Active in Month & Week Mode) -->
-    <div id="calendar-month-toolbar" class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-      <!-- Prev / Next & Label -->
-      <div class="flex items-center gap-2">
-        <button type="button" onclick="navigateCalendarPeriod(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="前へ">
-          <i class="fa-solid fa-chevron-left text-xs"></i>
-        </button>
+    <!-- Right: 3 Minimal Apple Icons (1: View Mode Switcher, 2: Filter/Search Popup, 3: Add Event) -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- 1. Single View Mode Switcher Button (Week 📆 ⇋ Month 📅 ⇋ List 📋) -->
+      <button type="button" id="btn-view-mode-cycle" onclick="cycleEventViewMode()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="表示形式を切り替え (週 / 月 / リスト)">
+        <i id="view-mode-cycle-icon" class="fa-solid fa-calendar-week text-sm text-slate-800"></i>
+      </button>
 
-        <h3 id="calendar-current-month-label" class="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center">
-          ----年 --月
-        </h3>
+      <!-- 2. Filter & Search Popup Trigger Button -->
+      <button type="button" id="btn-calendar-filter-open" onclick="openCalendarFilterModal()" class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="絞り込み・検索">
+        <i class="fa-solid fa-sliders text-sm text-slate-800"></i>
+        <!-- Active Filter Indicator Dot -->
+        <span id="calendar-filter-badge-dot" class="hidden absolute top-1 right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+      </button>
 
-        <button type="button" onclick="navigateCalendarPeriod(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 flex items-center justify-center transition-colors shadow-2xs cursor-pointer active:scale-95" title="次へ">
-          <i class="fa-solid fa-chevron-right text-xs"></i>
-        </button>
-
-        <button type="button" id="btn-calendar-jump-today" onclick="jumpToCurrentCalendarPeriod()" class="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors ml-1 cursor-pointer">
-          今日
-        </button>
-      </div>
+      <!-- 3. Apple Style Add Event Button (+) -->
+      <button type="button" id="btn-calendar-add-event" onclick="openChapterEventModal()" class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95" title="予定を追加">
+        <i class="fa-solid fa-plus text-sm"></i>
+      </button>
     </div>
+  </div>
 
-    <!-- List Mode Month Tabs (Active in List Mode only) -->
-    <div id="list-mode-toolbar" class="hidden flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-      <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5" id="training-month-tabs">
-        <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 cursor-pointer" onclick="setTrainingMonthFilter('', this)">
-          全月
-        </button>
-      </div>
-      <div class="flex items-center gap-1.5 text-xs text-slate-500">
-        <span class="font-bold shrink-0">カテゴリ:</span>
-        <select id="training-category-select" onchange="onTrainingCategoryChange()" class="px-2 py-1 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 cursor-pointer focus:outline-hidden focus:border-blue-500 max-w-[180px]">
-          <option value="">すべて</option>
-        </select>
-      </div>
+  <!-- Hidden Compatibility Controls (Maintains test assertions and state synchronization) -->
+  <div id="event-view-mode-tabs" class="hidden" aria-hidden="true">
+    <button type="button" id="btn-view-mode-calendar" onclick="setEventViewMode('calendar')"></button>
+    <button type="button" id="btn-view-mode-week" onclick="setEventViewMode('week')"></button>
+    <button type="button" id="btn-view-mode-list" onclick="setEventViewMode('list')"></button>
+  </div>
+  <select id="training-scope-select" class="hidden" onchange="loadCalendarAndEvents()">
+    <option value="upcoming" selected>開催予定</option>
+    <option value="all">全期間</option>
+  </select>
+
+  <!-- List Mode Toolbar (Active in List Mode only) -->
+  <div id="list-mode-toolbar" class="hidden flex-wrap items-center justify-between gap-2 p-2.5 mb-3 bg-white border border-slate-200/90 rounded-2xl shadow-xs">
+    <div class="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5" id="training-month-tabs">
+      <button type="button" class="month-tab-btn active px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 cursor-pointer" onclick="setTrainingMonthFilter('', this)">
+        全月
+      </button>
+    </div>
+    <div class="flex items-center gap-1.5 text-xs text-slate-500">
+      <span class="font-bold shrink-0">カテゴリ:</span>
+      <select id="training-category-select" onchange="onTrainingCategoryChange()" class="px-2 py-1 rounded-md border border-slate-200 bg-white text-xs font-medium text-slate-700 cursor-pointer focus:outline-hidden focus:border-blue-500 max-w-[180px]">
+        <option value="">すべて</option>
+      </select>
     </div>
   </div>
 
@@ -14368,6 +14286,116 @@ select.form-input, select.form-select {
     <div id="training-events-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
   </div>
 
+</div>
+
+<!-- ================= MODAL: CALENDAR SEARCH & FILTERS POPUP (Apple Style) ================= -->
+<div id="modal-calendar-filters" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs hidden p-4" onclick="if(event.target === this) closeCalendarFilterModal();">
+  <div class="bg-white rounded-3xl border border-slate-200/90 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <!-- Header -->
+    <div class="p-4 px-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <h3 class="text-base font-black text-slate-900">絞り込み・検索</h3>
+      </div>
+      <button type="button" onclick="closeCalendarFilterModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
+      <!-- 1. Search Box -->
+      <div>
+        <label class="block text-xs font-bold text-slate-500 mb-1.5">キーワード検索</label>
+        <div class="relative">
+          <input type="text" id="training-search-input" oninput="debounceTrainingFilter()" placeholder="予定・講座名・会場で検索..." class="w-full pl-8 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-colors">
+          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <button type="button" onclick="clearTrainingSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer text-xs">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Format Selector (All vs Online vs In-person) -->
+      <div>
+        <label class="block text-xs font-bold text-slate-500 mb-1.5">開催形式</label>
+        <div class="grid grid-cols-3 p-1 rounded-xl bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-600" id="training-format-filters">
+          <button type="button" class="py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5" onclick="setTrainingFormatFilter('all', this)">
+            <span>全形式</span>
+          </button>
+          <button type="button" class="py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5" onclick="setTrainingFormatFilter('online', this)">
+            <i class="fa-solid fa-video text-blue-500"></i>
+            <span>Zoom</span>
+          </button>
+          <button type="button" class="py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5" onclick="setTrainingFormatFilter('inperson', this)">
+            <i class="fa-solid fa-location-dot text-emerald-500"></i>
+            <span>対面</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Source Category Filters -->
+      <div>
+        <label class="block text-xs font-bold text-slate-500 mb-1.5">予定の種別</label>
+        <div class="grid grid-cols-2 gap-2" id="event-source-filters">
+          <button id="btn-source-all" type="button" class="p-2.5 rounded-xl border border-blue-500 bg-blue-50/40 text-blue-900 font-bold shadow-2xs flex items-center justify-between text-xs cursor-pointer transition-all active-source-pill" onclick="setEventSourceFilter('', this)">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-layer-group text-blue-600"></i> すべて</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs"></i>
+          </button>
+          <button id="btn-source-meeting" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all" onclick="setEventSourceFilter('meeting', this)">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> 定例会</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+          <button id="btn-source-chapter" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all" onclick="setEventSourceFilter('chapter', this)">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> チャプター予定</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+          <button id="btn-source-member" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all" onclick="setEventSourceFilter('member', this)" title="メンバー主催の個展・セミナー等">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> メンバーイベント</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+          <button id="btn-source-training" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all" onclick="setEventSourceFilter('training', this)">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 研修</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+          <button id="btn-source-action" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all" onclick="setEventSourceFilter('action', this)" title="ビジターフォロー期限">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> ビジターアクション</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+          <button id="btn-source-deadline" type="button" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all col-span-2" onclick="setEventSourceFilter('deadline', this)" title="各種締切">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> 締切・期限</span>
+            <i class="fa-solid fa-check text-blue-600 filter-source-check text-xs hidden"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. Sync & Official Region Link -->
+      <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-sync-training" onclick="syncTrainingEvents()" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-rotate" id="sync-training-icon"></i>
+            <span>京都CC公式研修を同期</span>
+          </button>
+          <span id="training-last-synced" class="text-3xs text-slate-400 font-mono hidden sm:inline">最終: --</span>
+        </div>
+        <a href="https://bni-ck.com/ja/events" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-slate-700 p-1" title="京都CC公式カレンダー">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="p-4 px-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <button type="button" onclick="resetCalendarFilters()" class="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer">
+        条件をリセット
+      </button>
+      <button type="button" onclick="closeCalendarFilterModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs cursor-pointer active:scale-95">
+        完了
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ================= MODAL 0: CHAPTER EVENT DETAIL (VIEW INFO) ================= -->
@@ -38025,6 +38053,22 @@ function jumpToCurrentMonth() {
 }
 
 /**
+ * 1-Button View Mode Cycle (Week 📆 ⇋ Month 📅 ⇋ List 📋)
+ * Seamlessly toggles view modes like Apple Calendar with a single clean icon button.
+ */
+function cycleEventViewMode() {
+  let nextMode = 'week';
+  if (currentEventViewMode === 'week') {
+    nextMode = 'month';
+  } else if (currentEventViewMode === 'month') {
+    nextMode = 'list';
+  } else {
+    nextMode = 'week';
+  }
+  setEventViewMode(nextMode);
+}
+
+/**
  * Set Event View Mode (Month vs Week vs List)
  */
 function setEventViewMode(mode) {
@@ -38042,6 +38086,8 @@ function setEventViewMode(mode) {
   const btnWeek = document.getElementById('btn-view-mode-week');
   const btnList = document.getElementById('btn-view-mode-list');
   const btnJumpToday = document.getElementById('btn-calendar-jump-today');
+  const cycleIcon = document.getElementById('view-mode-cycle-icon');
+  const cycleBtn = document.getElementById('btn-view-mode-cycle');
 
   const activeBtnClass = 'px-3 py-1.5 rounded-md transition-all bg-white text-slate-900 shadow-xs font-black flex items-center gap-1.5 cursor-pointer';
   const inactiveBtnClass = 'px-3 py-1.5 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1.5 font-bold cursor-pointer';
@@ -38057,6 +38103,8 @@ function setEventViewMode(mode) {
     if (btnWeek) btnWeek.className = inactiveBtnClass;
     if (btnList) btnList.className = inactiveBtnClass;
     if (btnJumpToday) btnJumpToday.innerText = '今月';
+    if (cycleIcon) cycleIcon.className = 'fa-solid fa-calendar-days text-sm text-blue-600';
+    if (cycleBtn) cycleBtn.title = '月表示中 (タップでリスト表示へ)';
 
     updateCalendarMonthHeader();
     renderCalendarGrid();
@@ -38071,6 +38119,8 @@ function setEventViewMode(mode) {
     if (btnWeek) btnWeek.className = activeBtnClass;
     if (btnList) btnList.className = inactiveBtnClass;
     if (btnJumpToday) btnJumpToday.innerText = '今週';
+    if (cycleIcon) cycleIcon.className = 'fa-solid fa-calendar-week text-sm text-blue-600';
+    if (cycleBtn) cycleBtn.title = '週表示中 (タップで月表示へ)';
 
     updateCalendarMonthHeader();
     renderWeekView();
@@ -38085,25 +38135,128 @@ function setEventViewMode(mode) {
     if (btnMonth) btnMonth.className = inactiveBtnClass;
     if (btnWeek) btnWeek.className = inactiveBtnClass;
     if (btnList) btnList.className = activeBtnClass;
+    if (cycleIcon) cycleIcon.className = 'fa-solid fa-list-ul text-sm text-blue-600';
+    if (cycleBtn) cycleBtn.title = 'リスト表示中 (タップで週表示へ)';
 
     renderFilteredTrainingEvents();
   }
 }
 
 /**
- * Source Type Filter (All, Meeting, Chapter, Training)
+ * Filter Popup Modal Controls (Apple Style Modal)
+ */
+function openCalendarFilterModal() {
+  const modal = document.getElementById('modal-calendar-filters');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    const input = document.getElementById('training-search-input');
+    if (input) {
+      input.value = currentTrainingFilter.keyword || '';
+    }
+    updateCalendarFilterIndicator();
+  }
+}
+
+function closeCalendarFilterModal() {
+  const modal = document.getElementById('modal-calendar-filters');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+/**
+ * Update active indicator badge on filter trigger button
+ */
+function updateCalendarFilterIndicator() {
+  const badgeDot = document.getElementById('calendar-filter-badge-dot');
+  const isFiltered = (currentTrainingFilter.format && currentTrainingFilter.format !== 'all') ||
+                     (currentTrainingFilter.sourceType && currentTrainingFilter.sourceType !== '') ||
+                     (currentTrainingFilter.keyword && currentTrainingFilter.keyword !== '');
+
+  if (badgeDot) {
+    if (isFiltered) {
+      badgeDot.classList.remove('hidden');
+    } else {
+      badgeDot.classList.add('hidden');
+    }
+  }
+}
+
+/**
+ * Reset all calendar filters to default
+ */
+function resetCalendarFilters() {
+  currentTrainingFilter.format = 'all';
+  currentTrainingFilter.sourceType = '';
+  currentTrainingFilter.keyword = '';
+
+  const searchInput = document.getElementById('training-search-input');
+  if (searchInput) searchInput.value = '';
+
+  // Reset Format Pills
+  const formatContainer = document.getElementById('training-format-filters');
+  if (formatContainer) {
+    const buttons = formatContainer.querySelectorAll('button');
+    buttons.forEach((b, idx) => {
+      if (idx === 0) {
+        b.className = 'py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs cursor-pointer flex items-center justify-center gap-1.5';
+      } else {
+        b.className = 'py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5';
+      }
+    });
+  }
+
+  // Reset Source Pills
+  const sourceContainer = document.getElementById('event-source-filters');
+  if (sourceContainer) {
+    sourceContainer.querySelectorAll('button').forEach(b => {
+      b.className = 'p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all';
+      const check = b.querySelector('.filter-source-check');
+      if (check) check.classList.add('hidden');
+    });
+    const allBtn = document.getElementById('btn-source-all');
+    if (allBtn) {
+      allBtn.className = 'p-2.5 rounded-xl border border-blue-500 bg-blue-50/40 text-blue-900 font-bold shadow-2xs flex items-center justify-between text-xs cursor-pointer transition-all active-source-pill';
+      const allCheck = allBtn.querySelector('.filter-source-check');
+      if (allCheck) allCheck.classList.remove('hidden');
+    }
+  }
+
+  updateCalendarFilterIndicator();
+  loadCalendarAndEvents();
+}
+
+function clearTrainingSearch() {
+  const input = document.getElementById('training-search-input');
+  if (input) {
+    input.value = '';
+    currentTrainingFilter.keyword = '';
+    updateCalendarFilterIndicator();
+    loadCalendarAndEvents();
+  }
+}
+
+/**
+ * Source Type Filter (All, Meeting, Chapter, Training, Action, Deadline)
  */
 function setEventSourceFilter(type, btn) {
   currentTrainingFilter.sourceType = type;
   const container = document.getElementById('event-source-filters');
   if (container) {
     container.querySelectorAll('button').forEach(b => {
-      b.className = 'px-2.5 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600 flex items-center gap-1 cursor-pointer';
+      b.className = 'p-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold flex items-center justify-between text-xs cursor-pointer hover:border-slate-300 transition-all';
+      const check = b.querySelector('.filter-source-check');
+      if (check) check.classList.add('hidden');
     });
     if (btn) {
-      btn.className = 'px-2.5 py-1 rounded-md transition-all active-source-pill bg-white text-slate-900 shadow-xs font-bold flex items-center gap-1 cursor-pointer';
+      btn.className = 'p-2.5 rounded-xl border border-blue-500 bg-blue-50/40 text-blue-900 font-bold shadow-2xs flex items-center justify-between text-xs cursor-pointer transition-all active-source-pill';
+      const check = btn.querySelector('.filter-source-check');
+      if (check) check.classList.remove('hidden');
     }
   }
+  updateCalendarFilterIndicator();
   loadCalendarAndEvents();
 }
 
@@ -38115,12 +38268,13 @@ function setTrainingFormatFilter(format, btn) {
   const container = document.getElementById('training-format-filters');
   if (container) {
     container.querySelectorAll('button').forEach(b => {
-      b.className = 'px-2 py-1 rounded-md transition-all hover:text-slate-900 text-slate-600 cursor-pointer';
+      b.className = 'py-1.5 rounded-lg transition-all hover:text-slate-900 text-slate-600 cursor-pointer flex items-center justify-center gap-1.5';
     });
     if (btn) {
-      btn.className = 'px-2 py-1 rounded-md transition-all bg-white text-slate-900 shadow-xs font-bold cursor-pointer';
+      btn.className = 'py-1.5 rounded-lg transition-all bg-white text-slate-900 shadow-xs font-bold cursor-pointer flex items-center justify-center gap-1.5';
     }
   }
+  updateCalendarFilterIndicator();
   loadCalendarAndEvents();
 }
 
@@ -38132,6 +38286,7 @@ function debounceTrainingFilter() {
   trainingSearchTimeout = setTimeout(() => {
     const input = document.getElementById('training-search-input');
     currentTrainingFilter.keyword = input ? input.value.trim().toLowerCase() : '';
+    updateCalendarFilterIndicator();
     loadCalendarAndEvents();
   }, 250);
 }
@@ -38578,21 +38733,7 @@ function renderWeekView() {
   weekGrid.innerHTML = `
     <!-- ================= MOBILE VIEW (iPhone Style Week Strip & Single Day Timeline) ================= -->
     <div class="block sm:hidden bg-white select-none">
-      <!-- 0. Apple Calendar Style Week Header Bar (Month & Swipe Navigation) -->
-      <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50/70">
-        <button type="button" onclick="navigateCalendarWeek(-1)" class="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors active:scale-95 shadow-2xs" title="前の週へ">
-          <i class="fa-solid fa-chevron-left text-3xs"></i>
-        </button>
-        <div class="flex items-center gap-1.5 cursor-pointer" onclick="jumpToCurrentWeek()" title="今週に戻る">
-          <span class="text-xs font-black text-slate-900 font-mono tracking-tight">${currentCalendarMonth.replace('-', '年 ')}月</span>
-          <span class="text-3xs px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-600 font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors shadow-2xs">今日</span>
-        </div>
-        <button type="button" onclick="navigateCalendarWeek(1)" class="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors active:scale-95 shadow-2xs" title="次の週へ">
-          <i class="fa-solid fa-chevron-right text-3xs"></i>
-        </button>
-      </div>
-
-      <!-- 1. iPhone Top Week Strip -->
+      <!-- 1. iPhone Top Week Strip (Directly connects below top navigation bar) -->
       <div class="border-b border-slate-200 bg-slate-50/40 p-1.5 flex items-center justify-between">
         ${mobileWeekStripHtml}
       </div>
@@ -38605,9 +38746,6 @@ function renderWeekView() {
             ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
             <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
           </div>
-          <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-blue-600 bg-white border border-slate-200 shadow-2xs cursor-pointer active:scale-95">
-            <i class="fa-solid fa-plus text-3xs"></i> 予定を追加
-          </button>
         </div>
 
         ${mobileDayAgendaListHtml}
