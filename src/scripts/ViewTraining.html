@@ -959,7 +959,7 @@ async function handleChapterEventSubmit(evt) {
     }
   } catch (err) {
     console.error('Save chapter event error:', err);
-    showToast('予定の保存中にエラーが発生しました', 'error');
+    showToast(err?.message || '予定の保存中にエラーが発生しました', 'error');
   } finally {
     if (btn) btn.disabled = false;
   }

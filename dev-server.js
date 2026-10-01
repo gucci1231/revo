@@ -1616,7 +1616,7 @@ function handleApiRequest(req, res, urlObj) {
 
         // Ensure chapter_events table exists
         try {
-          execSql(`CREATE TABLE IF NOT EXISTS chapter_events (
+          runSqlExec(`CREATE TABLE IF NOT EXISTS chapter_events (
             id TEXT PRIMARY KEY,
             title TEXT NOT NULL,
             category TEXT DEFAULT 'チャプターイベント',
@@ -1627,6 +1627,8 @@ function handleApiRequest(req, res, urlObj) {
             is_online INTEGER DEFAULT 0,
             organizer TEXT DEFAULT '',
             description TEXT DEFAULT '',
+            recurrence_group_id TEXT DEFAULT '',
+            recurrence_rule TEXT DEFAULT '',
             created_at TEXT,
             updated_at TEXT
           );`);
