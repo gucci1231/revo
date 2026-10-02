@@ -4,9 +4,9 @@
  * スプレッドシートの種別・チャプターフラグに基づき、visitorsテーブルのcategoryを一括再分類
  */
 
-require_once __DIR__ . '/../Core/Database.php';
+require_once __DIR__ . '/../bootstrap.php';
 
-use App\Core\Database;
+use Api\Core\Database;
 
 $db = Database::getInstance();
 
