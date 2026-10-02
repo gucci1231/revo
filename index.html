@@ -7959,6 +7959,11 @@ select.form-input, select.form-select {
         <input type="email" id="crud-v-email" class="form-input" placeholder="example@email.com">
       </div>
 
+      <div class="form-group">
+        <label class="form-label">事前課題・求めている協業先 (WIIFM)</label>
+        <textarea id="crud-v-wiifm" class="form-textarea" rows="2" placeholder="事前コーヒーミーティング等で伺った事業課題、求めている協業先、紹介希望など"></textarea>
+      </div>
+
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div class="form-group">
           <label class="form-label">参加区分 <span style="color:red;">*</span></label>
@@ -10929,6 +10934,41 @@ select.form-input, select.form-select {
         <div class="vd-desktop-2col">
           <!-- 左カラム: アクションプラン & 共有メモ -->
           <div class="vd-col-left">
+            <!-- 事前ヒアリング WIIFM & パワーチーム事前マッチング -->
+            <div class="vd-box mb-4" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:16px;">
+              <div class="vd-box-header py-1 pb-2 border-b border-slate-100 mb-2 flex items-center justify-between">
+                <h3 class="vd-box-title text-slate-800 text-sm font-bold flex items-center gap-1.5">
+                  <i class="fa-solid fa-handshake text-blue-600"></i> 事前WIIFM ＆ パワーチーム
+                </h3>
+                <button type="button" id="vd-wiifm-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorWiifmEdit(true)">
+                  <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
+                </button>
+              </div>
+
+              <!-- 閲覧モード -->
+              <div id="vd-wiifm-view-mode">
+                <div class="text-[11px] text-slate-500 font-bold mb-1">■ 来訪前の課題・協業希望 (WIIFM):</div>
+                <div id="vd-wiifm-display" class="vd-hearing-a memo-yellow mb-3 text-xs" style="min-height: 40px;">-</div>
+
+                <div class="text-[11px] text-slate-500 font-bold mb-1.5 flex items-center gap-1">
+                  <span>■ 推奨パワーチーム:</span>
+                  <span id="vd-matched-pt-name" class="font-bold text-blue-700">-</span>
+                </div>
+                <div id="vd-matched-pt-members" class="flex flex-wrap gap-1.5"></div>
+              </div>
+
+              <!-- 編集モード -->
+              <div id="vd-wiifm-edit-mode" style="display: none;">
+                <textarea id="vd-wiifm-textarea" class="form-textarea vd-memo-textarea auto-resize-textarea text-xs" placeholder="コーヒーミーティング等で伺った事業課題、求めている協業先、紹介希望など"></textarea>
+                <div class="vd-form-actions mt-2 flex justify-end gap-2">
+                  <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorWiifmEdit(false)">キャンセル</button>
+                  <button type="button" class="btn-save text-xs" onclick="saveVisitorWiifm()">
+                    <i class="fa-solid fa-floppy-disk mr-1"></i> 保存
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Tab Content 0: アクションプラン -->
             <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
               <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
@@ -16822,6 +16862,13 @@ const ApiService = {
           url: '/api/visitors.php?action=save_memo',
           method: 'POST',
           body: { visitorId: args[0], memo: args[1] }
+        };
+      case 'updateVisitorWiifmApi':
+        const wiifmArg = (args[0] && typeof args[0] === 'object') ? args[0] : { visitorId: args[0], preMeetingWiifm: args[1], matchedPowerTeamId: args[2] };
+        return {
+          url: '/api/visitors.php?action=update_wiifm',
+          method: 'POST',
+          body: wiifmArg
         };
       case 'addVisitorApi':
       case 'updateVisitorApi':
@@ -28032,6 +28079,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
           selectCat.value = v.category || 'ビジター';
         }
 
+        // 事前WIIFM & パワーチーム事前マッチング
+        const wiifmVal = v.preMeetingWiifm || '';
+        const wiifmDisplayEl = document.getElementById('vd-wiifm-display');
+        const wiifmTextareaEl = document.getElementById('vd-wiifm-textarea');
+        if (wiifmDisplayEl) wiifmDisplayEl.innerText = wiifmVal || '（未登録 - 「編集」ボタンから入力できます）';
+        if (wiifmTextareaEl) wiifmTextareaEl.value = wiifmVal;
+        toggleVisitorWiifmEdit(false);
+
+        const ptSuggestion = res.powerTeamSuggestion || {};
+        const ptNameEl = document.getElementById('vd-matched-pt-name');
+        const ptMembersEl = document.getElementById('vd-matched-pt-members');
+        if (ptNameEl) {
+          ptNameEl.innerHTML = `${ptSuggestion.teamIcon || '🤝'} ${ptSuggestion.teamName || 'マッチング待機中'}`;
+        }
+        if (ptMembersEl) {
+          const members = ptSuggestion.suggestedMembers || [];
+          if (members.length === 0) {
+            ptMembersEl.innerHTML = '<span class="text-xs text-slate-400">該当メンバー選定中</span>';
+          } else {
+            ptMembersEl.innerHTML = members.map(m => `
+              <div class="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">
+                <span>👤 ${escapeHtml(m.name)}</span>
+                <span class="text-[10px] text-blue-600 font-normal">(${escapeHtml(m.profession)})</span>
+              </div>
+            `).join('');
+          }
+        }
+
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {
@@ -29012,6 +29087,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       .catch(handleError);
   }
 
+  function toggleVisitorWiifmEdit(isEditing) {
+    const viewEl = document.getElementById('vd-wiifm-view-mode');
+    const editEl = document.getElementById('vd-wiifm-edit-mode');
+    const btnEdit = document.getElementById('vd-wiifm-btn-edit');
+    if (viewEl) viewEl.style.display = isEditing ? 'none' : 'block';
+    if (editEl) editEl.style.display = isEditing ? 'block' : 'none';
+    if (btnEdit) btnEdit.style.display = isEditing ? 'none' : 'inline-block';
+    if (isEditing) {
+      const ta = document.getElementById('vd-wiifm-textarea');
+      if (ta) {
+        if (window.autoResizeTextarea) window.autoResizeTextarea(ta);
+        setTimeout(() => ta.focus(), 80);
+      }
+    }
+  }
+
+  function saveVisitorWiifm() {
+    const id = currentVdVisitorId;
+    if (!id) return;
+    const ta = document.getElementById('vd-wiifm-textarea');
+    const val = ta ? ta.value.trim() : '';
+
+    ApiService.call('updateVisitorWiifmApi', { visitorId: id, preMeetingWiifm: val })
+      .then(res => {
+        if (res && res.success) {
+          showToast('✅ 事前WIIFMを保存しました');
+          const disp = document.getElementById('vd-wiifm-display');
+          if (disp) disp.innerText = val || '（未登録 - 「編集」ボタンから入力できます）';
+          toggleVisitorWiifmEdit(false);
+          // Re-fetch details to update power team recommendation
+          openVisitorDetailView(id, false, false);
+        } else {
+          showToast('⚠️ 保存に失敗しました');
+        }
+      })
+      .catch(handleError);
+  }
+
   function toggleAttend(id, newStatus) {
     changeVisitorStatus(id, 'isAttended', newStatus);
   }
@@ -29425,6 +29538,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-company').value = '';
     if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = '';
     document.getElementById('crud-v-email').value = '';
+    if (document.getElementById('crud-v-wiifm')) document.getElementById('crud-v-wiifm').value = '';
     document.getElementById('crud-v-attendance-count').value = '初めて';
     if (document.getElementById('crud-v-category')) {
       document.getElementById('crud-v-category').value = (typeof currentVisitorCategory !== 'undefined' && currentVisitorCategory === 'ゲスト') ? 'ゲスト' : 'ビジター';
@@ -29449,6 +29563,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-v-company').value = v.company || '';
     if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = v.phone || '';
     document.getElementById('crud-v-email').value = v.email || '';
+    if (document.getElementById('crud-v-wiifm')) document.getElementById('crud-v-wiifm').value = v.preMeetingWiifm || '';
     document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
     if (document.getElementById('crud-v-category')) {
       document.getElementById('crud-v-category').value = v.category || 'ビジター';
@@ -29476,6 +29591,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       company: document.getElementById('crud-v-company').value.trim(),
       phone: document.getElementById('crud-v-phone') ? document.getElementById('crud-v-phone').value.trim() : '',
       email: document.getElementById('crud-v-email').value.trim(),
+      preMeetingWiifm: document.getElementById('crud-v-wiifm') ? document.getElementById('crud-v-wiifm').value.trim() : '',
       attendanceCount: document.getElementById('crud-v-attendance-count').value,
       category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'
     };

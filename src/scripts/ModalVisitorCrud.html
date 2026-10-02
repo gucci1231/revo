@@ -12,6 +12,7 @@
     document.getElementById('crud-v-company').value = '';
     if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = '';
     document.getElementById('crud-v-email').value = '';
+    if (document.getElementById('crud-v-wiifm')) document.getElementById('crud-v-wiifm').value = '';
     document.getElementById('crud-v-attendance-count').value = '初めて';
     if (document.getElementById('crud-v-category')) {
       document.getElementById('crud-v-category').value = (typeof currentVisitorCategory !== 'undefined' && currentVisitorCategory === 'ゲスト') ? 'ゲスト' : 'ビジター';
@@ -36,6 +37,7 @@
     document.getElementById('crud-v-company').value = v.company || '';
     if (document.getElementById('crud-v-phone')) document.getElementById('crud-v-phone').value = v.phone || '';
     document.getElementById('crud-v-email').value = v.email || '';
+    if (document.getElementById('crud-v-wiifm')) document.getElementById('crud-v-wiifm').value = v.preMeetingWiifm || '';
     document.getElementById('crud-v-attendance-count').value = v.attendanceCount || '初めて';
     if (document.getElementById('crud-v-category')) {
       document.getElementById('crud-v-category').value = v.category || 'ビジター';
@@ -63,6 +65,7 @@
       company: document.getElementById('crud-v-company').value.trim(),
       phone: document.getElementById('crud-v-phone') ? document.getElementById('crud-v-phone').value.trim() : '',
       email: document.getElementById('crud-v-email').value.trim(),
+      preMeetingWiifm: document.getElementById('crud-v-wiifm') ? document.getElementById('crud-v-wiifm').value.trim() : '',
       attendanceCount: document.getElementById('crud-v-attendance-count').value,
       category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'
     };

@@ -78,6 +78,13 @@ const ApiService = {
           method: 'POST',
           body: { visitorId: args[0], memo: args[1] }
         };
+      case 'updateVisitorWiifmApi':
+        const wiifmArg = (args[0] && typeof args[0] === 'object') ? args[0] : { visitorId: args[0], preMeetingWiifm: args[1], matchedPowerTeamId: args[2] };
+        return {
+          url: '/api/visitors.php?action=update_wiifm',
+          method: 'POST',
+          body: wiifmArg
+        };
       case 'addVisitorApi':
       case 'updateVisitorApi':
         return {

@@ -53,6 +53,9 @@ class VisitorController extends Controller {
             case 'save_memo':
                 $this->saveMemo();
                 break;
+            case 'update_wiifm':
+                $this->updateWiifm();
+                break;
             case 'delete':
                 $this->delete();
                 break;
@@ -134,6 +137,8 @@ class VisitorController extends Controller {
                 'attendanceCount' => $visitor['attendance_count'],
                 'remarks' => $visitor['remarks'],
                 'category' => $visitor['category'] ?? 'ビジター',
+                'preMeetingWiifm' => $visitor['pre_meeting_wiifm'] ?? '',
+                'matchedPowerTeamId' => $visitor['matched_power_team_id'] ?? '',
                 'allIds' => $linkedIds,
                 'visitCount' => count($visits),
                 'followType' => $status['follow_type'] ?? '直近フォロー'
@@ -146,6 +151,10 @@ class VisitorController extends Controller {
                 'matching' => $status['is_matched'] ?? '未',
                 'followType' => $status['follow_type'] ?? '直近フォロー'
             ],
+            'powerTeamSuggestion' => (new \Api\Services\PowerTeamMatcher())->suggestPowerTeam(
+                $visitor['profession'] ?? '',
+                $visitor['pre_meeting_wiifm'] ?? ''
+            ),
             'hearing' => $formatHearing($fallbackHearing),
             'currentHearing' => $formatHearing($directHearing),
             'hearings' => $hearingsList,
@@ -245,6 +254,23 @@ class VisitorController extends Controller {
 
         $this->visitorRepo->updateCategory($vId, $category);
         Response::success(['visitorId' => $vId, 'category' => $category]);
+    }
+
+    private function updateWiifm(): void {
+        $vId = $this->getParam('id', '') ?: $this->getParam('visitorId', '');
+        $wiifm = $this->getParam('preMeetingWiifm', '');
+        $powerTeamId = $this->getParam('matchedPowerTeamId', '');
+
+        if (!$vId) {
+            Response::error('Visitor ID is required');
+        }
+
+        $this->visitorRepo->updatePreMeetingWiifm($vId, $wiifm, $powerTeamId);
+        Response::success([
+            'visitorId' => $vId,
+            'preMeetingWiifm' => $wiifm,
+            'matchedPowerTeamId' => $powerTeamId
+        ]);
     }
 
     private function delete(): void {

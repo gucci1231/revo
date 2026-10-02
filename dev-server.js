@@ -430,6 +430,17 @@ function handleApiRequest(req, res, urlObj) {
         return res.end(JSON.stringify({ success: true, visitorId: input.visitorId }));
       }
 
+      if (action === 'update_wiifm') {
+        const vId = (input.visitorId || input.id || '').replace(/'/g, "''");
+        const wiifm = (input.preMeetingWiifm || '').replace(/'/g, "''");
+        const powerTeamId = (input.matchedPowerTeamId || '').replace(/'/g, "''");
+        if (vId) {
+          const sql = `UPDATE visitors SET pre_meeting_wiifm = '${wiifm}', matched_power_team_id = '${powerTeamId}' WHERE id = '${vId}';`;
+          runSqlExec(sql);
+        }
+        return res.end(JSON.stringify({ success: true, visitorId: vId, preMeetingWiifm: input.preMeetingWiifm }));
+      }
+
       if (action === 'add') {
         const esc = s => (s || '').toString().replace(/'/g, "''");
         const id = esc(input.id || '');
@@ -441,18 +452,19 @@ function handleApiRequest(req, res, urlObj) {
         const company = esc(input.company || '');
         const email = esc(input.email || '');
         const phone = esc(input.phone || '');
+        const preMeetingWiifm = esc(input.preMeetingWiifm || '');
         const attendanceCount = esc(input.attendanceCount || '初めて');
         const category = esc(input.category || 'ビジター');
 
         if (id) {
-          runSqlExec(`UPDATE visitors SET inviter='${inviter}', event_date='${eventDate}', visitor_name='${name}', furigana='${furigana}', profession='${profession}', company='${company}', email='${email}', phone='${phone}', attendance_count='${attendanceCount}', category='${category}' WHERE id='${id}';`);
+          runSqlExec(`UPDATE visitors SET inviter='${inviter}', event_date='${eventDate}', visitor_name='${name}', furigana='${furigana}', profession='${profession}', company='${company}', email='${email}', phone='${phone}', pre_meeting_wiifm='${preMeetingWiifm}', attendance_count='${attendanceCount}', category='${category}' WHERE id='${id}';`);
           return res.end(JSON.stringify({ success: true, visitorId: id }));
         }
 
         const now = new Date().toISOString().replace('T', ' ').substring(0, 16).replace(/-/g, '/');
         const maxIdRes = runSqlJson(`SELECT MAX(CAST(id AS INTEGER)) as max_id FROM visitors;`);
         const nextId = (parseInt(maxIdRes[0]?.max_id || 0, 10) + 1).toString();
-        runSqlExec(`INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, phone, attendance_count, remarks, category) VALUES ('${nextId}', '${now}', '${inviter}', '${eventDate}', '${name}', '${furigana}', '${profession}', '${company}', '${email}', '${phone}', '${attendanceCount}', '', '${category}');`);
+        runSqlExec(`INSERT INTO visitors (id, created_at, inviter, event_date, visitor_name, furigana, profession, company, email, phone, pre_meeting_wiifm, attendance_count, remarks, category) VALUES ('${nextId}', '${now}', '${inviter}', '${eventDate}', '${name}', '${furigana}', '${profession}', '${company}', '${email}', '${phone}', '${preMeetingWiifm}', '${attendanceCount}', '', '${category}');`);
         runSqlExec(`INSERT INTO visitors_status (visitor_id, updated_at) VALUES ('${nextId}', '${now}');`);
         return res.end(JSON.stringify({ success: true, visitorId: nextId }));
       }

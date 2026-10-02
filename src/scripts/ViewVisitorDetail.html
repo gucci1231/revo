@@ -448,6 +448,34 @@
           selectCat.value = v.category || 'ビジター';
         }
 
+        // 事前WIIFM & パワーチーム事前マッチング
+        const wiifmVal = v.preMeetingWiifm || '';
+        const wiifmDisplayEl = document.getElementById('vd-wiifm-display');
+        const wiifmTextareaEl = document.getElementById('vd-wiifm-textarea');
+        if (wiifmDisplayEl) wiifmDisplayEl.innerText = wiifmVal || '（未登録 - 「編集」ボタンから入力できます）';
+        if (wiifmTextareaEl) wiifmTextareaEl.value = wiifmVal;
+        toggleVisitorWiifmEdit(false);
+
+        const ptSuggestion = res.powerTeamSuggestion || {};
+        const ptNameEl = document.getElementById('vd-matched-pt-name');
+        const ptMembersEl = document.getElementById('vd-matched-pt-members');
+        if (ptNameEl) {
+          ptNameEl.innerHTML = `${ptSuggestion.teamIcon || '🤝'} ${ptSuggestion.teamName || 'マッチング待機中'}`;
+        }
+        if (ptMembersEl) {
+          const members = ptSuggestion.suggestedMembers || [];
+          if (members.length === 0) {
+            ptMembersEl.innerHTML = '<span class="text-xs text-slate-400">該当メンバー選定中</span>';
+          } else {
+            ptMembersEl.innerHTML = members.map(m => `
+              <div class="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold">
+                <span>👤 ${escapeHtml(m.name)}</span>
+                <span class="text-[10px] text-blue-600 font-normal">(${escapeHtml(m.profession)})</span>
+              </div>
+            `).join('');
+          }
+        }
+
         // ステータスセレクトボックスの反映
         const selectAtt = document.getElementById('vd-select-attended');
         if (selectAtt) {
@@ -1424,6 +1452,44 @@
         toggleVisitorMemoEdit(false);
         fetchDashboardData();
         if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+      })
+      .catch(handleError);
+  }
+
+  function toggleVisitorWiifmEdit(isEditing) {
+    const viewEl = document.getElementById('vd-wiifm-view-mode');
+    const editEl = document.getElementById('vd-wiifm-edit-mode');
+    const btnEdit = document.getElementById('vd-wiifm-btn-edit');
+    if (viewEl) viewEl.style.display = isEditing ? 'none' : 'block';
+    if (editEl) editEl.style.display = isEditing ? 'block' : 'none';
+    if (btnEdit) btnEdit.style.display = isEditing ? 'none' : 'inline-block';
+    if (isEditing) {
+      const ta = document.getElementById('vd-wiifm-textarea');
+      if (ta) {
+        if (window.autoResizeTextarea) window.autoResizeTextarea(ta);
+        setTimeout(() => ta.focus(), 80);
+      }
+    }
+  }
+
+  function saveVisitorWiifm() {
+    const id = currentVdVisitorId;
+    if (!id) return;
+    const ta = document.getElementById('vd-wiifm-textarea');
+    const val = ta ? ta.value.trim() : '';
+
+    ApiService.call('updateVisitorWiifmApi', { visitorId: id, preMeetingWiifm: val })
+      .then(res => {
+        if (res && res.success) {
+          showToast('✅ 事前WIIFMを保存しました');
+          const disp = document.getElementById('vd-wiifm-display');
+          if (disp) disp.innerText = val || '（未登録 - 「編集」ボタンから入力できます）';
+          toggleVisitorWiifmEdit(false);
+          // Re-fetch details to update power team recommendation
+          openVisitorDetailView(id, false, false);
+        } else {
+          showToast('⚠️ 保存に失敗しました');
+        }
       })
       .catch(handleError);
   }

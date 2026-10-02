@@ -21,6 +21,8 @@ class VisitorRepository {
                 COALESCE(v.company, '') as company, 
                 COALESCE(v.email, '') as email, 
                 COALESCE(v.phone, '') as phone,
+                COALESCE(v.pre_meeting_wiifm, '') as preMeetingWiifm,
+                COALESCE(v.matched_power_team_id, '') as matchedPowerTeamId,
                 v.attendance_count as attendanceCount, v.remarks,
                 COALESCE(v.category, 'ビジター') as category,
                 COALESCE(s.is_attended, '未') as isAttended,
@@ -132,6 +134,8 @@ class VisitorRepository {
                 COALESCE(v.company, '') as company,
                 COALESCE(v.email, '') as email,
                 COALESCE(v.phone, '') as phone,
+                COALESCE(v.pre_meeting_wiifm, '') as preMeetingWiifm,
+                COALESCE(v.matched_power_team_id, '') as matchedPowerTeamId,
                 COALESCE(v.attendance_count, '初めて') as attendanceCount,
                 COALESCE(v.remarks, '') as remarks,
                 COALESCE(v.category, 'ビジター') as category,
@@ -259,6 +263,14 @@ class VisitorRepository {
 
     public function updateCategory(string $visitorId, string $category): int {
         return $this->db->update('visitors', ['category' => $category], 'id = ?', [$visitorId]);
+    }
+
+    public function updatePreMeetingWiifm(string $visitorId, string $wiifm, string $powerTeamId = ''): int {
+        $data = ['pre_meeting_wiifm' => $wiifm];
+        if (!empty($powerTeamId)) {
+            $data['matched_power_team_id'] = $powerTeamId;
+        }
+        return $this->db->update('visitors', $data, 'id = ?', [$visitorId]);
     }
 
     public function updateVisitor(string $id, array $data): int {
