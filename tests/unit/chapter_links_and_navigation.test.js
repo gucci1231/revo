@@ -61,6 +61,11 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     const repoContent = fs.readFileSync(repoPath, 'utf8');
     assert.strictEqual(repoContent.includes('class LinkRepository'), true);
     assert.strictEqual(repoContent.includes('chapter_links'), true);
+    assert.strictEqual(repoContent.includes('migrated_legacy_chapter_links_categories'), true);
+
+    const dbPath = path.join(rootDir, 'api/Core/Database.php');
+    const dbContent = fs.readFileSync(dbPath, 'utf8');
+    assert.strictEqual(dbContent.includes('migrated_legacy_chapter_links_categories'), true);
 
     const controllerContent = fs.readFileSync(controllerPath, 'utf8');
     assert.strictEqual(controllerContent.includes('class LinkController'), true);

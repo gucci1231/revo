@@ -89,7 +89,14 @@ class LinkRepository {
             }
         }
 
-        // Migrate links from legacy categories
+        // Migrate links from legacy categories ONCE
+        try {
+            $migrated = $this->db->fetchColumn("SELECT value FROM settings WHERE key = 'migrated_legacy_chapter_links_categories'");
+            if ($migrated === '1') {
+                return;
+            }
+        } catch (\Throwable $e) {}
+
         // 1. ビジター・入会 -> ビジター情報
         $this->db->execute("UPDATE chapter_links SET category = 'ビジター情報' WHERE category = 'ビジター・入会'");
 
@@ -100,6 +107,9 @@ class LinkRepository {
 
         // 3. 残りの日常・1to1 -> メンバー情報
         $this->db->execute("UPDATE chapter_links SET category = 'メンバー情報' WHERE category = '日常・1to1'");
+
+        $now = date('Y/m/d H:i');
+        $this->db->execute("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('migrated_legacy_chapter_links_categories', '1', ?)", [$now]);
     }
 
     public function getAll(): array {
@@ -267,6 +277,12 @@ class LinkRepository {
                 $sort = (int)($item['sort_order'] ?? 0);
                 $cat = isset($item['category']) ? (string)$item['category'] : null;
                 $stmt->execute([$sort, $cat, $now, $item['id']]);
+                if ($cat !== null) {
+                    $catRow = $this->db->fetchOne("SELECT scope FROM chapter_link_categories WHERE name = ?", [$cat]);
+                    if ($catRow && !empty($catRow['scope'])) {
+                        $this->db->execute("UPDATE chapter_links SET scope = ? WHERE id = ?", [$catRow['scope'], $item['id']]);
+                    }
+                }
             }
             $pdo->commit();
             return true;

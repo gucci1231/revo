@@ -1168,11 +1168,20 @@ class Database {
             }
         }
 
-        // Migrate legacy categories in chapter_links
+        // Migrate legacy categories in chapter_links ONCE
+        try {
+            $migrated = $this->fetchColumn("SELECT value FROM settings WHERE key = 'migrated_legacy_chapter_links_categories'");
+            if ($migrated === '1') {
+                return;
+            }
+        } catch (\Throwable $e) {}
+
         $this->execute("UPDATE chapter_links SET category = 'ビジター情報' WHERE category = 'ビジター・入会'");
         $assetIds = "'LINK_002','LINK_004','LINK_005','LINK_009','LINK_021','LINK_023','LINK_024'";
         $this->execute("UPDATE chapter_links SET category = 'アセット関連' WHERE id IN ($assetIds)");
         $this->execute("UPDATE chapter_links SET category = 'メンバー情報' WHERE category = '日常・1to1'");
+
+        $this->execute("INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('migrated_legacy_chapter_links_categories', '1', ?)", [$now]);
     }
 
     private function seedDefaultChapterEvents(): void {
