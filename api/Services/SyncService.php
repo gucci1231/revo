@@ -50,7 +50,7 @@ class SyncService {
                     if (!$vId) continue;
 
                     // 1. visitors テーブル: 既存レコードがあれば空項目で上書きしない
-                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks, phone FROM visitors WHERE id = ?", [$vId]);
+                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks, phone, category FROM visitors WHERE id = ?", [$vId]);
                     if (!$existingVisitor) {
                         $this->db->upsert('visitors', [
                             'id' => $vId,
@@ -76,8 +76,17 @@ class SyncService {
                             'event_date' => $v['eventDate'] ?? $v['event_date'] ?? '',
                             'inviter' => $v['inviter'] ?? ''
                         ];
-                    } else if (empty($existingVisitor['phone']) && !empty($v['phone'])) {
-                        $this->db->update('visitors', ['phone' => $v['phone']], 'id = ?', [$vId]);
+                    } else {
+                        $updateFields = [];
+                        if (empty($existingVisitor['phone']) && !empty($v['phone'])) {
+                            $updateFields['phone'] = $v['phone'];
+                        }
+                        if (!empty($v['category']) && ($existingVisitor['category'] ?? '') !== $v['category']) {
+                            $updateFields['category'] = $v['category'];
+                        }
+                        if (!empty($updateFields)) {
+                            $this->db->update('visitors', $updateFields, 'id = ?', [$vId]);
+                        }
                     }
 
                     // 2. visitors_status テーブル: SQLiteが正 (Master)。既存ステータスは絶対に上書きしない！
@@ -188,24 +197,71 @@ class SyncService {
         $totalRaw = $this->fetchSheetCsv($spreadsheetId, 'Total');
 
         $phoneMap = [];
+        $categoryMap = [];
+
+        $isGuestRecord = function(string $type, string $chapter, string $attendance, string $prof, string $comp, string $rem, string $name = ''): bool {
+            if (str_contains($type, 'ゲスト') || str_contains($type, '他チャプター')) return true;
+            if (str_contains($type, '代理人')) return true;
+            $trimChap = trim($chapter);
+            if ($trimChap !== '' && $trimChap !== '-' && !str_contains($trimChap, 'なし') && !str_contains($trimChap, 'REvo') && !str_contains($trimChap, 'レボ') && !str_contains($trimChap, '未定')) {
+                return true;
+            }
+            if (str_contains($attendance, 'ゲスト') || str_contains($attendance, '他チャプター')) return true;
+            if (str_contains($prof, 'ゲスト') || str_contains($comp, 'ゲスト') || str_contains($rem, 'ゲスト') || str_contains($rem, '予約: ゲスト')) return true;
+            if (str_contains($rem, 'ユニコーン') || str_contains($rem, 'チャプター') || str_contains($prof, 'ユニコーン') || str_starts_with($name, 'メンバー')) return true;
+            return false;
+        };
+
         if (!empty($totalRaw)) {
             foreach ($totalRaw as $tr) {
                 $p = $this->cleanPhone((string)($tr['連絡先'] ?? ''));
-                if ($p === '') continue;
                 $e = $this->normalizeEmail($tr['email'] ?? '');
                 $n = $this->normalizeName($tr['氏名'] ?? '');
-                if ($e) $phoneMap['email:' . $e] = $p;
-                if ($n) $phoneMap['name:' . $n] = $p;
+                $d = $this->normalizeDate($tr['参加日 ▼'] ?? $tr['参加日'] ?? '');
+                if ($p !== '') {
+                    if ($e) $phoneMap['email:' . $e] = $p;
+                    if ($n) $phoneMap['name:' . $n] = $p;
+                }
+                $isG = $isGuestRecord(
+                    (string)($tr['種別'] ?? ''),
+                    (string)($tr['チャプター名'] ?? ''),
+                    (string)($tr['参加回数'] ?? ''),
+                    (string)($tr['お仕事の専門分野'] ?? ''),
+                    (string)($tr['会社名'] ?? ''),
+                    '',
+                    $n
+                );
+                $cat = $isG ? 'ゲスト' : 'ビジター';
+                if ($n && $d) $categoryMap["name_date:{$n}_{$d}"] = $cat;
+                if ($e && $d) $categoryMap["email_date:{$e}_{$d}"] = $cat;
+                if ($n && (!isset($categoryMap["name:{$n}"]) || $isG)) $categoryMap["name:{$n}"] = $cat;
+                if ($e && (!isset($categoryMap["email:{$e}"]) || $isG)) $categoryMap["email:{$e}"] = $cat;
             }
         }
         if (!empty($listRaw)) {
             foreach ($listRaw as $lr) {
                 $p = $this->cleanPhone((string)($lr['連絡先電話番号'] ?? $lr['電話番号'] ?? $lr['連絡先'] ?? ''));
-                if ($p === '') continue;
                 $e = $this->normalizeEmail($lr['メールアドレス'] ?? '');
                 $n = $this->normalizeName($lr['氏名'] ?? $lr['お名前'] ?? '');
-                if ($e) $phoneMap['email:' . $e] = $p;
-                if ($n) $phoneMap['name:' . $n] = $p;
+                $d = $this->normalizeDate($lr['参加日'] ?? $lr['参加予定日'] ?? $lr['日程'] ?? '');
+                if ($p !== '') {
+                    if ($e) $phoneMap['email:' . $e] = $p;
+                    if ($n) $phoneMap['name:' . $n] = $p;
+                }
+                $isG = $isGuestRecord(
+                    (string)($lr['種別'] ?? ''),
+                    (string)($lr['ゲスト（他チャプター等の方、所属チャプター名をご記名ください）'] ?? $lr['チャプター名'] ?? ''),
+                    (string)($lr['定例会へのビジター参加回数'] ?? $lr['参加回数'] ?? ''),
+                    (string)($lr['お仕事の専門分野'] ?? $lr['専門分野'] ?? $lr['業種'] ?? ''),
+                    (string)($lr['会社名'] ?? $lr['屋号'] ?? ''),
+                    '',
+                    $n
+                );
+                $cat = $isG ? 'ゲスト' : 'ビジター';
+                if ($n && $d) $categoryMap["name_date:{$n}_{$d}"] = $cat;
+                if ($e && $d) $categoryMap["email_date:{$e}_{$d}"] = $cat;
+                if ($n && (!isset($categoryMap["name:{$n}"]) || $isG)) $categoryMap["name:{$n}"] = $cat;
+                if ($e && (!isset($categoryMap["email:{$e}"]) || $isG)) $categoryMap["email:{$e}"] = $cat;
             }
         }
 
@@ -247,6 +303,28 @@ class SyncService {
                 }
             }
 
+            // カテゴリの精密判定（スプレッドシートの種別・フラグを最優先）
+            $category = trim((string)($v['category'] ?? ''));
+            if ($category !== 'ゲスト' && $category !== 'ビジター') {
+                $category = $categoryMap["name_date:{$vName}_{$vDate}"]
+                    ?? ($vEmail ? ($categoryMap["email_date:{$vEmail}_{$vDate}"] ?? null) : null)
+                    ?? $categoryMap["name:{$vName}"]
+                    ?? ($vEmail ? ($categoryMap["email:{$vEmail}"] ?? null) : null)
+                    ?? '';
+            }
+            if ($category !== 'ゲスト' && $category !== 'ビジター') {
+                $isG = $isGuestRecord(
+                    '',
+                    '',
+                    (string)($v['attendance_count'] ?? ''),
+                    (string)($v['profession'] ?? ''),
+                    (string)($v['company'] ?? ''),
+                    (string)($v['remarks'] ?? ''),
+                    $vName
+                );
+                $category = $isG ? 'ゲスト' : 'ビジター';
+            }
+
             $st = $statusMap[$vId] ?? [];
             $inviter = $this->normalizeMemberName((string)($v['inviter'] ?? ''), $membersRaw);
             $visitors[] = [
@@ -262,7 +340,7 @@ class SyncService {
                 'phone' => $vPhone,
                 'attendance_count' => $v['attendance_count'] ?? '初めて',
                 'remarks' => $v['remarks'] ?? '',
-                'category' => $v['category'] ?? 'ビジター',
+                'category' => $category,
                 'is_attended' => $st['is_attended'] ?? '未',
                 'is_joined' => $st['is_joined'] ?? '未',
                 'is_1to1' => $st['is_1to1'] ?? '未',
@@ -308,7 +386,18 @@ class SyncService {
                 $profession = trim((string)($row['お仕事の専門分野'] ?? $row['専門分野'] ?? $row['業種'] ?? ''));
                 $company = trim((string)($row['会社名'] ?? $row['屋号'] ?? ''));
                 $attendanceCount = trim((string)($row['定例会へのビジター参加回数'] ?? $row['参加回数'] ?? '初めて'));
-                $isGuest = (str_contains($attendanceCount, 'ゲスト') || str_contains($profession, 'ゲスト') || str_contains($company, 'ゲスト') || str_contains($attendanceCount, '他チャプター'));
+
+                $rawType = trim((string)($row['種別'] ?? ''));
+                $rawChapter = trim((string)($row['ゲスト（他チャプター等の方、所属チャプター名をご記名ください）'] ?? $row['チャプター名'] ?? ''));
+                $isGuest = $isGuestRecord(
+                    $rawType,
+                    $rawChapter,
+                    $attendanceCount,
+                    $profession,
+                    $company,
+                    '',
+                    $name
+                );
 
                 $phone = $this->cleanPhone((string)($row['連絡先電話番号'] ?? $row['電話番号'] ?? $row['連絡先'] ?? ''));
 
