@@ -1,16 +1,68 @@
 <script>
 /**
  * Chapter Links Module - View & CRUD Controller
+ * Categorized by Member (Daily/Visitor/Learning) vs Admin (Operation/Rules) vs Archive
  */
 let chapterLinksData = [];
+let currentLinkScope = 'member'; // 'member' | 'admin' | 'archive' | 'all'
 let currentLinkCategory = 'ALL';
+let currentLinkSearchQuery = '';
+
+const LINK_SCOPE_MAP = {
+  member: ['日常・1to1', 'ビジター・入会', '公式ポータル・学び'],
+  admin: ['役員・チャプター運営'],
+  archive: ['アーカイブ']
+};
+
+const LINK_CATEGORY_THEMES = {
+  '日常・1to1': {
+    iconBg: 'bg-blue-50',
+    iconBorder: 'border-blue-100',
+    iconText: 'text-blue-600',
+    badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/60',
+    hoverIconBg: 'group-hover:bg-blue-600 group-hover:text-white',
+    dotColor: '#0071e3'
+  },
+  'ビジター・入会': {
+    iconBg: 'bg-emerald-50',
+    iconBorder: 'border-emerald-100',
+    iconText: 'text-emerald-600',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    hoverIconBg: 'group-hover:bg-emerald-600 group-hover:text-white',
+    dotColor: '#059669'
+  },
+  '公式ポータル・学び': {
+    iconBg: 'bg-indigo-50',
+    iconBorder: 'border-indigo-100',
+    iconText: 'text-indigo-600',
+    badgeClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60',
+    hoverIconBg: 'group-hover:bg-indigo-600 group-hover:text-white',
+    dotColor: '#4f46e5'
+  },
+  '役員・チャプター運営': {
+    iconBg: 'bg-amber-50',
+    iconBorder: 'border-amber-100',
+    iconText: 'text-amber-600',
+    badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200/60',
+    hoverIconBg: 'group-hover:bg-amber-600 group-hover:text-white',
+    dotColor: '#d97706'
+  },
+  'アーカイブ': {
+    iconBg: 'bg-slate-100',
+    iconBorder: 'border-slate-200',
+    iconText: 'text-slate-500',
+    badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200',
+    hoverIconBg: 'group-hover:bg-slate-700 group-hover:text-white',
+    dotColor: '#64748b'
+  }
+};
 
 function fetchChapterLinks() {
   const container = document.getElementById('links-grid-container');
   if (container) {
     container.innerHTML = `
-      <div class="col-span-full py-12 text-center text-slate-400">
-        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+      <div class="col-span-full py-16 text-center text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
         <p class="text-xs font-bold">リンク情報を取得中...</p>
       </div>
     `;
@@ -20,6 +72,7 @@ function fetchChapterLinks() {
     .then(res => {
       if (res && res.links) {
         chapterLinksData = res.links;
+        renderCategoryPills();
         renderChapterLinks();
       } else {
         showToast('リンク情報の取得に失敗しました', 'error');
@@ -31,39 +84,173 @@ function fetchChapterLinks() {
     });
 }
 
+function setLinkScope(scope) {
+  currentLinkScope = scope;
+  currentLinkCategory = 'ALL';
+
+  // Update scope tab styles
+  const tabs = document.querySelectorAll('#links-scope-tabs .link-scope-tab');
+  tabs.forEach(tab => {
+    if (tab.getAttribute('data-scope') === scope) {
+      tab.className = 'link-scope-tab active flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs';
+    } else {
+      tab.className = 'link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800';
+    }
+  });
+
+  renderCategoryPills();
+  renderChapterLinks();
+}
+
+function renderCategoryPills() {
+  const filterContainer = document.getElementById('links-category-filter');
+  if (!filterContainer) return;
+
+  let availableCats = [];
+  if (currentLinkScope === 'all') {
+    availableCats = ['日常・1to1', 'ビジター・入会', '公式ポータル・学び', '役員・チャプター運営', 'アーカイブ'];
+  } else if (LINK_SCOPE_MAP[currentLinkScope]) {
+    availableCats = LINK_SCOPE_MAP[currentLinkScope];
+  } else {
+    availableCats = ['日常・1to1', 'ビジター・入会', '公式ポータル・学び'];
+  }
+
+  // Count items for each category
+  const getCatCount = (cat) => {
+    return chapterLinksData.filter(item => {
+      if (cat === 'ALL') {
+        if (currentLinkScope === 'all') return true;
+        const validCats = LINK_SCOPE_MAP[currentLinkScope] || [];
+        return validCats.includes(item.category);
+      }
+      return item.category === cat;
+    }).length;
+  };
+
+  let html = `
+    <button 
+      type="button"
+      onclick="filterLinksCategory('ALL')" 
+      class="category-pill ${currentLinkCategory === 'ALL' ? 'active bg-blue-600 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300'} px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5" 
+      data-category="ALL"
+    >
+      <span>すべて</span>
+      <span class="text-[10px] opacity-80 tabular-nums">(${getCatCount('ALL')})</span>
+    </button>
+  `;
+
+  availableCats.forEach(cat => {
+    const isActive = currentLinkCategory === cat;
+    const count = getCatCount(cat);
+    const activeClass = 'active bg-blue-600 text-white shadow-xs';
+    const inactiveClass = 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300';
+
+    html += `
+      <button 
+        type="button"
+        onclick="filterLinksCategory('${Utils.escapeHtml(cat)}')" 
+        class="category-pill ${isActive ? activeClass : inactiveClass} px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5" 
+        data-category="${Utils.escapeHtml(cat)}"
+      >
+        <span>${Utils.escapeHtml(cat)}</span>
+        <span class="text-[10px] opacity-80 tabular-nums">(${count})</span>
+      </button>
+    `;
+  });
+
+  filterContainer.innerHTML = html;
+}
+
 function filterLinksCategory(category) {
   currentLinkCategory = category;
-  
-  // Update category pill styles
+
   const pills = document.querySelectorAll('#links-category-filter .category-pill');
   pills.forEach(pill => {
     if (pill.getAttribute('data-category') === category) {
-      pill.className = 'category-pill active px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-blue-600 text-white shadow-sm';
+      pill.className = 'category-pill active bg-blue-600 text-white shadow-xs px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5';
     } else {
-      pill.className = 'category-pill px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer bg-white text-slate-600 border border-slate-200 hover:border-slate-300';
+      pill.className = 'category-pill bg-white text-slate-600 border border-slate-200 hover:border-slate-300 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5';
     }
   });
 
   renderChapterLinks();
 }
 
+function handleLinkSearch(query) {
+  currentLinkSearchQuery = (query || '').toLowerCase().trim();
+  const clearBtn = document.getElementById('btn-clear-link-search');
+  if (clearBtn) {
+    if (currentLinkSearchQuery) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  renderChapterLinks();
+}
+
+function clearLinkSearch() {
+  const input = document.getElementById('links-search-input');
+  if (input) {
+    input.value = '';
+    handleLinkSearch('');
+    input.focus();
+  }
+}
+
 function renderChapterLinks() {
   const container = document.getElementById('links-grid-container');
+  const countBadge = document.getElementById('links-count-badge');
   if (!container) return;
 
   const filtered = chapterLinksData.filter(item => {
-    if (currentLinkCategory === 'ALL') return true;
-    return item.category === currentLinkCategory;
+    // 1. Scope filter
+    if (currentLinkScope !== 'all') {
+      const allowedCategories = LINK_SCOPE_MAP[currentLinkScope] || [];
+      if (!allowedCategories.includes(item.category)) {
+        return false;
+      }
+    }
+
+    // 2. Subcategory filter
+    if (currentLinkCategory !== 'ALL') {
+      if (item.category !== currentLinkCategory) {
+        return false;
+      }
+    }
+
+    // 3. Search query filter
+    if (currentLinkSearchQuery) {
+      const title = (item.title || '').toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      const url = (item.url || '').toLowerCase();
+      const cat = (item.category || '').toLowerCase();
+      return title.includes(currentLinkSearchQuery) ||
+             desc.includes(currentLinkSearchQuery) ||
+             url.includes(currentLinkSearchQuery) ||
+             cat.includes(currentLinkSearchQuery);
+    }
+
+    return true;
   });
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length}件`;
+  }
 
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
         <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
-          <i class="fa-solid fa-link-slash text-xl"></i>
+          <i class="fa-solid fa-magnifying-glass text-xl"></i>
         </div>
-        <p class="text-sm font-bold text-slate-600">登録されているリンクはありません</p>
-        <p class="text-xs text-slate-400 mt-1">「リンクを追加」ボタンから公式リンクを登録してください</p>
+        <p class="text-sm font-bold text-slate-700">条件に一致するリンクは見つかりませんでした</p>
+        <p class="text-xs text-slate-400 mt-1">検索キーワードを変更するか、カテゴリを切り替えてください</p>
+        ${currentLinkSearchQuery ? `
+          <button type="button" onclick="clearLinkSearch()" class="mt-4 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer">
+            検索条件をクリア
+          </button>
+        ` : ''}
       </div>
     `;
     return;
@@ -78,51 +265,90 @@ function renderChapterLinks() {
     const iconClass = link.icon ? Utils.escapeHtml(link.icon) : 'fa-solid fa-link';
     const linkId = Utils.escapeHtml(link.id || '');
 
-    // Display host name for clean aesthetics
+    const theme = LINK_CATEGORY_THEMES[link.category] || {
+      iconBg: 'bg-slate-50',
+      iconBorder: 'border-slate-100',
+      iconText: 'text-slate-600',
+      badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200',
+      hoverIconBg: 'group-hover:bg-slate-700 group-hover:text-white',
+      dotColor: '#64748b'
+    };
+
+    // Extract domain host
     let displayHost = '';
     try {
       const u = new URL(link.url);
-      displayHost = u.hostname;
+      displayHost = u.hostname.replace('www.', '');
+      if (displayHost.includes('drive.google.com')) displayHost = 'Google Drive';
+      else if (displayHost.includes('docs.google.com/spreadsheets')) displayHost = 'Google Sheets';
+      else if (displayHost.includes('docs.google.com/forms') || displayHost.includes('forms.gle')) displayHost = 'Google Form';
+      else if (displayHost.includes('zoom.us')) displayHost = 'Zoom';
+      else if (displayHost.includes('onedrive.live.com')) displayHost = 'OneDrive';
+      else if (displayHost.includes('paypal.com')) displayHost = 'PayPal';
+      else if (displayHost.includes('bniconnectglobal.com')) displayHost = 'BNI Connect';
+      else if (displayHost.includes('bniglobalacademy.com')) displayHost = 'BNI Academy';
+      else if (displayHost.includes('bni-ck.com')) displayHost = 'BNI京都CC';
     } catch(e) {
       displayHost = link.url;
     }
 
     html += `
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 hover:border-slate-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
+      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 hover:border-slate-300 hover:shadow-xs transition-all duration-200 flex flex-col justify-between group">
         <div>
+          <!-- Top Row: Icon + Category Badge + Action Buttons -->
           <div class="flex items-start justify-between gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
-              <i class="${iconClass}"></i>
+            <div class="w-10 h-10 rounded-xl ${theme.iconBg} border ${theme.iconBorder} flex items-center justify-center ${theme.iconText} shrink-0 ${theme.hoverIconBg} transition-colors duration-200">
+              <i class="${iconClass} text-base"></i>
             </div>
+            
             <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${theme.badgeClass}">
                 ${escapedCategory}
               </span>
-              <button onclick="openLinkModal('${linkId}')" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors" title="編集">
-                <i class="fa-solid fa-pen text-xs"></i>
+              <button 
+                type="button" 
+                onclick="openLinkModal('${linkId}')" 
+                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
+                title="編集"
+              >
+                <i class="fa-solid fa-pen text-[11px]"></i>
               </button>
-              <button onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" class="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition-colors" title="削除">
-                <i class="fa-solid fa-trash text-xs"></i>
+              <button 
+                type="button" 
+                onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" 
+                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
+                title="削除"
+              >
+                <i class="fa-solid fa-trash text-[11px]"></i>
               </button>
             </div>
           </div>
 
-          <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 mb-1">
+          <!-- Title -->
+          <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 mb-1.5 tracking-tight">
             <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">
               ${escapedTitle}
             </a>
           </h3>
 
-          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3">
-            ${escapedDesc || '説明なし'}
+          <!-- Description -->
+          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4 min-h-[32px]">
+            ${escapedDesc || 'チャプター公式アセット・リンク'}
           </p>
         </div>
 
+        <!-- Footer / Link action -->
         <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-          <span class="text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-[180px]">
-            <i class="fa-solid fa-globe text-[10px] mr-1"></i>${displayHost}
+          <span class="text-[11px] font-medium text-slate-400 truncate max-w-[150px] sm:max-w-[190px] flex items-center gap-1">
+            <i class="fa-solid fa-globe text-[10px] text-slate-400"></i>
+            <span>${displayHost}</span>
           </span>
-          <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+          <a 
+            href="${escapedUrl}" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-lg transition-colors"
+          >
             <span>開く</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
           </a>
@@ -163,7 +389,7 @@ function openLinkModal(linkId = null) {
       document.getElementById('link-field-id').value = target.id;
       document.getElementById('link-field-title').value = target.title || '';
       document.getElementById('link-field-url').value = target.url || '';
-      document.getElementById('link-field-category').value = target.category || '定例会・運営';
+      document.getElementById('link-field-category').value = target.category || '日常・1to1';
       document.getElementById('link-field-description').value = target.description || '';
       document.getElementById('link-field-icon').value = target.icon || 'fa-solid fa-link';
       document.getElementById('link-field-sort').value = target.sort_order || '0';
@@ -171,6 +397,14 @@ function openLinkModal(linkId = null) {
     }
   } else {
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
+    // Set default category based on current active tab
+    const catSelect = document.getElementById('link-field-category');
+    if (catSelect) {
+      if (currentLinkScope === 'admin') catSelect.value = '役員・チャプター運営';
+      else if (currentLinkScope === 'archive') catSelect.value = 'アーカイブ';
+      else if (currentLinkCategory !== 'ALL') catSelect.value = currentLinkCategory;
+      else catSelect.value = '日常・1to1';
+    }
   }
 
   modal.style.display = 'flex';
@@ -207,14 +441,8 @@ function handleLinkSubmit(event) {
     return;
   }
 
-  const btn = document.getElementById('btn-save-link');
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
-  }
-
   const payload = {
-    id: id || null,
+    id: id || undefined,
     title,
     url,
     category,
@@ -223,30 +451,33 @@ function handleLinkSubmit(event) {
     sort_order
   };
 
+  const btn = document.getElementById('btn-save-link');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
+  }
+
   ApiService.call('saveChapterLinkApi', payload)
     .then(res => {
-      if (res && res.success !== false) {
-        showToast(res.message || 'リンクを保存しました', 'success');
-        closeLinkModal();
-        if (res.links) {
-          chapterLinksData = res.links;
-          renderChapterLinks();
-        } else {
-          fetchChapterLinks();
-        }
-      } else {
-        showToast(res.error || '保存に失敗しました', 'error');
-      }
-    })
-    .catch(err => {
-      console.error('Save link error:', err);
-      showToast('通信エラーが発生しました', 'error');
-    })
-    .finally(() => {
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
       }
+      if (res && res.success) {
+        showToast('リンクを保存しました', 'success');
+        closeLinkModal();
+        fetchChapterLinks();
+      } else {
+        showToast((res && res.message) || '保存に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Save link error:', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+      showToast('通信エラーが発生しました', 'error');
     });
 }
 
@@ -255,18 +486,13 @@ function deleteChapterLink(linkId, title) {
     return;
   }
 
-  ApiService.call('deleteChapterLinkApi', { id: linkId })
+  ApiService.call('deleteChapterLinkApi', linkId)
     .then(res => {
-      if (res && res.success !== false) {
+      if (res && res.success) {
         showToast('リンクを削除しました', 'success');
-        if (res.links) {
-          chapterLinksData = res.links;
-          renderChapterLinks();
-        } else {
-          fetchChapterLinks();
-        }
+        fetchChapterLinks();
       } else {
-        showToast(res.error || '削除に失敗しました', 'error');
+        showToast((res && res.message) || '削除に失敗しました', 'error');
       }
     })
     .catch(err => {

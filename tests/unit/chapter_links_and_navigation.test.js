@@ -65,4 +65,25 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     const controllerContent = fs.readFileSync(controllerPath, 'utf8');
     assert.strictEqual(controllerContent.includes('class LinkController'), true);
   });
+
+  it('verifies Scope Segmented Control, Search Box, and Refined Categories in Chapter Links', () => {
+    // HTML elements
+    assert.strictEqual(indexHtml.includes('id="links-scope-tabs"'), true);
+    assert.strictEqual(indexHtml.includes('id="links-search-input"'), true);
+    assert.strictEqual(indexHtml.includes('id="links-count-badge"'), true);
+    assert.strictEqual(indexHtml.includes('id="btn-clear-link-search"'), true);
+
+    // JS functions
+    assert.strictEqual(indexHtml.includes('function setLinkScope'), true);
+    assert.strictEqual(indexHtml.includes('function handleLinkSearch'), true);
+    assert.strictEqual(indexHtml.includes('function clearLinkSearch'), true);
+    assert.strictEqual(indexHtml.includes('function renderCategoryPills'), true);
+
+    // Categories in modal select
+    assert.strictEqual(indexHtml.includes('value="日常・1to1"'), true);
+    assert.strictEqual(indexHtml.includes('value="ビジター・入会"'), true);
+    assert.strictEqual(indexHtml.includes('value="公式ポータル・学び"'), true);
+    assert.strictEqual(indexHtml.includes('value="役員・チャプター運営"'), true);
+    assert.strictEqual(indexHtml.includes('value="アーカイブ"'), true);
+  });
 });

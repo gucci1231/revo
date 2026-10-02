@@ -2104,6 +2104,38 @@ function handleApiRequest(req, res, urlObj) {
       }
     }
 
+    if (pathname === '/api/links.php') {
+      const action = urlObj.searchParams.get('action') || 'list';
+
+      if (action === 'list') {
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        return res.end(JSON.stringify({ success: true, links }));
+      }
+
+      if (action === 'save') {
+        const body = input || {};
+        const id = (body.id || ('LINK_' + Date.now().toString(36))).replace(/'/g, "''");
+        const title = (body.title || '').replace(/'/g, "''");
+        const url = (body.url || '').replace(/'/g, "''");
+        const category = (body.category || '日常・1to1').replace(/'/g, "''");
+        const description = (body.description || '').replace(/'/g, "''");
+        const icon = (body.icon || 'fa-solid fa-link').replace(/'/g, "''");
+        const sortOrder = parseInt(body.sort_order || 0, 10);
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+
+        runSqlExec(`INSERT OR REPLACE INTO chapter_links (id, title, url, category, description, icon, sort_order, created_at, updated_at)
+                    VALUES ('${id}', '${title}', '${url}', '${category}', '${description}', '${icon}', ${sortOrder}, COALESCE((SELECT created_at FROM chapter_links WHERE id = '${id}'), '${now}'), '${now}');`);
+        return res.end(JSON.stringify({ success: true, message: 'リンクを保存しました' }));
+      }
+
+      if (action === 'delete') {
+        const body = input || {};
+        const id = (body.id || urlObj.searchParams.get('id') || '').replace(/'/g, "''");
+        runSqlExec(`DELETE FROM chapter_links WHERE id = '${id}';`);
+        return res.end(JSON.stringify({ success: true, message: 'リンクを削除しました' }));
+      }
+    }
+
     return res.end(JSON.stringify({ success: false, message: 'Endpoint not found' }));
   });
 }

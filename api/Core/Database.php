@@ -549,40 +549,517 @@ class Database {
         $now = date('Y/m/d H:i');
         $defaults = [
             [
-                'id' => 'LINK_BNI_CONNECT',
-                'title' => 'BNI Connect Global',
-                'url' => 'https://www.bniconnectglobal.com/login/',
-                'category' => '公式システム',
-                'description' => 'PALMSレポート、リファーラル入力、メンバープロフィール管理',
-                'icon' => 'fa-solid fa-globe',
+                'id' => 'LINK_001',
+                'title' => 'みんなの1to1シート一覧',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1bwoAXDGv18sxVG5IEM46VpoqZhTgnMFP',
+                'category' => '日常・1to1',
+                'description' => 'みんなの1to1シート一覧',
+                'icon' => 'fa-regular fa-handshake',
                 'sort_order' => 1
             ],
             [
-                'id' => 'LINK_BNI_BUILDER',
-                'title' => 'BNI Business Builder',
-                'url' => 'https://www.bnibusinessbuilder.com/',
-                'category' => '公式システム',
-                'description' => '公式オンライントレーニング・CEU学習プラットフォーム',
-                'icon' => 'fa-solid fa-graduation-cap',
+                'id' => 'LINK_002',
+                'title' => 'メンバー写真一覧',
+                'url' => 'https://drive.google.com/drive/u/0/folders/17aw58dojPTr1TQkMfkBDjDptxJbkcMm7',
+                'category' => '日常・1to1',
+                'description' => 'みんなの写真一覧',
+                'icon' => 'fa-solid fa-camera-retro',
                 'sort_order' => 2
             ],
             [
-                'id' => 'LINK_KYOTO_EVENTS',
-                'title' => '京都シティセントラル イベント・研修',
-                'url' => 'https://bni-ck.com/ja/events',
-                'category' => 'リージョン',
-                'description' => 'リージョン主催のトレーニング・イベント日程一覧',
-                'icon' => 'fa-solid fa-calendar-check',
+                'id' => 'LINK_003',
+                'title' => 'メンバー一覧表',
+                'url' => 'https://drive.google.com/drive/u/0/folders/16tXv60ZDqJcPw-8vJ5xXDYguc8lDqLXJ',
+                'category' => '日常・1to1',
+                'description' => 'チャプターメンバー名簿・業種一覧',
+                'icon' => 'fa-solid fa-users',
                 'sort_order' => 3
             ],
             [
-                'id' => 'LINK_KYOTO_OFFICIAL',
-                'title' => 'BNI京都シティセントラル 公式',
-                'url' => 'https://bni-ck.com/ja/index',
-                'category' => 'リージョン',
-                'description' => 'リージョン公式サイト・チャプター一覧',
-                'icon' => 'fa-solid fa-building-columns',
+                'id' => 'LINK_004',
+                'title' => 'ZOOM背景',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1jCV5Q-DeJ0dCY2n_yvhPUfXEIrUAQjMn',
+                'category' => '日常・1to1',
+                'description' => '定例会・イベント用 公式バーチャル背景',
+                'icon' => 'fa-solid fa-image',
                 'sort_order' => 4
+            ],
+            [
+                'id' => 'LINK_005',
+                'title' => '名札',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1WJAbhCfPHwaAVLe6TiVV7-sasHJHFTZh',
+                'category' => '日常・1to1',
+                'description' => '名札のデータです',
+                'icon' => 'fa-solid fa-id-badge',
+                'sort_order' => 5
+            ],
+            [
+                'id' => 'LINK_006',
+                'title' => 'みんなのメインプレゼン一覧',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1KV1YRIp5h-SfHG-Wu-diYCxu7kDcVjWr',
+                'category' => '日常・1to1',
+                'description' => 'みんなのメインプレゼンをまとめてるよ',
+                'icon' => 'fa-solid fa-chalkboard-user',
+                'sort_order' => 6
+            ],
+            [
+                'id' => 'LINK_007',
+                'title' => 'みんなのウィークリー一覧',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1DyBR3qmTM5NgUK8J5mc65Jh74kBX-gRv',
+                'category' => '日常・1to1',
+                'description' => 'みんなのウィークリーをまとめてるよ',
+                'icon' => 'fa-solid fa-bullhorn',
+                'sort_order' => 7
+            ],
+            [
+                'id' => 'LINK_008',
+                'title' => '金の卵・金のガチョウ',
+                'url' => 'https://drive.google.com/drive/folders/1DbVAH4cJk3l6KFb186bzcLzP4KuUFzvO',
+                'category' => '日常・1to1',
+                'description' => 'リファーラル協業パートナー検討資料',
+                'icon' => 'fa-solid fa-egg',
+                'sort_order' => 8
+            ],
+            [
+                'id' => 'LINK_009',
+                'title' => 'REvoロゴ',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1GvX7evY-iEH7g-7iNJvyn1Oq9mrx32nc',
+                'category' => '日常・1to1',
+                'description' => 'チャプター公式ロゴ画像・ベクターデータ',
+                'icon' => 'fa-solid fa-shapes',
+                'sort_order' => 9
+            ],
+            [
+                'id' => 'LINK_010',
+                'title' => 'REvo ZOOM',
+                'url' => 'https://bnionline.zoom.us/j/3763093298',
+                'category' => '日常・1to1',
+                'description' => '毎週木曜 定例会ZOOMミーティングルーム',
+                'icon' => 'fa-solid fa-video',
+                'sort_order' => 10
+            ],
+            [
+                'id' => 'LINK_011',
+                'title' => 'アジェンダ',
+                'url' => 'https://docs.google.com/spreadsheets/d/1ea5frKk2UYvnwZiRF2Cn2EgHuQHOrQMk/edit?gid=1883308143#gid=1883308143',
+                'category' => '役員・チャプター運営',
+                'description' => '定例会タイムスケジュール・進行スクリプト',
+                'icon' => 'fa-solid fa-list-check',
+                'sort_order' => 11
+            ],
+            [
+                'id' => 'LINK_012',
+                'title' => '40人リスト',
+                'url' => 'https://docs.google.com/spreadsheets/d/1dgP_ujSsJqE_i2h-4DUO_Dzjx5rdSt7v/edit?gid=663418881#gid=663418881',
+                'category' => '役員・チャプター運営',
+                'description' => 'チャプター40人達成に向けたメンバー推薦リスト',
+                'icon' => 'fa-solid fa-bullseye',
+                'sort_order' => 12
+            ],
+            [
+                'id' => 'LINK_013',
+                'title' => 'ビジター申込状況',
+                'url' => 'https://docs.google.com/spreadsheets/d/1-AWautt52j8nOT1VI5ofneGdyrKdiJudnuOqGvpezjs/edit?resourcekey=&gid=31160410#gid=31160410',
+                'category' => 'ビジター・入会',
+                'description' => '定例会ごとのビジター参加予定・回答状況一覧',
+                'icon' => 'fa-solid fa-table-list',
+                'sort_order' => 13
+            ],
+            [
+                'id' => 'LINK_014',
+                'title' => 'ビジター申込フォーム',
+                'url' => 'https://docs.google.com/forms/d/e/1FAIpQLSdl7oDKf79Ohd6dgR_YWIlAMjrfEJEJTng2AryQQYLC8AdUMg/viewform?usp=send_form',
+                'category' => 'ビジター・入会',
+                'description' => 'ビジター招待用 公式参加申込みフォーム',
+                'icon' => 'fa-solid fa-file-pen',
+                'sort_order' => 14
+            ],
+            [
+                'id' => 'LINK_015',
+                'title' => 'BOR表',
+                'url' => 'https://docs.google.com/spreadsheets/d/1Kk_ZkpMVhe1KBqtdVLw1ZVaumvLZdmnYNqYGk3piioU/edit?gid=1432961932#gid=1432961932',
+                'category' => '役員・チャプター運営',
+                'description' => '定例会ブレイクアウトルーム参加者割当表',
+                'icon' => 'fa-solid fa-arrows-split-up-and-left',
+                'sort_order' => 15
+            ],
+            [
+                'id' => 'LINK_016',
+                'title' => 'ヒアリングシート',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1fZjotMxSCHn9DPWlEtnGvLgVS5GXipHP',
+                'category' => 'ビジター・入会',
+                'description' => 'ビジター事後フォロー・ヒアリング記録シート',
+                'icon' => 'fa-solid fa-clipboard-question',
+                'sort_order' => 16
+            ],
+            [
+                'id' => 'LINK_017',
+                'title' => 'チャプターモニタリング8月',
+                'url' => 'https://docs.google.com/spreadsheets/d/16giVWMKTbUSRMx0otvGwBPedB08a1uvjMkCvGtoVPsQ/edit?gid=473843505#gid=473843505',
+                'category' => '役員・チャプター運営',
+                'description' => 'チャプター健康度・トラフィックモニタリング指標',
+                'icon' => 'fa-solid fa-chart-line',
+                'sort_order' => 17
+            ],
+            [
+                'id' => 'LINK_018',
+                'title' => 'メンバートラフィックライト8月',
+                'url' => 'https://docs.google.com/spreadsheets/d/1MQ9T5ddhUCowEKH0JOKGBRe07fSeaZJl/edit?gid=765074533#gid=765074533',
+                'category' => '役員・チャプター運営',
+                'description' => 'メンバー成績・トラフィックライトスコア',
+                'icon' => 'fa-solid fa-traffic-light',
+                'sort_order' => 18
+            ],
+            [
+                'id' => 'LINK_019',
+                'title' => 'REvo S3 役職者',
+                'url' => 'https://docs.google.com/spreadsheets/d/1julCKv0NSYd4mPYv6QEcZjumpFjk_RSp/edit?gid=1522606302#gid=1522606302',
+                'category' => '役員・チャプター運営',
+                'description' => '第3期 役員・タスクフォース役割分担表',
+                'icon' => 'fa-solid fa-user-tie',
+                'sort_order' => 19
+            ],
+            [
+                'id' => 'LINK_020',
+                'title' => 'REvo内規',
+                'url' => 'https://drive.google.com/file/d/1ugEcdMEuGzqZzdPJv4iFquFdSayoll47/view?usp=share_link',
+                'category' => '役員・チャプター運営',
+                'description' => 'REvoチャプター公式内規・運営ガイドライン',
+                'icon' => 'fa-solid fa-shield-halved',
+                'sort_order' => 20
+            ],
+            [
+                'id' => 'LINK_021',
+                'title' => '定例会スライド',
+                'url' => 'https://onedrive.live.com/?view=1',
+                'category' => '日常・1to1',
+                'description' => '今週の定例会プレゼンテーションスライド',
+                'icon' => 'fa-solid fa-person-chalkboard',
+                'sort_order' => 21
+            ],
+            [
+                'id' => 'LINK_022',
+                'title' => 'パスポートプログラム星取表',
+                'url' => 'https://docs.google.com/spreadsheets/d/1nKd5ZnhRsgTIsEHgKloSu2osuaYEgC5YzqFK1bMDjUE/edit?gid=1329149645#gid=1329149645',
+                'category' => '公式ポータル・学び',
+                'description' => '新メンバー パスポートプログラム履修状況',
+                'icon' => 'fa-solid fa-star',
+                'sort_order' => 22
+            ],
+            [
+                'id' => 'LINK_023',
+                'title' => '1to1シート（マスターテンプレート）',
+                'url' => 'https://docs.google.com/spreadsheets/d/18zZmf9AzdZGWcx0yAndnCZi3dYlwYq9lX_0DaXX9ycA/edit?gid=0#gid=0',
+                'category' => '日常・1to1',
+                'description' => '1to1ミーティング用 標準テンプレートシート',
+                'icon' => 'fa-regular fa-handshake',
+                'sort_order' => 23
+            ],
+            [
+                'id' => 'LINK_024',
+                'title' => '略歴シート マスター',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1PKW-iQRei6lka38COLT-6gGaeNpzN8di',
+                'category' => '日常・1to1',
+                'description' => '新メンバー略歴シートのマスター書式',
+                'icon' => 'fa-solid fa-address-card',
+                'sort_order' => 24
+            ],
+            [
+                'id' => 'LINK_025',
+                'title' => 'オリエンシートマスター',
+                'url' => 'https://docs.google.com/spreadsheets/d/1SSQzN1aVpoFxKDxKZZakz_f7v1_1J_HkCNyVy3opvuc/edit?gid=0#gid=0',
+                'category' => 'ビジター・入会',
+                'description' => '新入会メンバー オリエンテーション手順・雛形',
+                'icon' => 'fa-solid fa-compass',
+                'sort_order' => 25
+            ],
+            [
+                'id' => 'LINK_026',
+                'title' => 'エデュケーション',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1TDj09MNeHSPTvomZ_pOczZtik800W8bl',
+                'category' => '公式ポータル・学び',
+                'description' => 'ネットワーキング学習資料・プレゼンアーカイブ',
+                'icon' => 'fa-solid fa-graduation-cap',
+                'sort_order' => 26
+            ],
+            [
+                'id' => 'LINK_027',
+                'title' => 'ダイヤモンドグロース資料',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1-U3ML5u0gCNfodGRa2NUJ1xpTMnDmyhD',
+                'category' => '役員・チャプター運営',
+                'description' => 'チャプター拡大・グロース戦略資料',
+                'icon' => 'fa-solid fa-gem',
+                'sort_order' => 27
+            ],
+            [
+                'id' => 'LINK_028',
+                'title' => 'BODチーム編成',
+                'url' => 'https://docs.google.com/spreadsheets/d/1Da3eWIov2wmYaiGmDJqZGG0AubUmNWRnFWJpS1EC2z0/edit?gid=1590356613#gid=1590356613',
+                'category' => '役員・チャプター運営',
+                'description' => 'ビジネスオープンデー（BOD）運営チーム体制表',
+                'icon' => 'fa-solid fa-gem',
+                'sort_order' => 28
+            ],
+            [
+                'id' => 'LINK_029',
+                'title' => '令和のBODマニュアル2',
+                'url' => 'https://docs.google.com/spreadsheets/d/1uab1cwUSSTb0XS805-wSpZe3kMvdHMD6wQpy8Al1vr0/edit?usp=sharing',
+                'category' => '役員・チャプター運営',
+                'description' => 'BOD企画・集客・運営実践マニュアル',
+                'icon' => 'fa-solid fa-gem',
+                'sort_order' => 29
+            ],
+            [
+                'id' => 'LINK_030',
+                'title' => '7月16日参加申込みフォーム',
+                'url' => 'https://docs.google.com/forms/d/e/1FAIpQLSdw13aK8hU4x20C-sKxEQUPZBPQ1-kCv5MeCO6i8XKqtdKzZw/viewform',
+                'category' => 'アーカイブ',
+                'description' => '過去定例会参加申込フォーム（2026/7/16）',
+                'icon' => 'fa-solid fa-box-archive',
+                'sort_order' => 30
+            ],
+            [
+                'id' => 'LINK_031',
+                'title' => '7月30日参加申込みフォーム',
+                'url' => 'https://forms.gle/TD8FmGeaqqijLkdo8',
+                'category' => 'アーカイブ',
+                'description' => '過去定例会参加申込フォーム（2026/7/30）',
+                'icon' => 'fa-solid fa-box-archive',
+                'sort_order' => 31
+            ],
+            [
+                'id' => 'LINK_032',
+                'title' => 'ビジホスレボリューション',
+                'url' => 'https://revo.k-d-o.biz/#dashboard',
+                'category' => 'ビジター・入会',
+                'description' => 'ビジターホスト統合管理ダッシュボード',
+                'icon' => 'fa-solid fa-gauge-high',
+                'sort_order' => 32
+            ],
+            [
+                'id' => 'LINK_033',
+                'title' => 'ビジホスマニュアル',
+                'url' => 'https://docs.google.com/spreadsheets/d/1kTcsFR7go_6bLUCUg7o44FmtIw3I-K3J/edit?gid=663418881#gid=663418881',
+                'category' => 'ビジター・入会',
+                'description' => 'ビジホス業務手順・定例会当日の動き方',
+                'icon' => 'fa-solid fa-book-open',
+                'sort_order' => 33
+            ],
+            [
+                'id' => 'LINK_034',
+                'title' => 'CEUポイント表',
+                'url' => 'https://drive.google.com/file/d/16lV2G1kS2sTyCe0syHBIHM2ncEXGh3Ag/view?usp=share_link',
+                'category' => '公式ポータル・学び',
+                'description' => 'BNI学習ユニット（CEU）獲得基準・ポイント表',
+                'icon' => 'fa-solid fa-award',
+                'sort_order' => 34
+            ],
+            [
+                'id' => 'LINK_035',
+                'title' => '５つの基本',
+                'url' => 'https://drive.google.com/file/d/16lV2G1kS2sTyCe0syHBIHM2ncEXGh3Ag/view?usp=sharing',
+                'category' => '公式ポータル・学び',
+                'description' => 'チャプター活動で成果を出すための5つの行動原則',
+                'icon' => 'fa-solid fa-compass',
+                'sort_order' => 35
+            ],
+            [
+                'id' => 'LINK_036',
+                'title' => 'リファーラルレベル５段階',
+                'url' => 'https://drive.google.com/file/d/11IcEMav-3L9sH2IjwijaSjrmPpVoZa-5/view?usp=share_link',
+                'category' => '公式ポータル・学び',
+                'description' => 'リファーラルに悩んだらこれ',
+                'icon' => 'fa-solid fa-arrows-turn-to-dots',
+                'sort_order' => 36
+            ],
+            [
+                'id' => 'LINK_037',
+                'title' => '運営マニュアル',
+                'url' => 'https://drive.google.com/drive/u/0/folders/19OuFXDXwfvGVobzWs7DqtA15v7M_G5-X',
+                'category' => '役員・チャプター運営',
+                'description' => 'チャプター運営総合マニュアル・ガイドライン',
+                'icon' => 'fa-solid fa-book-bookmark',
+                'sort_order' => 37
+            ],
+            [
+                'id' => 'LINK_038',
+                'title' => '申込書PDF',
+                'url' => 'https://drive.google.com/file/d/1fymAM8_LZ3IRxRzfYJwGUThMIJpCJ5Dn/view?usp=share_link',
+                'category' => 'ビジター・入会',
+                'description' => '入会申込書（印刷・手書き用PDF）',
+                'icon' => 'fa-solid fa-file-pdf',
+                'sort_order' => 38
+            ],
+            [
+                'id' => 'LINK_039',
+                'title' => 'メンバーシップ申込フォーム',
+                'url' => 'https://bni-ck.com/revo/ja/applicationregistration?chapterId=42376',
+                'category' => 'ビジター・入会',
+                'description' => '入会希望者向け オンライン入会申請フォーム',
+                'icon' => 'fa-solid fa-file-signature',
+                'sort_order' => 39
+            ],
+            [
+                'id' => 'LINK_040',
+                'title' => 'Paypal 1年申し込み',
+                'url' => 'https://www.paypal.com/ncp/payment/5CUEDN36KJ9DE',
+                'category' => 'ビジター・入会',
+                'description' => 'PayPalアカウントをお持ちでない方は、アカウントを作成後申し込みできます。',
+                'icon' => 'fa-brands fa-paypal',
+                'sort_order' => 40
+            ],
+            [
+                'id' => 'LINK_041',
+                'title' => 'Paypal 2年申し込み',
+                'url' => 'https://www.paypal.com/ncp/payment/G2RUVGXC59FZL',
+                'category' => 'ビジター・入会',
+                'description' => 'アカウントは、「法人」と「個人」がありますが、「法人」は作成に時間がかかるため「個人」で作成して下さい。',
+                'icon' => 'fa-brands fa-paypal',
+                'sort_order' => 41
+            ],
+            [
+                'id' => 'LINK_042',
+                'title' => 'MSP / トレーニング',
+                'url' => 'https://drive.google.com/drive/folders/1y9LOiK1ydHNqDFtP028vW2JS7fZN3HJ2?usp=share_link',
+                'category' => '役員・チャプター運営',
+                'description' => 'MSPに関するマニュアル、トレーニング受講時のノートをまとめるフォルダです',
+                'icon' => 'fa-solid fa-user-graduate',
+                'sort_order' => 42
+            ],
+            [
+                'id' => 'LINK_043',
+                'title' => '→ 受講状況を確認する方法 NEW',
+                'url' => 'https://drive.google.com/file/d/1Mf2zihVC927D1MJtntCLrQWfFZ_VyYir/view?usp=share_link',
+                'category' => '役員・チャプター運営',
+                'description' => 'アカデミーのReport から メンバーのMSP / アドオンの受講状況を検索する方法',
+                'icon' => 'fa-solid fa-user-graduate',
+                'sort_order' => 43
+            ],
+            [
+                'id' => 'LINK_044',
+                'title' => 'トピックメンター',
+                'url' => 'https://drive.google.com/drive/u/0/folders/14reQwl7WN9TLoqwY_k9ilEW5GhFVOXwQ',
+                'category' => '公式ポータル・学び',
+                'description' => 'トピックメンターに関する各種マニュアル類',
+                'icon' => 'fa-solid fa-user-ninja',
+                'sort_order' => 44
+            ],
+            [
+                'id' => 'LINK_045',
+                'title' => 'Webマニュアル',
+                'url' => 'https://drive.google.com/drive/u/0/folders/1kiOxgnQWwHWYIvsH_FtC34kTrn8T3Sos',
+                'category' => '公式ポータル・学び',
+                'description' => 'コネクトの使い方などのマニュアル類',
+                'icon' => 'fa-solid fa-desktop',
+                'sort_order' => 45
+            ],
+            [
+                'id' => 'LINK_046',
+                'title' => 'TLT(TeamLeadersTraining)',
+                'url' => 'https://drive.google.com/file/d/1mPUchOh7vxcWKoRYeqjrSyTWkoBFm0nN/view?usp=sharing',
+                'category' => '役員・チャプター運営',
+                'description' => '重要なマインドセット、アジェンダの本質、各役職の役割を網羅',
+                'icon' => 'fa-solid fa-book-bookmark',
+                'sort_order' => 46
+            ],
+            [
+                'id' => 'LINK_047',
+                'title' => 'BOD(BuissinessOpenDay)',
+                'url' => 'https://drive.google.com/file/d/1J-Uc93tCGsYweQng7vQPrjraoabn0C7i/view?usp=share_link',
+                'category' => '役員・チャプター運営',
+                'description' => 'BOD当日のスライド',
+                'icon' => 'fa-solid fa-gem',
+                'sort_order' => 47
+            ],
+            [
+                'id' => 'LINK_048',
+                'title' => 'bni.jp',
+                'url' => 'http://bni.jp/',
+                'category' => '公式ポータル・学び',
+                'description' => 'BNIジャパン 公式ポータルサイト',
+                'icon' => 'fa-solid fa-globe',
+                'sort_order' => 48
+            ],
+            [
+                'id' => 'LINK_049',
+                'title' => '京都CCリージョンHP',
+                'url' => 'https://bni-ck.com/',
+                'category' => '公式ポータル・学び',
+                'description' => '京都シティセントラル リージョン公式ポータル',
+                'icon' => 'fa-solid fa-globe',
+                'sort_order' => 49
+            ],
+            [
+                'id' => 'LINK_050',
+                'title' => '京都CC イベント・トレーニング',
+                'url' => 'https://bni-ck.com/ja/events',
+                'category' => '公式ポータル・学び',
+                'description' => 'リージョン主催トレーニング・ワークショップ日程',
+                'icon' => 'fa-solid fa-calendar-days',
+                'sort_order' => 50
+            ],
+            [
+                'id' => 'LINK_051',
+                'title' => 'BNI全国トレーニング一覧サイト',
+                'url' => 'https://bni-traning.develop-site.net/',
+                'category' => '公式ポータル・学び',
+                'description' => '全国オンライン研修・MSPスケジュール',
+                'icon' => 'fa-solid fa-calendar-days',
+                'sort_order' => 51
+            ],
+            [
+                'id' => 'LINK_052',
+                'title' => 'BNI スマートガイド',
+                'url' => 'http://welcome.bni.jp/',
+                'category' => '公式ポータル・学び',
+                'description' => '初めてのメンバー向け スタートガイド・マニュアル',
+                'icon' => 'fa-solid fa-globe',
+                'sort_order' => 52
+            ],
+            [
+                'id' => 'LINK_053',
+                'title' => 'BNI コネクト',
+                'url' => 'http://www.bniconnectglobal.com/',
+                'category' => '公式ポータル・学び',
+                'description' => 'BNI Connect Global（リファーラル・実績入力）',
+                'icon' => 'fa-solid fa-network-wired',
+                'sort_order' => 53
+            ],
+            [
+                'id' => 'LINK_054',
+                'title' => 'BNI アカデミー',
+                'url' => 'https://www.bniglobalacademy.com/',
+                'category' => '公式ポータル・学び',
+                'description' => 'BNI Business Builder（オンライン学習・CEU）',
+                'icon' => 'fa-solid fa-graduation-cap',
+                'sort_order' => 54
+            ],
+            [
+                'id' => 'LINK_055',
+                'title' => 'BNI ポッドキャスト',
+                'url' => 'http://bnipodcast.jp/',
+                'category' => '公式ポータル・学び',
+                'description' => 'BNI公式ポッドキャスト（移動中に聴くナレッジ）',
+                'icon' => 'fa-solid fa-podcast',
+                'sort_order' => 55
+            ],
+            [
+                'id' => 'LINK_056',
+                'title' => 'BNI ジャパンブログ',
+                'url' => 'http://blog.bni.jp/',
+                'category' => '公式ポータル・学び',
+                'description' => '全国の成功事例・ストーリー・公式ブログ',
+                'icon' => 'fa-solid fa-newspaper',
+                'sort_order' => 56
+            ],
+            [
+                'id' => 'LINK_057',
+                'title' => 'BNI リファーラルマーケティングブログ',
+                'url' => 'http://referralmarketing.jp/',
+                'category' => '公式ポータル・学び',
+                'description' => '紹介マーケティングの実践ノウハウ',
+                'icon' => 'fa-solid fa-newspaper',
+                'sort_order' => 57
             ]
         ];
 
