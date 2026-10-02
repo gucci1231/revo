@@ -12137,41 +12137,54 @@ select.form-input, select.form-select {
 
   <!-- Scope Segmented Control (Radical Minimalism) -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-    <div class="bg-slate-100/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-200/80 max-w-2xl overflow-x-auto scrollbar-none" id="links-scope-tabs">
+    <div class="flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
+      <div class="bg-slate-100/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-200/80 shrink-0" id="links-scope-tabs">
+        <button 
+          type="button" 
+          onclick="setLinkScope('member')" 
+          data-scope="member" 
+          class="link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs"
+        >
+          <i class="fa-solid fa-users text-xs"></i>
+          <span>メンバー用 (日常・学び)</span>
+        </button>
+        <button 
+          type="button" 
+          onclick="setLinkScope('admin')" 
+          data-scope="admin" 
+          class="link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800"
+        >
+          <i class="fa-solid fa-user-gear text-xs"></i>
+          <span>役員・運営用</span>
+        </button>
+        <button 
+          type="button" 
+          onclick="setLinkScope('archive')" 
+          data-scope="archive" 
+          class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
+        >
+          <i class="fa-solid fa-box-archive text-xs"></i>
+          <span>アーカイブ</span>
+        </button>
+        <button 
+          type="button" 
+          onclick="setLinkScope('all')" 
+          data-scope="all" 
+          class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
+        >
+          <span>すべて</span>
+        </button>
+      </div>
+
       <button 
         type="button" 
-        onclick="setLinkScope('member')" 
-        data-scope="member" 
-        class="link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs"
+        id="btn-add-scope"
+        onclick="openScopeModal()" 
+        class="h-9 px-3 bg-white hover:bg-slate-50 text-slate-600 hover:text-blue-600 border border-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+        title="所属スコープを追加・編集"
       >
-        <i class="fa-solid fa-users text-xs"></i>
-        <span>メンバー用 (日常・学び)</span>
-      </button>
-      <button 
-        type="button" 
-        onclick="setLinkScope('admin')" 
-        data-scope="admin" 
-        class="link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800"
-      >
-        <i class="fa-solid fa-user-gear text-xs"></i>
-        <span>役員・運営用</span>
-      </button>
-      <button 
-        type="button" 
-        onclick="setLinkScope('archive')" 
-        data-scope="archive" 
-        class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
-      >
-        <i class="fa-solid fa-box-archive text-xs"></i>
-        <span>アーカイブ</span>
-      </button>
-      <button 
-        type="button" 
-        onclick="setLinkScope('all')" 
-        data-scope="all" 
-        class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
-      >
-        <span>すべて</span>
+        <i class="fa-solid fa-layer-group text-slate-400"></i>
+        <span>+ スコープ</span>
       </button>
     </div>
 
@@ -12222,21 +12235,13 @@ select.form-input, select.form-select {
         <input type="url" id="link-field-url" required placeholder="https://..." class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">所属スコープ</label>
-          <select id="link-field-scope" onchange="onLinkModalScopeChange(this.value)" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
-            <option value="member">メンバー用 (日常・学び)</option>
-            <option value="admin">役員・運営用</option>
-            <option value="archive">アーカイブ</option>
-          </select>
-        </div>
+      <div class="grid grid-cols-2 gap-3">
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs font-bold text-slate-700">分類カテゴリ</label>
             <button type="button" onclick="openCategoryModal()" class="text-[11px] text-blue-600 hover:underline cursor-pointer">+ 新規</button>
           </div>
-          <select id="link-field-category" onchange="onLinkModalCategoryChange(this.value)" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+          <select id="link-field-category" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
             <option value="ビジター情報">🤝 ビジター情報</option>
             <option value="メンバー情報">👥 メンバー情報</option>
             <option value="日常・1to1">👥 日常・1to1</option>
@@ -12247,20 +12252,18 @@ select.form-input, select.form-select {
             <option value="アーカイブ">🗄️ アーカイブ</option>
           </select>
         </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">表示順 (小さい順)</label>
           <input type="number" id="link-field-sort" value="0" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
-          <div class="flex items-center gap-2">
-            <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
-            <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <i class="fa-solid fa-link"></i>
-            </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
+          <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i class="fa-solid fa-link"></i>
           </div>
         </div>
       </div>
@@ -12333,6 +12336,71 @@ select.form-input, select.form-select {
           キャンセル
         </button>
         <button type="submit" id="btn-save-category" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-check"></i>
+          <span>保存する</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Scope Modal (Add / Edit) -->
+<div id="modal-scope-crud" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs transition-opacity duration-200" style="display: none;">
+  <div class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-xl border border-slate-200 overflow-hidden transform transition-transform duration-200 scale-95" id="modal-scope-container">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 id="modal-scope-title" class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-layer-group text-blue-600"></i>
+        <span>所属スコープを追加・編集</span>
+      </h3>
+      <button type="button" onclick="closeScopeModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+    <form id="form-scope-crud" onsubmit="handleScopeSubmit(event)" class="p-6 space-y-4">
+      <input type="hidden" id="scope-field-id" value="">
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">スコープ表示名 <span class="text-red-500">*</span></label>
+        <input type="text" id="scope-field-name" required placeholder="例: ビジターホスト用、書記会計用 等" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">識別キー (ID)</label>
+          <input type="text" id="scope-field-key" placeholder="英数字 (例: vh, team)" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">表示優先順 (小さい順)</label>
+          <input type="number" id="scope-field-sort" value="10" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="scope-field-icon" value="fa-solid fa-layer-group" placeholder="fa-solid fa-folder" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateScopeIconPreview(this.value)">
+          <div id="scope-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scope List for quick management -->
+      <div class="pt-2 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold text-slate-600">登録済み所属スコープ</label>
+          <span class="text-[11px] text-slate-400">クリックで編集</span>
+        </div>
+        <div id="scope-modal-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeScopeModal()" class="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer">
+          閉じる
+        </button>
+        <button type="submit" id="btn-save-scope" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer">
           <i class="fa-solid fa-check"></i>
           <span>保存する</span>
         </button>
@@ -15957,6 +16025,18 @@ const ApiService = {
       case 'deleteChapterCategoryApi':
         return {
           url: '/api/links.php?action=delete_category',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
+      case 'saveChapterScopeApi':
+        return {
+          url: '/api/links.php?action=save_scope',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterScopeApi':
+        return {
+          url: '/api/links.php?action=delete_scope',
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
@@ -28480,9 +28560,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
  */
 let chapterLinksData = [];
 let chapterCategoriesData = [];
+let chapterScopesData = [];
 let currentLinkScope = 'member'; // 'member' | 'admin' | 'archive' | 'all'
 let currentLinkCategory = 'ALL';
 let currentLinkSearchQuery = '';
+
+const DEFAULT_SCOPES = [
+  { id: 'member', name: 'メンバー用 (日常・学び)', icon: 'fa-solid fa-users', sort_order: 10, is_system: 1 },
+  { id: 'admin', name: '役員・運営用', icon: 'fa-solid fa-user-gear', sort_order: 20, is_system: 1 },
+  { id: 'archive', name: 'アーカイブ', icon: 'fa-solid fa-box-archive', sort_order: 30, is_system: 1 }
+];
 
 // Default Category Order prioritizing Visitor Info -> Member Info -> Learn -> Admin -> Assets -> Archive
 const LINK_CATEGORY_ORDER = [
@@ -28649,6 +28736,77 @@ function getLinkDomainInfo(url) {
   }
 }
 
+function getActiveScopes() {
+  if (chapterScopesData && chapterScopesData.length > 0) {
+    return chapterScopesData;
+  }
+  return DEFAULT_SCOPES;
+}
+
+function renderScopeTabs() {
+  const container = document.getElementById('links-scope-tabs');
+  if (!container) return;
+
+  const scopes = getActiveScopes();
+  let html = '';
+
+  scopes.forEach(s => {
+    const isActive = currentLinkScope === s.id;
+    const activeCls = 'link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs';
+    const inactiveCls = 'link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800';
+    const icon = s.icon || 'fa-solid fa-folder';
+
+    html += `
+      <button 
+        type="button" 
+        onclick="setLinkScope('${escapeHtml(s.id)}')" 
+        data-scope="${escapeHtml(s.id)}" 
+        class="${isActive ? activeCls : inactiveCls}"
+        title="${escapeHtml(s.name)}"
+      >
+        <i class="${escapeHtml(icon)} text-xs"></i>
+        <span>${escapeHtml(s.name)}</span>
+      </button>
+    `;
+  });
+
+  // Always append 'all' tab
+  const isAllActive = currentLinkScope === 'all';
+  const allActiveCls = 'link-scope-tab active py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs shrink-0';
+  const allInactiveCls = 'link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0';
+
+  html += `
+    <button 
+      type="button" 
+      onclick="setLinkScope('all')" 
+      data-scope="all" 
+      class="${isAllActive ? allActiveCls : allInactiveCls}"
+    >
+      <span>すべて</span>
+    </button>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderCategoryScopeSelect() {
+  const select = document.getElementById('category-field-scope');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const scopes = getActiveScopes();
+
+  let html = '';
+  scopes.forEach(s => {
+    html += `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`;
+  });
+
+  select.innerHTML = html;
+  if (currentVal && scopes.some(s => s.id === currentVal)) {
+    select.value = currentVal;
+  }
+}
+
 function fetchChapterLinks() {
   const container = document.getElementById('links-grid-container');
   if (container && chapterLinksData.length === 0) {
@@ -28667,7 +28825,12 @@ function fetchChapterLinks() {
         if (Array.isArray(res.categories)) {
           chapterCategoriesData = res.categories;
         }
+        if (Array.isArray(res.scopes)) {
+          chapterScopesData = res.scopes;
+        }
         try {
+          renderScopeTabs();
+          renderCategoryScopeSelect();
           renderCategoryPills();
           renderChapterLinks();
           renderModalCategorySelect();
@@ -28688,16 +28851,8 @@ function setLinkScope(scope) {
   currentLinkScope = scope;
   currentLinkCategory = 'ALL';
 
-  // Update scope tab styles
-  const tabs = document.querySelectorAll('#links-scope-tabs .link-scope-tab');
-  tabs.forEach(tab => {
-    if (tab.getAttribute('data-scope') === scope) {
-      tab.className = 'link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs';
-    } else {
-      tab.className = 'link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800';
-    }
-  });
-
+  // Update scope tabs
+  renderScopeTabs();
   renderCategoryPills();
   renderChapterLinks();
 }
@@ -29634,15 +29789,12 @@ function deleteCategoryPrompt(catName) {
     });
 }
 
-function renderModalCategorySelect(targetScope = null, selectedCategory = null) {
+function renderModalCategorySelect(selectedCategory = null) {
   const select = document.getElementById('link-field-category');
   if (!select) return;
 
   const currentVal = selectedCategory || select.value;
-  const scopeEl = document.getElementById('link-field-scope');
-  const scope = targetScope || (scopeEl ? scopeEl.value : (currentLinkScope === 'all' ? 'member' : currentLinkScope));
-
-  const scopeCategories = getAvailableCategoriesForScope(scope === 'all' ? 'member' : scope);
+  const categories = getAvailableCategoriesForScope();
 
   // Ensure default test required options are always available
   const baseOptions = [
@@ -29657,35 +29809,17 @@ function renderModalCategorySelect(targetScope = null, selectedCategory = null) 
   ];
 
   const allCats = [];
-  scopeCategories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
+  categories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
   baseOptions.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
 
   let html = '';
   allCats.forEach(cat => {
-    const catScope = getScopeForCategory(cat);
-    const scopeBadge = catScope === 'admin' ? ' [役員・運営]' : (catScope === 'archive' ? ' [アーカイブ]' : '');
-    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}${scopeBadge}</option>`;
+    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
   });
 
   select.innerHTML = html;
   if (currentVal && allCats.includes(currentVal)) {
     select.value = currentVal;
-  } else if (scopeCategories.length > 0) {
-    select.value = scopeCategories[0];
-  }
-}
-
-function onLinkModalScopeChange(newScope) {
-  renderModalCategorySelect(newScope);
-}
-
-function onLinkModalCategoryChange(selectedCategory) {
-  const scopeEl = document.getElementById('link-field-scope');
-  if (scopeEl && selectedCategory) {
-    const inferredScope = getScopeForCategory(selectedCategory);
-    if (inferredScope) {
-      scopeEl.value = inferredScope;
-    }
   }
 }
 
@@ -29705,7 +29839,6 @@ function openLinkModal(linkId = null) {
   const container = document.getElementById('modal-link-container');
   const titleEl = document.getElementById('modal-link-title');
   const form = document.getElementById('form-link-crud');
-  const scopeEl = document.getElementById('link-field-scope');
 
   if (!modal || !container || !form) return;
 
@@ -29714,15 +29847,13 @@ function openLinkModal(linkId = null) {
   document.getElementById('link-field-sort').value = '0';
   document.getElementById('link-field-icon').value = 'fa-solid fa-link';
   updateLinkIconPreview('fa-solid fa-link');
+  renderModalCategorySelect();
 
   if (linkId) {
     const target = chapterLinksData.find(l => l.id === linkId);
     if (target) {
       if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>リンクを編集</span>`;
-      const itemScope = target.scope || getScopeForCategory(target.category);
-      if (scopeEl) scopeEl.value = itemScope;
-
-      renderModalCategorySelect(itemScope, target.category);
+      renderModalCategorySelect(target.category);
 
       document.getElementById('link-field-id').value = target.id;
       document.getElementById('link-field-title').value = target.title || '';
@@ -29735,15 +29866,12 @@ function openLinkModal(linkId = null) {
     }
   } else {
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
-    const initialScope = currentLinkScope === 'admin' ? 'admin' : (currentLinkScope === 'archive' ? 'archive' : 'member');
-    if (scopeEl) scopeEl.value = initialScope;
-
     let defaultCat = 'ビジター情報';
-    if (initialScope === 'admin') defaultCat = '役員・チャプター運営';
-    else if (initialScope === 'archive') defaultCat = 'アーカイブ';
+    if (currentLinkScope === 'admin') defaultCat = '役員・チャプター運営';
+    else if (currentLinkScope === 'archive') defaultCat = 'アーカイブ';
     else if (currentLinkCategory !== 'ALL') defaultCat = currentLinkCategory;
 
-    renderModalCategorySelect(initialScope, defaultCat);
+    renderModalCategorySelect(defaultCat);
     const catSelect = document.getElementById('link-field-category');
     if (catSelect) catSelect.value = defaultCat;
   }
@@ -29772,9 +29900,7 @@ function handleLinkSubmit(event) {
   const id = document.getElementById('link-field-id').value.trim();
   const title = document.getElementById('link-field-title').value.trim();
   const url = document.getElementById('link-field-url').value.trim();
-  const scopeEl = document.getElementById('link-field-scope');
   const category = document.getElementById('link-field-category').value;
-  const scope = (scopeEl && scopeEl.value) || getScopeForCategory(category);
   const description = document.getElementById('link-field-description').value.trim();
   const icon = document.getElementById('link-field-icon').value.trim() || 'fa-solid fa-link';
   const sort_order = parseInt(document.getElementById('link-field-sort').value, 10) || 0;
@@ -29789,7 +29915,6 @@ function handleLinkSubmit(event) {
     title,
     url,
     category,
-    scope,
     description,
     icon,
     sort_order
@@ -29841,6 +29966,192 @@ function deleteChapterLink(linkId, title) {
     })
     .catch(err => {
       console.error('Delete link error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+/* ========================================================
+   Scope Modal & Form Controller
+======================================================== */
+function updateScopeIconPreview(val) {
+  const preview = document.getElementById('scope-icon-preview');
+  if (preview) {
+    const iconClass = (val || '').trim() || 'fa-solid fa-layer-group';
+    preview.innerHTML = `<i class="${escapeHtml(iconClass)}"></i>`;
+  }
+}
+
+function openScopeModal(scopeId = null) {
+  const modal = document.getElementById('modal-scope-crud');
+  const container = document.getElementById('modal-scope-container');
+  const form = document.getElementById('form-scope-crud');
+  const title = document.getElementById('modal-scope-title');
+
+  if (!modal || !container || !form) return;
+
+  form.reset();
+  document.getElementById('scope-field-id').value = '';
+  document.getElementById('scope-field-sort').value = '10';
+  document.getElementById('scope-field-icon').value = 'fa-solid fa-layer-group';
+  updateScopeIconPreview('fa-solid fa-layer-group');
+
+  if (scopeId) {
+    const scopes = getActiveScopes();
+    const target = scopes.find(s => s.id === scopeId);
+    if (target) {
+      if (title) title.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>所属スコープを編集</span>`;
+      document.getElementById('scope-field-id').value = target.id;
+      document.getElementById('scope-field-key').value = target.id;
+      document.getElementById('scope-field-key').disabled = (target.is_system == 1 || ['member', 'admin', 'archive'].includes(target.id));
+      document.getElementById('scope-field-name').value = target.name || '';
+      document.getElementById('scope-field-sort').value = target.sort_order || 10;
+      document.getElementById('scope-field-icon').value = target.icon || 'fa-solid fa-layer-group';
+      updateScopeIconPreview(target.icon || 'fa-solid fa-layer-group');
+    }
+  } else {
+    if (title) title.innerHTML = `<i class="fa-solid fa-layer-group text-blue-600"></i><span>所属スコープを追加・編集</span>`;
+    document.getElementById('scope-field-key').disabled = false;
+  }
+
+  renderScopeModalList();
+
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    container.classList.remove('scale-95');
+    container.classList.add('scale-100');
+  }, 10);
+}
+
+function closeScopeModal() {
+  const modal = document.getElementById('modal-scope-crud');
+  const container = document.getElementById('modal-scope-container');
+  if (modal && container) {
+    container.classList.remove('scale-100');
+    container.classList.add('scale-95');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 150);
+  }
+}
+
+function renderScopeModalList() {
+  const listEl = document.getElementById('scope-modal-list');
+  if (!listEl) return;
+
+  const scopes = getActiveScopes();
+  let html = '';
+
+  scopes.forEach(s => {
+    const isSystem = s.is_system == 1 || ['member', 'admin', 'archive'].includes(s.id);
+    const icon = s.icon || 'fa-solid fa-folder';
+
+    html += `
+      <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-slate-100/70 transition-colors text-xs">
+        <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="openScopeModal('${escapeHtml(s.id)}')">
+          <i class="${escapeHtml(icon)} text-blue-600 w-4 text-center"></i>
+          <span class="font-bold text-slate-800 truncate">${escapeHtml(s.name)}</span>
+          <span class="text-[10px] text-slate-400 font-mono">(${escapeHtml(s.id)})</span>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" onclick="openScopeModal('${escapeHtml(s.id)}')" class="p-1 text-slate-400 hover:text-blue-600 rounded cursor-pointer" title="編集">
+            <i class="fa-solid fa-pen text-[11px]"></i>
+          </button>
+          ${!isSystem ? `
+            <button type="button" onclick="deleteScopePrompt('${escapeHtml(s.id)}', '${escapeHtml(s.name)}')" class="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer" title="削除">
+              <i class="fa-solid fa-trash text-[11px]"></i>
+            </button>
+          ` : `
+            <span class="text-[10px] text-slate-300 px-1 font-medium">基本</span>
+          `}
+        </div>
+      </div>
+    `;
+  });
+
+  listEl.innerHTML = html;
+}
+
+function handleScopeSubmit(event) {
+  event.preventDefault();
+  const idVal = document.getElementById('scope-field-id').value.trim();
+  const keyVal = document.getElementById('scope-field-key').value.trim();
+  const name = document.getElementById('scope-field-name').value.trim();
+  const sort_order = parseInt(document.getElementById('scope-field-sort').value, 10) || 10;
+  const icon = document.getElementById('scope-field-icon').value.trim() || 'fa-solid fa-layer-group';
+
+  if (!name) {
+    showToast('スコープ名を入力してください', 'error');
+    return;
+  }
+
+  const payload = {
+    id: idVal || keyVal || undefined,
+    name,
+    sort_order,
+    icon
+  };
+
+  const btn = document.getElementById('btn-save-scope');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
+  }
+
+  ApiService.call('saveChapterScopeApi', payload)
+    .then(res => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+      if (res && res.success) {
+        showToast('所属スコープを保存しました', 'success');
+        if (res.scopes) chapterScopesData = res.scopes;
+        if (res.categories) chapterCategoriesData = res.categories;
+        renderScopeTabs();
+        renderCategoryScopeSelect();
+        renderCategoryPills();
+        renderChapterLinks();
+        renderScopeModalList();
+        closeScopeModal();
+      } else {
+        showToast((res && res.message) || '保存に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Save scope error:', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+function deleteScopePrompt(scopeId, scopeName) {
+  if (!confirm(`所属スコープ「${scopeName}」を削除してもよろしいですか？\n※所属するカテゴリーは「メンバー用」に移動します。`)) {
+    return;
+  }
+
+  ApiService.call('deleteChapterScopeApi', { id: scopeId })
+    .then(res => {
+      if (res && res.success) {
+        showToast('所属スコープを削除しました', 'success');
+        if (res.scopes) chapterScopesData = res.scopes;
+        if (res.categories) chapterCategoriesData = res.categories;
+        if (currentLinkScope === scopeId) {
+          currentLinkScope = 'member';
+        }
+        renderScopeTabs();
+        renderCategoryScopeSelect();
+        renderCategoryPills();
+        renderChapterLinks();
+        renderScopeModalList();
+      } else {
+        showToast((res && res.message) || '削除に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Delete scope error:', err);
       showToast('通信エラーが発生しました', 'error');
     });
 }

@@ -151,6 +151,16 @@ class Database {
                 updated_at TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS chapter_link_scopes (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                icon TEXT DEFAULT 'fa-solid fa-folder',
+                sort_order INTEGER DEFAULT 0,
+                is_system INTEGER DEFAULT 0,
+                created_at TEXT,
+                updated_at TEXT
+            );
+
             CREATE TABLE IF NOT EXISTS palms_reports (
                 id TEXT PRIMARY KEY,
                 member_id TEXT NOT NULL,
@@ -1098,6 +1108,31 @@ class Database {
         }
 
         $this->seedDefaultLinkCategories();
+        $this->seedDefaultLinkScopes();
+    }
+
+    private function seedDefaultLinkScopes(): void {
+        $now = date('Y/m/d H:i');
+        $initialScopes = [
+            ['id' => 'member', 'name' => 'メンバー用 (日常・学び)', 'icon' => 'fa-solid fa-users', 'sort_order' => 10, 'is_system' => 1],
+            ['id' => 'admin', 'name' => '役員・運営用', 'icon' => 'fa-solid fa-user-gear', 'sort_order' => 20, 'is_system' => 1],
+            ['id' => 'archive', 'name' => 'アーカイブ', 'icon' => 'fa-solid fa-box-archive', 'sort_order' => 30, 'is_system' => 1],
+        ];
+
+        foreach ($initialScopes as $scope) {
+            $exists = $this->fetchColumn("SELECT COUNT(*) FROM chapter_link_scopes WHERE id = ?", [$scope['id']]);
+            if ((int)$exists === 0) {
+                $this->insert('chapter_link_scopes', [
+                    'id' => $scope['id'],
+                    'name' => $scope['name'],
+                    'icon' => $scope['icon'],
+                    'sort_order' => $scope['sort_order'],
+                    'is_system' => $scope['is_system'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+            }
+        }
     }
 
     private function seedDefaultLinkCategories(): void {

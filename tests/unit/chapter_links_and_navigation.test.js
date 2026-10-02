@@ -136,16 +136,25 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('アセット関連'), true);
   });
 
-  it('verifies Scope Editing in Link CRUD Modal and Dynamic Category Association', () => {
-    // Modal input
-    assert.strictEqual(indexHtml.includes('id="link-field-scope"'), true);
-    assert.strictEqual(indexHtml.includes('onLinkModalScopeChange'), true);
-    assert.strictEqual(indexHtml.includes('onLinkModalCategoryChange'), true);
+  it('verifies Scope Creation & Editing (Scope CRUD) and Dynamic Navigation Tabs', () => {
+    // Scope UI elements
+    assert.strictEqual(indexHtml.includes('id="btn-add-scope"'), true);
+    assert.strictEqual(indexHtml.includes('id="modal-scope-crud"'), true);
+    assert.strictEqual(indexHtml.includes('id="form-scope-crud"'), true);
+    assert.strictEqual(indexHtml.includes('id="scope-field-name"'), true);
+    assert.strictEqual(indexHtml.includes('id="scope-field-key"'), true);
 
     // JS helper functions
-    assert.strictEqual(indexHtml.includes('function getScopeForCategory'), true);
-    assert.strictEqual(indexHtml.includes('function onLinkModalScopeChange'), true);
-    assert.strictEqual(indexHtml.includes('function onLinkModalCategoryChange'), true);
+    assert.strictEqual(indexHtml.includes('function openScopeModal'), true);
+    assert.strictEqual(indexHtml.includes('function closeScopeModal'), true);
+    assert.strictEqual(indexHtml.includes('function handleScopeSubmit'), true);
+    assert.strictEqual(indexHtml.includes('function deleteScopePrompt'), true);
+    assert.strictEqual(indexHtml.includes('function renderScopeTabs'), true);
+    assert.strictEqual(indexHtml.includes('function renderCategoryScopeSelect'), true);
+
+    // ApiService mappings
+    assert.strictEqual(indexHtml.includes('saveChapterScopeApi'), true);
+    assert.strictEqual(indexHtml.includes('deleteChapterScopeApi'), true);
   });
 });
 

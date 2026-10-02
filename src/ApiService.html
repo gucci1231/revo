@@ -259,6 +259,18 @@ const ApiService = {
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
+      case 'saveChapterScopeApi':
+        return {
+          url: '/api/links.php?action=save_scope',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterScopeApi':
+        return {
+          url: '/api/links.php?action=delete_scope',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getPalmsListApi':

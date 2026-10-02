@@ -10,6 +10,41 @@ class LinkRepository {
     public function __construct(?Database $db = null) {
         $this->db = $db ?? Database::getInstance();
         $this->ensureCategoriesTable();
+        $this->ensureScopesTable();
+    }
+
+    private function ensureScopesTable(): void {
+        $sql = "CREATE TABLE IF NOT EXISTS chapter_link_scopes (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            icon TEXT DEFAULT 'fa-solid fa-folder',
+            sort_order INTEGER DEFAULT 0,
+            is_system INTEGER DEFAULT 0,
+            created_at TEXT,
+            updated_at TEXT
+        )";
+        $this->db->execute($sql);
+
+        $count = (int)$this->db->fetchColumn("SELECT COUNT(*) FROM chapter_link_scopes");
+        if ($count === 0) {
+            $now = date('Y/m/d H:i');
+            $initialScopes = [
+                ['id' => 'member', 'name' => 'メンバー用 (日常・学び)', 'icon' => 'fa-solid fa-users', 'sort_order' => 10, 'is_system' => 1],
+                ['id' => 'admin', 'name' => '役員・運営用', 'icon' => 'fa-solid fa-user-gear', 'sort_order' => 20, 'is_system' => 1],
+                ['id' => 'archive', 'name' => 'アーカイブ', 'icon' => 'fa-solid fa-box-archive', 'sort_order' => 30, 'is_system' => 1],
+            ];
+            foreach ($initialScopes as $scope) {
+                $this->db->insert('chapter_link_scopes', [
+                    'id' => $scope['id'],
+                    'name' => $scope['name'],
+                    'icon' => $scope['icon'],
+                    'sort_order' => $scope['sort_order'],
+                    'is_system' => $scope['is_system'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+            }
+        }
     }
 
     private function ensureCategoriesTable(): void {
@@ -80,6 +115,53 @@ class LinkRepository {
             $cats = $this->db->fetchAll($sql);
         }
         return $cats;
+    }
+
+    public function getScopes(): array {
+        $sql = "SELECT * FROM chapter_link_scopes ORDER BY sort_order ASC, id ASC";
+        $scopes = $this->db->fetchAll($sql);
+        if (empty($scopes)) {
+            $this->ensureScopesTable();
+            $scopes = $this->db->fetchAll($sql);
+        }
+        return $scopes;
+    }
+
+    public function saveScope(array $data): bool {
+        $name = trim((string)($data['name'] ?? ''));
+        if ($name === '') return false;
+
+        $id = trim((string)($data['id'] ?? ''));
+        if ($id === '') {
+            $id = 'scope_' . bin2hex(random_bytes(4));
+        }
+
+        $now = date('Y/m/d H:i');
+        $scopeData = [
+            'name' => $name,
+            'icon' => (string)($data['icon'] ?? 'fa-solid fa-folder'),
+            'sort_order' => (int)($data['sort_order'] ?? 0),
+            'updated_at' => $now
+        ];
+
+        $existing = $this->db->fetchOne("SELECT * FROM chapter_link_scopes WHERE id = ?", [$id]);
+        if ($existing) {
+            return $this->db->update('chapter_link_scopes', $scopeData, "id = ?", [$id]) >= 0;
+        } else {
+            $scopeData['id'] = $id;
+            $scopeData['is_system'] = (int)($data['is_system'] ?? 0);
+            $scopeData['created_at'] = $now;
+            return $this->db->insert('chapter_link_scopes', $scopeData) > 0;
+        }
+    }
+
+    public function deleteScope(string $id): bool {
+        if ($id === 'member' || $id === 'admin' || $id === 'archive') {
+            return false;
+        }
+        // Move any categories with this scope back to 'member'
+        $this->db->execute("UPDATE chapter_link_categories SET scope = 'member' WHERE scope = ?", [$id]);
+        return $this->db->delete('chapter_link_scopes', "id = ?", [$id]) > 0;
     }
 
     public function getById(string $id): ?array {

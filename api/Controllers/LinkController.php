@@ -41,6 +41,12 @@ class LinkController extends Controller {
             case 'delete_category':
                 $this->deleteCategory();
                 break;
+            case 'save_scope':
+                $this->saveScope();
+                break;
+            case 'delete_scope':
+                $this->deleteScope();
+                break;
             default:
                 $this->listLinks();
                 break;
@@ -50,9 +56,11 @@ class LinkController extends Controller {
     private function listLinks(): void {
         $links = $this->linkRepo->getAll();
         $categories = $this->linkRepo->getCategories();
+        $scopes = $this->linkRepo->getScopes();
         Response::success([
             'links' => $links,
-            'categories' => $categories
+            'categories' => $categories,
+            'scopes' => $scopes
         ]);
     }
 
@@ -199,6 +207,52 @@ class LinkController extends Controller {
             ]);
         } else {
             Response::error('カテゴリーの削除に失敗しました');
+        }
+    }
+
+    private function saveScope(): void {
+        $name = trim((string)$this->getParam('name', ''));
+        if ($name === '') {
+            Response::error('スコープ名を入力してください');
+            return;
+        }
+
+        $id = trim((string)$this->getParam('id', ''));
+        $data = [
+            'id' => $id !== '' ? $id : null,
+            'name' => $name,
+            'icon' => (string)$this->getParam('icon', 'fa-solid fa-folder'),
+            'sort_order' => (int)$this->getParam('sort_order', 0)
+        ];
+
+        $ok = $this->linkRepo->saveScope($data);
+        if ($ok) {
+            Response::success([
+                'message' => '所属スコープを保存しました',
+                'scopes' => $this->linkRepo->getScopes(),
+                'categories' => $this->linkRepo->getCategories()
+            ]);
+        } else {
+            Response::error('所属スコープの保存に失敗しました');
+        }
+    }
+
+    private function deleteScope(): void {
+        $id = trim((string)$this->getParam('id', ''));
+        if ($id === '') {
+            Response::error('スコープIDが指定されていません');
+            return;
+        }
+
+        $ok = $this->linkRepo->deleteScope($id);
+        if ($ok) {
+            Response::success([
+                'message' => '所属スコープを削除しました',
+                'scopes' => $this->linkRepo->getScopes(),
+                'categories' => $this->linkRepo->getCategories()
+            ]);
+        } else {
+            Response::error('この所属スコープは削除できません');
         }
     }
 }
