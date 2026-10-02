@@ -95,4 +95,12 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     const viewLinksScript = fs.readFileSync(path.join(rootDir, 'src/scripts/ViewLinks.html'), 'utf8');
     assert.strictEqual(viewLinksScript.includes('Utils.escapeHtml'), false);
   });
+
+  it('verifies nested genre list view and domain badge helpers in Chapter Links', () => {
+    assert.strictEqual(indexHtml.includes('LINK_CATEGORY_ORDER'), true);
+    assert.strictEqual(indexHtml.includes('function toggleLinkGenre'), true);
+    assert.strictEqual(indexHtml.includes('function getLinkDomainInfo'), true);
+    assert.strictEqual(indexHtml.includes('linkGenreCollapsedMap'), true);
+    assert.strictEqual(indexHtml.includes('genre-body-'), true);
+  });
 });

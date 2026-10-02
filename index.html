@@ -12165,10 +12165,10 @@ select.form-input, select.form-select {
     <!-- Populated dynamically based on active scope by JS -->
   </div>
 
-  <!-- Links Grid Container -->
-  <div id="links-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <!-- Nested Genre Links Container -->
+  <div id="links-grid-container" class="space-y-4">
     <!-- Populated by JavaScript -->
-    <div class="col-span-full py-16 text-center text-slate-400">
+    <div class="py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
       <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
       <p class="text-xs font-bold">リンク情報を取得中...</p>
     </div>
@@ -28368,48 +28368,127 @@ const LINK_SCOPE_MAP = {
   archive: ['アーカイブ']
 };
 
+const LINK_CATEGORY_ORDER = [
+  '日常・1to1',
+  'ビジター・入会',
+  '公式ポータル・学び',
+  '役員・チャプター運営',
+  'アーカイブ'
+];
+
 const LINK_CATEGORY_THEMES = {
   '日常・1to1': {
+    icon: 'fa-solid fa-users',
     iconBg: 'bg-blue-50',
     iconBorder: 'border-blue-100',
     iconText: 'text-blue-600',
     badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/60',
-    hoverIconBg: 'group-hover:bg-blue-600 group-hover:text-white',
-    dotColor: '#0071e3'
+    dotColor: '#0071e3',
+    desc: '定例会準備・1to1シート・写真・プレゼン等'
   },
   'ビジター・入会': {
+    icon: 'fa-solid fa-user-plus',
     iconBg: 'bg-emerald-50',
     iconBorder: 'border-emerald-100',
     iconText: 'text-emerald-600',
     badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
-    hoverIconBg: 'group-hover:bg-emerald-600 group-hover:text-white',
-    dotColor: '#059669'
+    dotColor: '#059669',
+    desc: 'ビジター申込・ヒアリング・オリエン・入会フォーム等'
   },
   '公式ポータル・学び': {
+    icon: 'fa-solid fa-graduation-cap',
     iconBg: 'bg-indigo-50',
     iconBorder: 'border-indigo-100',
     iconText: 'text-indigo-600',
     badgeClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60',
-    hoverIconBg: 'group-hover:bg-indigo-600 group-hover:text-white',
-    dotColor: '#4f46e5'
+    dotColor: '#4f46e5',
+    desc: 'BNI Connect・アカデミー・各種トレーニング等'
   },
   '役員・チャプター運営': {
+    icon: 'fa-solid fa-user-gear',
     iconBg: 'bg-amber-50',
     iconBorder: 'border-amber-100',
     iconText: 'text-amber-600',
     badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200/60',
-    hoverIconBg: 'group-hover:bg-amber-600 group-hover:text-white',
-    dotColor: '#d97706'
+    dotColor: '#d97706',
+    desc: 'アジェンダ・40人リスト・BOR表・役員資料等'
   },
   'アーカイブ': {
+    icon: 'fa-solid fa-box-archive',
     iconBg: 'bg-slate-100',
     iconBorder: 'border-slate-200',
     iconText: 'text-slate-500',
     badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200',
-    hoverIconBg: 'group-hover:bg-slate-700 group-hover:text-white',
-    dotColor: '#64748b'
+    dotColor: '#64748b',
+    desc: '過去の定例会フォーム・保管アーカイブ'
   }
 };
+
+const linkGenreCollapsedMap = {};
+
+function getCategorySlug(cat) {
+  let hash = 0;
+  for (let i = 0; i < cat.length; i++) {
+    hash = ((hash << 5) - hash) + cat.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'cat_' + Math.abs(hash);
+}
+
+function toggleLinkGenre(genreKey) {
+  linkGenreCollapsedMap[genreKey] = !linkGenreCollapsedMap[genreKey];
+  const body = document.getElementById(`genre-body-${genreKey}`);
+  const icon = document.getElementById(`genre-icon-${genreKey}`);
+  if (body) {
+    if (linkGenreCollapsedMap[genreKey]) {
+      body.classList.add('hidden');
+      if (icon) icon.className = 'fa-solid fa-chevron-right text-slate-400 text-xs transition-transform';
+    } else {
+      body.classList.remove('hidden');
+      if (icon) icon.className = 'fa-solid fa-chevron-down text-slate-400 text-xs transition-transform';
+    }
+  }
+}
+
+function getLinkDomainInfo(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    const path = u.pathname.toLowerCase();
+    if (host.includes('docs.google.com')) {
+      if (path.includes('/spreadsheets')) return { label: 'Sheets', icon: 'fa-solid fa-table', badge: 'bg-emerald-50 text-emerald-700 border-emerald-200/70' };
+      if (path.includes('/forms')) return { label: 'Form', icon: 'fa-solid fa-square-poll-horizontal', badge: 'bg-purple-50 text-purple-700 border-purple-200/70' };
+      return { label: 'Google Docs', icon: 'fa-solid fa-file-lines', badge: 'bg-blue-50 text-blue-700 border-blue-200/70' };
+    }
+    if (host.includes('forms.gle')) {
+      return { label: 'Form', icon: 'fa-solid fa-square-poll-horizontal', badge: 'bg-purple-50 text-purple-700 border-purple-200/70' };
+    }
+    if (host.includes('drive.google.com')) {
+      return { label: 'Drive', icon: 'fa-brands fa-google-drive', badge: 'bg-blue-50 text-blue-700 border-blue-200/70' };
+    }
+    if (host.includes('zoom.us')) {
+      return { label: 'Zoom', icon: 'fa-solid fa-video', badge: 'bg-sky-50 text-sky-700 border-sky-200/70' };
+    }
+    if (host.includes('paypal.com')) {
+      return { label: 'PayPal', icon: 'fa-brands fa-paypal', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200/70' };
+    }
+    if (host.includes('bniconnectglobal.com')) {
+      return { label: 'BNI Connect', icon: 'fa-solid fa-network-wired', badge: 'bg-red-50 text-red-700 border-red-200/70' };
+    }
+    if (host.includes('bniglobalacademy.com')) {
+      return { label: 'Academy', icon: 'fa-solid fa-graduation-cap', badge: 'bg-amber-50 text-amber-700 border-amber-200/70' };
+    }
+    if (host.includes('bni-ck.com')) {
+      return { label: 'BNI京都CC', icon: 'fa-solid fa-landmark', badge: 'bg-rose-50 text-rose-700 border-rose-200/70' };
+    }
+    if (host.includes('onedrive.live.com')) {
+      return { label: 'OneDrive', icon: 'fa-brands fa-microsoft', badge: 'bg-blue-50 text-blue-700 border-blue-200/70' };
+    }
+    return { label: host.replace(/^www\./, ''), icon: 'fa-solid fa-globe', badge: 'bg-slate-50 text-slate-600 border-slate-200' };
+  } catch(e) {
+    return { label: 'Web', icon: 'fa-solid fa-link', badge: 'bg-slate-50 text-slate-600 border-slate-200' };
+  }
+}
 
 function fetchChapterLinks() {
   const container = document.getElementById('links-grid-container');
@@ -28598,7 +28677,7 @@ function renderChapterLinks() {
 
   if (filtered.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+      <div class="py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
         <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
           <i class="fa-solid fa-magnifying-glass text-xl"></i>
         </div>
@@ -28614,102 +28693,156 @@ function renderChapterLinks() {
     return;
   }
 
-  let html = '';
+  // Group filtered links by category
+  const grouped = {};
   filtered.forEach(link => {
-    const escapedTitle = escapeHtml(link.title || '');
-    const escapedUrl = escapeHtml(link.url || '');
-    const escapedDesc = escapeHtml(link.description || '');
-    const escapedCategory = escapeHtml(link.category || 'その他');
-    const iconClass = link.icon ? escapeHtml(link.icon) : 'fa-solid fa-link';
-    const linkId = escapeHtml(link.id || '');
+    const cat = link.category || 'その他';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(link);
+  });
 
-    const theme = LINK_CATEGORY_THEMES[link.category] || {
-      iconBg: 'bg-slate-50',
-      iconBorder: 'border-slate-100',
+  // Determine category display order
+  const categoriesInOrder = [];
+  LINK_CATEGORY_ORDER.forEach(cat => {
+    if (grouped[cat] && grouped[cat].length > 0) {
+      categoriesInOrder.push(cat);
+    }
+  });
+  // Append any extra category not in LINK_CATEGORY_ORDER
+  Object.keys(grouped).forEach(cat => {
+    if (!categoriesInOrder.includes(cat) && grouped[cat].length > 0) {
+      categoriesInOrder.push(cat);
+    }
+  });
+
+  let html = '';
+
+  categoriesInOrder.forEach(catName => {
+    const items = grouped[catName];
+    // Sort items by sort_order ASC, then title ASC
+    items.sort((a, b) => {
+      const orderA = typeof a.sort_order === 'number' ? a.sort_order : parseInt(a.sort_order || 0, 10);
+      const orderB = typeof b.sort_order === 'number' ? b.sort_order : parseInt(b.sort_order || 0, 10);
+      if (orderA !== orderB) return orderA - orderB;
+      return (a.title || '').localeCompare(b.title || '', 'ja');
+    });
+
+    const catSlug = getCategorySlug(catName);
+    const isCollapsed = !!linkGenreCollapsedMap[catSlug];
+    const theme = LINK_CATEGORY_THEMES[catName] || {
+      icon: 'fa-solid fa-folder',
+      iconBg: 'bg-slate-100',
+      iconBorder: 'border-slate-200',
       iconText: 'text-slate-600',
       badgeClass: 'bg-slate-100 text-slate-600 border border-slate-200',
-      hoverIconBg: 'group-hover:bg-slate-700 group-hover:text-white',
-      dotColor: '#64748b'
+      dotColor: '#64748b',
+      desc: ''
     };
 
-    // Extract domain host
-    let displayHost = '';
-    try {
-      const u = new URL(link.url);
-      displayHost = u.hostname.replace('www.', '');
-      if (displayHost.includes('drive.google.com')) displayHost = 'Google Drive';
-      else if (displayHost.includes('docs.google.com/spreadsheets')) displayHost = 'Google Sheets';
-      else if (displayHost.includes('docs.google.com/forms') || displayHost.includes('forms.gle')) displayHost = 'Google Form';
-      else if (displayHost.includes('zoom.us')) displayHost = 'Zoom';
-      else if (displayHost.includes('onedrive.live.com')) displayHost = 'OneDrive';
-      else if (displayHost.includes('paypal.com')) displayHost = 'PayPal';
-      else if (displayHost.includes('bniconnectglobal.com')) displayHost = 'BNI Connect';
-      else if (displayHost.includes('bniglobalacademy.com')) displayHost = 'BNI Academy';
-      else if (displayHost.includes('bni-ck.com')) displayHost = 'BNI京都CC';
-    } catch(e) {
-      displayHost = link.url;
-    }
+    let itemsHtml = '';
+    items.forEach(link => {
+      const escapedTitle = escapeHtml(link.title || '');
+      const escapedUrl = escapeHtml(link.url || '');
+      const escapedDesc = escapeHtml(link.description || '');
+      const iconClass = link.icon ? escapeHtml(link.icon) : 'fa-solid fa-link';
+      const linkId = escapeHtml(link.id || '');
+      const domainInfo = getLinkDomainInfo(link.url || '');
 
-    html += `
-      <div class="bg-white rounded-2xl border border-slate-200/90 p-5 hover:border-slate-300 hover:shadow-xs transition-all duration-200 flex flex-col justify-between group">
-        <div>
-          <!-- Top Row: Icon + Category Badge + Action Buttons -->
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div class="w-10 h-10 rounded-xl ${theme.iconBg} border ${theme.iconBorder} flex items-center justify-center ${theme.iconText} shrink-0 ${theme.hoverIconBg} transition-colors duration-200">
-              <i class="${iconClass} text-base"></i>
+      itemsHtml += `
+        <div class="px-3.5 sm:px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors group">
+          <!-- Left: Icon + Title + Description -->
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
+              <i class="${iconClass}"></i>
             </div>
-            
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${theme.badgeClass}">
-                ${escapedCategory}
-              </span>
-              <button 
-                type="button" 
-                onclick="openLinkModal('${linkId}')" 
-                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
-                title="編集"
+            <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2.5">
+              <a 
+                href="${escapedUrl}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="text-xs sm:text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors truncate"
               >
-                <i class="fa-solid fa-pen text-[11px]"></i>
-              </button>
-              <button 
-                type="button" 
-                onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" 
-                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
-                title="削除"
-              >
-                <i class="fa-solid fa-trash text-[11px]"></i>
-              </button>
+                ${escapedTitle}
+              </a>
+              ${escapedDesc ? `
+                <span class="text-[11px] text-slate-400 truncate max-w-xs sm:max-w-md font-normal">
+                  ${escapedDesc}
+                </span>
+              ` : ''}
             </div>
           </div>
 
-          <!-- Title -->
-          <h3 class="text-sm font-extrabold text-slate-800 line-clamp-1 mb-1.5 tracking-tight">
-            <a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">
-              ${escapedTitle}
-            </a>
-          </h3>
+          <!-- Right: Domain badge + Open link button + Edit + Delete -->
+          <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+            <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${domainInfo.badge}">
+              <i class="${domainInfo.icon} text-[9px]"></i>
+              <span>${domainInfo.label}</span>
+            </span>
 
-          <!-- Description -->
-          <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4 min-h-[32px]">
-            ${escapedDesc || 'チャプター公式アセット・リンク'}
-          </p>
+            <a 
+              href="${escapedUrl}" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-lg transition-colors"
+              title="リンクを開く"
+            >
+              <span>開く</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+
+            <button 
+              type="button" 
+              onclick="openLinkModal('${linkId}')" 
+              class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
+              title="編集"
+            >
+              <i class="fa-solid fa-pen text-[11px]"></i>
+            </button>
+            <button 
+              type="button" 
+              onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" 
+              class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
+              title="削除"
+            >
+              <i class="fa-solid fa-trash text-[11px]"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden transition-all">
+        <!-- Genre Header (Click to toggle) -->
+        <div 
+          onclick="toggleLinkGenre('${catSlug}')" 
+          class="px-4 py-3 bg-slate-50/70 hover:bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between cursor-pointer select-none transition-colors"
+        >
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center text-xs shrink-0 border ${theme.iconBorder}">
+              <i class="${theme.icon}"></i>
+            </span>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight truncate">
+              ${escapeHtml(catName)}
+            </h3>
+            <span class="text-[11px] font-black px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200 tabular-nums shrink-0">
+              ${items.length}件
+            </span>
+            ${theme.desc ? `
+              <span class="hidden md:inline text-xs text-slate-400 font-normal truncate">
+                ${theme.desc}
+              </span>
+            ` : ''}
+          </div>
+          
+          <div class="flex items-center gap-2 shrink-0">
+            <i id="genre-icon-${catSlug}" class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
+          </div>
         </div>
 
-        <!-- Footer / Link action -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-          <span class="text-[11px] font-medium text-slate-400 truncate max-w-[150px] sm:max-w-[190px] flex items-center gap-1">
-            <i class="fa-solid fa-globe text-[10px] text-slate-400"></i>
-            <span>${displayHost}</span>
-          </span>
-          <a 
-            href="${escapedUrl}" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <span>開く</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-          </a>
+        <!-- Nested List Rows -->
+        <div id="genre-body-${catSlug}" class="${isCollapsed ? 'hidden ' : ''}divide-y divide-slate-100">
+          ${itemsHtml}
         </div>
       </div>
     `;
