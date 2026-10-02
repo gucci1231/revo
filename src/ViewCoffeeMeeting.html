@@ -1,140 +1,140 @@
 <!-- Coffee Meeting Management View (Weekday 12:00-12:30 Focus) -->
 <div id="view-coffee" class="view-content">
 
-  <!-- 4 Big KPI Cards (Apple Minimal & Refined Typography) -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-3">
+  <!-- 4 Big KPI Cards (Consistent with ViewTraining & Apple Radical Minimalism) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
     <!-- KPI 1: 次回ミーティング -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-2xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between text-3xs text-slate-500 font-medium mb-0.5">
+    <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
         <span>次回ミーティング</span>
-        <span id="kpi-coffee-status-dot" class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+        <span id="kpi-coffee-status-dot" class="w-2 h-2 rounded-full bg-blue-500"></span>
       </div>
-      <div class="mt-0.5">
-        <div id="kpi-coffee-next-date" class="text-xs sm:text-sm font-bold text-slate-900 font-mono tracking-tight tabular-nums">--</div>
-        <div id="kpi-coffee-next-visitor" class="text-4xs text-slate-400 truncate mt-0.5">空き枠募集中</div>
+      <div class="mt-1">
+        <div id="kpi-coffee-next-date" class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight tabular-nums">--</div>
+        <div id="kpi-coffee-next-visitor" class="text-xs text-slate-500 truncate mt-0.5 font-medium">空き枠募集中</div>
       </div>
     </div>
 
     <!-- KPI 2: 今月実施 & 予定 -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-2xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between text-3xs text-slate-500 font-medium mb-0.5">
+    <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
         <span>今月実施 & 予定</span>
-        <span class="text-4xs font-bold px-1 py-0.2 rounded bg-slate-100 text-slate-600">12:00枠</span>
+        <i class="fa-solid fa-mug-hot text-blue-500 text-xs"></i>
       </div>
-      <div class="mt-0.5 flex items-baseline gap-1">
-        <span id="kpi-coffee-month-count" class="text-base sm:text-lg font-bold text-slate-900 font-mono tracking-tight tabular-nums">0</span>
-        <span class="text-3xs text-slate-400">回</span>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-month-count" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">回</span>
       </div>
     </div>
 
     <!-- KPI 3: 今月空き枠 -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-2xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between text-3xs text-slate-500 font-medium mb-0.5">
+    <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
         <span>今月空き枠</span>
-        <span id="kpi-coffee-empty-badge" class="text-4xs font-bold px-1 py-0.2 rounded bg-blue-50 text-blue-600 border border-blue-200">受付中</span>
+        <span id="kpi-coffee-empty-badge" class="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-extrabold bg-blue-50 text-blue-600 border border-blue-200">受付中</span>
       </div>
-      <div class="mt-0.5 flex items-baseline gap-1">
-        <span id="kpi-coffee-empty-count" class="text-base sm:text-lg font-bold text-blue-600 font-mono tracking-tight tabular-nums">0</span>
-        <span class="text-3xs text-slate-400">枠</span>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-empty-count" class="text-2xl sm:text-3xl font-black text-blue-600 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">枠</span>
       </div>
     </div>
 
     <!-- KPI 4: 候補ビジター (未予約) -->
-    <div class="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-2xs hover:-translate-y-0.5 transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between text-3xs text-slate-500 font-medium mb-0.5">
+    <div class="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
         <span>候補ビジター</span>
-        <span class="text-4xs font-bold px-1 py-0.2 rounded bg-rose-50 text-rose-600 border border-rose-200">未予約</span>
+        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200">未予約</span>
       </div>
-      <div class="mt-0.5 flex items-baseline gap-1">
-        <span id="kpi-coffee-unassigned-count" class="text-base sm:text-lg font-bold text-slate-900 font-mono tracking-tight tabular-nums">0</span>
-        <span class="text-3xs text-slate-400">名</span>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-unassigned-count" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">名</span>
       </div>
     </div>
   </div>
 
-  <!-- Apple Minimalist Toolbar & Quick Actions -->
-  <div class="bg-white border border-slate-200 rounded-xl p-2 sm:p-2.5 shadow-2xs mb-2.5 flex flex-wrap items-center justify-between gap-2">
+  <!-- Apple Minimalist Toolbar & Quick Actions (Consistent with ViewTraining) -->
+  <div class="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs mb-3 flex flex-wrap items-center justify-between gap-2">
     
     <!-- Left: Period Navigation (< 2026年10月 > 今日) -->
-    <div class="flex items-center gap-1 sm:gap-1.5">
-      <button type="button" onclick="navigateCoffeePeriod(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="前へ">
-        <i class="fa-solid fa-chevron-left text-3xs"></i>
+    <div class="flex items-center gap-1 sm:gap-2">
+      <button type="button" onclick="navigateCoffeePeriod(-1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="前へ">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
       </button>
 
-      <h3 id="coffee-current-period-label" class="text-xs sm:text-sm font-bold text-slate-900 font-mono tracking-tight tabular-nums px-1.5 min-w-[100px] text-center select-none cursor-pointer" onclick="jumpToCurrentCoffeePeriod()" title="今月/今週にジャンプ">
+      <h3 id="coffee-current-period-label" class="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center select-none cursor-pointer" onclick="jumpToCurrentCoffeePeriod()" title="今月/今週にジャンプ">
         ----年 --月
       </h3>
 
-      <button type="button" onclick="navigateCoffeePeriod(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="次へ">
-        <i class="fa-solid fa-chevron-right text-3xs"></i>
+      <button type="button" onclick="navigateCoffeePeriod(1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="次へ">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
       </button>
 
-      <button type="button" onclick="jumpToCurrentCoffeePeriod()" class="px-2 py-1 rounded-lg text-3xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors ml-0.5 cursor-pointer shadow-2xs">
+      <button type="button" onclick="jumpToCurrentCoffeePeriod()" class="px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors ml-1 cursor-pointer shadow-2xs">
         今日
       </button>
     </div>
 
     <!-- Center: View Mode Segmented Control (月 / 週) -->
-    <div class="inline-flex p-0.5 bg-slate-100 border border-slate-200 rounded-lg text-3xs font-medium">
-      <button type="button" id="btn-coffee-mode-month" onclick="setCoffeeViewMode('month')" class="px-2.5 py-1 rounded-md transition-all cursor-pointer bg-white text-slate-900 font-bold shadow-2xs">
+    <div class="inline-flex p-1 bg-slate-100 border border-slate-200/80 rounded-xl text-xs font-bold">
+      <button type="button" id="btn-coffee-mode-month" onclick="setCoffeeViewMode('month')" class="px-3 py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-bold">
         月表示
       </button>
-      <button type="button" id="btn-coffee-mode-week" onclick="setCoffeeViewMode('week')" class="px-2.5 py-1 rounded-md transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+      <button type="button" id="btn-coffee-mode-week" onclick="setCoffeeViewMode('week')" class="px-3 py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900 font-medium">
         週表示
       </button>
     </div>
 
     <!-- Right: Actions -->
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1.5 sm:gap-2">
       <!-- Copy Available Slots -->
-      <button type="button" onclick="copyAvailableCoffeeSlotsText()" class="px-2.5 py-1 rounded-lg text-3xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95" title="空き枠一覧のLINE/チャット用案内文をコピー">
-        <i class="fa-regular fa-copy text-slate-400 text-4xs"></i>
+      <button type="button" onclick="copyAvailableCoffeeSlotsText()" class="px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95" title="空き枠一覧のLINE/チャット用案内文をコピー">
+        <i class="fa-regular fa-copy text-slate-400 text-xs"></i>
         <span>空き日程コピー</span>
       </button>
 
       <!-- New Candidate Visitor Registration -->
-      <button type="button" onclick="openCoffeeAddVisitorModal()" class="px-2.5 py-1 rounded-lg text-3xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95" title="申込前ビジター・候補者を新規登録">
-        <i class="fa-solid fa-user-plus text-slate-400 text-4xs"></i>
+      <button type="button" onclick="openCoffeeAddVisitorModal()" class="px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95" title="申込前ビジター・候補者を新規登録">
+        <i class="fa-solid fa-user-plus text-slate-400 text-xs"></i>
         <span>候補登録</span>
       </button>
 
       <!-- Quick Assign Slot Modal -->
-      <button type="button" onclick="openCoffeeAssignModal(getTodayIsoDate())" class="px-3 py-1 rounded-lg text-3xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95">
-        <i class="fa-solid fa-plus text-4xs"></i>
+      <button type="button" onclick="openCoffeeAssignModal(typeof getTodayIsoDate === 'function' ? getTodayIsoDate() : null)" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95">
+        <i class="fa-solid fa-plus text-xs"></i>
         <span>予約登録</span>
       </button>
     </div>
   </div>
 
   <!-- Main Calendar & Unassigned Visitors 2-Column Layout (Desktop) -->
-  <div class="grid grid-cols-1 xl:grid-cols-4 gap-3">
+  <div class="grid grid-cols-1 xl:grid-cols-4 gap-3.5">
     
     <!-- Left Column (Span 3): Calendar Grid -->
-    <div class="xl:col-span-3 space-y-2.5">
+    <div class="xl:col-span-3 space-y-3">
       
       <!-- Month Grid Container -->
-      <div id="coffee-month-container" class="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-2xs overflow-hidden">
+      <div id="coffee-month-container" class="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
         
         <!-- Day of Week Headers (Weekday Focus: Mon-Fri primary, Sat-Sun compact) -->
-        <div class="grid grid-cols-5 sm:grid-cols-7 gap-1 sm:gap-1.5 mb-1.5 text-center text-3xs font-medium">
-          <div class="text-slate-600 py-0.5 bg-slate-50 rounded-md">月</div>
-          <div class="text-slate-600 py-0.5 bg-slate-50 rounded-md">火</div>
-          <div class="text-slate-600 py-0.5 bg-slate-50 rounded-md">水</div>
-          <div class="text-blue-600 py-0.5 bg-blue-50/60 rounded-md border border-blue-100 font-bold">木 (定例会)</div>
-          <div class="text-slate-600 py-0.5 bg-slate-50 rounded-md">金</div>
-          <div class="hidden sm:block text-slate-400 py-0.5 bg-slate-50/50 rounded-md text-4xs">土</div>
-          <div class="hidden sm:block text-slate-400 py-0.5 bg-slate-50/50 rounded-md text-4xs">日</div>
+        <div class="grid grid-cols-5 sm:grid-cols-7 border-b border-slate-200 bg-slate-50/60 text-center text-xs font-semibold py-2.5 text-slate-500">
+          <div>月</div>
+          <div>火</div>
+          <div>水</div>
+          <div class="text-blue-600 font-bold"><span class="sm:hidden">木</span><span class="hidden sm:inline">木 (定例会)</span></div>
+          <div>金</div>
+          <div class="hidden sm:block text-slate-400">土</div>
+          <div class="hidden sm:block text-rose-400">日</div>
         </div>
 
         <!-- Month Day Cells Grid (Populated dynamically) -->
-        <div id="coffee-month-cells" class="grid grid-cols-5 sm:grid-cols-7 gap-1 sm:gap-1.5">
+        <div id="coffee-month-cells" class="grid grid-cols-5 sm:grid-cols-7 gap-1.5 p-2 sm:p-2.5">
           <!-- Dynamically Rendered -->
         </div>
       </div>
 
       <!-- Week View Container (Hidden in Month mode) -->
-      <div id="coffee-week-container" class="hidden space-y-2">
-        <div id="coffee-week-cards" class="grid grid-cols-1 md:grid-cols-5 gap-2.5">
+      <div id="coffee-week-container" class="hidden space-y-3">
+        <div id="coffee-week-cards" class="grid grid-cols-1 md:grid-cols-5 gap-3">
           <!-- Dynamically Rendered -->
         </div>
       </div>
@@ -142,57 +142,57 @@
     </div>
 
     <!-- Right Column (Span 1): Candidates / Unassigned Visitors Pool -->
-    <div class="xl:col-span-1 space-y-2.5">
+    <div class="xl:col-span-1 space-y-3">
       
       <!-- Candidates Pool Container -->
-      <div class="bg-white border border-slate-200 rounded-xl p-2.5 shadow-2xs flex flex-col min-h-[460px] max-h-[700px]">
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs flex flex-col min-h-[500px] max-h-[750px]">
         
         <!-- Header -->
-        <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
-          <div class="flex items-center gap-1.5">
-            <span class="text-3xs font-bold text-slate-900">候補ビジター</span>
-            <span id="coffee-unassigned-pool-count" class="text-4xs px-1.5 py-0.2 rounded-full font-bold bg-slate-100 text-slate-600">0名</span>
+        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-slate-900">候補ビジター</span>
+            <span id="coffee-unassigned-pool-count" class="text-xs px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-600">0名</span>
           </div>
-          <div class="flex items-center gap-1">
-            <button type="button" onclick="openCoffeeAddVisitorModal()" class="px-1.5 py-0.5 rounded text-4xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-0.5 cursor-pointer" title="申込前ビジター・候補者を登録">
-              <i class="fa-solid fa-plus text-5xs"></i><span>登録</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="openCoffeeAddVisitorModal()" class="px-2 py-1 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors flex items-center gap-1 cursor-pointer" title="申込前ビジター・候補者を登録">
+              <i class="fa-solid fa-plus text-2xs"></i><span>登録</span>
             </button>
-            <button type="button" onclick="renderCoffeeMeetingView()" class="w-5 h-5 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer" title="更新">
-              <i class="fa-solid fa-rotate-right text-4xs"></i>
+            <button type="button" onclick="renderCoffeeMeetingView()" class="w-6 h-6 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer" title="更新">
+              <i class="fa-solid fa-rotate-right text-xs"></i>
             </button>
           </div>
         </div>
 
         <!-- Filter Segmented Tabs & Search Bar -->
-        <div class="space-y-1.5 mb-2">
+        <div class="space-y-2 mb-3">
           <!-- Filter Tabs -->
-          <div class="grid grid-cols-3 gap-0.5 p-0.5 bg-slate-100 rounded-lg text-4xs font-medium text-center">
-            <button type="button" id="btn-coffee-filter-upcoming" onclick="setCoffeeFilterScope('upcoming')" class="py-0.5 rounded transition-all cursor-pointer bg-white text-slate-900 font-bold shadow-2xs">
+          <div class="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold text-center">
+            <button type="button" id="btn-coffee-filter-upcoming" onclick="setCoffeeFilterScope('upcoming')" class="py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-bold">
               直近・未定
             </button>
-            <button type="button" id="btn-coffee-filter-all" onclick="setCoffeeFilterScope('all')" class="py-0.5 rounded transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+            <button type="button" id="btn-coffee-filter-all" onclick="setCoffeeFilterScope('all')" class="py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900 font-medium">
               すべて
             </button>
-            <button type="button" id="btn-coffee-filter-past" onclick="setCoffeeFilterScope('past')" class="py-0.5 rounded transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+            <button type="button" id="btn-coffee-filter-past" onclick="setCoffeeFilterScope('past')" class="py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900 font-medium">
               過去分
             </button>
           </div>
 
           <!-- Search Box -->
           <div class="relative">
-            <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-4xs"></i>
-            <input type="text" id="coffee-visitor-search" oninput="onCoffeeVisitorSearchInput(this.value)" placeholder="氏名・紹介者で絞り込み..." class="w-full pl-5 pr-2 py-1 text-3xs bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-400">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="coffee-visitor-search" oninput="onCoffeeVisitorSearchInput(this.value)" placeholder="氏名・紹介者で検索..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-400">
           </div>
         </div>
 
         <!-- Scrollable Visitor Cards Pool (Drag & Drop Source) -->
-        <div id="coffee-unassigned-visitors-pool" class="space-y-1.5 overflow-y-auto pr-0.5 flex-1 min-h-[180px]">
+        <div id="coffee-unassigned-visitors-pool" class="space-y-2 overflow-y-auto pr-0.5 flex-1 min-h-[220px]">
           <!-- Dynamically Rendered -->
         </div>
 
         <!-- Footer Notice / Helper -->
-        <div class="pt-1.5 border-t border-slate-100 text-center">
-          <p class="text-4xs text-slate-400">枠へドラッグして予約可能</p>
+        <div class="pt-2 border-t border-slate-100 text-center">
+          <p class="text-[11px] text-slate-400">枠へドラッグして予約可能</p>
         </div>
 
       </div>

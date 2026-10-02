@@ -21,6 +21,7 @@ describe('☕ Coffee Meeting Management & Slot Filling Calendar Unit Tests', () 
       getElementById: (id) => {
         return {
           id,
+          style: {},
           classList: {
             add: () => {},
             remove: () => {},
@@ -149,5 +150,29 @@ describe('☕ Coffee Meeting Management & Slot Filling Calendar Unit Tests', () 
     assert.ok(compiledIndexHtml.includes('id="coffee-visitor-search"'), 'Search input should exist');
     assert.ok(compiledIndexHtml.includes('id="btn-coffee-filter-upcoming"'), 'Filter button upcoming should exist');
     assert.ok(compiledIndexHtml.includes('openCoffeeAddVisitorModal'), 'Function openCoffeeAddVisitorModal should be referenced');
+  });
+
+  it('verifies openCoffeeAssignModal and closeCoffeeAssignModal toggle display property', () => {
+    const mockModal = {
+      id: 'modal-coffee-assign',
+      style: { display: 'none' },
+      classList: {
+        add: () => {},
+        remove: () => {}
+      }
+    };
+    const origGetElementById = sandbox.document.getElementById;
+    sandbox.document.getElementById = (id) => {
+      if (id === 'modal-coffee-assign') return mockModal;
+      return origGetElementById(id);
+    };
+
+    sandbox.openCoffeeAssignModal('2026-10-15');
+    assert.strictEqual(mockModal.style.display, 'flex', 'openCoffeeAssignModal should set display to flex');
+
+    sandbox.closeCoffeeAssignModal();
+    assert.strictEqual(mockModal.style.display, 'none', 'closeCoffeeAssignModal should set display to none');
+
+    sandbox.document.getElementById = origGetElementById;
   });
 });

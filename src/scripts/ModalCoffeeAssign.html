@@ -5,9 +5,15 @@
 let currentCoffeeAssignDate = null;
 
 function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
+  if (!dateStr || typeof dateStr !== 'string') {
+    dateStr = (typeof getTodayIsoDate === 'function') ? getTodayIsoDate() : new Date().toISOString().slice(0, 10);
+  }
   currentCoffeeAssignDate = dateStr;
   const modal = document.getElementById('modal-coffee-assign');
-  if (!modal) return;
+  if (!modal) {
+    console.error('Modal #modal-coffee-assign not found');
+    return;
+  }
 
   const targetDateInput = document.getElementById('cfa-target-date');
   if (targetDateInput) targetDateInput.value = dateStr;
@@ -32,14 +38,22 @@ function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
   }
 
   // Populate visitor select
-  populateCoffeeAssignVisitorSelect(preselectedVisitorId);
+  try {
+    populateCoffeeAssignVisitorSelect(preselectedVisitorId);
+  } catch (e) {
+    console.error('Error populating coffee assign visitor select', e);
+  }
 
+  modal.style.display = 'flex';
   modal.classList.remove('hidden');
 }
 
 function closeCoffeeAssignModal() {
   const modal = document.getElementById('modal-coffee-assign');
-  if (modal) modal.classList.add('hidden');
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+  }
   currentCoffeeAssignDate = null;
 }
 
@@ -243,4 +257,11 @@ async function submitCoffeeAssign() {
     }
   }
 }
+
+// Global Exports
+window.openCoffeeAssignModal = openCoffeeAssignModal;
+window.closeCoffeeAssignModal = closeCoffeeAssignModal;
+window.populateCoffeeAssignVisitorSelect = populateCoffeeAssignVisitorSelect;
+window.onCoffeeAssignVisitorChanged = onCoffeeAssignVisitorChanged;
+window.submitCoffeeAssign = submitCoffeeAssign;
 </script>
