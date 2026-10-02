@@ -15,6 +15,7 @@ require_once __DIR__ . '/api/bootstrap.php';
 
 use Api\Services\TokenService;
 use Api\Services\GrowthAdvisorService;
+use Api\Services\OnboardingService;
 use Api\Core\Database;
 
 $token = $_GET['k'] ?? '';
@@ -92,6 +93,16 @@ if ($myPalms) {
 }
 $trafficBadgeColor = $trafficScore >= 70 ? '#059669' : ($trafficScore >= 55 ? '#d97706' : '#dc2626');
 $trafficTierName = $trafficScore >= 70 ? 'グリーン 🟢' : ($trafficScore >= 55 ? 'イエロー 🟡' : 'レッド 🔴');
+
+// 5-2. Personalized Growth Engine (PGE) Prescription
+$growthAdvisor = new GrowthAdvisorService($db);
+$pgePlan = $growthAdvisor->generatePrescription($memberId);
+
+// 5-3. 60-Day Onboarding Track
+$onboardingService = new OnboardingService($db);
+$onboardingData = (!empty($member['is_onboarding']) || !empty($_GET['onboarding'])) 
+    ? $onboardingService->evaluateMemberMilestones($member) 
+    : null;
 
 // 6. Build Flashcard Tasks List
 $flashcardTasks = [];
@@ -580,6 +591,80 @@ $streakWeeks = 4; // 4 weeks streak
             </a>
         </div>
     </div>
+
+    <!-- 5. Personal Growth Engine (PGE) Prescription -->
+    <?php if (!empty($pgePlan) && !empty($pgePlan['success'])): ?>
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">今期のグロースプラン 📈</div>
+            <?php if (!empty($pgePlan['isAccepted'])): ?>
+                <span class="badge" style="background:#ecfdf5; color:#059669;">✅ コミット済み</span>
+            <?php else: ?>
+                <span class="badge" style="background:#eff6ff; color:#0071e3;">目標: <?= $pgePlan['targetScore'] ?>点</span>
+            <?php endif; ?>
+        </div>
+        <p style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
+            <?= htmlspecialchars($pgePlan['headline']) ?>
+        </p>
+        <p style="font-size: 13px; color: #475569; line-height: 1.5; margin-bottom: 16px;">
+            <?= htmlspecialchars($pgePlan['prescription']) ?>
+        </p>
+
+        <?php if (empty($pgePlan['isAccepted'])): ?>
+            <a href="<?= htmlspecialchars($pgePlan['acceptUrl']) ?>" class="btn-act btn-done" style="text-decoration:none; width:100%; margin-bottom: 12px;">
+                🤝 このプランで挑戦する！
+            </a>
+        <?php endif; ?>
+
+        <?php if (!empty($pgePlan['recommendedEvents'])): ?>
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 8px;">
+                <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">おすすめ京都CC研修</div>
+                <?php foreach ($pgePlan['recommendedEvents'] as $re): ?>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px; font-size: 13px;">
+                        <span style="font-weight:600; color:#334155;"><?= htmlspecialchars($re['title']) ?></span>
+                        <a href="api/event_ics.php?type=region_event&id=<?= urlencode($re['id']) ?>" download style="font-size:11px; color:#0071e3; text-decoration:none; padding:4px 8px; background:#eff6ff; border-radius:6px; font-weight:700;">
+                            📅 追加
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+    <!-- 6. 60-Day Onboarding Track (for new members) -->
+    <?php if (!empty($onboardingData)): ?>
+    <div class="card" style="border-left: 4px solid #0071e3;">
+        <div class="card-header">
+            <div class="card-title">初動60日オンボーディング 🔰</div>
+            <span class="badge" style="background:#eff6ff; color:#0071e3;">
+                進捗: <?= $onboardingData['progressRate'] ?>% (<?= $onboardingData['completedCount'] ?>/4)
+            </span>
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">
+            入会<?= $onboardingData['daysElapsed'] ?>日目 • サポート担当バディ: <?= htmlspecialchars($onboardingData['buddyName']) ?>
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <?php foreach ($onboardingData['milestones'] as $k => $m): ?>
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px solid #f8fafc;">
+                    <span style="color: <?= $m['completed'] ? '#059669' : '#334155' ?>; font-weight: <?= $m['completed'] ? '700' : '500' ?>;">
+                        <?= $m['completed'] ? '✅' : '⚪' ?> <?= htmlspecialchars($m['label']) ?>
+                    </span>
+                    <span style="font-size: 11px; color: <?= $m['completed'] ? '#059669' : '#94a3b8' ?>; font-weight: 600;">
+                        <?= $m['completed'] ? '達成済' : '未達' ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if (!empty($onboardingData['careCallSuggestion'])): ?>
+            <div style="margin-top: 12px; background: #fff7ed; border: 1px solid #ffedd5; border-radius: 10px; padding: 10px; font-size: 12px; color: #9a3412; line-height: 1.4;">
+                <?= htmlspecialchars($onboardingData['careCallSuggestion']) ?>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- 4. 関与ビジターの進捗 -->
     <div class="card">
