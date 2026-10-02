@@ -1,6 +1,7 @@
 <?php
 namespace Api\Controllers;
 
+use Api\Core\Controller;
 use Api\Repositories\ReportTemplateRepository;
 use Api\Services\MailService;
 
