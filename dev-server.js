@@ -270,6 +270,14 @@ function handleApiRequest(req, res, urlObj) {
               COALESCE(s.is_joined, '未') as isJoined,
               COALESCE(s.is_1to1, '未') as is1to1,
               COALESCE(s.is_matched, '未') as matching,
+              COALESCE(s.follow_type, '直近フォロー') as followType,
+              COALESCE(s.step1_coffee, '未') as step1Coffee,
+              COALESCE(s.step1_coffee_date, '') as step1CoffeeDate,
+              COALESCE(s.step2_meeting, '未') as step2Meeting,
+              COALESCE(s.step3_closing, '未') as step3Closing,
+              COALESCE(s.step3_closing_date, '') as step3ClosingDate,
+              COALESCE(s.step3_closing_type, '食事会') as step3ClosingType,
+              COALESCE(s.step4_join, '未') as step4Join,
               CASE WHEN h.visitor_id IS NOT NULL THEN 1 ELSE 0 END as hasHearingSheet,
               COALESCE(h.sheet_url, '') as hearingUrl,
               COALESCE(h.feel_abc, '') as feelAbc,
@@ -310,7 +318,11 @@ function handleApiRequest(req, res, urlObj) {
             COALESCE(v.furigana, '') as furigana, COALESCE(v.profession, '') as profession, COALESCE(v.company, '') as company,
             COALESCE(v.email, '') as email, COALESCE(v.phone, '') as phone, COALESCE(v.attendance_count, '初めて') as attendanceCount, COALESCE(v.remarks, '') as remarks,
             COALESCE(v.category, 'ビジター') as category,
-            COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1, COALESCE(s.is_matched, '未') as matching
+            COALESCE(s.is_attended, '未') as isAttended, COALESCE(s.is_joined, '未') as isJoined, COALESCE(s.is_1to1, '未') as is1to1, COALESCE(s.is_matched, '未') as matching,
+            COALESCE(s.step1_coffee, '未') as step1Coffee, COALESCE(s.step1_coffee_date, '') as step1CoffeeDate,
+            COALESCE(s.step2_meeting, '未') as step2Meeting,
+            COALESCE(s.step3_closing, '未') as step3Closing, COALESCE(s.step3_closing_date, '') as step3ClosingDate, COALESCE(s.step3_closing_type, '食事会') as step3ClosingType,
+            COALESCE(s.step4_join, '未') as step4Join
           FROM visitors v
           LEFT JOIN visitors_status s ON v.id = s.visitor_id
           WHERE v.id IN (${placeholders})
@@ -320,12 +332,15 @@ function handleApiRequest(req, res, urlObj) {
 
         const sSql = `SELECT * FROM visitors_status WHERE visitor_id IN (${placeholders}) ORDER BY updated_at DESC;`;
         const sRows = runSqlJson(sSql);
-        const s = sRows[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未' };
+        const s = sRows[0] || { is_attended: '未', is_joined: '未', is_1to1: '未', is_matched: '未', step1_coffee: '未', step2_meeting: '未', step3_closing: '未', step4_join: '未' };
         sRows.forEach(sr => {
           if (sr.is_attended === '参加') s.is_attended = '参加';
           if (sr.is_joined === '入会済' || sr.is_joined === '済') s.is_joined = '入会済';
           if (sr.is_1to1 === '済') s.is_1to1 = '済';
           if (sr.is_matched === '成功') s.is_matched = '成功';
+          if (sr.step1_coffee === '済') s.step1_coffee = '済';
+          if (sr.step2_meeting === '済') s.step2_meeting = '済';
+          if (sr.step3_closing === '済') s.step3_closing = '済';
         });
 
         const hSql = `
@@ -384,7 +399,11 @@ function handleApiRequest(req, res, urlObj) {
           },
           visits: visits,
           status: {
-            isAttended: s.is_attended || '未', isJoined: s.is_joined || '未', is1to1: s.is_1to1 || '未', matching: s.is_matched || '未'
+            isAttended: s.is_attended || '未', isJoined: s.is_joined || '未', is1to1: s.is_1to1 || '未', matching: s.is_matched || '未',
+            step1Coffee: s.step1_coffee || '未', step1CoffeeDate: s.step1_coffee_date || '',
+            step2Meeting: s.step2_meeting || '未',
+            step3Closing: s.step3_closing || '未', step3ClosingDate: s.step3_closing_date || '', step3ClosingType: s.step3_closing_type || '食事会',
+            step4Join: s.step4_join || '未'
           },
           hearing: fallbackHearing,
           currentHearing: directHearing,
@@ -397,7 +416,11 @@ function handleApiRequest(req, res, urlObj) {
 
       if (action === 'update_status') {
         const vId = (input.visitorId || '').replace(/'/g, "''");
-        const colMap = { isAttended: 'is_attended', isJoined: 'is_joined', is1to1: 'is_1to1', matching: 'is_matched' };
+        const colMap = { 
+          isAttended: 'is_attended', isJoined: 'is_joined', is1to1: 'is_1to1', matching: 'is_matched', followType: 'follow_type',
+          step1Coffee: 'step1_coffee', step1CoffeeDate: 'step1_coffee_date', step2Meeting: 'step2_meeting',
+          step3Closing: 'step3_closing', step3ClosingDate: 'step3_closing_date', step3ClosingType: 'step3_closing_type', step4Join: 'step4_join'
+        };
         const col = colMap[input.field];
         if (col && vId) {
           const val = (input.value || '').replace(/'/g, "''");

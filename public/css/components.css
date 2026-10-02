@@ -970,5 +970,394 @@ select.form-input, select.form-select {
   background: #f1f5f9;
 }
 
+/* ========================================================
+   ☕ 4-Step Follow Pipeline Styles (Apple Minimal & Clean)
+   ======================================================== */
+
+/* 1. インジケーター (一覧テーブル・カンバンカード・スマホカード共用) */
+.follow-steps-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: nowrap;
+}
+.follow-steps-row.compact {
+  gap: 2px;
+}
+.follow-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.follow-step-badge.sm {
+  padding: 2px 4px;
+  font-size: 10px;
+  gap: 2px;
+}
+.follow-step-badge.compact {
+  padding: 2px 3px;
+  font-size: 9px;
+}
+.follow-step-badge.step-completed {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+.follow-step-badge.step-active {
+  background: #eff6ff;
+  color: #0071e3;
+  border: 1px solid #bfdbfe;
+  font-weight: 800;
+}
+.follow-step-badge.step-pending {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+}
+.follow-step-badge.step-skipped {
+  background: #f1f5f9;
+  color: #cbd5e1;
+  border: 1px dashed #cbd5e1;
+  text-decoration: line-through;
+}
+.follow-step-arrow {
+  color: #cbd5e1;
+  font-size: 8px;
+  display: inline-flex;
+  align-items: center;
+}
+.follow-step-check {
+  font-size: 9px;
+  margin-left: 1px;
+}
+
+/* 2. ビジター詳細カルテ 4ステップパイプラインカード */
+.vd-follow-pipeline-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+}
+.vd-follow-pipeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.vd-follow-pipeline-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vd-follow-pipeline-kicker {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+.vd-follow-pipeline-heading {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.vd-follow-pipeline-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* 4ステップ横プログレスステッパー */
+.vd-follow-stepper-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.vd-stepper-divider {
+  color: #cbd5e1;
+  font-size: 12px;
+  text-align: center;
+}
+.vd-stepper-node {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.vd-stepper-node:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.vd-stepper-node.is-completed {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.vd-stepper-node.is-completed .vd-stepper-icon-circle {
+  background: #10b981;
+  color: #ffffff;
+}
+.vd-stepper-node.is-completed .vd-stepper-tag {
+  background: #dcfce7;
+  color: #15803d;
+}
+.vd-stepper-node.is-active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+.vd-stepper-node.is-active .vd-stepper-icon-circle {
+  background: #0071e3;
+  color: #ffffff;
+}
+.vd-stepper-node.is-active .vd-stepper-tag {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+.vd-stepper-node.is-pending .vd-stepper-icon-circle {
+  background: #e2e8f0;
+  color: #94a3b8;
+}
+.vd-stepper-node.is-skipped {
+  opacity: 0.6;
+}
+.vd-stepper-num-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.vd-stepper-step-num {
+  font-size: 9px;
+  font-weight: 900;
+  color: #94a3b8;
+  line-height: 1;
+}
+.vd-stepper-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+.vd-stepper-text-col {
+  flex: 1;
+  min-width: 0;
+}
+.vd-stepper-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.vd-stepper-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+}
+.vd-stepper-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+  white-space: nowrap;
+}
+.vd-stepper-sub {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 3. Next Action Guidance（今やるべき導き）エリア */
+.vd-next-action-guidance {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+.vd-guidance-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+.vd-guidance-card.step-1 {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.vd-guidance-card.step-2 {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+.vd-guidance-card.step-3 {
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+.vd-guidance-card.step-4 {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+.vd-guidance-card.step-5 {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.vd-guidance-icon-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  shrink-0: 0;
+}
+.vd-guidance-badge {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #d97706;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+.vd-guidance-badge.success {
+  background: #10b981;
+}
+.vd-guidance-badge.muted {
+  background: #94a3b8;
+}
+.vd-guidance-icon {
+  font-size: 20px;
+  color: #d97706;
+}
+.vd-guidance-card.step-2 .vd-guidance-badge { background: #2563eb; }
+.vd-guidance-card.step-2 .vd-guidance-icon { color: #2563eb; }
+.vd-guidance-card.step-3 .vd-guidance-badge { background: #e11d48; }
+.vd-guidance-card.step-3 .vd-guidance-icon { color: #e11d48; }
+.vd-guidance-card.step-4 .vd-guidance-badge { background: #7c3aed; }
+.vd-guidance-card.step-4 .vd-guidance-icon { color: #7c3aed; }
+.vd-guidance-main {
+  flex: 1;
+  min-width: 0;
+}
+.vd-guidance-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.vd-guidance-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.vd-guidance-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #475569;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.vd-guidance-desc {
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.vd-guidance-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.btn-guidance-action {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+.btn-guidance-action.primary {
+  background: #0071e3;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 113, 227, 0.2);
+}
+.btn-guidance-action.primary:hover {
+  background: #0060c4;
+}
+.btn-guidance-action.secondary {
+  background: #ffffff;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+.btn-guidance-action.secondary:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+.btn-guidance-action.success {
+  background: #10b981;
+  color: #ffffff;
+}
+.btn-guidance-action.success:hover {
+  background: #059669;
+}
+.btn-guidance-action.muted {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.btn-guidance-action.active {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .vd-follow-stepper-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .vd-stepper-divider {
+    display: none;
+  }
+  .vd-guidance-card {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
 
 

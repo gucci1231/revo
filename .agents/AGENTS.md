@@ -44,7 +44,6 @@
 ## 🎨 UI & Design Principles (Strict)
 - **説明的テキスト・過剰アイコンの徹底排除 (Radical Minimalism)**:
   - 「〜の一覧」「〜はこちら」「達成率」「目標：〜」などの冗長な注記を排除し、タイポグラフィの階層と幾何学シェイプで直感させること。
-  - 詳細画面の戻るボタン（`.vd-back-btn`）をはじめとする操作ボタンは、Appleスタイルのミニマルなアイコン（`<i class="fa-solid fa-chevron-left"></i>`）単体で維持し、説明文言を追加しないこと。
 - **純白ベース & クリーンホバー (Pure White & Clean Slate)**:
   - カードやコンテナは純白（`#ffffff`）、極薄境界線（`#e2e8f0`）とし、過剰な着色・オーラ・ホバー時の濃色化は行わないこと（軽い微動リフトのみ）。
 - **カラーセマンティクス (正常＝青 🔵 / 警告＝赤 🔴)**:
@@ -53,6 +52,34 @@
 - **タイポグラフィ階層**:
   - 主要KPI数値には `Barlow Semi Condensed` / `DIN Alternate` の等幅数字（`tabular-nums`）を用い、圧倒的な視覚コントラストを確保すること。
 - **4大KPIカード並び順**: 1: `次回定例会(日付のみ)`、2: `要対応`、3: `申込ビジター`、4: `入会目標`。
+
+## 🍎 Apple-Grade Simplicity & Dual-Tier Architecture
+- **Zero-Login Mandate (ゼロログイン原則)**:
+  - 一般メンバーにID/パスワード入力を絶対に強制しないこと。メールやLINEに埋め込まれた個別セキュアトークン（HMAC署名付きURL）により、タップした瞬間に本人認証・アクション実行を可能とすること。
+- **二層（ハイブリッド）アーキテクチャ分離**:
+  - **管理・役員用SPA (`index.html`)**: PC・タブレット中心、高機能コックピット。
+  - **一般メンバー用MPA (`my.php` / `act.php`)**: スマホ100%対象、単一ファイル・インライン完結、バンドルサイズ **30KB以下**・表示速度 **<0.1秒** を死守すること。1.8MBの管理SPAを読み込ませない。
+- **Apple基準の洗練美（野暮ったいシニア特化の禁止）**:
+  - Apple純正アプリ（リマインダー・ヘルスケア・Wallet）のような極限の洗練と美しさを基本とする。
+  - タップ領域は最小高 **48px〜56px**（親指の腹で確実に反応するサイズ）を確保。
+  - アイコン単独（文字なし）ボタンは廃止し、明確な日本語ラベルを併記すること。
+  - 1画面1タスク（One Screen, One Focus）を原則とし、文字入力を強要せず、選択肢タップ（Yes/No、3択）でタスクを完結させること。
+  - *(※文字サイズ拡大トグルおよびバディ代理完了等のシニア特化機能は、コア基盤定着後のPhase 7にて追加実装する)*
+
+## 🏛️ M2 Leadership & Humanistic Architecture Principles (Strict)
+- **Why-First Interface (大脳辺縁系を動かすメガホン型UI)**:
+  - 単なる作業指示（「スリップを入力してください」「研修を受けてください」等のWHAT）をUIの先頭に突きつけてはならない。
+  - 相手自身の事業目標（WIIFM）やチャプターへの感謝・貢献（WHY）を注入口とし、感情と動機に火をつける文脈でアクションを促すこと。
+- **Retention Over Acquisition (60日の壁の死守)**:
+  - ビジター招致ばかりに偏重した「ザル状態（穴の空いたバケツ）」を根絶すること。
+  - メンバーが無意識に継続を決める「入会後60日」の行動（初1to1、初CEU、初スリップ）を最優先でトラッキングし、孤立を防ぐこと。
+- **Psychological Safety & 4A (警察官ではなくコーチ・チアリーダーへ)**:
+  - PALMSやトラフィックライトをメンバーを取り締まり裁く「警察の手帳」にしてはならない。チャプターを健全に保つ「人間ドック（客観ファクト）」として提示すること。
+  - 感謝（Appreciation）・承認（Approval）・尊敬（Admiration）・関心（Attention）の流通量を最大化し、加点と称賛を前提としたUIとすること。
+- **Pre-Meeting Conversion (事後追客から事前合意へ)**:
+  - 定例会後の無理なクロージングに頼らず、来訪前の「事前コーヒーミーティング（WIIFMヒアリング）」と「パワーチーム事前マッチング」を仕組み化すること。
+- **Glide Path & 1% Compounding (複利と文化の継承)**:
+  - 半期の任期で目先の数字を追う短気思考を排し、日々の1%改善（ベイビーステップ）を積み重ねて次期へ滑らかにバトンを渡すグライドパス構造を維持すること。
 
 ## 🛡️ Antigravity Harness Engineering Constitution & Credit Optimization
 - **Engineering Constitution**: Detailed in [.agents/CONSTITUTION.md](file:///.agents/CONSTITUTION.md) and [ex-antigravity-harness/GEMINI.md](file:///ex-antigravity-harness/GEMINI.md).

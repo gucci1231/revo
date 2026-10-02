@@ -473,6 +473,10 @@
           selectFollowType.className = 'vd-status-select ' + info.cls;
         }
 
+        // ☕ 4ステップ・ビジターフォロー体制パイプラインの描画
+        currentVdStatus = st;
+        renderVisitorFollowPipeline(v, st, currentVdActionPlans);
+
         // 複数回ヒアリングシートの描画＆切り替え初期化
         renderHearingSheetsMultiVisit(currentVdVisits, currentVdHearings, id);
 
@@ -852,6 +856,35 @@
         }
       });
     }
+
+    // ☕ コーヒーミーティング選択時のスマート自動補完 (平日12:00-12:30 & 翌平日プリセット)
+    const actionInput = document.getElementById('vd-ap-action-text');
+    if (type === 'コーヒーミーティング') {
+      if (actionInput && (!actionInput.value || actionInput.value === '1to1' || actionInput.value.includes('事前コーヒーミーティング'))) {
+        actionInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+      }
+      const dateInput = document.getElementById('vd-ap-due-date');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = getNextWeekdayDate();
+        if (typeof updateApDateBadge === 'function') updateApDateBadge();
+      }
+    } else if (type === '食事会・対面クロージング') {
+      if (actionInput && (!actionInput.value || actionInput.value === '1to1' || actionInput.value.includes('食事会'))) {
+        actionInput.value = '定例会後 食事会・対面クロージング';
+      }
+    }
+  }
+
+  function getNextWeekdayDate() {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0 || d.getDay() === 6) {
+      d.setDate(d.getDate() + 1);
+    }
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   function setApActionQuick(text) {
@@ -1255,6 +1288,18 @@
         } else {
           showToast(newStatus === 1 ? '🎉 アクションプランを完了にしました！' : 'アクションプランを未完了に戻しました');
         }
+
+        // ☕ アクション種別に応じたフォロー体制ステップの自動連動更新
+        if (newStatus === 1 && planItem && currentVdVisitorId) {
+          const aType = planItem.action_type || '';
+          const aText = (planItem.action_text || '').toLowerCase();
+          if (aType.includes('コーヒー') || aText.includes('コーヒー')) {
+            updateFollowStepStatus(currentVdVisitorId, 1, '済');
+          } else if (aType.includes('食事会') || aType.includes('クロージング') || aText.includes('食事会') || aText.includes('クロージング')) {
+            updateFollowStepStatus(currentVdVisitorId, 3, '済');
+          }
+        }
+
         if (res.list) renderActionPlansList(res.list);
       })
       .catch(handleError);
@@ -1421,4 +1466,363 @@
       })
       .catch(handleError);
   }
+
+  /* --- ☕ 4-Step Follow Pipeline System (Detail View) --- */
+  let currentVdStatus = null;
+
+  /**
+   * 4ステップ・ビジターフォロー体制パイプラインの描画
+   */
+  function renderVisitorFollowPipeline(v, st, actionPlans) {
+    if (!v) return;
+    const merged = { ...v, ...(st || {}) };
+
+    if (actionPlans && actionPlans.length > 0) {
+      const pendingAps = actionPlans.filter(ap => !Number(ap.is_completed));
+      const completedAps = actionPlans.filter(ap => Number(ap.is_completed));
+      if (pendingAps.length > 0) {
+        merged.nextActionText = pendingAps[0].action_text;
+        merged.nextActionType = pendingAps[0].action_type;
+        merged.nextActionDueDate = pendingAps[0].due_date;
+        merged.nextActionAssignee = pendingAps[0].assignee_name;
+      }
+      if (completedAps.length > 0) {
+        merged.lastActionText = completedAps[0].action_text;
+        merged.lastActionType = completedAps[0].action_type;
+        merged.lastActionDate = completedAps[0].completed_at || completedAps[0].due_date;
+      }
+    }
+
+    const steps = typeof getVisitorFollowSteps === 'function' ? getVisitorFollowSteps(merged) : null;
+    if (!steps) return;
+
+    // 完了数の更新
+    const countEl = document.getElementById('vd-follow-completed-count');
+    if (countEl) countEl.textContent = steps.completedSteps;
+
+    // 4ノードのレンダリング
+    const stepList = [steps.s1, steps.s2, steps.s3, steps.s4];
+    stepList.forEach(s => {
+      const node = document.getElementById(`vd-step-node-${s.num}`);
+      const tag = document.getElementById(`vd-step-tag-${s.num}`);
+      const sub = document.getElementById(`vd-step-sub-${s.num}`);
+
+      if (!node) return;
+
+      node.className = 'vd-stepper-node';
+
+      let statusCls = 'is-pending';
+      let tagText = s.status;
+      let subText = '';
+
+      if (s.status === '済') {
+        statusCls = 'is-completed';
+        tagText = '済 ✓';
+        subText = s.date ? `${formatShortDate(s.date)} 完了` : '完了';
+      } else if (s.status === '予定' || s.status === '進行中' || s.status === '検討中') {
+        statusCls = 'is-active';
+        tagText = s.status;
+        subText = s.date ? `${formatShortDate(s.date)} 予定` : '進行中';
+      } else if (s.status === '不参加' || s.status === '終了' || s.status === 'スキップ') {
+        statusCls = 'is-skipped';
+        tagText = s.status;
+        subText = 'スキップ/終了';
+      } else {
+        if (s.num === 1) subText = '平日12:00-12:30';
+        else if (s.num === 2) subText = s.date ? `${formatShortDate(s.date)} 参加` : '定例会参加';
+        else if (s.num === 3) subText = '関係深化・意向確認';
+        else if (s.num === 4) subText = '申込・審査・入会';
+      }
+
+      node.classList.add(statusCls);
+      if (tag) tag.textContent = tagText;
+      if (sub) sub.textContent = subText;
+    });
+
+    // Next Action Guidance（今やるべき導き）エリアの描画
+    renderFollowGuidanceBox(merged, steps);
+  }
+  window.renderVisitorFollowPipeline = renderVisitorFollowPipeline;
+
+  /**
+   * Next Action Guidance（導き）エリア
+   */
+  function renderFollowGuidanceBox(v, steps) {
+    const box = document.getElementById('vd-next-guidance-box');
+    if (!box) return;
+
+    const vid = v.id || currentVdVisitorId;
+    const name = escapeHtml(v.name || 'ビジター');
+    const eventDate = formatShortDate(v.eventDate) || '';
+
+    let html = '';
+
+    if (steps.currentStepNum === 1) {
+      // Step 1: コーヒーミーティング未完了
+      html = `
+        <div class="vd-guidance-card step-1">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge">Step 1</span>
+            <div class="vd-guidance-icon"><i class="fa-solid fa-mug-hot"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">平日12:00-12:30の事前コーヒーミーティングを案内しましょう</span>
+              <span class="vd-guidance-pill"><i class="fa-solid fa-sparkles text-amber-500"></i> 成約率向上の最重要ステップ</span>
+            </div>
+            <div class="vd-guidance-desc">
+              定例会に来訪する前に30分ZoomでWIIFM（ビジネス課題・求めている協業先）をヒアリングし、当日の定例会で紹介するメンバー（パワーチーム）を事前マッチングします。
+            </div>
+            <div class="vd-guidance-actions">
+              <button type="button" class="btn-guidance-action primary" onclick="copyCoffeeMeetingInvitation('${vid}')" title="LINEやメールに貼る招待文をコピー">
+                <i class="fa-solid fa-copy"></i> ☕ 案内文をコピー (平日12:00-12:30)
+              </button>
+              <button type="button" class="btn-guidance-action secondary" onclick="openQuickCoffeeMeetingModal('${vid}')" title="カレンダー・アクションに予定を登録">
+                <i class="fa-regular fa-calendar-plus"></i> MTG予定を登録
+              </button>
+              <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 1, '済')" title="ミーティング完了">
+                <i class="fa-solid fa-check"></i> 実施済みにする
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (steps.currentStepNum === 2) {
+      // Step 2: 定例会参加待ち
+      html = `
+        <div class="vd-guidance-card step-2">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge">Step 2</span>
+            <div class="vd-guidance-icon"><i class="fa-solid fa-landmark"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">定例会（${eventDate || '次回'}）の来訪準備を進めましょう</span>
+              <span class="vd-guidance-pill"><i class="fa-solid fa-check text-emerald-600"></i> コーヒーMTG完了済</span>
+            </div>
+            <div class="vd-guidance-desc">
+              コーヒーMTGでヒアリングした内容をもとに、定例会当日のオープンネットワーキングで紹介するパワーチームメンバーに事前共有し、放置をゼロにしましょう。
+            </div>
+            <div class="vd-guidance-actions">
+              <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 2, '参加')" title="定例会に出席完了">
+                <i class="fa-solid fa-check-double"></i> 定例会 出席済みにする
+              </button>
+              <button type="button" class="btn-guidance-action secondary" onclick="openActionPlanModal()" title="次回案内やリマインダー連絡のタスクを登録">
+                <i class="fa-regular fa-calendar-check"></i> 定例会案内アクション登録
+              </button>
+              <button type="button" class="btn-guidance-action muted" onclick="updateFollowStepStatus('${vid}', 2, '不参加')" title="定例会を欠席された場合">
+                <i class="fa-solid fa-ban"></i> 欠席・不参加
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (steps.currentStepNum === 3) {
+      // Step 3: 食事会 or 対面クロージング待ち
+      html = `
+        <div class="vd-guidance-card step-3">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge">Step 3</span>
+            <div class="vd-guidance-icon"><i class="fa-solid fa-utensils"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">食事会 または 対面クロージング（1to1）を設定しましょう</span>
+              <span class="vd-guidance-pill"><i class="fa-solid fa-fire text-rose-500"></i> 48時間以内の接触が鍵</span>
+            </div>
+            <div class="vd-guidance-desc">
+              定例会直後の食事会や数日以内の対面クロージングで感想を聞き、入会にあたっての疑問や不安を解消して「一緒にビジネスを広げましょう」と背中を押します。
+            </div>
+            <div class="vd-guidance-actions">
+              <button type="button" class="btn-guidance-action primary" onclick="openQuickClosingActionModal('${vid}')" title="食事会・対面クロージングのアクション登録">
+                <i class="fa-solid fa-utensils"></i> 🍽️ 食事会・クロージングを登録
+              </button>
+              <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 3, '済')" title="食事会またはクロージング完了">
+                <i class="fa-solid fa-check"></i> 実施済みにする
+              </button>
+              <button type="button" class="btn-guidance-action secondary" onclick="changeVisitorStatus('${vid}', 'isJoined', '申込書提出')" title="申込書を受け取った場合">
+                <i class="fa-solid fa-file-signature"></i> 申込書提出へ進む
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (steps.currentStepNum === 4) {
+      // Step 4: 入会手続き・審査
+      const ij = steps.s4.rawJoined || '未';
+      html = `
+        <div class="vd-guidance-card step-4">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge">Step 4</span>
+            <div class="vd-guidance-icon"><i class="fa-solid fa-award"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">入会手続き・審査をサポートしましょう（現在: ${escapeHtml(ij)}）</span>
+              <span class="vd-guidance-pill"><i class="fa-solid fa-check text-emerald-600"></i> クロージング完了</span>
+            </div>
+            <div class="vd-guidance-desc">
+              申込書の提出、入金案内、メンバーシップ委員会による面談と審査を滞りなく進め、チャプターへの正式加入を迎え入れましょう。
+            </div>
+            <div class="vd-guidance-actions">
+              <button type="button" class="btn-guidance-action ${ij === '申込書提出' ? 'active' : 'secondary'}" onclick="changeVisitorStatus('${vid}', 'isJoined', '申込書提出')">
+                <i class="fa-solid fa-file-signature"></i> 申込書提出
+              </button>
+              <button type="button" class="btn-guidance-action ${ij === '入金待ち' ? 'active' : 'secondary'}" onclick="changeVisitorStatus('${vid}', 'isJoined', '入金待ち')">
+                <i class="fa-solid fa-credit-card"></i> 入金待ち
+              </button>
+              <button type="button" class="btn-guidance-action ${ij === '審査' ? 'active' : 'secondary'}" onclick="changeVisitorStatus('${vid}', 'isJoined', '審査')">
+                <i class="fa-solid fa-user-check"></i> 審査
+              </button>
+              <button type="button" class="btn-guidance-action success font-bold" onclick="changeVisitorStatus('${vid}', 'isJoined', '入会済')">
+                <i class="fa-solid fa-crown text-amber-300"></i> 🎉 入会完了！
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (steps.currentStepNum === 5) {
+      // 全完了
+      html = `
+        <div class="vd-guidance-card step-5">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge success">Goal</span>
+            <div class="vd-guidance-icon text-amber-500"><i class="fa-solid fa-crown"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">🎉 入会完了！チャプターメンバーとして迎え入れました</span>
+              <span class="vd-guidance-pill text-emerald-700 bg-emerald-100">全4ステップ完了</span>
+            </div>
+            <div class="vd-guidance-desc">
+              フォロー体制はすべて完了しました。初動60日オンボーディング（初1to1・初CEU・初スリップ）およびバディによるサポートへ移行します。
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      // 終了・見送り
+      html = `
+        <div class="vd-guidance-card step-0">
+          <div class="vd-guidance-icon-col">
+            <span class="vd-guidance-badge muted">Closed</span>
+            <div class="vd-guidance-icon text-slate-400"><i class="fa-solid fa-handshake-slash"></i></div>
+          </div>
+          <div class="vd-guidance-main">
+            <div class="vd-guidance-header">
+              <span class="vd-guidance-title">フォロー終了 / 関係維持</span>
+            </div>
+            <div class="vd-guidance-desc">
+              現在は定期的な関係維持、または今回のフォローを終了しています。再度アプローチの機会がある場合はフォロー方針を変更してください。
+            </div>
+            <div class="vd-guidance-actions">
+              <button type="button" class="btn-guidance-action secondary" onclick="changeVisitorStatus('${vid}', 'followType', 'フォロー')">
+                <i class="fa-solid fa-rotate-left"></i> 再度フォローを開始する
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    box.innerHTML = html;
+  }
+
+  /**
+   * ステップのステータス切替トグル（未 ➔ 予定 ➔ 済 ➔ 未）
+   */
+  function toggleFollowStepStatus(stepNum) {
+    if (!currentVdVisitorId) return;
+    const v = currentVisitorDetail || {};
+    const st = currentVdStatus || {};
+    const merged = { ...v, ...st };
+    const steps = typeof getVisitorFollowSteps === 'function' ? getVisitorFollowSteps(merged) : null;
+    if (!steps) return;
+
+    const cycle = ['未', '予定', '済'];
+
+    if (stepNum === 1) {
+      const cur = steps.s1.status;
+      const nextIdx = (cycle.indexOf(cur) + 1) % cycle.length;
+      const nextVal = cycle[nextIdx] || '済';
+      updateFollowStepStatus(currentVdVisitorId, 1, nextVal);
+    } else if (stepNum === 2) {
+      const cur = steps.s2.status;
+      const nextVal = cur === '済' ? '未' : '参加';
+      updateFollowStepStatus(currentVdVisitorId, 2, nextVal);
+    } else if (stepNum === 3) {
+      const cur = steps.s3.status;
+      const nextIdx = (cycle.indexOf(cur) + 1) % cycle.length;
+      const nextVal = cycle[nextIdx] || '済';
+      updateFollowStepStatus(currentVdVisitorId, 3, nextVal);
+    } else if (stepNum === 4) {
+      const cur = steps.s4.status;
+      const nextVal = cur === '済' ? '検討中' : (cur === '検討中' ? '申込書提出' : '入会済');
+      changeVisitorStatus(currentVdVisitorId, 'isJoined', nextVal);
+    }
+  }
+  window.toggleFollowStepStatus = toggleFollowStepStatus;
+
+  /**
+   * ステップステータスの更新
+   */
+  function updateFollowStepStatus(visitorId, stepNum, value) {
+    if (stepNum === 1) {
+      changeVisitorStatus(visitorId, 'step1Coffee', value);
+      if (currentVdStatus) currentVdStatus.step1Coffee = value;
+    } else if (stepNum === 2) {
+      changeVisitorStatus(visitorId, 'isAttended', value);
+      changeVisitorStatus(visitorId, 'step2Meeting', value);
+      if (currentVdStatus) {
+        currentVdStatus.isAttended = value;
+        currentVdStatus.step2Meeting = value;
+      }
+    } else if (stepNum === 3) {
+      changeVisitorStatus(visitorId, 'step3Closing', value);
+      if (currentVdStatus) currentVdStatus.step3Closing = value;
+    }
+
+    // カルテ再描画
+    setTimeout(() => {
+      if (currentVisitorDetail) {
+        renderVisitorFollowPipeline(currentVisitorDetail, currentVdStatus, currentVdActionPlans);
+      }
+    }, 150);
+  }
+  window.updateFollowStepStatus = updateFollowStepStatus;
+
+  /**
+   * クイックコーヒーミーティング登録モーダルを開く
+   */
+  function openQuickCoffeeMeetingModal(visitorId) {
+    openActionPlanModal();
+    setApTypeSelected('コーヒーミーティング');
+    
+    // 平日12:00の翌営業日を自動セット
+    const nextDate = getNextWeekdayDate();
+    const dateInput = document.getElementById('vd-ap-due-date');
+    if (dateInput) {
+      dateInput.value = nextDate;
+      if (typeof updateApDateBadge === 'function') updateApDateBadge();
+    }
+    const textInput = document.getElementById('vd-ap-action-text');
+    if (textInput && (!textInput.value || textInput.value === '1to1')) {
+      textInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+    }
+  }
+  window.openQuickCoffeeMeetingModal = openQuickCoffeeMeetingModal;
+
+  /**
+   * クイック食事会・クロージング登録モーダルを開く
+   */
+  function openQuickClosingActionModal(visitorId) {
+    openActionPlanModal();
+    setApTypeSelected('食事会・対面クロージング');
+    const textInput = document.getElementById('vd-ap-action-text');
+    if (textInput) {
+      textInput.value = '定例会後 食事会・対面クロージング';
+      textInput.focus();
+    }
+  }
+  window.openQuickClosingActionModal = openQuickClosingActionModal;
 </script>

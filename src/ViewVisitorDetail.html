@@ -46,60 +46,98 @@
       </div>
 
       <div class="vd-profile-card">
-        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (一時コメントアウト)
-        <div class="vd-pipeline-timeline-card mb-4" id="vd-pipeline-timeline-container">
-          <div class="vd-pipeline-track">
-            <div class="vd-pipeline-track-fill" id="vd-pipeline-track-fill"></div>
+        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (互換マーカー) -->
+        <div id="vd-pipeline-timeline-container" style="display:none;"><div id="vd-pipeline-track-fill"></div></div>
 
-            <div class="vd-pipeline-node" data-stage-val="未" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '未')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-hourglass-start"></i>
-              </div>
-              <span class="vd-node-label">未 / 放置</span>
+        <!-- ☕ 4ステップ・ビジターフォロー体制パイプライン (Apple Style & Interactive) -->
+        <div class="vd-follow-pipeline-card mb-4" id="vd-follow-pipeline-card">
+          <div class="vd-follow-pipeline-header">
+            <div class="vd-follow-pipeline-title">
+              <span class="vd-follow-pipeline-kicker">Follow Pipeline</span>
+              <span class="vd-follow-pipeline-heading">ビジターフォロー体制</span>
             </div>
-
-            <div class="vd-pipeline-node" data-stage-val="検討中" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '検討中')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-comments"></i>
-              </div>
-              <span class="vd-node-label">検討中</span>
-            </div>
-
-            <div class="vd-pipeline-node" data-stage-val="申込書提出" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '申込書提出')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-file-signature"></i>
-              </div>
-              <span class="vd-node-label">申込書提出</span>
-            </div>
-
-            <div class="vd-pipeline-node" data-stage-val="入金待ち" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入金待ち')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-credit-card"></i>
-              </div>
-              <span class="vd-node-label">入金待ち</span>
-            </div>
-
-            <div class="vd-pipeline-node" data-stage-val="審査" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '審査')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-user-check"></i>
-              </div>
-              <span class="vd-node-label">審査</span>
-            </div>
-
-            <div class="vd-pipeline-node" data-stage-val="入会済" onclick="changeVisitorStatus(currentVdVisitorId, 'isJoined', '入会済')">
-              <div class="vd-node-indicator">
-                <i class="fa-solid fa-crown"></i>
-              </div>
-              <span class="vd-node-label">入会済</span>
+            <div class="vd-follow-pipeline-badge" id="vd-follow-progress-badge">
+              <span id="vd-follow-completed-count" class="font-mono font-bold text-blue-600">0</span> / 4 完了
             </div>
           </div>
 
-          <div id="vd-pipeline-closed-badge" class="vd-pipeline-closed-badge" style="display: none;">
-            <i class="fa-solid fa-ban mr-1.5"></i>
-            <span id="vd-pipeline-closed-text">フォロー終了 / 見送り</span>
+          <!-- 4ステップ横プログレスステッパー -->
+          <div class="vd-follow-stepper-grid">
+            <!-- Step 1: コーヒーミーティング -->
+            <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
+              <div class="vd-stepper-num-col">
+                <span class="vd-stepper-step-num">1</span>
+                <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
+              </div>
+              <div class="vd-stepper-text-col">
+                <div class="vd-stepper-title-row">
+                  <span class="vd-stepper-title">コーヒーMTG</span>
+                  <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
+                </div>
+                <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
+              </div>
+            </div>
+
+            <!-- 矢印 -->
+            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+            <!-- Step 2: 定例会参加 -->
+            <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
+              <div class="vd-stepper-num-col">
+                <span class="vd-stepper-step-num">2</span>
+                <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
+              </div>
+              <div class="vd-stepper-text-col">
+                <div class="vd-stepper-title-row">
+                  <span class="vd-stepper-title">定例会</span>
+                  <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
+                </div>
+                <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
+              </div>
+            </div>
+
+            <!-- 矢印 -->
+            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+            <!-- Step 3: 食事会 or 対面クロージング -->
+            <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
+              <div class="vd-stepper-num-col">
+                <span class="vd-stepper-step-num">3</span>
+                <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
+              </div>
+              <div class="vd-stepper-text-col">
+                <div class="vd-stepper-title-row">
+                  <span class="vd-stepper-title">食事会/対面</span>
+                  <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
+                </div>
+                <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
+              </div>
+            </div>
+
+            <!-- 矢印 -->
+            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+            <!-- Step 4: 入会 -->
+            <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
+              <div class="vd-stepper-num-col">
+                <span class="vd-stepper-step-num">4</span>
+                <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
+              </div>
+              <div class="vd-stepper-text-col">
+                <div class="vd-stepper-title-row">
+                  <span class="vd-stepper-title">入会</span>
+                  <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
+                </div>
+                <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🧭 次の導き（Next Action Guidance）バー -->
+          <div class="vd-next-action-guidance" id="vd-next-guidance-box">
+            <!-- JSで動的レンダリング -->
           </div>
         </div>
-        -->
 
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">
@@ -285,6 +323,8 @@
                       </label>
                       <div class="ap-type-pill-group" id="vd-ap-type-group">
                         <button type="button" class="ap-type-pill-btn active" data-type="1to1" onclick="setApTypeSelected('1to1')"><i class="fa-solid fa-handshake"></i> 1to1</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="コーヒーミーティング" onclick="setApTypeSelected('コーヒーミーティング')"><i class="fa-solid fa-mug-hot text-amber-600"></i> ☕ コーヒーMTG</button>
+                        <button type="button" class="ap-type-pill-btn" data-type="食事会・対面クロージング" onclick="setApTypeSelected('食事会・対面クロージング')"><i class="fa-solid fa-utensils text-rose-500"></i> 🍽️ 食事会・クロージング</button>
                         <button type="button" class="ap-type-pill-btn" data-type="リファーラル" onclick="setApTypeSelected('リファーラル')"><i class="fa-solid fa-gift"></i> リファーラル</button>
                         <button type="button" class="ap-type-pill-btn" data-type="定例会案内" onclick="setApTypeSelected('定例会案内')"><i class="fa-solid fa-calendar-day"></i> 定例会案内</button>
                         <button type="button" class="ap-type-pill-btn" data-type="入会案内" onclick="setApTypeSelected('入会案内')"><i class="fa-solid fa-envelope-open-text"></i> 入会案内</button>

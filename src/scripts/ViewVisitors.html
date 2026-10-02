@@ -71,6 +71,9 @@
           <td>${formatTruncatedCell(v.company, 12)}</td>
           <td>${formatTruncatedCell(v.profession, 12)}</td>
           <td><span style="font-weight:600; color:#1d1d1f;">${formatTruncatedCell(resolveMemberName(v.inviter), 10)}</span></td>
+          <td class="text-center">
+            ${typeof renderFollowStepsIndicatorHtml === 'function' ? renderFollowStepsIndicatorHtml(v, { size: 'sm', showLabels: false }) : ''}
+          </td>
           <td class="text-center">${renderAttendButtonHtml(v.id, v.isAttended)}</td>
           <td class="text-center">${renderJoinedButtonHtml(v.id, v.isJoined)}</td>
           <td class="text-center">${renderFollowTypeButtonHtml(v.id, v.followType)}</td>
@@ -119,6 +122,12 @@
               ${resolvedOrientUser ? `<span class="ml-2"><i class="fa-solid fa-user-check text-indigo-500 mr-1"></i>${escapeHtml(resolvedOrientUser)}</span>` : ''}
             </div>
             ${v.phone ? `<a href="tel:${escapeHtml(v.phone.replace(/[^0-9+]/g, ''))}" class="text-[11px] text-blue-600 font-mono flex items-center gap-1 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-phone text-[10px]"></i>${escapeHtml(v.phone)}</a>` : ''}
+          </div>
+
+          <!-- 4ステップフォロー体制インジケーター (スマホカード用) -->
+          <div class="py-1 px-2 bg-slate-50 rounded-lg flex items-center justify-between text-xs mt-1.5 border border-slate-100">
+            <span class="text-[10px] font-bold text-slate-400">体制進捗</span>
+            ${typeof renderFollowStepsIndicatorHtml === 'function' ? renderFollowStepsIndicatorHtml(v, { size: 'sm', showLabels: false }) : ''}
           </div>
 
           <!-- 下段: ステータスセレクター群 (共通パーツ) -->

@@ -28,6 +28,13 @@ class VisitorRepository {
                 COALESCE(s.is_1to1, '未') as is1to1,
                 COALESCE(s.is_matched, '未') as matching,
                 COALESCE(s.follow_type, '直近フォロー') as followType,
+                COALESCE(s.step1_coffee, '未') as step1Coffee,
+                COALESCE(s.step1_coffee_date, '') as step1CoffeeDate,
+                COALESCE(s.step2_meeting, '未') as step2Meeting,
+                COALESCE(s.step3_closing, '未') as step3Closing,
+                COALESCE(s.step3_closing_date, '') as step3ClosingDate,
+                COALESCE(s.step3_closing_type, '食事会') as step3ClosingType,
+                COALESCE(s.step4_join, '未') as step4Join,
                 CASE WHEN h.visitor_id IS NOT NULL THEN 1 ELSE 0 END as hasHearingSheet,
                 COALESCE(h.sheet_url, '') as hearingUrl,
                 COALESCE(h.feel_abc, '') as feelAbc,
@@ -132,7 +139,14 @@ class VisitorRepository {
                 COALESCE(s.is_joined, '未') as isJoined,
                 COALESCE(s.is_1to1, '未') as is1to1,
                 COALESCE(s.is_matched, '未') as matching,
-                COALESCE(s.follow_type, '直近フォロー') as followType
+                COALESCE(s.follow_type, '直近フォロー') as followType,
+                COALESCE(s.step1_coffee, '未') as step1Coffee,
+                COALESCE(s.step1_coffee_date, '') as step1CoffeeDate,
+                COALESCE(s.step2_meeting, '未') as step2Meeting,
+                COALESCE(s.step3_closing, '未') as step3Closing,
+                COALESCE(s.step3_closing_date, '') as step3ClosingDate,
+                COALESCE(s.step3_closing_type, '食事会') as step3ClosingType,
+                COALESCE(s.step4_join, '未') as step4Join
             FROM visitors v
             LEFT JOIN visitors_status s ON v.id = s.visitor_id
             WHERE v.id IN ({$placeholders})
@@ -161,7 +175,14 @@ class VisitorRepository {
                 'is_joined' => '未',
                 'is_1to1' => '未',
                 'is_matched' => '未',
-                'follow_type' => '直近フォロー'
+                'follow_type' => '直近フォロー',
+                'step1_coffee' => '未',
+                'step1_coffee_date' => '',
+                'step2_meeting' => '未',
+                'step3_closing' => '未',
+                'step3_closing_date' => '',
+                'step3_closing_type' => '食事会',
+                'step4_join' => '未'
             ];
         }
 
@@ -180,6 +201,11 @@ class VisitorRepository {
             }
             if (($r['is_1to1'] ?? '') === '済') $merged['is_1to1'] = '済';
             if (($r['is_matched'] ?? '') === '成功') $merged['is_matched'] = '成功';
+            if (($r['step1_coffee'] ?? '') === '済') $merged['step1_coffee'] = '済';
+            if (!empty($r['step1_coffee_date']) && empty($merged['step1_coffee_date'])) $merged['step1_coffee_date'] = $r['step1_coffee_date'];
+            if (($r['step2_meeting'] ?? '') === '済') $merged['step2_meeting'] = '済';
+            if (($r['step3_closing'] ?? '') === '済') $merged['step3_closing'] = '済';
+            if (!empty($r['step3_closing_date']) && empty($merged['step3_closing_date'])) $merged['step3_closing_date'] = $r['step3_closing_date'];
             if (!empty($r['follow_type']) && empty($merged['follow_type'])) {
                 $merged['follow_type'] = VisitorStatus::normalizeFollowType($r['follow_type']);
             }

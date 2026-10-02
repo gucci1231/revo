@@ -56,6 +56,8 @@
     else if (t === '定例会案内' || t === '次回案内') icon = 'fa-calendar-day';
     else if (t === '入会案内') icon = 'fa-envelope-open-text';
     else if (t === '電話フォロー' || t === 'フォロー') icon = 'fa-phone';
+    else if (t === 'コーヒーミーティング' || t === 'コーヒーMTG' || t.includes('コーヒー')) icon = 'fa-mug-hot';
+    else if (t === '食事会' || t === '食事会・対面クロージング' || t === '対面クロージング' || t.includes('食事会') || t.includes('クロージング')) icon = 'fa-utensils';
     else if (t === 'その他') icon = 'fa-comment-dots';
     return `<span class="badge-action-type"><i class="fa-solid ${icon}"></i> ${escapeHtml(t)}</span>`;
   }
@@ -1109,6 +1111,222 @@
     `;
   }
   window.renderStandardVisitorCardHtml = renderStandardVisitorCardHtml;
+
+  /* --- ☕ 4-Step Follow Pipeline System Helpers --- */
+  /**
+   * 4大フォロー体制パイプライン判定
+   * 1. ☕ コーヒーミーティング (平日12:00-12:30)
+   * 2. 🏛️ 定例会 (参加)
+   * 3. 🍽️ 食事会 or 対面クロージング
+   * 4. 🎉 入会 (申込・審査・入会)
+   */
+  function getVisitorFollowSteps(v) {
+    if (!v) return null;
+
+    // Step 1: コーヒーミーティング
+    let s1Status = v.step1Coffee || '未';
+    let s1Date = v.step1CoffeeDate || '';
+    const nextText = (v.nextActionText || '').toLowerCase();
+    const nextType = (v.nextActionType || '');
+    const lastText = (v.lastActionText || '').toLowerCase();
+    const lastType = (v.lastActionType || '');
+
+    if (s1Status === '未') {
+      if (lastType.includes('コーヒー') || lastText.includes('コーヒーミーティング') || lastText.includes('コーヒーmtg') || lastText.includes('事前ミーティング')) {
+        s1Status = '済';
+        s1Date = s1Date || v.lastActionDate || '';
+      } else if (nextType.includes('コーヒー') || nextText.includes('コーヒーミーティング') || nextText.includes('コーヒーmtg') || nextText.includes('事前ミーティング')) {
+        s1Status = '予定';
+        s1Date = s1Date || v.nextActionDueDate || '';
+      }
+    }
+
+    // Step 2: 定例会
+    let s2Status = '未';
+    const isAttended = v.isAttended || '';
+    if (v.step2Meeting && v.step2Meeting !== '未') {
+      s2Status = v.step2Meeting;
+    } else if (isAttended === '参加' || isAttended.includes('済') || isAttended.includes('出席')) {
+      s2Status = '済';
+    } else if (isAttended === '不参加' || isAttended === '欠席') {
+      s2Status = '不参加';
+    } else if (v.eventDate) {
+      s2Status = '予定';
+    }
+
+    // Step 3: 食事会 or 対面クロージング
+    let s3Status = v.step3Closing || '未';
+    let s3Date = v.step3ClosingDate || '';
+    let s3Type = v.step3ClosingType || '食事会';
+    if (s3Status === '未') {
+      if (lastType.includes('食事会') || lastType.includes('クロージング') || lastText.includes('食事会') || lastText.includes('クロージング')) {
+        s3Status = '済';
+        s3Date = s3Date || v.lastActionDate || '';
+      } else if (nextType.includes('食事会') || nextType.includes('クロージング') || nextText.includes('食事会') || nextText.includes('クロージング')) {
+        s3Status = '予定';
+        s3Date = s3Date || v.nextActionDueDate || '';
+      } else if (v.is1to1 === '済') {
+        s3Status = '済';
+      }
+    }
+
+    // Step 4: 入会
+    let s4Status = '未';
+    const ij = v.isJoined || v.step4Join || '未';
+    if (ij === '入会済' || ij === '済') {
+      s4Status = '済';
+    } else if (['申込書提出', '入金待ち', '審査', 'メンバーシップ審査', '申込'].includes(ij)) {
+      s4Status = '進行中';
+    } else if (['フォロー終了', '見送り'].includes(ij)) {
+      s4Status = '終了';
+    } else if (ij === '検討中') {
+      s4Status = '検討中';
+    }
+
+    // 完了ステップ数
+    let completedSteps = 0;
+    if (s1Status === '済') completedSteps++;
+    if (s2Status === '済') completedSteps++;
+    if (s3Status === '済') completedSteps++;
+    if (s4Status === '済') completedSteps++;
+
+    // 現在の滞留ステップ判定 (1: コーヒーMTG, 2: 定例会, 3: 食事会/対面, 4: 入会, 5: 完了, 0: 終了)
+    let currentStepNum = 1;
+    if (s4Status === '済') {
+      currentStepNum = 5;
+    } else if (s4Status === '終了') {
+      currentStepNum = 0;
+    } else if (s3Status === '済' || s4Status === '進行中' || s4Status === '検討中') {
+      currentStepNum = 4;
+    } else if (s2Status === '済') {
+      currentStepNum = 3;
+    } else if (s1Status === '済') {
+      currentStepNum = 2;
+    } else {
+      currentStepNum = 1;
+    }
+
+    return {
+      s1: { num: 1, title: 'コーヒーミーティング', shortTitle: 'コーヒー', icon: 'fa-mug-hot', emoji: '☕', status: s1Status, date: s1Date },
+      s2: { num: 2, title: '定例会参加', shortTitle: '定例会', icon: 'fa-landmark', emoji: '🏛️', status: s2Status, date: v.eventDate || '' },
+      s3: { num: 3, title: s3Type || '食事会/対面クロージング', shortTitle: '食事/対面', icon: 'fa-utensils', emoji: '🍽️', status: s3Status, date: s3Date, type: s3Type },
+      s4: { num: 4, title: '入会', shortTitle: '入会', icon: 'fa-award', emoji: '🎉', status: s4Status, rawJoined: ij },
+      completedSteps: completedSteps,
+      currentStepNum: currentStepNum
+    };
+  }
+  window.getVisitorFollowSteps = getVisitorFollowSteps;
+
+  /**
+   * 4ステップ進捗インジケーター HTML レンダリング (一覧・カード・カルテ共用)
+   */
+  function renderFollowStepsIndicatorHtml(v, options = {}) {
+    const steps = getVisitorFollowSteps(v);
+    if (!steps) return '';
+
+    const size = options.size || 'md'; // 'sm' | 'md' | 'compact'
+    const showLabels = options.showLabels !== false;
+
+    const renderItem = (step) => {
+      let colorClass = 'step-pending';
+      let iconClass = step.icon;
+      let titleTooltip = `${step.num}. ${step.title}: ${step.status}`;
+      if (step.date) titleTooltip += ` (${step.date})`;
+
+      if (step.status === '済') {
+        colorClass = 'step-completed';
+      } else if (step.status === '予定' || step.status === '進行中' || step.status === '検討中') {
+        colorClass = 'step-active';
+      } else if (step.status === '不参加' || step.status === '終了' || step.status === 'スキップ') {
+        colorClass = 'step-skipped';
+      }
+
+      return `
+        <span class="follow-step-badge ${colorClass} ${size}" title="${escapeHtml(titleTooltip)}">
+          <i class="fa-solid ${iconClass}"></i>
+          ${showLabels ? `<span class="follow-step-text">${escapeHtml(step.shortTitle)}</span>` : ''}
+          ${step.status === '済' ? '<i class="fa-solid fa-check follow-step-check"></i>' : ''}
+        </span>
+      `;
+    };
+
+    return `
+      <div class="follow-steps-row ${size}" title="フォロー進捗: ${steps.completedSteps}/4 完了">
+        ${renderItem(steps.s1)}
+        <span class="follow-step-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+        ${renderItem(steps.s2)}
+        <span class="follow-step-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+        ${renderItem(steps.s3)}
+        <span class="follow-step-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+        ${renderItem(steps.s4)}
+      </div>
+    `;
+  }
+  window.renderFollowStepsIndicatorHtml = renderFollowStepsIndicatorHtml;
+
+  /**
+   * 平日12:00-12:30事前コーヒーミーティング案内文の生成
+   */
+  function generateCoffeeMeetingInvitationText(v) {
+    if (!v) return '';
+    const name = v.name || v.visitor_name || 'ビジター';
+    const inviter = v.inviter || '';
+    const eventDate = v.eventDate || v.event_date || '';
+
+    return `${name} 様
+
+こんにちは！BNIモメンタムチャプター${inviter ? `（紹介者: ${inviter}様）` : ''}です。
+この度は${eventDate ? `【${eventDate}】の` : ''}定例会へのお申し込みをいただき、誠にありがとうございます！
+
+当日の定例会を120%楽しんでいただき、より実りあるビジネスの機会にしていただくため、来訪前に30分ほどの【事前コーヒーミーティング】をオンラインで開催しております☕
+
+■ 日時: 平日 12:00〜12:30（Zoomにて開催）
+■ 所要時間: 約30分
+■ 内容:
+・普段のお仕事内容や、今求めているお客様・協業パートナーのヒアリング
+・当日の定例会の流れや、ご紹介したいメンバー（マッチング）のご案内
+※リラックスした雰囲気でお話しできれば幸いです。
+
+平日の12:00〜12:30で、ご都合のよろしい候補日を2〜3日教えていただけますでしょうか？
+ご返信を心よりお待ちしております！`;
+  }
+  window.generateCoffeeMeetingInvitationText = generateCoffeeMeetingInvitationText;
+
+  /**
+   * コーヒーMTG案内文をクリップボードにコピー
+   */
+  function copyCoffeeMeetingInvitation(vId) {
+    let v = null;
+    if (typeof allVisitorsList !== 'undefined' && Array.isArray(allVisitorsList)) {
+      v = allVisitorsList.find(item => String(item.id) === String(vId));
+    }
+    if (!v && typeof currentVdVisitor !== 'undefined' && currentVdVisitor && String(currentVdVisitor.id) === String(vId)) {
+      v = currentVdVisitor;
+    }
+    if (!v && typeof filteredPfVisitors !== 'undefined' && Array.isArray(filteredPfVisitors)) {
+      v = filteredPfVisitors.find(item => String(item.id) === String(vId));
+    }
+    if (!v) {
+      alert('ビジター情報が見つかりませんでした');
+      return;
+    }
+
+    const text = generateCoffeeMeetingInvitationText(v);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (typeof showToast === 'function') {
+          showToast('☕ コーヒーMTG案内文（平日12:00-12:30）をコピーしました！', 'success');
+        } else {
+          alert('☕ コーヒーMTG案内文（平日12:00-12:30）をコピーしました！LINEやメールでご活用ください。');
+        }
+      }).catch(() => {
+        prompt('案内文をコピーしてください:', text);
+      });
+    } else {
+      prompt('案内文をコピーしてください:', text);
+    }
+  }
+  window.copyCoffeeMeetingInvitation = copyCoffeeMeetingInvitation;
 
   function handleError(err) {
     const loading = document.getElementById('loading');

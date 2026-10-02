@@ -66,6 +66,13 @@ class Database {
                 is_matched TEXT DEFAULT '未',
                 matching_note TEXT DEFAULT '',
                 follow_type TEXT DEFAULT '直近フォロー',
+                step1_coffee TEXT DEFAULT '未',
+                step1_coffee_date TEXT DEFAULT '',
+                step2_meeting TEXT DEFAULT '未',
+                step3_closing TEXT DEFAULT '未',
+                step3_closing_date TEXT DEFAULT '',
+                step3_closing_type TEXT DEFAULT '食事会',
+                step4_join TEXT DEFAULT '未',
                 updated_at TEXT
             );
 
@@ -377,6 +384,27 @@ class Database {
             $this->pdo->exec("UPDATE chapter_links SET scope = 'admin' WHERE category = '役員・チャプター運営'");
             $this->pdo->exec("UPDATE chapter_links SET scope = 'archive' WHERE category = 'アーカイブ'");
             $this->pdo->exec("UPDATE chapter_links SET scope = 'member' WHERE scope IS NULL OR scope = ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step1_coffee TEXT DEFAULT '未'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step1_coffee_date TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step2_meeting TEXT DEFAULT '未'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step3_closing TEXT DEFAULT '未'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step3_closing_date TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step3_closing_type TEXT DEFAULT '食事会'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step4_join TEXT DEFAULT '未'");
         } catch (\PDOException $e) {}
 
         $this->seedDefaultEmailTemplates();

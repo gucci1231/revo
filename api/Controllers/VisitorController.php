@@ -201,7 +201,14 @@ class VisitorController extends Controller {
             'isJoined' => 'is_joined',
             'is1to1' => 'is_1to1',
             'matching' => 'is_matched',
-            'followType' => 'follow_type'
+            'followType' => 'follow_type',
+            'step1Coffee' => 'step1_coffee',
+            'step1CoffeeDate' => 'step1_coffee_date',
+            'step2Meeting' => 'step2_meeting',
+            'step3Closing' => 'step3_closing',
+            'step3ClosingDate' => 'step3_closing_date',
+            'step3ClosingType' => 'step3_closing_type',
+            'step4Join' => 'step4_join'
         ];
 
         if (!isset($colMap[$field])) {
