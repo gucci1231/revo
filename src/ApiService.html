@@ -20,14 +20,21 @@ const ApiService = {
 
         fetch(restConfig.url, fetchOptions)
           .then(async res => {
+            const rawText = await res.text();
+            let data = null;
+            try {
+              data = JSON.parse(rawText);
+            } catch (parseErr) {
+              if (!res.ok) {
+                throw new Error(`サーバーエラー (HTTP ${res.status})`);
+              }
+              throw new Error('サーバーからの応答が不正な形式です（JSON解析エラー）');
+            }
             if (!res.ok) {
-              const text = await res.text();
-              let json;
-              try { json = JSON.parse(text); } catch(e) {}
-              const errMsg = (json && json.message) ? json.message : `HTTP ${res.status}`;
+              const errMsg = (data && data.message) ? data.message : `HTTP ${res.status}`;
               throw new Error(errMsg);
             }
-            return res.json();
+            return data;
           })
           .then(data => {
             if (data && data.success !== false) {

@@ -601,6 +601,46 @@ class Database {
         }
     }
 
+    public function query(string $sql, array $params = []): \PDOStatement {
+        if (empty($params)) {
+            return $this->pdo->query($sql);
+        }
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+
+    public function prepare(string $sql, array $options = []): \PDOStatement {
+        return $this->pdo->prepare($sql, $options);
+    }
+
+    public function lastInsertId(?string $name = null): string|false {
+        return $this->pdo->lastInsertId($name);
+    }
+
+    public function beginTransaction(): bool {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit(): bool {
+        return $this->pdo->commit();
+    }
+
+    public function rollBack(): bool {
+        return $this->pdo->rollBack();
+    }
+
+    public function inTransaction(): bool {
+        return $this->pdo->inTransaction();
+    }
+
+    public function __call(string $name, array $arguments) {
+        if (method_exists($this->pdo, $name)) {
+            return $this->pdo->$name(...$arguments);
+        }
+        throw new \BadMethodCallException("Method {$name} does not exist on Database or PDO");
+    }
+
     public function fetchOne(string $sql, array $params = []): ?array {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);

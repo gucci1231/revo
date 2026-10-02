@@ -74,13 +74,12 @@ class PowerTeamMatcher {
         $matchedPt = self::$powerTeams[$bestTeamKey];
 
         // Fetch matching active chapter members from members table
-        $membersStmt = $this->db->query("
+        $allMembers = $this->db->fetchAll("
             SELECT id, name, category, profession, role 
             FROM members 
             WHERE status = '在籍' 
             ORDER BY id ASC
         ");
-        $allMembers = $membersStmt->fetchAll(\PDO::FETCH_ASSOC);
 
         $matchedMembers = [];
         foreach ($allMembers as $m) {
