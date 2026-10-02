@@ -166,5 +166,30 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     // Ensure delete button passes only linkId to avoid quoting/escaping bugs
     assert.strictEqual(/onclick="deleteChapterLink\('\${linkId}'\)"/.test(viewLinksScript), true);
   });
+
+  it('verifies robust reorderChapterLinksApi and reorderChapterCategoriesApi payload packaging in ApiService', () => {
+    const apiService = require(path.join(rootDir, 'public/js/services/apiService.js'));
+
+    // 1. Direct array argument test (as called by ViewLinks)
+    const linksConfig = apiService.getRestConfig('reorderChapterLinksApi', [{ id: 'LINK_001', sort_order: 10 }]);
+    assert.strictEqual(linksConfig.url, '/api/links.php?action=reorder');
+    assert.strictEqual(linksConfig.method, 'POST');
+    assert.deepStrictEqual(linksConfig.body, { items: [{ id: 'LINK_001', sort_order: 10 }] });
+
+    // 2. Object argument with items test
+    const catConfig = apiService.getRestConfig('reorderChapterCategoriesApi', { items: [{ name: 'ビジター情報', sort_order: 10 }] });
+    assert.strictEqual(catConfig.url, '/api/links.php?action=reorder_categories');
+    assert.strictEqual(catConfig.method, 'POST');
+    assert.deepStrictEqual(catConfig.body, { items: [{ name: 'ビジター情報', sort_order: 10 }] });
+  });
+
+  it('verifies Category Reorder sorting and rendering synchronization functions exist', () => {
+    const viewLinksScript = fs.readFileSync(path.join(rootDir, 'src/scripts/ViewLinks.html'), 'utf8');
+    assert.strictEqual(viewLinksScript.includes('function applyCategoryReorder('), true);
+    assert.strictEqual(viewLinksScript.includes('chapterCategoriesData.sort('), true);
+    assert.strictEqual(viewLinksScript.includes('moveCategoryQuick('), true);
+    assert.strictEqual(viewLinksScript.includes('handleCategoryCardDrop('), true);
+  });
 });
+
 

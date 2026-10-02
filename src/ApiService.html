@@ -248,18 +248,38 @@ const ApiService = {
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
-      case 'reorderChapterLinksApi':
+      case 'reorderChapterLinksApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
         return {
           url: '/api/links.php?action=reorder',
           method: 'POST',
-          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+          body: { items: items }
         };
-      case 'reorderChapterCategoriesApi':
+      }
+      case 'reorderChapterCategoriesApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
         return {
           url: '/api/links.php?action=reorder_categories',
           method: 'POST',
-          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+          body: { items: items }
         };
+      }
       case 'saveChapterCategoryApi':
         return {
           url: '/api/links.php?action=save_category',

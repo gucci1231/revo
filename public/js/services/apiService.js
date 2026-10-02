@@ -242,6 +242,62 @@ const ApiService = {
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
+      case 'reorderChapterLinksApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
+        return {
+          url: '/api/links.php?action=reorder',
+          method: 'POST',
+          body: { items: items }
+        };
+      }
+      case 'reorderChapterCategoriesApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
+        return {
+          url: '/api/links.php?action=reorder_categories',
+          method: 'POST',
+          body: { items: items }
+        };
+      }
+      case 'saveChapterCategoryApi':
+        return {
+          url: '/api/links.php?action=save_category',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterCategoryApi':
+        return {
+          url: '/api/links.php?action=delete_category',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { name: args[0], id: args[0] }
+        };
+      case 'saveChapterScopeApi':
+        return {
+          url: '/api/links.php?action=save_scope',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterScopeApi':
+        return {
+          url: '/api/links.php?action=delete_scope',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
       case 'getPalmsListApi':
       case 'getPalmsRankingApi': {
         const pStart = args[0] ? encodeURIComponent(args[0]) : '';

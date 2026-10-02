@@ -16017,18 +16017,38 @@ const ApiService = {
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
-      case 'reorderChapterLinksApi':
+      case 'reorderChapterLinksApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
         return {
           url: '/api/links.php?action=reorder',
           method: 'POST',
-          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+          body: { items: items }
         };
-      case 'reorderChapterCategoriesApi':
+      }
+      case 'reorderChapterCategoriesApi': {
+        const payloadArg = args[0] !== undefined ? args[0] : args;
+        let items = [];
+        if (Array.isArray(payloadArg)) {
+          items = payloadArg;
+        } else if (payloadArg && Array.isArray(payloadArg.items)) {
+          items = payloadArg.items;
+        } else if (Array.isArray(args)) {
+          items = args;
+        }
         return {
           url: '/api/links.php?action=reorder_categories',
           method: 'POST',
-          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+          body: { items: items }
         };
+      }
       case 'saveChapterCategoryApi':
         return {
           url: '/api/links.php?action=save_category',
@@ -28882,9 +28902,12 @@ function getScopeForCategory(catName) {
 function getAvailableCategoriesForScope(targetScope = currentLinkScope) {
   const combined = [];
 
-  // 1. From chapterCategoriesData (custom / DB defined categories)
+  // 1. From chapterCategoriesData (custom / DB defined categories sorted by sort_order)
   if (chapterCategoriesData && chapterCategoriesData.length > 0) {
-    chapterCategoriesData.forEach(c => {
+    const sortedCats = [...chapterCategoriesData].sort((a, b) => 
+      (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
+    );
+    sortedCats.forEach(c => {
       const scope = c.scope || 'member';
       if ((targetScope === 'all' || scope === targetScope) && !combined.includes(c.name)) {
         combined.push(c.name);
@@ -29083,9 +29106,12 @@ function renderChapterLinks() {
 
   // Determine category display order
   const categoriesInOrder = [];
-  // 1. From chapterCategoriesData (ordered by DB sort_order)
+  // 1. From chapterCategoriesData (ordered by sort_order)
   if (chapterCategoriesData && chapterCategoriesData.length > 0) {
-    chapterCategoriesData.forEach(c => {
+    const sortedCats = [...chapterCategoriesData].sort((a, b) => 
+      (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
+    );
+    sortedCats.forEach(c => {
       if (grouped[c.name] && grouped[c.name].length > 0 && !categoriesInOrder.includes(c.name)) {
         categoriesInOrder.push(c.name);
       }
@@ -29433,6 +29459,7 @@ function handleLinkDrop(event, targetLinkId, targetCategory) {
     .then(res => {
       if (res && res.links) {
         chapterLinksData = res.links;
+        renderChapterLinks();
       }
     })
     .catch(err => {
@@ -29527,6 +29554,7 @@ function moveLinkQuick(linkId, direction) {
     .then(res => {
       if (res && res.links) {
         chapterLinksData = res.links;
+        renderChapterLinks();
       }
     })
     .catch(err => {
@@ -29587,7 +29615,7 @@ function handleCategoryCardDrop(event, targetCategory) {
   const rect = card.getBoundingClientRect();
   const insertBefore = (event.clientY - rect.top) < (rect.height / 2);
 
-  // Reorder categories
+  // Reorder categories in scope
   const currentOrder = getAvailableCategoriesForScope().filter(c => c !== draggedCategoryName);
   const targetIdx = currentOrder.indexOf(targetCategory);
   if (targetIdx !== -1) {
@@ -29596,30 +29624,7 @@ function handleCategoryCardDrop(event, targetCategory) {
     currentOrder.push(draggedCategoryName);
   }
 
-  const payload = [];
-  currentOrder.forEach((name, idx) => {
-    payload.push({ name: name, sort_order: (idx + 1) * 10 });
-    const existing = chapterCategoriesData.find(c => c.name === name);
-    if (existing) {
-      existing.sort_order = (idx + 1) * 10;
-    } else {
-      chapterCategoriesData.push({ name: name, sort_order: (idx + 1) * 10, scope: currentLinkScope === 'all' ? 'member' : currentLinkScope });
-    }
-  });
-
-  renderChapterLinks();
-  renderCategoryPills();
-  showToast('カテゴリーの優先順位を更新しました', 'success');
-
-  ApiService.call('reorderChapterCategoriesApi', payload)
-    .then(res => {
-      if (res && res.categories) {
-        chapterCategoriesData = res.categories;
-      }
-    })
-    .catch(err => {
-      console.error('Reorder categories error:', err);
-    });
+  applyCategoryReorder(currentOrder);
 }
 
 function handleCategoryDragEnd(event) {
@@ -29639,29 +29644,53 @@ function moveCategoryQuick(catName, direction) {
   currentOrder[currIdx] = swapCat;
   currentOrder[newIdx] = catName;
 
-  const payload = [];
-  currentOrder.forEach((name, idx) => {
-    payload.push({ name: name, sort_order: (idx + 1) * 10 });
+  applyCategoryReorder(currentOrder);
+}
+
+function applyCategoryReorder(newOrderForScope) {
+  // 1. Update sort_order for categories in newOrderForScope
+  newOrderForScope.forEach((name, idx) => {
     const existing = chapterCategoriesData.find(c => c.name === name);
     if (existing) {
       existing.sort_order = (idx + 1) * 10;
     } else {
-      chapterCategoriesData.push({ name: name, sort_order: (idx + 1) * 10, scope: currentLinkScope === 'all' ? 'member' : currentLinkScope });
+      chapterCategoriesData.push({
+        id: 'CAT_' + Math.random().toString(36).substring(2, 10),
+        name: name,
+        sort_order: (idx + 1) * 10,
+        scope: currentLinkScope === 'all' ? 'member' : currentLinkScope
+      });
     }
   });
 
+  // 2. Sort chapterCategoriesData array in place so subsequent renders respect new order
+  chapterCategoriesData.sort((a, b) => 
+    (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
+  );
+
+  // 3. Renumber all categories cleanly to prevent duplicate sort_order values across scopes
+  const payload = [];
+  chapterCategoriesData.forEach((c, idx) => {
+    c.sort_order = (idx + 1) * 10;
+    payload.push({ id: c.id, name: c.name, sort_order: c.sort_order });
+  });
+
+  // 4. Immediately re-render
   renderChapterLinks();
   renderCategoryPills();
   showToast('カテゴリーの優先順位を更新しました', 'success');
 
+  // 5. Send to API and synchronize state on response
   ApiService.call('reorderChapterCategoriesApi', payload)
     .then(res => {
       if (res && res.categories) {
         chapterCategoriesData = res.categories;
+        renderChapterLinks();
+        renderCategoryPills();
       }
     })
     .catch(err => {
-      console.error('Quick category reorder error:', err);
+      console.error('Reorder categories error:', err);
     });
 }
 

@@ -123,7 +123,18 @@ class LinkController extends Controller {
         $items = $this->getParam('items', null);
         if (!is_array($items)) {
             // Support 'orders' or 'links'
-            $items = $this->getParam('orders', $this->getParam('links', []));
+            $items = $this->getParam('orders', $this->getParam('links', null));
+        }
+
+        // Direct array payload or single item fallback
+        if (!is_array($items)) {
+            if (isset($this->input[0]) && is_array($this->input[0])) {
+                $items = $this->input;
+            } elseif (isset($this->input['id'])) {
+                $items = [$this->input];
+            } else {
+                $items = [];
+            }
         }
 
         if (empty($items) || !is_array($items)) {
@@ -145,7 +156,18 @@ class LinkController extends Controller {
     private function reorderCategories(): void {
         $items = $this->getParam('items', null);
         if (!is_array($items)) {
-            $items = $this->getParam('orders', $this->getParam('categories', []));
+            $items = $this->getParam('orders', $this->getParam('categories', null));
+        }
+
+        // Direct array payload or single item fallback
+        if (!is_array($items)) {
+            if (isset($this->input[0]) && is_array($this->input[0])) {
+                $items = $this->input;
+            } elseif (isset($this->input['name']) || isset($this->input['id'])) {
+                $items = [$this->input];
+            } else {
+                $items = [];
+            }
         }
 
         if (empty($items) || !is_array($items)) {
