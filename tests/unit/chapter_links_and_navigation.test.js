@@ -103,4 +103,37 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('linkGenreCollapsedMap'), true);
     assert.strictEqual(indexHtml.includes('genre-body-'), true);
   });
+
+  it('verifies Drag & Drop reordering and Category CRUD UI elements and functions', () => {
+    // Category CRUD Modal & Button
+    assert.strictEqual(indexHtml.includes('id="btn-add-category"'), true);
+    assert.strictEqual(indexHtml.includes('id="modal-category-crud"'), true);
+    assert.strictEqual(indexHtml.includes('id="form-category-crud"'), true);
+    assert.strictEqual(indexHtml.includes('id="category-field-name"'), true);
+    assert.strictEqual(indexHtml.includes('function openCategoryModal'), true);
+    assert.strictEqual(indexHtml.includes('function closeCategoryModal'), true);
+    assert.strictEqual(indexHtml.includes('function handleCategorySubmit'), true);
+    assert.strictEqual(indexHtml.includes('function deleteCategoryPrompt'), true);
+
+    // Drag & Drop Handlers & UI classes
+    assert.strictEqual(indexHtml.includes('function handleLinkDragStart'), true);
+    assert.strictEqual(indexHtml.includes('function handleLinkDragOver'), true);
+    assert.strictEqual(indexHtml.includes('function handleLinkDrop'), true);
+    assert.strictEqual(indexHtml.includes('function handleCategoryDragStart'), true);
+    assert.strictEqual(indexHtml.includes('function handleCategoryCardDrop'), true);
+    assert.strictEqual(indexHtml.includes('function moveLinkQuick'), true);
+    assert.strictEqual(indexHtml.includes('function moveCategoryQuick'), true);
+
+    // ApiService Mappings
+    assert.strictEqual(indexHtml.includes('reorderChapterLinksApi'), true);
+    assert.strictEqual(indexHtml.includes('reorderChapterCategoriesApi'), true);
+    assert.strictEqual(indexHtml.includes('saveChapterCategoryApi'), true);
+    assert.strictEqual(indexHtml.includes('deleteChapterCategoryApi'), true);
+
+    // Priority Categories
+    assert.strictEqual(indexHtml.includes('ビジター情報'), true);
+    assert.strictEqual(indexHtml.includes('メンバー情報'), true);
+    assert.strictEqual(indexHtml.includes('アセット関連'), true);
+  });
 });
+

@@ -132,10 +132,20 @@ class Database {
                 id TEXT PRIMARY KEY,
                 title TEXT NOT NULL,
                 url TEXT NOT NULL,
-                category TEXT DEFAULT '定例会・運営',
+                category TEXT DEFAULT 'メンバー情報',
                 description TEXT DEFAULT '',
                 icon TEXT DEFAULT 'fa-solid fa-link',
                 sort_order INTEGER DEFAULT 0,
+                created_at TEXT,
+                updated_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS chapter_link_categories (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                icon TEXT DEFAULT 'fa-solid fa-folder',
+                sort_order INTEGER DEFAULT 0,
+                scope TEXT DEFAULT 'member',
                 created_at TEXT,
                 updated_at TEXT
             );
@@ -1079,6 +1089,41 @@ class Database {
                 ]);
             }
         }
+
+        $this->seedDefaultLinkCategories();
+    }
+
+    private function seedDefaultLinkCategories(): void {
+        $now = date('Y/m/d H:i');
+        $initialCategories = [
+            ['id' => 'CAT_VISITOR', 'name' => 'ビジター情報', 'icon' => 'fa-solid fa-user-plus', 'sort_order' => 10, 'scope' => 'member'],
+            ['id' => 'CAT_MEMBER', 'name' => 'メンバー情報', 'icon' => 'fa-solid fa-users', 'sort_order' => 20, 'scope' => 'member'],
+            ['id' => 'CAT_LEARN', 'name' => '公式ポータル・学び', 'icon' => 'fa-solid fa-graduation-cap', 'sort_order' => 30, 'scope' => 'member'],
+            ['id' => 'CAT_ADMIN', 'name' => '役員・チャプター運営', 'icon' => 'fa-solid fa-user-gear', 'sort_order' => 40, 'scope' => 'admin'],
+            ['id' => 'CAT_ASSETS', 'name' => 'アセット関連', 'icon' => 'fa-solid fa-folder-open', 'sort_order' => 50, 'scope' => 'member'],
+            ['id' => 'CAT_ARCHIVE', 'name' => 'アーカイブ', 'icon' => 'fa-solid fa-box-archive', 'sort_order' => 60, 'scope' => 'archive'],
+        ];
+
+        foreach ($initialCategories as $cat) {
+            $exists = $this->fetchColumn("SELECT COUNT(*) FROM chapter_link_categories WHERE id = ? OR name = ?", [$cat['id'], $cat['name']]);
+            if ((int)$exists === 0) {
+                $this->insert('chapter_link_categories', [
+                    'id' => $cat['id'],
+                    'name' => $cat['name'],
+                    'icon' => $cat['icon'],
+                    'sort_order' => $cat['sort_order'],
+                    'scope' => $cat['scope'],
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+            }
+        }
+
+        // Migrate legacy categories in chapter_links
+        $this->execute("UPDATE chapter_links SET category = 'ビジター情報' WHERE category = 'ビジター・入会'");
+        $assetIds = "'LINK_002','LINK_004','LINK_005','LINK_009','LINK_021','LINK_023','LINK_024'";
+        $this->execute("UPDATE chapter_links SET category = 'アセット関連' WHERE id IN ($assetIds)");
+        $this->execute("UPDATE chapter_links SET category = 'メンバー情報' WHERE category = '日常・1to1'");
     }
 
     private function seedDefaultChapterEvents(): void {

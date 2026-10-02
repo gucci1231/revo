@@ -40,8 +40,22 @@
         </button>
       </div>
 
+      <!-- Add Category Button -->
+      <button 
+        type="button"
+        id="btn-add-category"
+        onclick="openCategoryModal()" 
+        class="px-3 py-2 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+        title="新しいカテゴリーを作成"
+      >
+        <i class="fa-solid fa-folder-plus text-slate-500 text-[11px]"></i>
+        <span class="hidden sm:inline">カテゴリ作成</span>
+      </button>
+
       <!-- Add Link Button -->
       <button 
+        type="button"
+        id="btn-add-link"
         onclick="openLinkModal()" 
         class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
       >
@@ -53,42 +67,50 @@
   </div>
 
   <!-- Scope Segmented Control (Radical Minimalism) -->
-  <div class="bg-slate-100/80 p-1 rounded-2xl flex items-center gap-1 mb-4 border border-slate-200/80 max-w-2xl overflow-x-auto scrollbar-none" id="links-scope-tabs">
-    <button 
-      type="button" 
-      onclick="setLinkScope('member')" 
-      data-scope="member" 
-      class="link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs"
-    >
-      <i class="fa-solid fa-users text-xs"></i>
-      <span>メンバー用 (日常・学び)</span>
-    </button>
-    <button 
-      type="button" 
-      onclick="setLinkScope('admin')" 
-      data-scope="admin" 
-      class="link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800"
-    >
-      <i class="fa-solid fa-user-gear text-xs"></i>
-      <span>役員・運営用</span>
-    </button>
-    <button 
-      type="button" 
-      onclick="setLinkScope('archive')" 
-      data-scope="archive" 
-      class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
-    >
-      <i class="fa-solid fa-box-archive text-xs"></i>
-      <span>アーカイブ</span>
-    </button>
-    <button 
-      type="button" 
-      onclick="setLinkScope('all')" 
-      data-scope="all" 
-      class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
-    >
-      <span>すべて</span>
-    </button>
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+    <div class="bg-slate-100/80 p-1 rounded-2xl flex items-center gap-1 border border-slate-200/80 max-w-2xl overflow-x-auto scrollbar-none" id="links-scope-tabs">
+      <button 
+        type="button" 
+        onclick="setLinkScope('member')" 
+        data-scope="member" 
+        class="link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs"
+      >
+        <i class="fa-solid fa-users text-xs"></i>
+        <span>メンバー用 (日常・学び)</span>
+      </button>
+      <button 
+        type="button" 
+        onclick="setLinkScope('admin')" 
+        data-scope="admin" 
+        class="link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800"
+      >
+        <i class="fa-solid fa-user-gear text-xs"></i>
+        <span>役員・運営用</span>
+      </button>
+      <button 
+        type="button" 
+        onclick="setLinkScope('archive')" 
+        data-scope="archive" 
+        class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
+      >
+        <i class="fa-solid fa-box-archive text-xs"></i>
+        <span>アーカイブ</span>
+      </button>
+      <button 
+        type="button" 
+        onclick="setLinkScope('all')" 
+        data-scope="all" 
+        class="link-scope-tab py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-500 hover:text-slate-700 shrink-0"
+      >
+        <span>すべて</span>
+      </button>
+    </div>
+
+    <!-- DnD Reorder Hint -->
+    <div class="hidden lg:flex items-center gap-1.5 text-[11px] text-slate-400 font-medium select-none">
+      <i class="fa-solid fa-grip-vertical text-slate-300"></i>
+      <span>ドラッグ＆ドロップで優先順位を変更可能</span>
+    </div>
   </div>
 
   <!-- Subcategory Filter Pills -->
@@ -133,12 +155,18 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">分類カテゴリ</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-700">分類カテゴリ</label>
+            <button type="button" onclick="openCategoryModal()" class="text-[11px] text-blue-600 hover:underline cursor-pointer">+ 新規</button>
+          </div>
           <select id="link-field-category" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+            <option value="ビジター情報">🤝 ビジター情報</option>
+            <option value="メンバー情報">👥 メンバー情報</option>
             <option value="日常・1to1">👥 日常・1to1</option>
             <option value="ビジター・入会">🤝 ビジター・入会</option>
             <option value="公式ポータル・学び">📚 公式ポータル・学び</option>
             <option value="役員・チャプター運営">⚙️ 役員・チャプター運営</option>
+            <option value="アセット関連">📁 アセット関連</option>
             <option value="アーカイブ">🗄️ アーカイブ</option>
           </select>
         </div>
@@ -168,6 +196,64 @@
           キャンセル
         </button>
         <button type="submit" id="btn-save-link" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer">
+          <i class="fa-solid fa-check"></i>
+          <span>保存する</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Category Modal (Add / Edit) -->
+<div id="modal-category-crud" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs transition-opacity duration-200" style="display: none;">
+  <div class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-xl border border-slate-200 overflow-hidden transform transition-transform duration-200 scale-95" id="modal-category-container">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h3 id="modal-category-title" class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <i class="fa-solid fa-folder-plus text-blue-600"></i>
+        <span>カテゴリーを作成</span>
+      </h3>
+      <button type="button" onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+    </div>
+    <form id="form-category-crud" onsubmit="handleCategorySubmit(event)" class="p-6 space-y-4">
+      <input type="hidden" id="category-field-id" value="">
+      
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">カテゴリー名 <span class="text-red-500">*</span></label>
+        <input type="text" id="category-field-name" required placeholder="例: メンバー情報、ビジター情報、企画等" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">所属スコープ</label>
+          <select id="category-field-scope" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+            <option value="member">メンバー用 (日常・学び)</option>
+            <option value="admin">役員・運営用</option>
+            <option value="archive">アーカイブ</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">表示優先順 (小さい順)</label>
+          <input type="number" id="category-field-sort" value="10" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="category-field-icon" value="fa-solid fa-folder" placeholder="fa-solid fa-folder" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateCategoryIconPreview(this.value)">
+          <div id="category-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+            <i class="fa-solid fa-folder"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer">
+          キャンセル
+        </button>
+        <button type="submit" id="btn-save-category" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer">
           <i class="fa-solid fa-check"></i>
           <span>保存する</span>
         </button>

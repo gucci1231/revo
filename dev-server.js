@@ -2107,9 +2107,23 @@ function handleApiRequest(req, res, urlObj) {
     if (pathname === '/api/links.php') {
       const action = urlObj.searchParams.get('action') || 'list';
 
+      // Ensure categories table exists
+      runSqlExec(`
+        CREATE TABLE IF NOT EXISTS chapter_link_categories (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          icon TEXT DEFAULT 'fa-solid fa-folder',
+          sort_order INTEGER DEFAULT 0,
+          scope TEXT DEFAULT 'member',
+          created_at TEXT,
+          updated_at TEXT
+        );
+      `);
+
       if (action === 'list') {
         const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
-        return res.end(JSON.stringify({ success: true, links }));
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        return res.end(JSON.stringify({ success: true, links, categories }));
       }
 
       if (action === 'save') {
@@ -2117,7 +2131,7 @@ function handleApiRequest(req, res, urlObj) {
         const id = (body.id || ('LINK_' + Date.now().toString(36))).replace(/'/g, "''");
         const title = (body.title || '').replace(/'/g, "''");
         const url = (body.url || '').replace(/'/g, "''");
-        const category = (body.category || '日常・1to1').replace(/'/g, "''");
+        const category = (body.category || 'メンバー情報').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");
         const icon = (body.icon || 'fa-solid fa-link').replace(/'/g, "''");
         const sortOrder = parseInt(body.sort_order || 0, 10);
@@ -2125,14 +2139,87 @@ function handleApiRequest(req, res, urlObj) {
 
         runSqlExec(`INSERT OR REPLACE INTO chapter_links (id, title, url, category, description, icon, sort_order, created_at, updated_at)
                     VALUES ('${id}', '${title}', '${url}', '${category}', '${description}', '${icon}', ${sortOrder}, COALESCE((SELECT created_at FROM chapter_links WHERE id = '${id}'), '${now}'), '${now}');`);
-        return res.end(JSON.stringify({ success: true, message: 'リンクを保存しました' }));
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        return res.end(JSON.stringify({ success: true, message: 'リンクを保存しました', links, categories }));
       }
 
       if (action === 'delete') {
         const body = input || {};
         const id = (body.id || urlObj.searchParams.get('id') || '').replace(/'/g, "''");
         runSqlExec(`DELETE FROM chapter_links WHERE id = '${id}';`);
-        return res.end(JSON.stringify({ success: true, message: 'リンクを削除しました' }));
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        return res.end(JSON.stringify({ success: true, message: 'リンクを削除しました', links, categories }));
+      }
+
+      if (action === 'reorder') {
+        const body = input || {};
+        const items = body.items || body.orders || body.links || [];
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (!item || !item.id) continue;
+            const itemId = String(item.id).replace(/'/g, "''");
+            const sortOrder = parseInt(item.sort_order || 0, 10);
+            if (item.category) {
+              const cat = String(item.category).replace(/'/g, "''");
+              runSqlExec(`UPDATE chapter_links SET sort_order = ${sortOrder}, category = '${cat}', updated_at = '${now}' WHERE id = '${itemId}';`);
+            } else {
+              runSqlExec(`UPDATE chapter_links SET sort_order = ${sortOrder}, updated_at = '${now}' WHERE id = '${itemId}';`);
+            }
+          }
+        }
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        return res.end(JSON.stringify({ success: true, message: '並び順を更新しました', links }));
+      }
+
+      if (action === 'reorder_categories') {
+        const body = input || {};
+        const items = body.items || body.orders || body.categories || [];
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+        if (Array.isArray(items)) {
+          for (const item of items) {
+            if (!item) continue;
+            const key = String(item.id || item.name || '').replace(/'/g, "''");
+            if (!key) continue;
+            const sortOrder = parseInt(item.sort_order || 0, 10);
+            runSqlExec(`UPDATE chapter_link_categories SET sort_order = ${sortOrder}, updated_at = '${now}' WHERE id = '${key}' OR name = '${key}';`);
+          }
+        }
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        return res.end(JSON.stringify({ success: true, message: 'カテゴリーの並び順を更新しました', categories }));
+      }
+
+      if (action === 'save_category') {
+        const body = input || {};
+        const id = (body.id || ('CAT_' + Date.now().toString(36))).replace(/'/g, "''");
+        const name = (body.name || '').replace(/'/g, "''").trim();
+        const icon = (body.icon || 'fa-solid fa-folder').replace(/'/g, "''");
+        const sortOrder = parseInt(body.sort_order || 0, 10);
+        const scope = (body.scope || 'member').replace(/'/g, "''");
+        const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
+
+        if (!name) {
+          return res.end(JSON.stringify({ success: false, message: 'カテゴリー名を入力してください' }));
+        }
+
+        runSqlExec(`INSERT OR REPLACE INTO chapter_link_categories (id, name, icon, sort_order, scope, created_at, updated_at)
+                    VALUES ('${id}', '${name}', '${icon}', ${sortOrder}, '${scope}', COALESCE((SELECT created_at FROM chapter_link_categories WHERE id = '${id}' OR name = '${name}'), '${now}'), '${now}');`);
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        return res.end(JSON.stringify({ success: true, message: 'カテゴリーを保存しました', categories, links }));
+      }
+
+      if (action === 'delete_category') {
+        const body = input || {};
+        const id = (body.id || body.name || '').replace(/'/g, "''");
+        // Reassign affected links
+        runSqlExec(`UPDATE chapter_links SET category = 'メンバー情報' WHERE category = (SELECT name FROM chapter_link_categories WHERE id = '${id}' OR name = '${id}');`);
+        runSqlExec(`DELETE FROM chapter_link_categories WHERE id = '${id}' OR name = '${id}';`);
+        const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
+        const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
+        return res.end(JSON.stringify({ success: true, message: 'カテゴリーを削除しました', categories, links }));
       }
     }
 

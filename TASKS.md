@@ -10,6 +10,11 @@
 - **計画書**: [chapter_evolution_plan.md](file:///Users/kawaguchiyouhei/.gemini/antigravity-ide/brain/6bdffc92-3685-4689-ad28-87f65c00638a/chapter_evolution_plan.md)
 - **フェーズ構成**:
   - **Phase 1 [完了]**: ナビゲーション刷新（階層型・新カテゴリ）＆公式リンク集モジュール新設（`chapter_links`テーブル・CRUD・純白カードUI・本番稼働）
+    - **リンク集 DnD & カテゴリ優先順位機能 [完了]**:
+      - カテゴリ作成・編集・削除機能およびモーダル新設（`chapter_link_categories` テーブル、API連携）。
+      - 優先順位の再編成: 最優先＝**ビジター情報**、優先度2＝**メンバー情報**、優先度低(一番下)＝**アセット関連**、公式ポータル・学び、役員・チャプター運営、アーカイブ。
+      - ドラッグ＆ドロップ（DnD）直感操作: リンク行およびカテゴリカードをDnDで並び替え、即時DB自動保存（`/api/links.php?action=reorder`）。モバイル用クイック移動ボタンも完備。
+      - 単体テスト（208件全パス）。
   - **Phase 2 [完了]**:
     - **Step 2-1 [完了]**: BNI Connect PALMS 自動クローラー・同期スクリプト（認証API・Spring Security JWT Webセッション・チャプターサマリーPALMS取得・SQLite `palms_reports` 保存・Xserver Cron用 `api/scripts/fetch_bni_connect_palms.php` & ローカル用 `scripts/fetch_bni_connect_palms.js` 実装・テスト110件全パス）
     - **Step 2-2 [完了]**: 月間・期別 PALMSランキング画面UI実装

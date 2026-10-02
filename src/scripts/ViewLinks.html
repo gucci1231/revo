@@ -1,28 +1,52 @@
 <script>
 /**
  * Chapter Links Module - View & CRUD Controller
- * Categorized by Member (Daily/Visitor/Learning) vs Admin (Operation/Rules) vs Archive
+ * Supports Drag & Drop Reordering for Links & Categories,
+ * Dynamic Category Creation & Management, and Radical Minimalism Aesthetics.
  */
 let chapterLinksData = [];
+let chapterCategoriesData = [];
 let currentLinkScope = 'member'; // 'member' | 'admin' | 'archive' | 'all'
 let currentLinkCategory = 'ALL';
 let currentLinkSearchQuery = '';
 
-const LINK_SCOPE_MAP = {
-  member: ['日常・1to1', 'ビジター・入会', '公式ポータル・学び'],
-  admin: ['役員・チャプター運営'],
-  archive: ['アーカイブ']
-};
-
+// Default Category Order prioritizing Visitor Info -> Member Info -> Learn -> Admin -> Assets -> Archive
 const LINK_CATEGORY_ORDER = [
+  'ビジター情報',
+  'メンバー情報',
   '日常・1to1',
   'ビジター・入会',
   '公式ポータル・学び',
   '役員・チャプター運営',
+  'アセット関連',
   'アーカイブ'
 ];
 
+const LINK_SCOPE_MAP = {
+  member: ['ビジター情報', 'メンバー情報', '日常・1to1', 'ビジター・入会', '公式ポータル・学び', 'アセット関連'],
+  admin: ['役員・チャプター運営'],
+  archive: ['アーカイブ']
+};
+
 const LINK_CATEGORY_THEMES = {
+  'ビジター情報': {
+    icon: 'fa-solid fa-user-plus',
+    iconBg: 'bg-emerald-50',
+    iconBorder: 'border-emerald-100',
+    iconText: 'text-emerald-600',
+    badgeClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+    dotColor: '#059669',
+    desc: 'ビジター申込・ヒアリング・オリエン・入会フォーム等'
+  },
+  'メンバー情報': {
+    icon: 'fa-solid fa-users',
+    iconBg: 'bg-blue-50',
+    iconBorder: 'border-blue-100',
+    iconText: 'text-blue-600',
+    badgeClass: 'bg-blue-50 text-blue-700 border border-blue-200/60',
+    dotColor: '#0071e3',
+    desc: 'メインプレゼン・ウィークリー・金の卵・1to1シート一覧・名簿等'
+  },
   '日常・1to1': {
     icon: 'fa-solid fa-users',
     iconBg: 'bg-blue-50',
@@ -59,6 +83,15 @@ const LINK_CATEGORY_THEMES = {
     dotColor: '#d97706',
     desc: 'アジェンダ・40人リスト・BOR表・役員資料等'
   },
+  'アセット関連': {
+    icon: 'fa-solid fa-folder-open',
+    iconBg: 'bg-violet-50',
+    iconBorder: 'border-violet-100',
+    iconText: 'text-violet-600',
+    badgeClass: 'bg-violet-50 text-violet-700 border border-violet-200/60',
+    dotColor: '#7c3aed',
+    desc: '1to1シートマスター・略歴シート・名札・写真・ZOOM背景・ロゴ・スライド'
+  },
   'アーカイブ': {
     icon: 'fa-solid fa-box-archive',
     iconBg: 'bg-slate-100',
@@ -71,6 +104,12 @@ const LINK_CATEGORY_THEMES = {
 };
 
 const linkGenreCollapsedMap = {};
+
+// Drag and drop state
+let draggedLinkId = null;
+let draggedLinkCategory = null;
+let draggedCategoryName = null;
+let isCategoryDragEnabled = false;
 
 function getCategorySlug(cat) {
   let hash = 0;
@@ -138,7 +177,7 @@ function getLinkDomainInfo(url) {
 
 function fetchChapterLinks() {
   const container = document.getElementById('links-grid-container');
-  if (container) {
+  if (container && chapterLinksData.length === 0) {
     container.innerHTML = `
       <div class="col-span-full py-16 text-center text-slate-400">
         <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2 text-blue-600"></i>
@@ -151,9 +190,13 @@ function fetchChapterLinks() {
     .then(res => {
       if (res && res.links) {
         chapterLinksData = Array.isArray(res.links) ? res.links : [];
+        if (Array.isArray(res.categories)) {
+          chapterCategoriesData = res.categories;
+        }
         try {
           renderCategoryPills();
           renderChapterLinks();
+          renderModalCategorySelect();
         } catch (renderErr) {
           console.error('Render chapter links error:', renderErr);
         }
@@ -175,7 +218,7 @@ function setLinkScope(scope) {
   const tabs = document.querySelectorAll('#links-scope-tabs .link-scope-tab');
   tabs.forEach(tab => {
     if (tab.getAttribute('data-scope') === scope) {
-      tab.className = 'link-scope-tab active flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs';
+      tab.className = 'link-scope-tab active flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer bg-white text-blue-600 shadow-xs';
     } else {
       tab.className = 'link-scope-tab flex-1 min-w-[110px] py-2 px-3 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center gap-2 cursor-pointer text-slate-600 hover:text-slate-800';
     }
@@ -185,25 +228,62 @@ function setLinkScope(scope) {
   renderChapterLinks();
 }
 
+function getAvailableCategoriesForScope() {
+  const customCats = chapterCategoriesData.filter(c => {
+    if (currentLinkScope === 'all') return true;
+    return (c.scope || 'member') === currentLinkScope;
+  }).map(c => c.name);
+
+  let defaultCats = [];
+  if (currentLinkScope === 'all') {
+    defaultCats = ['ビジター情報', 'メンバー情報', '公式ポータル・学び', '役員・チャプター運営', 'アセット関連', 'アーカイブ'];
+  } else if (LINK_SCOPE_MAP[currentLinkScope]) {
+    defaultCats = LINK_SCOPE_MAP[currentLinkScope];
+  } else {
+    defaultCats = ['ビジター情報', 'メンバー情報', '公式ポータル・学び', 'アセット関連'];
+  }
+
+  // Combine unique in order
+  const combined = [];
+  // First check if categories table has defined order
+  if (chapterCategoriesData.length > 0) {
+    chapterCategoriesData.forEach(c => {
+      if ((currentLinkScope === 'all' || (c.scope || 'member') === currentLinkScope) && !combined.includes(c.name)) {
+        combined.push(c.name);
+      }
+    });
+  }
+  defaultCats.forEach(cat => {
+    if (!combined.includes(cat)) combined.push(cat);
+  });
+  customCats.forEach(cat => {
+    if (!combined.includes(cat)) combined.push(cat);
+  });
+
+  // Also include any categories present in current links
+  chapterLinksData.forEach(l => {
+    if (l.category && !combined.includes(l.category)) {
+      if (currentLinkScope === 'all' || defaultCats.includes(l.category)) {
+        combined.push(l.category);
+      }
+    }
+  });
+
+  return combined;
+}
+
 function renderCategoryPills() {
   const filterContainer = document.getElementById('links-category-filter');
   if (!filterContainer) return;
 
-  let availableCats = [];
-  if (currentLinkScope === 'all') {
-    availableCats = ['日常・1to1', 'ビジター・入会', '公式ポータル・学び', '役員・チャプター運営', 'アーカイブ'];
-  } else if (LINK_SCOPE_MAP[currentLinkScope]) {
-    availableCats = LINK_SCOPE_MAP[currentLinkScope];
-  } else {
-    availableCats = ['日常・1to1', 'ビジター・入会', '公式ポータル・学び'];
-  }
+  const availableCats = getAvailableCategoriesForScope();
 
   // Count items for each category
   const getCatCount = (cat) => {
     return chapterLinksData.filter(item => {
       if (cat === 'ALL') {
         if (currentLinkScope === 'all') return true;
-        const validCats = LINK_SCOPE_MAP[currentLinkScope] || [];
+        const validCats = LINK_SCOPE_MAP[currentLinkScope] || availableCats;
         return validCats.includes(item.category);
       }
       return item.category === cat;
@@ -290,7 +370,8 @@ function renderChapterLinks() {
     // 1. Scope filter
     if (currentLinkScope !== 'all') {
       const allowedCategories = LINK_SCOPE_MAP[currentLinkScope] || [];
-      if (!allowedCategories.includes(item.category)) {
+      const isCustomAllowed = chapterCategoriesData.some(c => c.name === item.category && (c.scope || 'member') === currentLinkScope);
+      if (!allowedCategories.includes(item.category) && !isCustomAllowed) {
         return false;
       }
     }
@@ -349,12 +430,21 @@ function renderChapterLinks() {
 
   // Determine category display order
   const categoriesInOrder = [];
+  // 1. From chapterCategoriesData (ordered by DB sort_order)
+  if (chapterCategoriesData && chapterCategoriesData.length > 0) {
+    chapterCategoriesData.forEach(c => {
+      if (grouped[c.name] && grouped[c.name].length > 0 && !categoriesInOrder.includes(c.name)) {
+        categoriesInOrder.push(c.name);
+      }
+    });
+  }
+  // 2. From LINK_CATEGORY_ORDER
   LINK_CATEGORY_ORDER.forEach(cat => {
-    if (grouped[cat] && grouped[cat].length > 0) {
+    if (grouped[cat] && grouped[cat].length > 0 && !categoriesInOrder.includes(cat)) {
       categoriesInOrder.push(cat);
     }
   });
-  // Append any extra category not in LINK_CATEGORY_ORDER
+  // 3. Append remaining categories
   Object.keys(grouped).forEach(cat => {
     if (!categoriesInOrder.includes(cat) && grouped[cat].length > 0) {
       categoriesInOrder.push(cat);
@@ -375,8 +465,9 @@ function renderChapterLinks() {
 
     const catSlug = getCategorySlug(catName);
     const isCollapsed = !!linkGenreCollapsedMap[catSlug];
+    const catMeta = chapterCategoriesData.find(c => c.name === catName);
     const theme = LINK_CATEGORY_THEMES[catName] || {
-      icon: 'fa-solid fa-folder',
+      icon: (catMeta && catMeta.icon) || 'fa-solid fa-folder',
       iconBg: 'bg-slate-100',
       iconBorder: 'border-slate-200',
       iconText: 'text-slate-600',
@@ -386,7 +477,7 @@ function renderChapterLinks() {
     };
 
     let itemsHtml = '';
-    items.forEach(link => {
+    items.forEach((link, idx) => {
       const escapedTitle = escapeHtml(link.title || '');
       const escapedUrl = escapeHtml(link.url || '');
       const escapedDesc = escapeHtml(link.description || '');
@@ -395,12 +486,43 @@ function renderChapterLinks() {
       const domainInfo = getLinkDomainInfo(link.url || '');
 
       itemsHtml += `
-        <div class="px-3.5 sm:px-4 py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors group">
-          <!-- Left: Icon + Title + Description -->
-          <div class="flex items-center gap-3 min-w-0 flex-1">
+        <div 
+          id="link-row-${linkId}"
+          class="link-item-row px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/90 transition-colors group relative cursor-default"
+          draggable="true"
+          data-id="${linkId}"
+          data-category="${escapeHtml(catName)}"
+          data-index="${idx}"
+          ondragstart="handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')"
+          ondragover="handleLinkDragOver(event)"
+          ondragleave="handleLinkDragLeave(event)"
+          ondrop="handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')"
+          ondragend="handleLinkDragEnd(event)"
+        >
+          <!-- Left: Drag Handle + Icon + Title + Description -->
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <!-- Drag Handle -->
+            <div 
+              class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+              title="ドラッグして並び順（優先順位）を変更"
+            >
+              <i class="fa-solid fa-grip-vertical text-xs"></i>
+            </div>
+
+            <!-- Quick move buttons for mobile/quick clicks -->
+            <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+              <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                <i class="fa-solid fa-chevron-down"></i>
+              </button>
+            </div>
+
             <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
               <i class="${iconClass}"></i>
             </div>
+
             <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2.5">
               <a 
                 href="${escapedUrl}" 
@@ -419,7 +541,7 @@ function renderChapterLinks() {
           </div>
 
           <!-- Right: Domain badge + Open link button + Edit + Delete -->
-          <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${domainInfo.badge}">
               <i class="${domainInfo.icon} text-[9px]"></i>
               <span>${domainInfo.label}</span>
@@ -458,13 +580,42 @@ function renderChapterLinks() {
     });
 
     html += `
-      <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden transition-all">
+      <div 
+        id="category-block-${catSlug}" 
+        class="link-category-block bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden transition-all"
+        data-category="${escapeHtml(catName)}"
+        ondragover="handleCategoryCardDragOver(event)"
+        ondragleave="handleCategoryCardDragLeave(event)"
+        ondrop="handleCategoryCardDrop(event, '${escapeHtml(catName)}')"
+      >
         <!-- Genre Header (Click to toggle) -->
         <div 
           onclick="toggleLinkGenre('${catSlug}')" 
-          class="px-4 py-3 bg-slate-50/70 hover:bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between cursor-pointer select-none transition-colors"
+          class="px-4 py-3 bg-slate-50/70 hover:bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between cursor-pointer select-none transition-colors group"
         >
-          <div class="flex items-center gap-2.5 min-w-0">
+          <div class="flex items-center gap-2 min-w-0">
+            <!-- Category Drag Handle -->
+            <div 
+              class="category-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+              title="ドラッグしてカテゴリーの表示順序を変更"
+              onclick="event.stopPropagation()"
+              draggable="true"
+              ondragstart="handleCategoryDragStart(event, '${escapeHtml(catName)}')"
+              ondragend="handleCategoryDragEnd(event)"
+            >
+              <i class="fa-solid fa-grip-vertical text-xs"></i>
+            </div>
+
+            <!-- Quick category order buttons -->
+            <div class="flex items-center gap-0.5 text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onclick="event.stopPropagation()">
+              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', -1)" title="カテゴリーを上へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                <i class="fa-solid fa-arrow-up"></i>
+              </button>
+              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', 1)" title="カテゴリーを下へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                <i class="fa-solid fa-arrow-down"></i>
+              </button>
+            </div>
+
             <span class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center text-xs shrink-0 border ${theme.iconBorder}">
               <i class="${theme.icon}"></i>
             </span>
@@ -482,12 +633,38 @@ function renderChapterLinks() {
           </div>
           
           <div class="flex items-center gap-2 shrink-0">
+            <!-- Category Actions: Edit & Delete -->
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+              <button 
+                type="button" 
+                onclick="openCategoryModal('${escapeHtml(catName)}')" 
+                class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors"
+                title="カテゴリーを編集"
+              >
+                <i class="fa-solid fa-pen text-[10px]"></i>
+              </button>
+              <button 
+                type="button" 
+                onclick="deleteCategoryPrompt('${escapeHtml(catName)}')" 
+                class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="カテゴリーを削除"
+              >
+                <i class="fa-solid fa-trash text-[10px]"></i>
+              </button>
+            </div>
+
             <i id="genre-icon-${catSlug}" class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
           </div>
         </div>
 
         <!-- Nested List Rows -->
-        <div id="genre-body-${catSlug}" class="${isCollapsed ? 'hidden ' : ''}divide-y divide-slate-100">
+        <div 
+          id="genre-body-${catSlug}" 
+          class="${isCollapsed ? 'hidden ' : ''}divide-y divide-slate-100 min-h-[44px]"
+          data-category="${escapeHtml(catName)}"
+          ondragover="handleCategoryBodyDragOver(event)"
+          ondrop="handleCategoryBodyDrop(event, '${escapeHtml(catName)}')"
+        >
           ${itemsHtml}
         </div>
       </div>
@@ -497,6 +674,510 @@ function renderChapterLinks() {
   container.innerHTML = html;
 }
 
+/* ========================================================
+   Drag & Drop Logic for Links
+======================================================== */
+function handleLinkDragStart(event, linkId, category) {
+  draggedLinkId = linkId;
+  draggedLinkCategory = category;
+  draggedCategoryName = null;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', linkId);
+
+  const row = document.getElementById(`link-row-${linkId}`);
+  if (row) {
+    row.classList.add('opacity-40', 'bg-blue-50/40');
+  }
+}
+
+function handleLinkDragOver(event) {
+  if (!draggedLinkId) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.dataTransfer.dropEffect = 'move';
+
+  const targetRow = event.currentTarget;
+  if (!targetRow || targetRow.id === `link-row-${draggedLinkId}`) return;
+
+  const rect = targetRow.getBoundingClientRect();
+  const relY = event.clientY - rect.top;
+  if (relY < rect.height / 2) {
+    targetRow.classList.add('border-t-2', 'border-blue-500');
+    targetRow.classList.remove('border-b-2');
+  } else {
+    targetRow.classList.add('border-b-2', 'border-blue-500');
+    targetRow.classList.remove('border-t-2');
+  }
+}
+
+function handleLinkDragLeave(event) {
+  const targetRow = event.currentTarget;
+  if (targetRow) {
+    targetRow.classList.remove('border-t-2', 'border-b-2', 'border-blue-500');
+  }
+}
+
+function handleLinkDrop(event, targetLinkId, targetCategory) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  const targetRow = event.currentTarget;
+  if (targetRow) {
+    targetRow.classList.remove('border-t-2', 'border-b-2', 'border-blue-500');
+  }
+
+  if (!draggedLinkId || draggedLinkId === targetLinkId) {
+    return;
+  }
+
+  const draggedItem = chapterLinksData.find(l => l.id === draggedLinkId);
+  if (!draggedItem) return;
+
+  const rect = targetRow.getBoundingClientRect();
+  const insertBefore = (event.clientY - rect.top) < (rect.height / 2);
+
+  // Reorder items in target category
+  draggedItem.category = targetCategory;
+
+  // Filter links for this category
+  const catItems = chapterLinksData.filter(l => l.category === targetCategory && l.id !== draggedLinkId);
+  const targetIndex = catItems.findIndex(l => l.id === targetLinkId);
+
+  if (targetIndex !== -1) {
+    const insertIndex = insertBefore ? targetIndex : targetIndex + 1;
+    catItems.splice(insertIndex, 0, draggedItem);
+  } else {
+    catItems.push(draggedItem);
+  }
+
+  // Update sort_order for all items in target category
+  const updatePayload = [];
+  catItems.forEach((item, idx) => {
+    item.sort_order = (idx + 1) * 10;
+    updatePayload.push({
+      id: item.id,
+      sort_order: item.sort_order,
+      category: targetCategory
+    });
+  });
+
+  // Re-render immediately
+  renderChapterLinks();
+  showToast('優先順位を更新しました', 'success');
+
+  // Send update to API
+  ApiService.call('reorderChapterLinksApi', updatePayload)
+    .then(res => {
+      if (res && res.links) {
+        chapterLinksData = res.links;
+      }
+    })
+    .catch(err => {
+      console.error('Reorder links failed:', err);
+    });
+}
+
+function handleCategoryBodyDragOver(event) {
+  if (!draggedLinkId) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+}
+
+function handleCategoryBodyDrop(event, targetCategory) {
+  if (!draggedLinkId) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  const draggedItem = chapterLinksData.find(l => l.id === draggedLinkId);
+  if (!draggedItem) return;
+
+  draggedItem.category = targetCategory;
+  const catItems = chapterLinksData.filter(l => l.category === targetCategory && l.id !== draggedLinkId);
+  catItems.push(draggedItem);
+
+  const updatePayload = [];
+  catItems.forEach((item, idx) => {
+    item.sort_order = (idx + 1) * 10;
+    updatePayload.push({
+      id: item.id,
+      sort_order: item.sort_order,
+      category: targetCategory
+    });
+  });
+
+  renderChapterLinks();
+  showToast('優先順位を更新しました', 'success');
+
+  ApiService.call('reorderChapterLinksApi', updatePayload)
+    .then(res => {
+      if (res && res.links) {
+        chapterLinksData = res.links;
+      }
+    })
+    .catch(err => {
+      console.error('Category drop reorder failed:', err);
+    });
+}
+
+function handleLinkDragEnd(event) {
+  if (draggedLinkId) {
+    const row = document.getElementById(`link-row-${draggedLinkId}`);
+    if (row) {
+      row.classList.remove('opacity-40', 'bg-blue-50/40');
+    }
+  }
+  document.querySelectorAll('.link-item-row').forEach(row => {
+    row.classList.remove('border-t-2', 'border-b-2', 'border-blue-500');
+  });
+  draggedLinkId = null;
+  draggedLinkCategory = null;
+}
+
+function moveLinkQuick(linkId, direction) {
+  const item = chapterLinksData.find(l => l.id === linkId);
+  if (!item) return;
+
+  const catItems = chapterLinksData
+    .filter(l => l.category === item.category)
+    .sort((a, b) => (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10)));
+
+  const currIdx = catItems.findIndex(l => l.id === linkId);
+  const newIdx = currIdx + direction;
+
+  if (newIdx < 0 || newIdx >= catItems.length) return;
+
+  // Swap
+  const swapItem = catItems[newIdx];
+  catItems[currIdx] = swapItem;
+  catItems[newIdx] = item;
+
+  const updatePayload = [];
+  catItems.forEach((it, idx) => {
+    it.sort_order = (idx + 1) * 10;
+    updatePayload.push({ id: it.id, sort_order: it.sort_order, category: it.category });
+  });
+
+  renderChapterLinks();
+  showToast('優先順位を更新しました', 'success');
+
+  ApiService.call('reorderChapterLinksApi', updatePayload)
+    .then(res => {
+      if (res && res.links) {
+        chapterLinksData = res.links;
+      }
+    })
+    .catch(err => {
+      console.error('Quick reorder error:', err);
+    });
+}
+
+/* ========================================================
+   Drag & Drop Logic for Categories
+======================================================== */
+function handleCategoryDragStart(event, catName) {
+  draggedCategoryName = catName;
+  draggedLinkId = null;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', 'category:' + catName);
+  const slug = getCategorySlug(catName);
+  const card = document.getElementById(`category-block-${slug}`);
+  if (card) {
+    card.classList.add('opacity-40', 'border-blue-400');
+  }
+}
+
+function handleCategoryCardDragOver(event) {
+  if (!draggedCategoryName) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+
+  const card = event.currentTarget;
+  if (!card) return;
+
+  const rect = card.getBoundingClientRect();
+  if (event.clientY - rect.top < rect.height / 2) {
+    card.classList.add('border-t-4', 'border-blue-500');
+    card.classList.remove('border-b-4');
+  } else {
+    card.classList.add('border-b-4', 'border-blue-500');
+    card.classList.remove('border-t-4');
+  }
+}
+
+function handleCategoryCardDragLeave(event) {
+  const card = event.currentTarget;
+  if (card) {
+    card.classList.remove('border-t-4', 'border-b-4', 'border-blue-500');
+  }
+}
+
+function handleCategoryCardDrop(event, targetCategory) {
+  if (!draggedCategoryName || draggedCategoryName === targetCategory) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  const card = event.currentTarget;
+  if (card) {
+    card.classList.remove('border-t-4', 'border-b-4', 'border-blue-500');
+  }
+
+  const rect = card.getBoundingClientRect();
+  const insertBefore = (event.clientY - rect.top) < (rect.height / 2);
+
+  // Reorder categories
+  const currentOrder = getAvailableCategoriesForScope().filter(c => c !== draggedCategoryName);
+  const targetIdx = currentOrder.indexOf(targetCategory);
+  if (targetIdx !== -1) {
+    currentOrder.splice(insertBefore ? targetIdx : targetIdx + 1, 0, draggedCategoryName);
+  } else {
+    currentOrder.push(draggedCategoryName);
+  }
+
+  const payload = [];
+  currentOrder.forEach((name, idx) => {
+    payload.push({ name: name, sort_order: (idx + 1) * 10 });
+    const existing = chapterCategoriesData.find(c => c.name === name);
+    if (existing) {
+      existing.sort_order = (idx + 1) * 10;
+    } else {
+      chapterCategoriesData.push({ name: name, sort_order: (idx + 1) * 10, scope: currentLinkScope === 'all' ? 'member' : currentLinkScope });
+    }
+  });
+
+  renderChapterLinks();
+  renderCategoryPills();
+  showToast('カテゴリーの優先順位を更新しました', 'success');
+
+  ApiService.call('reorderChapterCategoriesApi', payload)
+    .then(res => {
+      if (res && res.categories) {
+        chapterCategoriesData = res.categories;
+      }
+    })
+    .catch(err => {
+      console.error('Reorder categories error:', err);
+    });
+}
+
+function handleCategoryDragEnd(event) {
+  document.querySelectorAll('.link-category-block').forEach(card => {
+    card.classList.remove('opacity-40', 'border-blue-400', 'border-t-4', 'border-b-4', 'border-blue-500');
+  });
+  draggedCategoryName = null;
+}
+
+function moveCategoryQuick(catName, direction) {
+  const currentOrder = getAvailableCategoriesForScope();
+  const currIdx = currentOrder.indexOf(catName);
+  const newIdx = currIdx + direction;
+  if (newIdx < 0 || newIdx >= currentOrder.length) return;
+
+  const swapCat = currentOrder[newIdx];
+  currentOrder[currIdx] = swapCat;
+  currentOrder[newIdx] = catName;
+
+  const payload = [];
+  currentOrder.forEach((name, idx) => {
+    payload.push({ name: name, sort_order: (idx + 1) * 10 });
+    const existing = chapterCategoriesData.find(c => c.name === name);
+    if (existing) {
+      existing.sort_order = (idx + 1) * 10;
+    } else {
+      chapterCategoriesData.push({ name: name, sort_order: (idx + 1) * 10, scope: currentLinkScope === 'all' ? 'member' : currentLinkScope });
+    }
+  });
+
+  renderChapterLinks();
+  renderCategoryPills();
+  showToast('カテゴリーの優先順位を更新しました', 'success');
+
+  ApiService.call('reorderChapterCategoriesApi', payload)
+    .then(res => {
+      if (res && res.categories) {
+        chapterCategoriesData = res.categories;
+      }
+    })
+    .catch(err => {
+      console.error('Quick category reorder error:', err);
+    });
+}
+
+/* ========================================================
+   Category Modal & Management
+======================================================== */
+function updateCategoryIconPreview(val) {
+  const previewEl = document.getElementById('category-icon-preview');
+  if (previewEl) {
+    const iconClass = val.trim() || 'fa-solid fa-folder';
+    previewEl.innerHTML = `<i class="${escapeHtml(iconClass)}"></i>`;
+  }
+}
+
+function openCategoryModal(catName = null) {
+  const modal = document.getElementById('modal-category-crud');
+  const container = document.getElementById('modal-category-container');
+  const titleEl = document.getElementById('modal-category-title');
+  const form = document.getElementById('form-category-crud');
+
+  if (!modal || !container || !form) return;
+
+  form.reset();
+  document.getElementById('category-field-id').value = '';
+  document.getElementById('category-field-sort').value = '10';
+  document.getElementById('category-field-icon').value = 'fa-solid fa-folder';
+  updateCategoryIconPreview('fa-solid fa-folder');
+
+  if (catName) {
+    const target = chapterCategoriesData.find(c => c.name === catName);
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>カテゴリーを編集</span>`;
+    document.getElementById('category-field-id').value = (target && target.id) || '';
+    document.getElementById('category-field-name').value = catName;
+    document.getElementById('category-field-scope').value = (target && target.scope) || (currentLinkScope === 'admin' ? 'admin' : 'member');
+    document.getElementById('category-field-sort').value = (target && target.sort_order) || '10';
+    document.getElementById('category-field-icon').value = (target && target.icon) || 'fa-solid fa-folder';
+    updateCategoryIconPreview((target && target.icon) || 'fa-solid fa-folder');
+  } else {
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-folder-plus text-blue-600"></i><span>カテゴリーを作成</span>`;
+    document.getElementById('category-field-scope').value = currentLinkScope === 'admin' ? 'admin' : (currentLinkScope === 'archive' ? 'archive' : 'member');
+  }
+
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    container.classList.remove('scale-95');
+    container.classList.add('scale-100');
+  }, 10);
+}
+
+function closeCategoryModal() {
+  const modal = document.getElementById('modal-category-crud');
+  const container = document.getElementById('modal-category-container');
+  if (modal && container) {
+    container.classList.remove('scale-100');
+    container.classList.add('scale-95');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 150);
+  }
+}
+
+function handleCategorySubmit(event) {
+  event.preventDefault();
+  const id = document.getElementById('category-field-id').value.trim();
+  const name = document.getElementById('category-field-name').value.trim();
+  const scope = document.getElementById('category-field-scope').value;
+  const sort_order = parseInt(document.getElementById('category-field-sort').value, 10) || 10;
+  const icon = document.getElementById('category-field-icon').value.trim() || 'fa-solid fa-folder';
+
+  if (!name) {
+    showToast('カテゴリー名を入力してください', 'error');
+    return;
+  }
+
+  const payload = {
+    id: id || undefined,
+    name,
+    scope,
+    sort_order,
+    icon
+  };
+
+  const btn = document.getElementById('btn-save-category');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>保存中...</span>`;
+  }
+
+  ApiService.call('saveChapterCategoryApi', payload)
+    .then(res => {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+      if (res && res.success) {
+        showToast('カテゴリーを保存しました', 'success');
+        closeCategoryModal();
+        if (res.categories) chapterCategoriesData = res.categories;
+        if (res.links) chapterLinksData = res.links;
+        renderCategoryPills();
+        renderChapterLinks();
+        renderModalCategorySelect();
+      } else {
+        showToast((res && res.message) || '保存に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Save category error:', err);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
+      }
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+function deleteCategoryPrompt(catName) {
+  if (!confirm(`カテゴリー「${catName}」を削除してもよろしいですか？\n※所属するリンクは「メンバー情報」に移動します。`)) {
+    return;
+  }
+
+  ApiService.call('deleteChapterCategoryApi', catName)
+    .then(res => {
+      if (res && res.success) {
+        showToast('カテゴリーを削除しました', 'success');
+        if (res.categories) chapterCategoriesData = res.categories;
+        if (res.links) chapterLinksData = res.links;
+        renderCategoryPills();
+        renderChapterLinks();
+        renderModalCategorySelect();
+      } else {
+        showToast((res && res.message) || '削除に失敗しました', 'error');
+      }
+    })
+    .catch(err => {
+      console.error('Delete category error:', err);
+      showToast('通信エラーが発生しました', 'error');
+    });
+}
+
+function renderModalCategorySelect() {
+  const select = document.getElementById('link-field-category');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const categories = getAvailableCategoriesForScope();
+
+  // Ensure default test required options are always available
+  const baseOptions = [
+    'ビジター情報',
+    'メンバー情報',
+    '日常・1to1',
+    'ビジター・入会',
+    '公式ポータル・学び',
+    '役員・チャプター運営',
+    'アセット関連',
+    'アーカイブ'
+  ];
+
+  const allCats = [];
+  categories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
+  baseOptions.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
+
+  let html = '';
+  allCats.forEach(cat => {
+    const theme = LINK_CATEGORY_THEMES[cat];
+    const icon = theme ? theme.icon : 'fa-solid fa-folder';
+    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+  });
+
+  select.innerHTML = html;
+  if (currentVal && allCats.includes(currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+/* ========================================================
+   Link Modal & Form Controller
+======================================================== */
 function updateLinkIconPreview(val) {
   const previewEl = document.getElementById('link-icon-preview');
   if (previewEl) {
@@ -518,6 +1199,7 @@ function openLinkModal(linkId = null) {
   document.getElementById('link-field-sort').value = '0';
   document.getElementById('link-field-icon').value = 'fa-solid fa-link';
   updateLinkIconPreview('fa-solid fa-link');
+  renderModalCategorySelect();
 
   if (linkId) {
     const target = chapterLinksData.find(l => l.id === linkId);
@@ -526,7 +1208,7 @@ function openLinkModal(linkId = null) {
       document.getElementById('link-field-id').value = target.id;
       document.getElementById('link-field-title').value = target.title || '';
       document.getElementById('link-field-url').value = target.url || '';
-      document.getElementById('link-field-category').value = target.category || '日常・1to1';
+      document.getElementById('link-field-category').value = target.category || 'メンバー情報';
       document.getElementById('link-field-description').value = target.description || '';
       document.getElementById('link-field-icon').value = target.icon || 'fa-solid fa-link';
       document.getElementById('link-field-sort').value = target.sort_order || '0';
@@ -534,13 +1216,12 @@ function openLinkModal(linkId = null) {
     }
   } else {
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
-    // Set default category based on current active tab
     const catSelect = document.getElementById('link-field-category');
     if (catSelect) {
       if (currentLinkScope === 'admin') catSelect.value = '役員・チャプター運営';
       else if (currentLinkScope === 'archive') catSelect.value = 'アーカイブ';
       else if (currentLinkCategory !== 'ALL') catSelect.value = currentLinkCategory;
-      else catSelect.value = '日常・1to1';
+      else catSelect.value = 'ビジター情報';
     }
   }
 

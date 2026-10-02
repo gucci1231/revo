@@ -235,6 +235,30 @@ const ApiService = {
           method: 'POST',
           body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
         };
+      case 'reorderChapterLinksApi':
+        return {
+          url: '/api/links.php?action=reorder',
+          method: 'POST',
+          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+        };
+      case 'reorderChapterCategoriesApi':
+        return {
+          url: '/api/links.php?action=reorder_categories',
+          method: 'POST',
+          body: Array.isArray(args[0]) ? { items: args[0] } : (args[0] || {})
+        };
+      case 'saveChapterCategoryApi':
+        return {
+          url: '/api/links.php?action=save_category',
+          method: 'POST',
+          body: args[0] || {}
+        };
+      case 'deleteChapterCategoryApi':
+        return {
+          url: '/api/links.php?action=delete_category',
+          method: 'POST',
+          body: typeof args[0] === 'object' ? args[0] : { id: args[0] }
+        };
       case 'getOgpApi':
         return { url: '/api/ogp.php?url=' + encodeURIComponent(args[0] || ''), method: 'GET' };
       case 'getPalmsListApi':
