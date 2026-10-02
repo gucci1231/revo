@@ -7870,6 +7870,11 @@ select.form-input, select.form-select {
       </div>
 
       <div class="form-group">
+        <label class="form-label">チャプター役職</label>
+        <input type="text" id="crud-m-role" class="form-input" placeholder="例：プレジデント、ビジターホスト 等">
+      </div>
+
+      <div class="form-group">
         <label class="form-label">ステータス <span class="required">*</span></label>
         <div class="flex items-center gap-3 mt-1.5">
           <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800 transition-colors has-checked:border-blue-600 has-checked:bg-blue-50/40 has-checked:text-blue-700">
@@ -9249,6 +9254,7 @@ select.form-input, select.form-select {
           <div class="min-w-0">
             <div class="flex items-center gap-2 mb-0.5">
               <span id="member-dash-category-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200/60">カテゴリ</span>
+              <span id="member-dash-role-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60 hidden">役職</span>
               <span id="member-dash-status-badge" class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80 hidden">退会</span>
               <span id="member-dash-profession" class="text-xs text-slate-400 font-bold truncate">専門分野</span>
             </div>
@@ -10962,6 +10968,7 @@ select.form-input, select.form-select {
             <tr>
               <th class="col-w-sm">No.</th>
               <th style="width: 80px;" class="text-center">状態</th>
+              <th>役職</th>
               <th>カテゴリ / 専門領域</th>
               <th>メンバー氏名</th>
               <th>専門分野</th>
@@ -20508,6 +20515,17 @@ window.CelebrationEffect = (function() {
 
     if (nameEl) nameEl.innerText = mName;
     if (catEl) catEl.innerText = memberObj.category || 'メンバー';
+    const roleEl = document.getElementById('member-dash-role-badge');
+    const mRole = memberObj.role || '';
+    if (roleEl) {
+      if (mRole) {
+        roleEl.innerText = mRole;
+        roleEl.title = mRole;
+        roleEl.classList.remove('hidden');
+      } else {
+        roleEl.classList.add('hidden');
+      }
+    }
     if (statusEl) {
       if (isResigned) {
         statusEl.classList.remove('hidden');
@@ -21723,6 +21741,7 @@ window.CelebrationEffect = (function() {
         name: mName,
         category: m.category || 'その他',
         profession: m.profession || '',
+        role: m.role || '',
         totalInvited,
         invitedJoinedCount,
         joinRate,
@@ -21737,16 +21756,20 @@ window.CelebrationEffect = (function() {
 
     let filtered = summaryList;
     if (query) {
-      filtered = summaryList.filter(s => s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query) || s.profession.toLowerCase().includes(query));
+      filtered = summaryList.filter(s => s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query) || s.profession.toLowerCase().includes(query) || s.role.toLowerCase().includes(query));
     }
 
     let html = '';
     filtered.forEach(s => {
       const clickArg = s.id !== null ? String(s.id) : s.name;
+      const primaryRole = s.role ? s.role.split('/')[0].trim() : '';
       html += `
         <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(clickArg)}')">
           <td class="py-2.5 px-3 font-extrabold text-slate-900 text-xs">
-            ${escapeHtml(s.name)}
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span>${escapeHtml(s.name)}</span>
+              ${primaryRole ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60" title="${escapeHtml(s.role)}">${escapeHtml(primaryRole)}</span>` : ''}
+            </div>
           </td>
           <td class="py-2.5 px-3 text-slate-500 font-bold text-[11px]">
             ${escapeHtml(s.category)}
@@ -27670,7 +27693,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       const emptyMsg = currentMembersFilter === 'active' ? '在籍中のメンバーはありません'
         : currentMembersFilter === 'resigned' ? '退会したメンバーはありません'
         : '登録されているメンバーはありません';
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -27685,9 +27708,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200/80"><span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>退会</span>`
         : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60"><span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>在籍</span>`;
 
+      const roleBadge = m.role
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60" title="${escapeHtml(m.role)}">${formatTruncatedCell(m.role, 14)}</span>`
+        : `<span class="text-xs text-slate-300">-</span>`;
+
       tr.innerHTML = `
         <td style="font-weight: 700;">${idx + 1}</td>
         <td class="text-center">${statusBadge}</td>
+        <td>${roleBadge}</td>
         <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
         <td style="font-weight: 800; font-size:14px; color:${isResigned ? '#495057' : '#212529'};">${escapeHtml(m.name)}${isResigned ? ' <span class="text-[11px] text-slate-400 font-normal">(退会)</span>' : ''}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
@@ -27716,6 +27744,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-category').value = '';
     document.getElementById('crud-m-name').value = '';
     document.getElementById('crud-m-profession').value = '';
+    const roleInput = document.getElementById('crud-m-role');
+    if (roleInput) roleInput.value = '';
     const activeRadio = document.getElementById('crud-m-status-active');
     if (activeRadio) activeRadio.checked = true;
     document.getElementById('modal-member-crud').style.display = 'flex';
@@ -27729,6 +27759,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-category').value = m.category || '';
     document.getElementById('crud-m-name').value = m.name || '';
     document.getElementById('crud-m-profession').value = m.profession || '';
+    const roleInput = document.getElementById('crud-m-role');
+    if (roleInput) roleInput.value = m.role || '';
     const isResigned = (m.status || '在籍') === '退会';
     const resignedRadio = document.getElementById('crud-m-status-resigned');
     const activeRadio = document.getElementById('crud-m-status-active');
@@ -27749,6 +27781,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     const category = document.getElementById('crud-m-category').value.trim();
     const name = document.getElementById('crud-m-name').value.trim();
     const profession = document.getElementById('crud-m-profession').value.trim();
+    const role = (document.getElementById('crud-m-role')?.value || '').trim();
     const status = document.getElementById('crud-m-status-resigned')?.checked ? '退会' : '在籍';
 
     if (!category || !name || !profession) {
@@ -27756,7 +27789,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       return;
     }
 
-    const mObj = { id, category, name, profession, status };
+    const mObj = { id, category, name, profession, role, status };
     showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
     document.getElementById('loading').style.display = 'flex';
 
@@ -31549,6 +31582,7 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
     // メンバーマスタから退会ステータス判定
     const mObj = (typeof findMemberByName === 'function') ? findMemberByName(r.member_name) : null;
     let memberStatus = (mObj && mObj.status) ? mObj.status : (r.member_status || '在籍');
+    const memberRole = (mObj && mObj.role) ? mObj.role : (r.member_role || '');
     const isResigned = memberStatus === '退会';
 
     const parsed = {
@@ -31569,7 +31603,8 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
       attendance_weeks: memberAttendanceWeeks,
       is_new_member: isNewMember,
       is_resigned: isResigned,
-      member_status: memberStatus
+      member_status: memberStatus,
+      member_role: memberRole
     };
 
     const trafficLight = calcBniTrafficLightScore(parsed, weeks);
@@ -32854,7 +32889,10 @@ function renderPalmsTable(records) {
             ${resignedBadge}
             <i class="fa-solid fa-circle-info text-3xs text-slate-300 group-hover:text-blue-500 transition-colors"></i>
           </div>
-          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[140px]">${memberCategory}</div>
+          <div class="text-3xs text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <span class="truncate max-w-[140px]">${memberCategory}</span>
+            ${m.member_role ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/50 shrink-0" title="${escapeHtml(m.member_role)}">${escapeHtml(m.member_role.split('/')[0].trim())}</span>` : ''}
+          </div>
         </td>
         <!-- 3. 判定 -->
         <td class="py-3 px-3 text-center align-middle">
@@ -34848,8 +34886,9 @@ function renderTrafficLightsGrid() {
                   <span>${m.member_name}</span>
                   ${isResigned ? '<span class="text-[10px] px-1 py-0.2 rounded bg-slate-100 text-slate-500 border border-slate-200 font-bold shrink-0">退会</span>' : ''}
                 </div>
-                <div class="text-3xs text-slate-400 font-semibold truncate">
-                  ${m.member_category || 'メンバー'}
+                <div class="text-3xs text-slate-400 font-semibold truncate flex items-center gap-1.5 flex-wrap">
+                  <span>${m.member_category || 'メンバー'}</span>
+                  ${m.member_role ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/50 shrink-0" title="${escapeHtml(m.member_role)}">${escapeHtml(m.member_role.split('/')[0].trim())}</span>` : ''}
                 </div>
               </div>
             </div>

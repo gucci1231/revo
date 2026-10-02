@@ -91,6 +91,7 @@ class Database {
                 category TEXT DEFAULT 'その他',
                 name TEXT,
                 profession TEXT DEFAULT '',
+                role TEXT DEFAULT '',
                 status TEXT DEFAULT '在籍',
                 updated_at TEXT
             );
@@ -285,6 +286,26 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE members ADD COLUMN status TEXT DEFAULT '在籍'");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN role TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
+                UPDATE members SET role = 'プレジデント / BCP委員会' WHERE name = '永井 創太';
+                UPDATE members SET role = 'バイスプレジデント' WHERE name = '川口 陽平';
+                UPDATE members SET role = '書記/会計' WHERE name = '小山 世次';
+                UPDATE members SET role = 'エデュケーションコーディネーター / ビジターホスト' WHERE name = '前井 宏之';
+                UPDATE members SET role = 'メンバーシップ委員 / ビジターホスト / イベント委員' WHERE name = '居原田 晃司';
+                UPDATE members SET role = 'メンバーシップ委員 / ビジターホスト' WHERE name = '板谷 栄子';
+                UPDATE members SET role = '1to1コーディネーター / メンバーシップ委員' WHERE name = '阿部 真二';
+                UPDATE members SET role = 'メンターコーディネーター / ビジターホスト / グローバルビジネス' WHERE name = '森田 由美子';
+                UPDATE members SET role = 'ビジターホストコーディネーター' WHERE name = '三島 文美';
+                UPDATE members SET role = 'BODコーディネーター / ビジターホスト' WHERE name = '江幡 幸典';
+                UPDATE members SET role = 'ビジターホスト' WHERE name = '平田 貴嗣';
+                UPDATE members SET role = 'ビジターホスト / イベント委員' WHERE name = '川田 湧矢';
+                UPDATE members SET role = 'トレーニングコーディネーター / WEBマスター / BOD' WHERE name = '桐原 卓也';
+            ");
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("

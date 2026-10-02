@@ -1132,6 +1132,7 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
     // メンバーマスタから退会ステータス判定
     const mObj = (typeof findMemberByName === 'function') ? findMemberByName(r.member_name) : null;
     let memberStatus = (mObj && mObj.status) ? mObj.status : (r.member_status || '在籍');
+    const memberRole = (mObj && mObj.role) ? mObj.role : (r.member_role || '');
     const isResigned = memberStatus === '退会';
 
     const parsed = {
@@ -1152,7 +1153,8 @@ function parseAndProcessPalmsRecords(rawRecords, weeks) {
       attendance_weeks: memberAttendanceWeeks,
       is_new_member: isNewMember,
       is_resigned: isResigned,
-      member_status: memberStatus
+      member_status: memberStatus,
+      member_role: memberRole
     };
 
     const trafficLight = calcBniTrafficLightScore(parsed, weeks);
@@ -2437,7 +2439,10 @@ function renderPalmsTable(records) {
             ${resignedBadge}
             <i class="fa-solid fa-circle-info text-3xs text-slate-300 group-hover:text-blue-500 transition-colors"></i>
           </div>
-          <div class="text-3xs text-slate-400 mt-0.5 truncate max-w-[140px]">${memberCategory}</div>
+          <div class="text-3xs text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+            <span class="truncate max-w-[140px]">${memberCategory}</span>
+            ${m.member_role ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/50 shrink-0" title="${escapeHtml(m.member_role)}">${escapeHtml(m.member_role.split('/')[0].trim())}</span>` : ''}
+          </div>
         </td>
         <!-- 3. 判定 -->
         <td class="py-3 px-3 text-center align-middle">
@@ -4431,8 +4436,9 @@ function renderTrafficLightsGrid() {
                   <span>${m.member_name}</span>
                   ${isResigned ? '<span class="text-[10px] px-1 py-0.2 rounded bg-slate-100 text-slate-500 border border-slate-200 font-bold shrink-0">退会</span>' : ''}
                 </div>
-                <div class="text-3xs text-slate-400 font-semibold truncate">
-                  ${m.member_category || 'メンバー'}
+                <div class="text-3xs text-slate-400 font-semibold truncate flex items-center gap-1.5 flex-wrap">
+                  <span>${m.member_category || 'メンバー'}</span>
+                  ${m.member_role ? `<span class="px-1 py-0.2 rounded text-[9px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/50 shrink-0" title="${escapeHtml(m.member_role)}">${escapeHtml(m.member_role.split('/')[0].trim())}</span>` : ''}
                 </div>
               </div>
             </div>

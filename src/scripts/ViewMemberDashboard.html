@@ -325,6 +325,17 @@
 
     if (nameEl) nameEl.innerText = mName;
     if (catEl) catEl.innerText = memberObj.category || 'メンバー';
+    const roleEl = document.getElementById('member-dash-role-badge');
+    const mRole = memberObj.role || '';
+    if (roleEl) {
+      if (mRole) {
+        roleEl.innerText = mRole;
+        roleEl.title = mRole;
+        roleEl.classList.remove('hidden');
+      } else {
+        roleEl.classList.add('hidden');
+      }
+    }
     if (statusEl) {
       if (isResigned) {
         statusEl.classList.remove('hidden');
@@ -1540,6 +1551,7 @@
         name: mName,
         category: m.category || 'その他',
         profession: m.profession || '',
+        role: m.role || '',
         totalInvited,
         invitedJoinedCount,
         joinRate,
@@ -1554,16 +1566,20 @@
 
     let filtered = summaryList;
     if (query) {
-      filtered = summaryList.filter(s => s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query) || s.profession.toLowerCase().includes(query));
+      filtered = summaryList.filter(s => s.name.toLowerCase().includes(query) || s.category.toLowerCase().includes(query) || s.profession.toLowerCase().includes(query) || s.role.toLowerCase().includes(query));
     }
 
     let html = '';
     filtered.forEach(s => {
       const clickArg = s.id !== null ? String(s.id) : s.name;
+      const primaryRole = s.role ? s.role.split('/')[0].trim() : '';
       html += `
         <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="selectMemberFromSummaryTable('${escapeHtml(clickArg)}')">
           <td class="py-2.5 px-3 font-extrabold text-slate-900 text-xs">
-            ${escapeHtml(s.name)}
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span>${escapeHtml(s.name)}</span>
+              ${primaryRole ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60" title="${escapeHtml(s.role)}">${escapeHtml(primaryRole)}</span>` : ''}
+            </div>
           </td>
           <td class="py-2.5 px-3 text-slate-500 font-bold text-[11px]">
             ${escapeHtml(s.category)}

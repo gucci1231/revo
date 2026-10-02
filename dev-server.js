@@ -94,6 +94,7 @@ function initDatabase() {
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN flyer_url TEXT DEFAULT '';`); } catch(e){}
+  try { runSqlExec(`ALTER TABLE members ADD COLUMN role TEXT DEFAULT '';`); } catch(e){}
 
   // Seed default meeting customizations if not present
   try {
@@ -1062,25 +1063,27 @@ function handleApiRequest(req, res, urlObj) {
         const category = esc(input.category || 'その他');
         const name = esc(input.name || '');
         const profession = esc(input.profession || '');
+        const role = esc(input.role || '');
         const status = esc(input.status || '在籍');
         const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
         const maxIdRes = runSqlJson(`SELECT MAX(CAST(id AS INTEGER)) as max_id FROM members;`);
         const nextId = (parseInt(maxIdRes[0]?.max_id || 0, 10) + 1).toString();
-        runSqlExec(`INSERT INTO members (id, category, name, profession, status, updated_at) VALUES ('${nextId}', '${category}', '${name}', '${profession}', '${status}', '${now}');`);
+        runSqlExec(`INSERT INTO members (id, category, name, profession, role, status, updated_at) VALUES ('${nextId}', '${category}', '${name}', '${profession}', '${role}', '${status}', '${now}');`);
       } else if (action === 'update') {
         const id = esc(input.id || '');
         const category = esc(input.category || 'その他');
         const name = esc(input.name || '');
         const profession = esc(input.profession || '');
+        const role = esc(input.role || '');
         const status = esc(input.status || '在籍');
         const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
-        runSqlExec(`UPDATE members SET category = '${category}', name = '${name}', profession = '${profession}', status = '${status}', updated_at = '${now}' WHERE id = '${id}';`);
+        runSqlExec(`UPDATE members SET category = '${category}', name = '${name}', profession = '${profession}', role = '${role}', status = '${status}', updated_at = '${now}' WHERE id = '${id}';`);
       } else if (action === 'delete') {
         const id = esc(input.id || urlObj.searchParams.get('id') || '');
         runSqlExec(`DELETE FROM members WHERE id = '${id}';`);
       }
 
-      const sql = `SELECT id, category, name, profession, COALESCE(status, '在籍') as status FROM members ORDER BY CASE WHEN status = '退会' THEN 1 ELSE 0 END, category, name;`;
+      const sql = `SELECT id, category, name, profession, COALESCE(role, '') as role, COALESCE(status, '在籍') as status FROM members ORDER BY CASE WHEN status = '退会' THEN 1 ELSE 0 END, category, name;`;
       const flatMembers = runSqlJson(sql);
       const categoriesMap = {};
       flatMembers.forEach(m => {

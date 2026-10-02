@@ -11,7 +11,7 @@ class MemberRepository {
     }
 
     public function getAll(): array {
-        return $this->db->fetchAll("SELECT id, category, name, profession, COALESCE(status, '在籍') as status FROM members ORDER BY CASE WHEN status = '退会' THEN 1 ELSE 0 END, category, name");
+        return $this->db->fetchAll("SELECT id, category, name, profession, COALESCE(role, '') as role, COALESCE(status, '在籍') as status FROM members ORDER BY CASE WHEN status = '退会' THEN 1 ELSE 0 END, category, name");
     }
 
     public function getGroupedByCategory(): array {

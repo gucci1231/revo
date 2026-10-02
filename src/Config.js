@@ -45,66 +45,66 @@ const REVO_MEMBERS = [
   {
     category: "〇士業・事業サポート",
     members: [
-      { name: "小瀬戸 健一", profession: "融資・補助金申請サポート" },
-      { name: "前井 宏之", profession: "社長の孤独をなくす専属AI" }
+      { name: "小瀬戸 健一", profession: "融資・補助金申請サポート", role: "" },
+      { name: "前井 宏之", profession: "社長の孤独をなくす専属AI", role: "エデュケーションコーディネーター / ビジターホスト" }
     ]
   },
   {
     category: "〇建築",
     members: [
-      { name: "平田 貴嗣", profession: "電気工事LED" },
-      { name: "上田 優也", profession: "シーリング工事" },
-      { name: "小山 世次", profession: "セミ新築(住まいの再生ラボ)" }
+      { name: "平田 貴嗣", profession: "電気工事LED", role: "ビジターホスト" },
+      { name: "上田 優也", profession: "シーリング工事", role: "" },
+      { name: "小山 世次", profession: "セミ新築(住まいの再生ラボ)", role: "書記/会計" }
     ]
   },
   {
     category: "〇不動産",
     members: [
-      { name: "阿部 真二", profession: "不動産買取り" }
+      { name: "阿部 真二", profession: "不動産買取り", role: "1to1コーディネーター / メンバーシップ委員" }
     ]
   },
   {
     category: "〇保険・金融",
     members: [
-      { name: "三島 文美", profession: "生命保険（家計にやさしいアドバイザー）" },
-      { name: "永井 創太", profession: "生命保険（個人）" }
+      { name: "三島 文美", profession: "生命保険（家計にやさしいアドバイザー）", role: "ビジターホストコーディネーター" },
+      { name: "永井 創太", profession: "生命保険（個人）", role: "プレジデント / BCP委員会" }
     ]
   },
   {
     category: "〇飲食・物販",
     members: [
-      { name: "森田 由美子", profession: "日本茶販売" },
-      { name: "川田 湧矢", profession: "和食とワイン" }
+      { name: "森田 由美子", profession: "日本茶販売", role: "メンターコーディネーター / ビジターホスト / グローバルビジネス" },
+      { name: "川田 湧矢", profession: "和食とワイン", role: "ビジターホスト / イベント委員" }
     ]
   },
   {
     category: "〇美容・健康",
     members: [
-      { name: "板谷 栄子", profession: "ながらダイエット機器販売" }
+      { name: "板谷 栄子", profession: "ながらダイエット機器販売", role: "メンバーシップ委員 / ビジターホスト" }
     ]
   },
   {
     category: "〇クリエイティブ・マーケティング",
     members: [
-      { name: "桐原 卓也", profession: "SNS特化ショート動画制作" },
-      { name: "川口 陽平", profession: "デザイナー" },
-      { name: "江幡 幸典", profession: "人生の節目フォトグラファー" }
+      { name: "桐原 卓也", profession: "SNS特化ショート動画制作", role: "トレーニングコーディネーター / WEBマスター / BOD" },
+      { name: "川口 陽平", profession: "デザイナー", role: "バイスプレジデント" },
+      { name: "江幡 幸典", profession: "人生の節目フォトグラファー", role: "BODコーディネーター / ビジターホスト" }
     ]
   },
   {
     category: "〇ライフイベント・サービス",
     members: [
-      { name: "居原田 晃司", profession: "結婚相談所" }
+      { name: "居原田 晃司", profession: "結婚相談所", role: "メンバーシップ委員 / ビジターホスト / イベント委員" }
     ]
   },
   {
     category: "DNAメンバー",
     members: [
-      { name: "熊野 りん", profession: "DNA" },
-      { name: "畑中 実", profession: "DNA" },
-      { name: "野本 暁", profession: "DNA" },
-      { name: "佐内 勖", profession: "DNA" },
-      { name: "松本 俊輔", profession: "DNA" }
+      { name: "熊野 りん", profession: "DNA", role: "" },
+      { name: "畑中 実", profession: "DNA", role: "" },
+      { name: "野本 暁", profession: "DNA", role: "" },
+      { name: "佐内 勖", profession: "DNA", role: "" },
+      { name: "松本 俊輔", profession: "DNA", role: "" }
     ]
   }
 ];

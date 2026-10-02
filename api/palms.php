@@ -32,12 +32,13 @@ try {
                 (p.rri_referrals_received_internal + p.rro_referrals_received_external) as total_referrals_received,
                 (p.tyfcb_amount * 1000) as tyfcb_yen,
                 m.category as member_category,
-                m.profession as member_profession
+                m.profession as member_profession,
+                COALESCE(m.role, '') as member_role
             FROM palms_reports p
             LEFT JOIN (
-                SELECT name, category, profession, status
+                SELECT name, category, profession, role, status
                 FROM (
-                    SELECT name, category, profession, status,
+                    SELECT name, category, profession, role, status,
                            CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
                     FROM members
                     ORDER BY priority ASC, id ASC
@@ -387,12 +388,13 @@ try {
                 ) as sponsors_count,
                 m.category as member_category,
                 m.profession as member_profession,
+                COALESCE(m.role, '') as member_role,
                 COALESCE(m.status, '在籍') as member_status
             FROM palms_reports p
             LEFT JOIN (
-                SELECT name, category, profession, status
+                SELECT name, category, profession, role, status
                 FROM (
-                    SELECT name, category, profession, status,
+                    SELECT name, category, profession, role, status,
                            CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
                     FROM members
                     ORDER BY priority ASC, id ASC
@@ -446,12 +448,13 @@ try {
                     ) as sponsors_count,
                     m.category as member_category,
                     m.profession as member_profession,
+                    COALESCE(m.role, '') as member_role,
                     COALESCE(m.status, '在籍') as member_status
                 FROM palms_reports p
                 LEFT JOIN (
-                    SELECT name, category, profession, status
+                    SELECT name, category, profession, role, status
                     FROM (
-                        SELECT name, category, profession, status,
+                        SELECT name, category, profession, role, status,
                                CASE WHEN category != 'その他' AND category != '' THEN 0 ELSE 1 END as priority
                         FROM members
                         ORDER BY priority ASC, id ASC
