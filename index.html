@@ -7875,6 +7875,11 @@ select.form-input, select.form-select {
       </div>
 
       <div class="form-group">
+        <label class="form-label">メールアドレス</label>
+        <input type="email" id="crud-m-email" class="form-input" placeholder="例：member@example.com">
+      </div>
+
+      <div class="form-group">
         <label class="form-label">ステータス <span class="required">*</span></label>
         <div class="flex items-center gap-3 mt-1.5">
           <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 cursor-pointer text-xs font-bold text-slate-800 transition-colors has-checked:border-blue-600 has-checked:bg-blue-50/40 has-checked:text-blue-700">
@@ -10972,6 +10977,7 @@ select.form-input, select.form-select {
               <th>カテゴリ / 専門領域</th>
               <th>メンバー氏名</th>
               <th>専門分野</th>
+              <th>メールアドレス</th>
               <th class="col-w-md">操作</th>
             </tr>
           </thead>
@@ -11358,12 +11364,76 @@ select.form-input, select.form-select {
           <!-- A. HTMLメール編集フォーム -->
           <div id="rm-form-email" class="bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3.5">
             
-            <!-- 送信先設定 -->
-            <div>
-              <label class="block text-xs font-extrabold text-slate-700 mb-1">
-                <span>送信先メールアドレス</span>
-              </label>
-              <input type="text" id="rm-email-recipients" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:bg-white transition" placeholder="info@k-d-o.biz">
+            <!-- 送信先・配信対象者設定 (人物・役職連携) -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <label class="block text-xs font-extrabold text-slate-800 m-0 flex items-center gap-1.5">
+                  <i class="fa-solid fa-users-gear text-blue-600"></i>
+                  <span>配信対象者 / 送信先</span>
+                  <span id="rm-recipients-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200/60 ml-1">0名</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="toggleReportMemberPalette()" class="text-[11px] font-bold text-blue-600 hover:text-blue-800 transition flex items-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-user-plus text-[10px]"></i>
+                    <span id="rm-toggle-palette-btn-text">メンバーから選択</span>
+                  </button>
+                  <span class="text-slate-300 text-xs">|</span>
+                  <button type="button" onclick="clearAllReportRecipients()" class="text-[11px] font-bold text-slate-400 hover:text-rose-600 transition flex items-center gap-1 cursor-pointer">
+                    <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    <span>クリア</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 役職クイック一括選択ボタン群 -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mr-0.5">役職一括:</span>
+                <button type="button" onclick="toggleReportRolePreset('all')" id="rm-btn-role-all" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">全員</button>
+                <button type="button" onclick="toggleReportRolePreset('3yaku')" id="rm-btn-role-3yaku" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">三役</button>
+                <button type="button" onclick="toggleReportRolePreset('45yaku')" id="rm-btn-role-45yaku" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">四役・五役</button>
+                <button type="button" onclick="toggleReportRolePreset('vh')" id="rm-btn-role-vh" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">ビジターホスト</button>
+                <button type="button" onclick="toggleReportRolePreset('ms')" id="rm-btn-role-ms" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">メンバーシップ</button>
+                <button type="button" onclick="toggleReportRolePreset('event')" id="rm-btn-role-event" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">イベント委員</button>
+                <button type="button" onclick="toggleReportRolePreset('bod')" id="rm-btn-role-bod" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">BOD</button>
+                <button type="button" onclick="toggleReportRolePreset('1to1')" id="rm-btn-role-1to1" class="px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer">1to1</button>
+              </div>
+
+              <!-- 選択中の配信対象者チップ表示エリア -->
+              <div id="rm-recipients-chips-container" class="min-h-[46px] p-2 bg-slate-50/80 border border-slate-200/80 rounded-xl flex flex-wrap gap-1.5 items-center">
+                <!-- JSで動的生成 -->
+              </div>
+
+              <!-- メンバー個別選択パレット (開閉式) -->
+              <div id="rm-member-palette-container" class="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2.5" style="display: none;">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="rm-member-search-input" oninput="filterReportMemberPalette(this.value)" placeholder="メンバー名・役職・メールで検索..." class="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  </div>
+                  <button type="button" onclick="toggleReportMemberPalette(false)" class="text-slate-400 hover:text-slate-600 text-xs p-1 cursor-pointer" title="閉じる">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                <!-- メンバーチップパレット一覧 -->
+                <div id="rm-member-palette-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[220px] overflow-y-auto pr-1">
+                  <!-- JSで動的生成 -->
+                </div>
+              </div>
+
+              <!-- 直接メールアドレス入力欄 -->
+              <div class="flex items-center gap-1.5 pt-1">
+                <div class="relative flex-1">
+                  <i class="fa-solid fa-envelope absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input type="email" id="rm-recipient-custom-input" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomReportRecipient();}" placeholder="直接メールアドレスを追加 (例: test@example.com)" class="w-full pl-7 pr-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white transition">
+                </div>
+                <button type="button" onclick="addCustomReportRecipient()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition border border-slate-200 shrink-0 cursor-pointer">
+                  追加
+                </button>
+              </div>
+
+              <!-- 内部同期用隠しフィールド (カンマ区切りメールアドレス) -->
+              <input type="hidden" id="rm-email-recipients" value="info@k-d-o.biz">
             </div>
 
             <!-- 件名 -->
@@ -24687,6 +24757,11 @@ window.CelebrationEffect = (function() {
 
   function initReportManager() {
     ensureReportCodeEditors();
+    if (typeof fetchMembersMasterData === 'function' && (!cachedFlatMembers || cachedFlatMembers.length === 0)) {
+      fetchMembersMasterData(false).then(() => {
+        renderReportRecipientsChips();
+      }).catch(() => {});
+    }
     fetchReportTemplatesData(false);
   }
 
@@ -25597,6 +25672,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     if (schedTimeEl) schedTimeEl.value = t.schedule_time || '20:00';
 
     if (recipientsEl) recipientsEl.value = t.default_recipients || 'info@k-d-o.biz';
+    initReportRecipients(t.default_recipients || 'info@k-d-o.biz');
     if (subjectEl) subjectEl.value = t.email_subject || '';
 
     // Set editor values and update CodeMirror
@@ -26097,6 +26173,408 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       showToast('コピーに失敗しました', 'error');
     });
   }
+
+  /* --- 👥 Report Recipients & Role Linking Logic --- */
+  let currentReportRecipientsList = []; // Array of { email, name, role, id }
+  let isReportMemberPaletteOpen = false;
+
+  const REPORT_ROLE_MAP = {
+    '3yaku': ['永井 創太', '川口 陽平', '小山 世次'],
+    '45yaku': ['永井 創太', '川口 陽平', '小山 世次', '前井 宏之', '森田 由美子'],
+    'vh': ['三島 文美', '江幡 幸典', '居原田 晃司', '前井 宏之', '平田 貴嗣', '板谷 栄子', '川田 湧矢', '森田 由美子'],
+    'ms': ['居原田 晃司', '板谷 栄子', '阿部 真二'],
+    'event': ['居原田 晃司', '川田 湧矢'],
+    'bod': ['江幡 幸典', '桐原 卓也', '居原田 晃司'],
+    '1to1': ['阿部 真二']
+  };
+
+  function getReportActiveMembers() {
+    if (typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers) && cachedFlatMembers.length > 0) {
+      return cachedFlatMembers.filter(m => (m.status || '在籍') !== '退会');
+    }
+    return [];
+  }
+
+  function resolveMemberForEmailOrName(item) {
+    const members = typeof cachedFlatMembers !== 'undefined' && Array.isArray(cachedFlatMembers) ? cachedFlatMembers : [];
+    const query = String(item || '').trim();
+    if (!query) return null;
+
+    // 1. By exact email
+    let found = members.find(m => m.email && m.email.toLowerCase() === query.toLowerCase());
+    if (found) return found;
+
+    // Special fallback: info@k-d-o.biz / gucci1231@me.com -> 川口 陽平
+    if (query.toLowerCase() === 'info@k-d-o.biz' || query.toLowerCase() === 'gucci1231@me.com') {
+      found = members.find(m => m.name === '川口 陽平');
+      if (found) return found;
+    }
+
+    // 2. By member name
+    found = members.find(m => m.name === query);
+    if (found) return found;
+
+    // 3. By ID
+    found = members.find(m => String(m.id) === query);
+    if (found) return found;
+
+    return null;
+  }
+
+  function initReportRecipients(recipientsStr) {
+    currentReportRecipientsList = [];
+    const rawTokens = (recipientsStr || 'info@k-d-o.biz')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    rawTokens.forEach(token => {
+      const member = resolveMemberForEmailOrName(token);
+      if (member) {
+        const email = member.email || (member.name === '川口 陽平' ? 'info@k-d-o.biz' : token);
+        if (!currentReportRecipientsList.some(r => r.email === email || (r.name && r.name === member.name))) {
+          currentReportRecipientsList.push({
+            id: member.id,
+            name: member.name,
+            role: member.role || '',
+            email: email
+          });
+        }
+      } else {
+        if (!currentReportRecipientsList.some(r => r.email === token)) {
+          currentReportRecipientsList.push({
+            id: '',
+            name: '',
+            role: '',
+            email: token
+          });
+        }
+      }
+    });
+
+    renderReportRecipientsChips();
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+    }
+  }
+  window.initReportRecipients = initReportRecipients;
+
+  function syncReportRecipientsToHiddenField() {
+    const hiddenEl = document.getElementById('rm-email-recipients');
+    const badgeEl = document.getElementById('rm-recipients-count-badge');
+    const emailList = currentReportRecipientsList.map(r => r.email).filter(Boolean);
+    const serialized = emailList.join(', ');
+
+    if (hiddenEl) hiddenEl.value = serialized || 'info@k-d-o.biz';
+    if (badgeEl) badgeEl.textContent = `${currentReportRecipientsList.length}名`;
+
+    updateReportRolePresetButtons();
+  }
+
+  function renderReportRecipientsChips() {
+    const container = document.getElementById('rm-recipients-chips-container');
+    if (!container) return;
+
+    syncReportRecipientsToHiddenField();
+
+    if (currentReportRecipientsList.length === 0) {
+      container.innerHTML = `
+        <span class="text-3xs text-slate-400 italic">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>配信対象者が未設定です（上の役職ボタンまたはメンバーから選択してください）
+        </span>
+      `;
+      return;
+    }
+
+    container.innerHTML = '';
+    currentReportRecipientsList.forEach((r) => {
+      const chip = document.createElement('div');
+      chip.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-slate-800 border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all';
+      
+      const roleBadge = r.role
+        ? `<span class="text-[9.5px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100/80">${escapeHtml(r.role.split('/')[0].split('・')[0].trim())}</span>`
+        : '';
+      
+      const namePart = r.name
+        ? `<span class="text-slate-900 font-extrabold flex items-center gap-1"><i class="fa-solid fa-user text-blue-600 text-[10px]"></i>${escapeHtml(r.name)}</span>`
+        : `<span class="text-slate-700 font-mono text-[11px]"><i class="fa-solid fa-envelope text-slate-400 text-[10px] mr-1"></i>${escapeHtml(r.email)}</span>`;
+
+      const emailPart = r.name && r.email
+        ? `<span class="text-[10px] font-mono text-slate-400 font-normal">&lt;${escapeHtml(r.email)}&gt;</span>`
+        : '';
+
+      chip.innerHTML = `
+        ${namePart}
+        ${roleBadge}
+        ${emailPart}
+        <button type="button" onclick="removeReportRecipient('${escapeJsParam(r.email || r.name)}')" class="text-slate-400 hover:text-rose-600 transition-colors ml-0.5 text-xs p-0.5 leading-none cursor-pointer" title="削除">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      `;
+      container.appendChild(chip);
+    });
+  }
+  window.renderReportRecipientsChips = renderReportRecipientsChips;
+
+  function removeReportRecipient(key) {
+    currentReportRecipientsList = currentReportRecipientsList.filter(r => r.email !== key && r.name !== key);
+    renderReportRecipientsChips();
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+    }
+  }
+  window.removeReportRecipient = removeReportRecipient;
+
+  function clearAllReportRecipients() {
+    currentReportRecipientsList = [];
+    renderReportRecipientsChips();
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+    }
+    showToast('配信対象者をすべてクリアしました', 'info');
+  }
+  window.clearAllReportRecipients = clearAllReportRecipients;
+
+  function addCustomReportRecipient() {
+    const input = document.getElementById('rm-recipient-custom-input');
+    if (!input) return;
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (!val.includes('@') && !resolveMemberForEmailOrName(val)) {
+      showToast('有効なメールアドレスまたはメンバー名を入力してください', 'warning');
+      return;
+    }
+
+    const member = resolveMemberForEmailOrName(val);
+    if (member) {
+      const email = member.email || (member.name === '川口 陽平' ? 'info@k-d-o.biz' : '');
+      if (!email) {
+        showToast(`${member.name} 様のメールアドレスが未登録です。メンバーマスタで設定してください`, 'warning');
+      }
+      if (!currentReportRecipientsList.some(r => r.name === member.name || (email && r.email === email))) {
+        currentReportRecipientsList.push({
+          id: member.id,
+          name: member.name,
+          role: member.role || '',
+          email: email || `${member.name}@placeholder`
+        });
+      }
+    } else {
+      if (!currentReportRecipientsList.some(r => r.email === val)) {
+        currentReportRecipientsList.push({
+          id: '',
+          name: '',
+          role: '',
+          email: val
+        });
+      }
+    }
+
+    input.value = '';
+    renderReportRecipientsChips();
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+    }
+    showToast('配信対象者を追加しました', 'success');
+  }
+  window.addCustomReportRecipient = addCustomReportRecipient;
+
+  function toggleReportRolePreset(roleKey) {
+    const members = getReportActiveMembers();
+    if (!members || members.length === 0) {
+      if (typeof fetchMembersMasterData === 'function') {
+        fetchMembersMasterData(false).then(() => toggleReportRolePreset(roleKey));
+      }
+      return;
+    }
+
+    let targetNames = [];
+    if (roleKey === 'all') {
+      targetNames = members.map(m => m.name);
+    } else if (REPORT_ROLE_MAP[roleKey]) {
+      targetNames = REPORT_ROLE_MAP[roleKey];
+    }
+
+    const allIncluded = targetNames.length > 0 && targetNames.every(name =>
+      currentReportRecipientsList.some(r => r.name === name || (r.email && r.email === 'info@k-d-o.biz' && name === '川口 陽平'))
+    );
+
+    if (allIncluded) {
+      currentReportRecipientsList = currentReportRecipientsList.filter(r =>
+        !targetNames.includes(r.name) && !(targetNames.includes('川口 陽平') && r.email === 'info@k-d-o.biz')
+      );
+      showToast(`役職グループを一括解除しました`, 'info');
+    } else {
+      targetNames.forEach(name => {
+        const member = members.find(m => m.name === name) || resolveMemberForEmailOrName(name);
+        if (member) {
+          const email = member.email || (member.name === '川口 陽平' ? 'info@k-d-o.biz' : '');
+          const already = currentReportRecipientsList.some(r => r.name === member.name || (email && r.email === email));
+          if (!already) {
+            currentReportRecipientsList.push({
+              id: member.id,
+              name: member.name,
+              role: member.role || '',
+              email: email || `${member.name}@placeholder`
+            });
+          }
+        }
+      });
+      showToast(`役職グループを一括追加しました`, 'success');
+    }
+
+    renderReportRecipientsChips();
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+    }
+  }
+  window.toggleReportRolePreset = toggleReportRolePreset;
+
+  function updateReportRolePresetButtons() {
+    const members = getReportActiveMembers();
+    if (!members || members.length === 0) return;
+
+    ['all', '3yaku', '45yaku', 'vh', 'ms', 'event', 'bod', '1to1'].forEach(rk => {
+      const btn = document.getElementById(`rm-btn-role-${rk}`);
+      if (!btn) return;
+
+      let targetNames = [];
+      if (rk === 'all') {
+        targetNames = members.map(m => m.name);
+      } else if (REPORT_ROLE_MAP[rk]) {
+        targetNames = REPORT_ROLE_MAP[rk];
+      }
+
+      const allIncluded = targetNames.length > 0 && targetNames.every(name =>
+        currentReportRecipientsList.some(r => r.name === name || (r.email && r.email === 'info@k-d-o.biz' && name === '川口 陽平'))
+      );
+
+      if (allIncluded) {
+        btn.className = 'px-2 py-1 rounded-md text-[10.5px] font-bold border border-blue-600 bg-blue-50 text-blue-700 transition cursor-pointer shadow-2xs';
+      } else {
+        btn.className = 'px-2 py-1 rounded-md text-[10.5px] font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer';
+      }
+    });
+  }
+
+  function toggleReportMemberPalette(forceOpen) {
+    const container = document.getElementById('rm-member-palette-container');
+    const toggleBtnText = document.getElementById('rm-toggle-palette-btn-text');
+    if (!container) return;
+
+    if (typeof forceOpen === 'boolean') {
+      isReportMemberPaletteOpen = forceOpen;
+    } else {
+      isReportMemberPaletteOpen = !isReportMemberPaletteOpen;
+    }
+
+    container.style.display = isReportMemberPaletteOpen ? 'block' : 'none';
+    if (toggleBtnText) {
+      toggleBtnText.textContent = isReportMemberPaletteOpen ? '選択パレットを閉じる' : 'メンバーから選択';
+    }
+
+    if (isReportMemberPaletteOpen) {
+      renderReportMemberPalette();
+      const searchInput = document.getElementById('rm-member-search-input');
+      if (searchInput) searchInput.focus();
+    }
+  }
+  window.toggleReportMemberPalette = toggleReportMemberPalette;
+
+  function filterReportMemberPalette(keyword) {
+    renderReportMemberPalette(keyword);
+  }
+  window.filterReportMemberPalette = filterReportMemberPalette;
+
+  function renderReportMemberPalette(filterText = '') {
+    const grid = document.getElementById('rm-member-palette-grid');
+    if (!grid) return;
+
+    const members = getReportActiveMembers();
+    if (!members || members.length === 0) {
+      grid.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i>メンバーデータを読み込み中...</div>`;
+      if (typeof fetchMembersMasterData === 'function') {
+        fetchMembersMasterData(false).then(() => renderReportMemberPalette(filterText));
+      }
+      return;
+    }
+
+    const kw = (filterText || '').trim().toLowerCase();
+    const filtered = members.filter(m => {
+      if (!kw) return true;
+      return (m.name && m.name.toLowerCase().includes(kw)) ||
+             (m.role && m.role.toLowerCase().includes(kw)) ||
+             (m.email && m.email.toLowerCase().includes(kw)) ||
+             (m.profession && m.profession.toLowerCase().includes(kw));
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400">該当するメンバーはいません</div>`;
+      return;
+    }
+
+    grid.innerHTML = '';
+    filtered.forEach(m => {
+      const isSelected = currentReportRecipientsList.some(r =>
+        r.name === m.name || (m.email && r.email === m.email) || (m.name === '川口 陽平' && r.email === 'info@k-d-o.biz')
+      );
+      const emailDisplay = m.email || (m.name === '川口 陽平' ? 'info@k-d-o.biz' : '');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `p-2 rounded-xl text-left border transition-all flex items-center justify-between gap-1.5 cursor-pointer ${
+        isSelected
+          ? 'bg-blue-50/80 border-blue-500 shadow-2xs text-blue-900 ring-1 ring-blue-500/20'
+          : 'bg-white border-slate-200/90 hover:border-slate-300 text-slate-800 hover:bg-slate-50'
+      }`;
+      btn.onclick = () => toggleReportMemberRecipient(m.id || m.name);
+
+      const roleShort = m.role ? m.role.split('/')[0].split('・')[0].trim() : '';
+
+      btn.innerHTML = `
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold truncate">${escapeHtml(m.name)}</span>
+            ${isSelected ? '<i class="fa-solid fa-check text-blue-600 text-xs"></i>' : ''}
+          </div>
+          <div class="text-[10px] text-slate-400 truncate flex items-center gap-1 mt-0.5">
+            ${roleShort ? `<span class="px-1 py-0.2 rounded bg-slate-100 text-slate-600 font-semibold">${escapeHtml(roleShort)}</span>` : ''}
+            <span class="font-mono text-slate-500">${emailDisplay ? escapeHtml(emailDisplay) : '<span class="text-amber-500 font-sans">未設定</span>'}</span>
+          </div>
+        </div>
+      `;
+      grid.appendChild(btn);
+    });
+  }
+  window.renderReportMemberPalette = renderReportMemberPalette;
+
+  function toggleReportMemberRecipient(memberIdOrName) {
+    const member = resolveMemberForEmailOrName(memberIdOrName);
+    if (!member) return;
+
+    const email = member.email || (member.name === '川口 陽平' ? 'info@k-d-o.biz' : '');
+    const idx = currentReportRecipientsList.findIndex(r =>
+      r.name === member.name || (email && r.email === email) || (member.name === '川口 陽平' && r.email === 'info@k-d-o.biz')
+    );
+
+    if (idx !== -1) {
+      currentReportRecipientsList.splice(idx, 1);
+    } else {
+      if (!email) {
+        showToast(`${member.name} 様のメールアドレスが未登録です`, 'warning');
+      }
+      currentReportRecipientsList.push({
+        id: member.id,
+        name: member.name,
+        role: member.role || '',
+        email: email || `${member.name}@placeholder`
+      });
+    }
+
+    renderReportRecipientsChips();
+    renderReportMemberPalette();
+  }
+  window.toggleReportMemberRecipient = toggleReportMemberRecipient;
 </script>
 
 <script>
@@ -27832,7 +28310,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       const emptyMsg = currentMembersFilter === 'active' ? '在籍中のメンバーはありません'
         : currentMembersFilter === 'resigned' ? '退会したメンバーはありません'
         : '登録されているメンバーはありません';
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #868e96; padding: 20px;">${emptyMsg}</td></tr>`;
       return;
     }
 
@@ -27851,6 +28329,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60" title="${escapeHtml(m.role)}">${formatTruncatedCell(m.role, 14)}</span>`
         : `<span class="text-xs text-slate-300">-</span>`;
 
+      const emailBadge = m.email
+        ? `<span class="inline-flex items-center text-[11px] text-slate-500 font-mono" title="${escapeHtml(m.email)}"><i class="fa-solid fa-envelope text-slate-400 text-[10px] mr-1"></i>${escapeHtml(m.email)}</span>`
+        : `<span class="text-xs text-slate-300">-</span>`;
+
       tr.innerHTML = `
         <td style="font-weight: 700;">${idx + 1}</td>
         <td class="text-center">${statusBadge}</td>
@@ -27858,6 +28340,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         <td><span style="font-weight:700; color:#364fc7; background:#e7f5ff; padding:3px 10px; border-radius:12px; font-size:12px;">${formatTruncatedCell(m.category, 12)}</span></td>
         <td style="font-weight: 800; font-size:14px; color:${isResigned ? '#495057' : '#212529'};">${escapeHtml(m.name)}${isResigned ? ' <span class="text-[11px] text-slate-400 font-normal">(退会)</span>' : ''}</td>
         <td style="color:#495057; font-weight:700;">${formatTruncatedCell(m.profession, 15)}</td>
+        <td>${emailBadge}</td>
         <td>
           <button class="btn-icon-action text-blue-600 hover:text-blue-800" onclick="openMemberPersonalDashboard('${escapeJsParam(m.name)}')" title="活動ダッシュボードを開く"><i class="fa-solid fa-id-badge"></i></button>
           <button class="btn-icon-action" onclick="openEditMemberModal('${m.id}')" title="編集"><i class="fa-solid fa-pen"></i></button>
@@ -27885,6 +28368,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-profession').value = '';
     const roleInput = document.getElementById('crud-m-role');
     if (roleInput) roleInput.value = '';
+    const emailInput = document.getElementById('crud-m-email');
+    if (emailInput) emailInput.value = '';
     const activeRadio = document.getElementById('crud-m-status-active');
     if (activeRadio) activeRadio.checked = true;
     document.getElementById('modal-member-crud').style.display = 'flex';
@@ -27900,6 +28385,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     document.getElementById('crud-m-profession').value = m.profession || '';
     const roleInput = document.getElementById('crud-m-role');
     if (roleInput) roleInput.value = m.role || '';
+    const emailInput = document.getElementById('crud-m-email');
+    if (emailInput) emailInput.value = m.email || '';
     const isResigned = (m.status || '在籍') === '退会';
     const resignedRadio = document.getElementById('crud-m-status-resigned');
     const activeRadio = document.getElementById('crud-m-status-active');
@@ -27921,6 +28408,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     const name = document.getElementById('crud-m-name').value.trim();
     const profession = document.getElementById('crud-m-profession').value.trim();
     const role = (document.getElementById('crud-m-role')?.value || '').trim();
+    const email = (document.getElementById('crud-m-email')?.value || '').trim();
     const status = document.getElementById('crud-m-status-resigned')?.checked ? '退会' : '在籍';
 
     if (!category || !name || !profession) {
@@ -27928,7 +28416,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       return;
     }
 
-    const mObj = { id, category, name, profession, role, status };
+    const mObj = { id, category, name, profession, role, email, status };
     showToast(id ? `メンバー情報を更新中...` : `メンバーを追加中...`);
     document.getElementById('loading').style.display = 'flex';
 

@@ -92,6 +92,7 @@ class Database {
                 name TEXT,
                 profession TEXT DEFAULT '',
                 role TEXT DEFAULT '',
+                email TEXT DEFAULT '',
                 status TEXT DEFAULT '在籍',
                 updated_at TEXT
             );
@@ -307,6 +308,14 @@ class Database {
                 UPDATE members SET role = 'ビジターホスト' WHERE name = '平田 貴嗣';
                 UPDATE members SET role = 'ビジターホスト / イベント委員' WHERE name = '川田 湧矢';
                 UPDATE members SET role = 'トレーニングコーディネーター / WEBマスター / BOD' WHERE name = '桐原 卓也';
+            ");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN email TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
+                UPDATE members SET email = 'info@k-d-o.biz' WHERE name = '川口 陽平';
             ");
         } catch (\PDOException $e) {}
         try {
