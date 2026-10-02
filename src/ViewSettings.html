@@ -286,5 +286,44 @@
         </div>
       </div>
     </div>
+
+    <!-- メール配信セーフティ ＆ テスト転送設定カード -->
+    <div class="section-card mt-4">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-flask text-amber-500"></i> メール配信セーフティ ＆ テスト転送設定</h2>
+        <div class="section-sub">開発・テスト段階におけるメンバーへの誤送信を防止し、すべてのメールを管理者アドレスへ安全にインターセプト転送します。</div>
+      </div>
+      <div class="settings-body">
+        <div class="max-w-xl space-y-4">
+          <!-- テストモード切替トグル -->
+          <div class="flex items-center justify-between p-3.5 bg-amber-50/60 border border-amber-200/80 rounded-xl">
+            <div>
+              <div class="text-xs font-black text-amber-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved"></i> メール送信テストモード
+              </div>
+              <div class="text-[11px] text-amber-700 mt-0.5">有効時、メンバー宛ての全てのメール（定期レポート・リマインド・完了速報等）はメンバーへ送られず、下記受信用アドレスへ転送されます。</div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+              <input type="checkbox" id="setting-mail-test-mode" class="sr-only peer" checked onchange="toggleMailTestMode(this.checked)">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
+          </div>
+
+          <!-- テスト受信用メールアドレス入力 -->
+          <div class="bg-slate-50 p-3.5 border border-slate-200/80 rounded-xl">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <i class="fa-solid fa-inbox text-blue-600"></i> テスト受信用メールアドレス（あなたのアドレス）
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="email" id="setting-mail-test-recipient" class="form-input text-xs font-mono w-full" value="info@k-d-o.biz" placeholder="info@k-d-o.biz">
+              <button type="button" class="btn-action-primary text-xs px-3.5 shrink-0" onclick="saveMailTestRecipient()">
+                保存
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1.5 mb-0">※ 川口様のアドレス（info@k-d-o.biz）宛てに転送され、件名や本文に本来の宛先メンバー名が表示されます。</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

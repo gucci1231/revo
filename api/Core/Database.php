@@ -327,6 +327,13 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("
+                INSERT OR IGNORE INTO settings (key, value, updated_at) VALUES 
+                ('mail_test_mode', 'true', datetime('now', 'localtime')),
+                ('mail_test_recipient', 'info@k-d-o.biz', datetime('now', 'localtime'));
+            ");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("
                 UPDATE visitors 
                 SET category = 'ゲスト' 
                 WHERE (

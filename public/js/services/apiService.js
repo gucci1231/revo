@@ -118,6 +118,17 @@ const ApiService = {
       case 'syncFormResponsesApi':
       case 'checkAndRepairDataFormatApi':
         return { url: '/api/sync.php', method: 'POST' };
+      case 'getSettingsApi':
+        return {
+          url: '/api/settings.php?action=get',
+          method: 'GET'
+        };
+      case 'updateSettingApi':
+        return {
+          url: '/api/settings.php?action=update',
+          method: 'POST',
+          body: { key: args[0], value: args[1] }
+        };
       case 'updateSettingStartDateApi':
         return {
           url: '/api/settings.php?action=update',

@@ -34,6 +34,8 @@
       if (typeof fetchMembersMasterData === 'function') fetchMembersMasterData();
     } else if (tabKey === 'period') {
       if (!cachedGoalsData) fetchGoalsSettings(true);
+    } else if (tabKey === 'maintenance') {
+      fetchMailTestSettings();
     }
   }
 
@@ -296,8 +298,73 @@
       });
   }
 
+  /* --- 🛡️ Mail Test Mode & Safety Controls --- */
+  function fetchMailTestSettings() {
+    if (typeof ApiService === 'undefined') return;
+    ApiService.call('getSettingsApi', [])
+      .then(res => {
+        if (!res || !res.settings) return;
+        const testMode = res.settings.mail_test_mode !== 'false';
+        const testRecipient = res.settings.mail_test_recipient || 'info@k-d-o.biz';
+
+        const toggleEl = document.getElementById('setting-mail-test-mode');
+        if (toggleEl) toggleEl.checked = testMode;
+
+        const recipientEl = document.getElementById('setting-mail-test-recipient');
+        if (recipientEl) recipientEl.value = testRecipient;
+      })
+      .catch(err => {
+        console.error('Failed to fetch mail test settings:', err);
+      });
+  }
+
+  function toggleMailTestMode(checked) {
+    if (typeof ApiService === 'undefined') return;
+    const valStr = checked ? 'true' : 'false';
+    showToast(`メールテストモードを ${checked ? '有効' : '解除'} に設定中...`);
+    ApiService.call('updateSettingApi', 'mail_test_mode', valStr)
+      .then(res => {
+        if (res && res.success) {
+          showToast(checked 
+            ? 'メールテストモードを有効にしました。メンバー宛てメールは全て指定アドレスへ転送されます。' 
+            : 'メールテストモードを解除しました（本番配信モード）。');
+        } else {
+          showToast('設定の保存に失敗しました', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+
+  function saveMailTestRecipient() {
+    if (typeof ApiService === 'undefined') return;
+    const inputEl = document.getElementById('setting-mail-test-recipient');
+    const recipient = inputEl ? inputEl.value.trim() : '';
+    if (!recipient || !recipient.includes('@')) {
+      showToast('有効なメールアドレスを入力してください', 'error');
+      return;
+    }
+
+    showToast('テスト受信用アドレスを保存中...');
+    ApiService.call('updateSettingApi', 'mail_test_recipient', recipient)
+      .then(res => {
+        if (res && res.success) {
+          showToast(`テスト受信用アドレスを ${recipient} に更新しました`);
+        } else {
+          showToast('保存に失敗しました', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('通信エラーが発生しました', 'error');
+      });
+  }
+
   // タブ切り替え時または初期ロード時のフック
   document.addEventListener('DOMContentLoaded', () => {
     fetchGoalsSettings();
+    fetchMailTestSettings();
   });
 </script>

@@ -19,6 +19,12 @@ class SettingRepository {
         if (empty($settings['start_date'])) {
             $settings['start_date'] = '2026/10/01';
         }
+        if (!isset($settings['mail_test_mode'])) {
+            $settings['mail_test_mode'] = 'true';
+        }
+        if (empty($settings['mail_test_recipient'])) {
+            $settings['mail_test_recipient'] = 'info@k-d-o.biz';
+        }
         return $settings;
     }
 
