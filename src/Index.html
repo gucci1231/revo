@@ -14,6 +14,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Tailwind CSS v4 -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontSize: {
+            '2xs': ['11px', { lineHeight: '14px' }],
+            '3xs': ['10px', { lineHeight: '13px' }],
+            '4xs': ['9px', { lineHeight: '12px' }],
+            '5xs': ['8px', { lineHeight: '11px' }],
+          },
+          boxShadow: {
+            '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+          }
+        }
+      }
+    };
+  </script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- GSAP Animation Library -->
