@@ -1,0 +1,237 @@
+<script>
+/**
+ * Coffee Meeting Slot Assignment Modal Controller
+ */
+let currentCoffeeAssignDate = null;
+
+function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
+  currentCoffeeAssignDate = dateStr;
+  const modal = document.getElementById('modal-coffee-assign');
+  if (!modal) return;
+
+  const targetDateInput = document.getElementById('cfa-target-date');
+  if (targetDateInput) targetDateInput.value = dateStr;
+
+  // Format date parts
+  try {
+    const d = new Date(dateStr.replace(/-/g, '/'));
+    const days = ['日', '月', '火', '水', '木', '金', '土'];
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const dayName = days[d.getDay()];
+
+    const mEl = document.getElementById('cfa-date-month');
+    const dEl = document.getElementById('cfa-date-day');
+    const fullEl = document.getElementById('cfa-date-full');
+
+    if (mEl) mEl.textContent = `${month}月`;
+    if (dEl) dEl.textContent = String(day).padStart(2, '0');
+    if (fullEl) fullEl.textContent = `${d.getFullYear()}年${month}月${day}日 (${dayName})`;
+  } catch (e) {
+    console.error('Error formatting date for coffee assign modal', e);
+  }
+
+  // Populate visitor select
+  populateCoffeeAssignVisitorSelect(preselectedVisitorId);
+
+  modal.classList.remove('hidden');
+}
+
+function closeCoffeeAssignModal() {
+  const modal = document.getElementById('modal-coffee-assign');
+  if (modal) modal.classList.add('hidden');
+  currentCoffeeAssignDate = null;
+}
+
+function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
+  const select = document.getElementById('cfa-visitor-select');
+  if (!select) return;
+
+  const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+    ? cachedAllVisitors
+    : [];
+
+  select.innerHTML = '<option value="">-- ビジターを選択してください --</option>';
+
+  // Sort visitors: Unassigned / 未着手 first, then by eventDate DESC
+  const unassigned = [];
+  const assigned = [];
+
+  allVisitors.forEach(v => {
+    // Only active visitors (exclude resigned/joined if appropriate, but allow all non-closed)
+    const st = (typeof getVisitorFollowSteps === 'function') ? getVisitorFollowSteps(v) : null;
+    const isCoffeeDone = st ? (st.s1 && (st.s1.status === '済' || st.s1.status === 'done')) : (v.step1Coffee === '済');
+    const hasCoffeeDate = !!(v.step1CoffeeDate || v.step1_coffee_date);
+
+    if (!isCoffeeDone && !hasCoffeeDate) {
+      unassigned.push(v);
+    } else {
+      assigned.push(v);
+    }
+  });
+
+  // Group 1: 未設定・候補ビジター (優先)
+  if (unassigned.length > 0) {
+    const optGroup1 = document.createElement('optgroup');
+    optGroup1.label = `☕ 未設定・候補ビジター (${unassigned.length}名)`;
+    unassigned.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      const inviterStr = v.inviter ? ` (紹介: ${v.inviter})` : '';
+      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : '';
+      opt.textContent = `${v.name || '名称未定'}${inviterStr}${eventStr}`;
+      if (preselectedVisitorId && String(v.id) === String(preselectedVisitorId)) {
+        opt.selected = true;
+      }
+      optGroup1.appendChild(opt);
+    });
+    select.appendChild(optGroup1);
+  }
+
+  // Group 2: その他・日程変更ビジター
+  if (assigned.length > 0) {
+    const optGroup2 = document.createElement('optgroup');
+    optGroup2.label = `📅 設定済みビジター (日程変更)`;
+    assigned.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      const curDate = v.step1CoffeeDate || v.step1_coffee_date || '';
+      const curStr = curDate ? ` (現: ${formatShortDate(curDate)})` : '';
+      opt.textContent = `${v.name || '名称未定'}${curStr}`;
+      if (preselectedVisitorId && String(v.id) === String(preselectedVisitorId)) {
+        opt.selected = true;
+      }
+      optGroup2.appendChild(opt);
+    });
+    select.appendChild(optGroup2);
+  }
+
+  onCoffeeAssignVisitorChanged();
+}
+
+function onCoffeeAssignVisitorChanged() {
+  const select = document.getElementById('cfa-visitor-select');
+  const preview = document.getElementById('cfa-visitor-preview');
+  if (!select || !preview) return;
+
+  const vId = select.value;
+  if (!vId) {
+    preview.classList.add('hidden');
+    return;
+  }
+
+  const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+    ? cachedAllVisitors
+    : [];
+  const v = allVisitors.find(item => String(item.id) === String(vId));
+
+  if (!v) {
+    preview.classList.add('hidden');
+    return;
+  }
+
+  const nameEl = document.getElementById('cfa-preview-name');
+  const furiganaEl = document.getElementById('cfa-preview-furigana');
+  const badgeEl = document.getElementById('cfa-preview-step1-badge');
+  const inviterEl = document.getElementById('cfa-preview-inviter');
+  const eventDateEl = document.getElementById('cfa-preview-event-date');
+  const companyEl = document.getElementById('cfa-preview-company');
+
+  if (nameEl) nameEl.textContent = v.name || '-';
+  if (furiganaEl) furiganaEl.textContent = v.furigana ? `(${v.furigana})` : '';
+  if (inviterEl) inviterEl.textContent = v.inviter || '-';
+  if (eventDateEl) eventDateEl.textContent = v.eventDate ? formatShortDate(v.eventDate) : '未定';
+  if (companyEl) companyEl.textContent = v.company || '-';
+
+  if (badgeEl) {
+    const curDate = v.step1CoffeeDate || v.step1_coffee_date;
+    if (curDate) {
+      badgeEl.className = 'text-3xs px-2 py-0.5 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200';
+      badgeEl.textContent = `現予定: ${formatShortDate(curDate)}`;
+    } else {
+      badgeEl.className = 'text-3xs px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 border border-blue-200';
+      badgeEl.textContent = '未設定';
+    }
+  }
+
+  preview.classList.remove('hidden');
+}
+
+async function submitCoffeeAssign() {
+  const select = document.getElementById('cfa-visitor-select');
+  const dateInput = document.getElementById('cfa-target-date');
+  const createPlanCheckbox = document.getElementById('cfa-create-action-plan');
+
+  const visitorId = select ? select.value : null;
+  const targetDate = dateInput ? dateInput.value : null;
+
+  if (!visitorId) {
+    alert('ビジターを選択してください');
+    return;
+  }
+  if (!targetDate) {
+    alert('日程が指定されていません');
+    return;
+  }
+
+  const submitBtn = document.getElementById('btn-cfa-submit');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 登録中...';
+  }
+
+  try {
+    // 1. Update visitor status: step1_coffee_date
+    if (typeof updateVisitorStatusApi === 'function' || typeof ApiService !== 'undefined') {
+      await ApiService.call('updateVisitorStatusApi', visitorId, 'step1_coffee_date', targetDate);
+      await ApiService.call('updateVisitorStatusApi', visitorId, 'step1_coffee', '予定');
+    }
+
+    // 2. Optionally create action plan for 12:00
+    if (createPlanCheckbox && createPlanCheckbox.checked) {
+      const planPayload = {
+        visitor_id: visitorId,
+        action_type: 'コーヒーミーティング',
+        due_date: `${targetDate} 12:00`,
+        title: '事前コーヒーミーティング (Zoom 12:00-12:30)',
+        plan_details: '定例会参加前の事前ヒアリング＆WIIFM整理 (平日12:00-12:30)'
+      };
+      try {
+        await ApiService.call('createActionPlanApi', planPayload);
+      } catch (err) {
+        console.warn('Action plan creation warning:', err);
+      }
+    }
+
+    // 3. Update local cachedAllVisitors
+    if (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) {
+      const target = cachedAllVisitors.find(v => String(v.id) === String(visitorId));
+      if (target) {
+        target.step1Coffee = '予定';
+        target.step1_coffee = '予定';
+        target.step1CoffeeDate = targetDate;
+        target.step1_coffee_date = targetDate;
+      }
+    }
+
+    if (typeof showToast === 'function') {
+      showToast(`☕ ${targetDate} 12:00〜12:30 にコーヒーミーティングを予約しました`, 'success');
+    }
+
+    closeCoffeeAssignModal();
+
+    // Re-render coffee calendar and priority follow / visitors
+    if (typeof renderCoffeeMeetingView === 'function') {
+      renderCoffeeMeetingView();
+    }
+  } catch (error) {
+    console.error('Failed to assign coffee meeting slot:', error);
+    alert('予約登録に失敗しました: ' + (error.message || '通信エラー'));
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> この日程で予約を確定する';
+    }
+  }
+}
+</script>

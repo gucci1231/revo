@@ -1,0 +1,187 @@
+<!-- Coffee Meeting Management View (Weekday 12:00-12:30 Focus) -->
+<div id="view-coffee" class="view-content">
+
+  <!-- 4 Big KPI Cards (Apple Minimal & Radical Contrast) -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+    <!-- KPI 1: 次回コーヒーMTG -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
+        <span>次回コーヒーMTG</span>
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+      </div>
+      <div class="mt-1">
+        <div id="kpi-coffee-next-date" class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight tabular-nums">--</div>
+        <div id="kpi-coffee-next-visitor" class="text-3xs text-slate-500 truncate mt-0.5 font-bold">ビジター未定</div>
+      </div>
+    </div>
+
+    <!-- KPI 2: 今月の開催予定 / 完了 -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
+        <span>今月の実施 & 予定</span>
+        <i class="fa-solid fa-mug-hot text-amber-500 text-xs"></i>
+      </div>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-month-count" class="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">回</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: 今月の空き枠数 (ここを埋める！) -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
+        <span>今月の空き枠 (平日12:00)</span>
+        <span id="kpi-coffee-empty-badge" class="inline-flex items-center px-1.5 py-0.2 rounded text-3xs font-extrabold bg-blue-50 text-blue-600 border border-blue-200">募集中</span>
+      </div>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-empty-count" class="text-2xl sm:text-3xl font-black text-blue-600 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">枠</span>
+      </div>
+    </div>
+
+    <!-- KPI 4: 未予約ビジター (候補者プール) -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
+        <span>未予約ビジター (誘致対象)</span>
+        <i class="fa-solid fa-user-clock text-slate-400 text-xs"></i>
+      </div>
+      <div class="mt-1 flex items-baseline gap-1.5">
+        <span id="kpi-coffee-unassigned-count" class="text-2xl sm:text-3xl font-black text-rose-600 font-mono tracking-tight tabular-nums">0</span>
+        <span class="text-xs text-slate-400 font-bold">名</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple Minimalist Toolbar & Quick Actions -->
+  <div class="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs mb-3 flex flex-wrap items-center justify-between gap-2.5">
+    
+    <!-- Left: Period Navigation (< 2026年10月 > 今日) -->
+    <div class="flex items-center gap-1 sm:gap-2">
+      <button type="button" onclick="navigateCoffeePeriod(-1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="前へ">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+
+      <h3 id="coffee-current-period-label" class="text-sm sm:text-base font-black text-slate-900 font-mono tracking-tight tabular-nums px-2 min-w-[120px] text-center select-none cursor-pointer" onclick="jumpToCurrentCoffeePeriod()" title="今月/今週にジャンプ">
+        ----年 --月
+      </h3>
+
+      <button type="button" onclick="navigateCoffeePeriod(1)" class="w-8 h-8 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors active:scale-95 shadow-2xs cursor-pointer" title="次へ">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+
+      <button type="button" onclick="jumpToCurrentCoffeePeriod()" class="px-2.5 py-1 rounded-full text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors ml-0.5 cursor-pointer shadow-2xs">
+        今日
+      </button>
+    </div>
+
+    <!-- Center: View Mode Segmented Control (月 / 週) -->
+    <div class="inline-flex p-0.5 bg-slate-100/90 border border-slate-200/80 rounded-xl text-xs font-bold">
+      <button type="button" id="btn-coffee-mode-month" onclick="setCoffeeViewMode('month')" class="px-3 py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs">
+        <i class="fa-regular fa-calendar mr-1 text-slate-500"></i>月表示
+      </button>
+      <button type="button" id="btn-coffee-mode-week" onclick="setCoffeeViewMode('week')" class="px-3 py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+        <i class="fa-regular fa-calendar-days mr-1 text-slate-400"></i>週表示 (平日5日)
+      </button>
+    </div>
+
+    <!-- Right: High-Conversion Fill-the-Slot Actions -->
+    <div class="flex items-center gap-1.5 sm:gap-2">
+      <!-- Action 1: Copy Available Slots for Inviter/Visitor Sharing -->
+      <button type="button" onclick="copyAvailableCoffeeSlotsText()" class="px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/80 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95" title="空き枠一覧のLINE/チャット用案内文をコピー">
+        <i class="fa-regular fa-copy text-blue-600"></i>
+        <span class="hidden sm:inline">空き日程の案内文をコピー</span>
+        <span class="sm:hidden">空き案内文</span>
+      </button>
+
+      <!-- Action 2: Quick Assign Visitor Modal -->
+      <button type="button" onclick="openCoffeeAssignModal(getTodayIsoDate())" class="px-3 py-1.5 rounded-xl text-xs font-black text-white bg-amber-600 hover:bg-amber-700 transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95">
+        <i class="fa-solid fa-plus text-3xs"></i>
+        <span>予約を登録</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Calendar & Unassigned Visitors 2-Column Layout (Desktop) -->
+  <div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+    
+    <!-- Left Column (Span 3): Calendar Grid -->
+    <div class="xl:col-span-3 space-y-3">
+      
+      <!-- Month Grid Container -->
+      <div id="coffee-month-container" class="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-xs overflow-hidden">
+        
+        <!-- Day of Week Headers (Weekday Focus: Mon-Fri primary, Sat-Sun compact) -->
+        <div class="grid grid-cols-5 sm:grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-xs font-black">
+          <div class="text-slate-600 py-1 bg-slate-50 rounded-lg">月 <span class="hidden sm:inline text-3xs font-medium text-slate-400">Mon</span></div>
+          <div class="text-slate-600 py-1 bg-slate-50 rounded-lg">火 <span class="hidden sm:inline text-3xs font-medium text-slate-400">Tue</span></div>
+          <div class="text-slate-600 py-1 bg-slate-50 rounded-lg">水 <span class="hidden sm:inline text-3xs font-medium text-slate-400">Wed</span></div>
+          <div class="text-blue-600 py-1 bg-blue-50/60 rounded-lg border border-blue-100/60">木 <span class="text-3xs font-black">定例会</span></div>
+          <div class="text-slate-600 py-1 bg-slate-50 rounded-lg">金 <span class="hidden sm:inline text-3xs font-medium text-slate-400">Fri</span></div>
+          <div class="hidden sm:block text-slate-400 py-1 bg-slate-50/50 rounded-lg text-3xs font-medium">土</div>
+          <div class="hidden sm:block text-slate-400 py-1 bg-slate-50/50 rounded-lg text-3xs font-medium">日</div>
+        </div>
+
+        <!-- Month Day Cells Grid (Populated dynamically) -->
+        <div id="coffee-month-cells" class="grid grid-cols-5 sm:grid-cols-7 gap-1 sm:gap-2">
+          <!-- Dynamically Rendered -->
+        </div>
+      </div>
+
+      <!-- Week View Container (Hidden in Month mode) -->
+      <div id="coffee-week-container" class="hidden space-y-2.5">
+        <!-- 5 Weekday Large Cards Rendered Dynamically -->
+        <div id="coffee-week-cards" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <!-- Dynamically Rendered -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column (Span 1): Empty Slot Filling Pipeline & Unassigned Visitors Pool -->
+    <div class="xl:col-span-1 space-y-3">
+      
+      <!-- Widget 1: 空き枠を埋めるための即座アクション -->
+      <div class="bg-linear-to-br from-amber-50/80 via-white to-orange-50/50 border border-amber-200/70 rounded-2xl p-4 shadow-xs">
+        <div class="flex items-center gap-2 text-amber-800 font-black text-xs mb-2">
+          <i class="fa-solid fa-bolt text-amber-500"></i>
+          <span>空き枠を埋める導線</span>
+        </div>
+        <p class="text-3xs text-slate-600 font-medium leading-relaxed mb-3">
+          平日の12:00〜12:30はZoomで手軽に参加可能！紹介者メンバーに空き日程を案内して、ビジターの事前ヒアリング枠を埋めましょう。
+        </p>
+        <div class="space-y-1.5">
+          <button type="button" onclick="copyAvailableCoffeeSlotsText()" class="w-full py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <i class="fa-regular fa-copy"></i>
+            <span>空き枠一覧をコピーして共有</span>
+          </button>
+          <button type="button" onclick="autoAssignNextUnassignedVisitor()" class="w-full py-1.5 px-3 rounded-xl bg-white hover:bg-amber-50/60 border border-amber-300 text-amber-800 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-arrow-down-short-wide text-3xs"></i>
+            <span>直近の空き枠に最優先ビジター割当</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Widget 2: 候補ビジタープール (未予約リスト) -->
+      <div class="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs flex flex-col max-h-[580px]">
+        <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-2">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-user-plus text-amber-600 text-xs"></i>
+            <span class="text-xs font-black text-slate-800">未予約ビジター</span>
+            <span id="coffee-unassigned-pool-count" class="text-3xs px-2 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800">0名</span>
+          </div>
+          <button type="button" onclick="renderCoffeeMeetingView()" class="text-slate-400 hover:text-slate-600 text-xs cursor-pointer" title="再読み込み">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Visitor Cards Pool -->
+        <div id="coffee-unassigned-visitors-pool" class="space-y-2 overflow-y-auto pr-0.5 flex-1 min-h-[140px]">
+          <!-- Dynamically Rendered -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

@@ -218,6 +218,7 @@
     'training': { title: 'トレーニング・研修日程', icon: 'fa-solid fa-graduation-cap' },
     'events': { title: 'イベント・研修カレンダー', icon: 'fa-solid fa-calendar-days' },
     'schedules': { title: 'イベント・出欠管理 (開発中)', icon: 'fa-solid fa-calendar-days' },
+    'coffee': { title: 'コーヒーMTG管理', icon: 'fa-solid fa-mug-hot' },
     'hearings': { title: 'ヒアリングシート一覧', icon: 'fa-solid fa-file-lines' },
     'email-schedule': { title: 'メール送信予定一覧', icon: 'fa-solid fa-clock' },
     'email-templates': { title: 'メールテンプレート管理', icon: 'fa-solid fa-envelope-open-text' },
@@ -257,7 +258,7 @@
       'dashboard', 'actions', 'member-dashboard', 'priority-follow', 'visitors', 'hearings', 
       'email-schedule', 'email-templates', 'report-manager', 'settings', 'links', 
       'growth-dashboard', 'ppw-rpw', 'traffic-lights', 'palms-ranking', 'chapter-traffic',
-      'lottery', 'training', 'visitor-detail'
+      'lottery', 'training', 'coffee', 'visitor-detail'
     ];
 
     allTabs.forEach(t => {
@@ -326,6 +327,8 @@
     } else if (tabName === 'report-manager') {
       if (typeof initReportManager === 'function') initReportManager();
       if (typeof refreshReportEditors === 'function') refreshReportEditors();
+    } else if (tabName === 'coffee') {
+      if (typeof renderCoffeeMeetingView === 'function') renderCoffeeMeetingView();
     } else if (tabName === 'settings') {
       if (typeof fetchGoalsSettings === 'function') fetchGoalsSettings(true);
       fetchMembersMasterData();

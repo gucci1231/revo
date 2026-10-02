@@ -407,6 +407,41 @@ class Database {
             $this->pdo->exec("ALTER TABLE visitors_status ADD COLUMN step4_join TEXT DEFAULT '未'");
         } catch (\PDOException $e) {}
 
+        // REvo OS Specification: Personal Growth Goals, Onboarding & Pre-Meeting WIIFM
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS member_goals (
+                id TEXT PRIMARY KEY,
+                member_id TEXT NOT NULL,
+                target_period TEXT NOT NULL,
+                target_score INTEGER DEFAULT 70,
+                target_1to1_count INTEGER DEFAULT 4,
+                target_ceu_count INTEGER DEFAULT 2,
+                advice_text TEXT DEFAULT '',
+                recommended_event_ids TEXT DEFAULT '',
+                is_accepted INTEGER DEFAULT 0,
+                accepted_at TEXT DEFAULT '',
+                created_at TEXT,
+                updated_at TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_member_goals_member ON member_goals(member_id);
+        ");
+
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN joined_date TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN is_onboarding INTEGER DEFAULT 0");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE members ADD COLUMN buddy_member_id TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors ADD COLUMN pre_meeting_wiifm TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE visitors ADD COLUMN matched_power_team_id TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+
         $this->seedDefaultEmailTemplates();
         $this->seedDefaultLinks();
         $this->seedDefaultChapterEvents();

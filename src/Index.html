@@ -87,6 +87,7 @@
   <?!= include('ModalPalmsDetail'); ?>
   <?!= include('ModalPalmsDateRange'); ?>
   <?!= include('ModalChapterTrafficCriteria'); ?>
+  <?!= include('ModalCoffeeAssign'); ?>
 
   <!-- Left Slide-over Drawer Navigation -->
   <div id="drawer-backdrop" class="drawer-backdrop" onclick="closeLeftDrawer()"></div>
@@ -121,6 +122,9 @@
       </button>
       <button class="drawer-nav-item" id="drawer-item-email-schedule" onclick="switchTab('email-schedule')" title="メール送信予定" data-tooltip="メール送信予定">
         <i class="fa-solid fa-clock"></i> <span class="nav-label">メール送信予定</span>
+      </button>
+      <button class="drawer-nav-item" id="drawer-item-coffee" onclick="switchTab('coffee')" title="コーヒーMTG管理" data-tooltip="コーヒーMTG管理">
+        <i class="fa-solid fa-mug-hot text-amber-500"></i> <span class="nav-label">コーヒーMTG管理</span>
       </button>
 
       <!-- メンバー管理セクション -->
@@ -254,6 +258,7 @@
     <?!= include('ViewPalmsRanking'); ?>
     <?!= include('ViewLottery'); ?>
     <?!= include('ViewTraining'); ?>
+    <?!= include('ViewCoffeeMeeting'); ?>
     <?!= include('ModalFollowPendingReminder'); ?>
 
   </div>
