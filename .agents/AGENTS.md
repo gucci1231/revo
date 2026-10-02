@@ -21,7 +21,11 @@
 - **Primary Database**: SQLite PDO (`api/data/database.sqlite`) on Xserver (<10ms response).
 - **Google Sheets Role**: Used ONLY for importing new Google Form responses via `api/sync.php`.
 - **Frontend**: Tailwind CSS v4, Modular JS (`public/js/`), Single-page architecture (`index.html`).
-- **Testing**: TDD with Vitest/Node Test Suite (`npm test`).
+- **Build & Source Architecture (STRICT INVARIANT)**:
+  - **Source of Truth**: `src/` (HTML views, modals, scripts) and `public/css/` (CSS styles).
+  - **Distribution Artifact**: `index.html` is compiled by `node build.js` (`npm run build`).
+  - **NEVER edit `index.html` directly.** Always edit the modular files in `src/` or `public/css/` and run `npm run build` or `npm test` before committing.
+- **Testing**: TDD with Vitest/Node Test Suite (`npm test`). `npm test` automatically executes `npm run build` first to ensure tests always run against freshly compiled artifacts.
 
 ## ⚙️ Core Development Principles
 - Do not preserve backward compatibility. Remove obsolete paths instead of adding compatibility layers, fallbacks, or migrations.
@@ -49,3 +53,17 @@
 - **タイポグラフィ階層**:
   - 主要KPI数値には `Barlow Semi Condensed` / `DIN Alternate` の等幅数字（`tabular-nums`）を用い、圧倒的な視覚コントラストを確保すること。
 - **4大KPIカード並び順**: 1: `次回定例会(日付のみ)`、2: `要対応`、3: `申込ビジター`、4: `入会目標`。
+
+## 🛡️ Antigravity Harness Engineering Constitution & Credit Optimization
+- **Engineering Constitution**: Detailed in [.agents/CONSTITUTION.md](file:///.agents/CONSTITUTION.md) and [ex-antigravity-harness/GEMINI.md](file:///ex-antigravity-harness/GEMINI.md).
+- **クレジット最小化・Lean Dev モード (Strict Chisle & Token Thrift)**:
+  - **不要機能・サブエージェントの自動起動禁止**: `silent-failure-hunter` や `meta-auditor`、リサーチ等のサブエージェントは自動起動しない。ユーザーの明示指示がある場合のみ限定使用。
+  - **ブラウザツールの完全無効化**: `browser_subagent` やブラウザ立ち上げは完全禁止。
+  - **コンテキスト節約（Think in Code）**: ファイル全文の読み込み（`view_file` の大範囲読み取り）を禁止し、`grep_search` や行数限定読み出し（slice）に限定する。不要なログ・コンソール出力はパイプラインで抑制する。
+  - **簡潔・即応プロス**: 冗長な挨拶・繰り返し要約・装飾的マークダウンを徹底排除し、最短・要点のみを返答する。
+- **Proportional Gate Escalation**:
+  - *Tier 1 (1–2 files, <20 lines)*: Direct edits, no subagents, fast path.
+  - *Tier 2 (3–8 files)*: Implementation plans, blast radius check, type/linter/test suites.
+  - *Tier 3 (>8 files or auth/schema)*: Full workflow, ADRs, pre-delivery auditor subagent dispatch (ユーザー明示指示時のみ).
+- **The Immutable Test Invariant (Goodhart's Invariant)**: Never weaken assertions, skip tests, or loosen error boundaries to pass verification. Source must fix tests, never tests weakened to match buggy source.
+- **Think in Code**: No context bloat or raw log dumping. Use targeted pipelines or scratch inspection scripts.
