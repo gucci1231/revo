@@ -654,7 +654,7 @@ function renderChapterLinks() {
             </button>
             <button 
               type="button" 
-              onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" 
+              onclick="deleteChapterLink('${linkId}')" 
               class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
               title="削除"
             >
@@ -1396,7 +1396,10 @@ function handleLinkSubmit(event) {
     });
 }
 
-function deleteChapterLink(linkId, title) {
+function deleteChapterLink(linkId, fallbackTitle = '') {
+  const target = chapterLinksData.find(l => String(l.id) === String(linkId));
+  const title = (target && target.title) ? target.title : (fallbackTitle || 'このリンク');
+
   if (!confirm(`「${title}」を削除してもよろしいですか？`)) {
     return;
   }
@@ -1405,14 +1408,24 @@ function deleteChapterLink(linkId, title) {
     .then(res => {
       if (res && res.success) {
         showToast('リンクを削除しました', 'success');
-        fetchChapterLinks();
+        if (Array.isArray(res.links)) {
+          chapterLinksData = res.links;
+          if (Array.isArray(res.categories)) {
+            chapterCategoriesData = res.categories;
+          }
+          renderCategoryPills();
+          renderChapterLinks();
+          renderModalCategorySelect();
+        } else {
+          fetchChapterLinks();
+        }
       } else {
         showToast((res && res.message) || '削除に失敗しました', 'error');
       }
     })
     .catch(err => {
       console.error('Delete link error:', err);
-      showToast('通信エラーが発生しました', 'error');
+      showToast((err && err.message) || '通信エラーが発生しました', 'error');
     });
 }
 

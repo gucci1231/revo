@@ -156,5 +156,15 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('saveChapterScopeApi'), true);
     assert.strictEqual(indexHtml.includes('deleteChapterScopeApi'), true);
   });
+
+  it('verifies Database::delete method exists and deleteChapterLink handles single argument safely', () => {
+    const dbPath = path.join(rootDir, 'api/Core/Database.php');
+    const dbContent = fs.readFileSync(dbPath, 'utf8');
+    assert.strictEqual(dbContent.includes('public function delete('), true);
+
+    const viewLinksScript = fs.readFileSync(path.join(rootDir, 'src/scripts/ViewLinks.html'), 'utf8');
+    // Ensure delete button passes only linkId to avoid quoting/escaping bugs
+    assert.strictEqual(/onclick="deleteChapterLink\('\${linkId}'\)"/.test(viewLinksScript), true);
+  });
 });
 

@@ -15788,7 +15788,16 @@ const ApiService = {
         }
 
         fetch(restConfig.url, fetchOptions)
-          .then(res => res.json())
+          .then(async res => {
+            if (!res.ok) {
+              const text = await res.text();
+              let json;
+              try { json = JSON.parse(text); } catch(e) {}
+              const errMsg = (json && json.message) ? json.message : `HTTP ${res.status}`;
+              throw new Error(errMsg);
+            }
+            return res.json();
+          })
           .then(data => {
             if (data && data.success !== false) {
               resolve(data);
@@ -15796,8 +15805,12 @@ const ApiService = {
             }
             this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           })
-          .catch(() => {
-            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
+          .catch(err => {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+              this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
+            } else {
+              reject(err);
+            }
           });
       } else {
         this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
@@ -29208,7 +29221,7 @@ function renderChapterLinks() {
             </button>
             <button 
               type="button" 
-              onclick="deleteChapterLink('${linkId}', '${escapedTitle}')" 
+              onclick="deleteChapterLink('${linkId}')" 
               class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
               title="削除"
             >
@@ -29950,7 +29963,10 @@ function handleLinkSubmit(event) {
     });
 }
 
-function deleteChapterLink(linkId, title) {
+function deleteChapterLink(linkId, fallbackTitle = '') {
+  const target = chapterLinksData.find(l => String(l.id) === String(linkId));
+  const title = (target && target.title) ? target.title : (fallbackTitle || 'このリンク');
+
   if (!confirm(`「${title}」を削除してもよろしいですか？`)) {
     return;
   }
@@ -29959,14 +29975,24 @@ function deleteChapterLink(linkId, title) {
     .then(res => {
       if (res && res.success) {
         showToast('リンクを削除しました', 'success');
-        fetchChapterLinks();
+        if (Array.isArray(res.links)) {
+          chapterLinksData = res.links;
+          if (Array.isArray(res.categories)) {
+            chapterCategoriesData = res.categories;
+          }
+          renderCategoryPills();
+          renderChapterLinks();
+          renderModalCategorySelect();
+        } else {
+          fetchChapterLinks();
+        }
       } else {
         showToast((res && res.message) || '削除に失敗しました', 'error');
       }
     })
     .catch(err => {
       console.error('Delete link error:', err);
-      showToast('通信エラーが発生しました', 'error');
+      showToast((err && err.message) || '通信エラーが発生しました', 'error');
     });
 }
 

@@ -18,7 +18,16 @@ const ApiService = {
         }
 
         fetch(restConfig.url, fetchOptions)
-          .then(res => res.json())
+          .then(async res => {
+            if (!res.ok) {
+              const text = await res.text();
+              let json;
+              try { json = JSON.parse(text); } catch(e) {}
+              const errMsg = (json && json.message) ? json.message : `HTTP ${res.status}`;
+              throw new Error(errMsg);
+            }
+            return res.json();
+          })
           .then(data => {
             if (data && data.success !== false) {
               resolve(data);
@@ -26,8 +35,12 @@ const ApiService = {
             }
             this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
           })
-          .catch(() => {
-            this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
+          .catch(err => {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+              this.fallbackToGas(functionName, effectiveArgs, resolve, reject);
+            } else {
+              reject(err);
+            }
           });
       } else {
         this.fallbackToGas(functionName, effectiveArgs, resolve, reject);

@@ -547,6 +547,13 @@ class Database {
         return $stmt->rowCount();
     }
 
+    public function delete(string $table, string $where, array $whereParams = []): int {
+        $sql = sprintf("DELETE FROM `%s` WHERE %s", $table, $where);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($whereParams);
+        return $stmt->rowCount();
+    }
+
     public function upsert(string $table, array $data, array $uniqueKeys): bool {
         $whereClauses = [];
         $whereParams = [];
