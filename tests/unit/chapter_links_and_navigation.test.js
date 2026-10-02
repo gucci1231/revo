@@ -86,4 +86,13 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('value="役員・チャプター運営"'), true);
     assert.strictEqual(indexHtml.includes('value="アーカイブ"'), true);
   });
+
+  it('verifies safe escapeHtml usage and window.Utils namespace resilience', () => {
+    // index.html should define window.Utils.escapeHtml
+    assert.strictEqual(indexHtml.includes('window.Utils.escapeHtml = escapeHtml;'), true);
+
+    // ViewLinks scripts should not have dangling undefined Utils.escapeHtml
+    const viewLinksScript = fs.readFileSync(path.join(rootDir, 'src/scripts/ViewLinks.html'), 'utf8');
+    assert.strictEqual(viewLinksScript.includes('Utils.escapeHtml'), false);
+  });
 });

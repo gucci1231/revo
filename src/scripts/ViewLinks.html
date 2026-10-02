@@ -71,9 +71,13 @@ function fetchChapterLinks() {
   ApiService.call('getChapterLinksApi')
     .then(res => {
       if (res && res.links) {
-        chapterLinksData = res.links;
-        renderCategoryPills();
-        renderChapterLinks();
+        chapterLinksData = Array.isArray(res.links) ? res.links : [];
+        try {
+          renderCategoryPills();
+          renderChapterLinks();
+        } catch (renderErr) {
+          console.error('Render chapter links error:', renderErr);
+        }
       } else {
         showToast('リンク情報の取得に失敗しました', 'error');
       }
@@ -148,11 +152,11 @@ function renderCategoryPills() {
     html += `
       <button 
         type="button"
-        onclick="filterLinksCategory('${Utils.escapeHtml(cat)}')" 
+        onclick="filterLinksCategory('${escapeHtml(cat)}')" 
         class="category-pill ${isActive ? activeClass : inactiveClass} px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5" 
-        data-category="${Utils.escapeHtml(cat)}"
+        data-category="${escapeHtml(cat)}"
       >
-        <span>${Utils.escapeHtml(cat)}</span>
+        <span>${escapeHtml(cat)}</span>
         <span class="text-[10px] opacity-80 tabular-nums">(${count})</span>
       </button>
     `;
@@ -258,12 +262,12 @@ function renderChapterLinks() {
 
   let html = '';
   filtered.forEach(link => {
-    const escapedTitle = Utils.escapeHtml(link.title || '');
-    const escapedUrl = Utils.escapeHtml(link.url || '');
-    const escapedDesc = Utils.escapeHtml(link.description || '');
-    const escapedCategory = Utils.escapeHtml(link.category || 'その他');
-    const iconClass = link.icon ? Utils.escapeHtml(link.icon) : 'fa-solid fa-link';
-    const linkId = Utils.escapeHtml(link.id || '');
+    const escapedTitle = escapeHtml(link.title || '');
+    const escapedUrl = escapeHtml(link.url || '');
+    const escapedDesc = escapeHtml(link.description || '');
+    const escapedCategory = escapeHtml(link.category || 'その他');
+    const iconClass = link.icon ? escapeHtml(link.icon) : 'fa-solid fa-link';
+    const linkId = escapeHtml(link.id || '');
 
     const theme = LINK_CATEGORY_THEMES[link.category] || {
       iconBg: 'bg-slate-50',
@@ -364,7 +368,7 @@ function updateLinkIconPreview(val) {
   const previewEl = document.getElementById('link-icon-preview');
   if (previewEl) {
     const iconClass = val.trim() || 'fa-solid fa-link';
-    previewEl.innerHTML = `<i class="${Utils.escapeHtml(iconClass)}"></i>`;
+    previewEl.innerHTML = `<i class="${escapeHtml(iconClass)}"></i>`;
   }
 }
 

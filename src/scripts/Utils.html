@@ -759,6 +759,10 @@
       .replace(/'/g, '&#39;');
   }
 
+  // Ensure window.Utils namespace exists for safety across modules
+  window.Utils = window.Utils || {};
+  window.Utils.escapeHtml = escapeHtml;
+
   const ogpMemoryCache = new Map();
 
   function escapeAndLinkify(text, nl2br = false, showCard = true) {
