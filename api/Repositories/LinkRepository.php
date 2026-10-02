@@ -91,11 +91,27 @@ class LinkRepository {
         $id = $data['id'] ?? ('LINK_' . bin2hex(random_bytes(6)));
         $now = date('Y/m/d H:i');
         
+        $category = (string)($data['category'] ?? 'メンバー情報');
+        $scope = trim((string)($data['scope'] ?? ''));
+        if ($scope === '') {
+            $catRow = $this->db->fetchOne("SELECT scope FROM chapter_link_categories WHERE name = ?", [$category]);
+            if ($catRow && !empty($catRow['scope'])) {
+                $scope = $catRow['scope'];
+            } else if ($category === '役員・チャプター運営') {
+                $scope = 'admin';
+            } else if ($category === 'アーカイブ') {
+                $scope = 'archive';
+            } else {
+                $scope = 'member';
+            }
+        }
+
         $linkData = [
             'id' => $id,
             'title' => (string)($data['title'] ?? ''),
             'url' => (string)($data['url'] ?? ''),
-            'category' => (string)($data['category'] ?? 'メンバー情報'),
+            'category' => $category,
+            'scope' => $scope,
             'description' => (string)($data['description'] ?? ''),
             'icon' => (string)($data['icon'] ?? 'fa-solid fa-link'),
             'sort_order' => (int)($data['sort_order'] ?? 0),
@@ -138,6 +154,8 @@ class LinkRepository {
                 // Also update any links using the old category name
                 $this->db->execute("UPDATE chapter_links SET category = ? WHERE category = ?", [$name, $oldName]);
             }
+            // Update scope of linked items to match updated category scope
+            $this->db->execute("UPDATE chapter_links SET scope = ? WHERE category = ?", [$catData['scope'], $name]);
             return $ok;
         } else {
             $catData['id'] = $id;

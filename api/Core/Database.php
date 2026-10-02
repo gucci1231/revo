@@ -133,6 +133,7 @@ class Database {
                 title TEXT NOT NULL,
                 url TEXT NOT NULL,
                 category TEXT DEFAULT 'メンバー情報',
+                scope TEXT DEFAULT 'member',
                 description TEXT DEFAULT '',
                 icon TEXT DEFAULT 'fa-solid fa-link',
                 sort_order INTEGER DEFAULT 0,
@@ -322,6 +323,12 @@ class Database {
                   AND (location_name LIKE '%通常定例会会場%' OR is_online = 0) 
                   AND meeting_date != '2026-11-19'
             ");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE chapter_links ADD COLUMN scope TEXT DEFAULT 'member'");
+            $this->pdo->exec("UPDATE chapter_links SET scope = 'admin' WHERE category = '役員・チャプター運営'");
+            $this->pdo->exec("UPDATE chapter_links SET scope = 'archive' WHERE category = 'アーカイブ'");
+            $this->pdo->exec("UPDATE chapter_links SET scope = 'member' WHERE scope IS NULL OR scope = ''");
         } catch (\PDOException $e) {}
 
         $this->seedDefaultEmailTemplates();

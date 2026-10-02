@@ -74,6 +74,7 @@ class LinkController extends Controller {
             'title' => $title,
             'url' => $url,
             'category' => (string)$this->getParam('category', 'メンバー情報'),
+            'scope' => (string)$this->getParam('scope', ''),
             'description' => (string)$this->getParam('description', ''),
             'icon' => (string)$this->getParam('icon', 'fa-solid fa-link'),
             'sort_order' => (int)$this->getParam('sort_order', 0)

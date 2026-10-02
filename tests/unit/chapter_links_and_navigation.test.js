@@ -135,5 +135,17 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(indexHtml.includes('メンバー情報'), true);
     assert.strictEqual(indexHtml.includes('アセット関連'), true);
   });
+
+  it('verifies Scope Editing in Link CRUD Modal and Dynamic Category Association', () => {
+    // Modal input
+    assert.strictEqual(indexHtml.includes('id="link-field-scope"'), true);
+    assert.strictEqual(indexHtml.includes('onLinkModalScopeChange'), true);
+    assert.strictEqual(indexHtml.includes('onLinkModalCategoryChange'), true);
+
+    // JS helper functions
+    assert.strictEqual(indexHtml.includes('function getScopeForCategory'), true);
+    assert.strictEqual(indexHtml.includes('function onLinkModalScopeChange'), true);
+    assert.strictEqual(indexHtml.includes('function onLinkModalCategoryChange'), true);
+  });
 });
 

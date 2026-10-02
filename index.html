@@ -12222,13 +12222,21 @@ select.form-input, select.form-select {
         <input type="url" id="link-field-url" required placeholder="https://..." class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">所属スコープ</label>
+          <select id="link-field-scope" onchange="onLinkModalScopeChange(this.value)" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+            <option value="member">メンバー用 (日常・学び)</option>
+            <option value="admin">役員・運営用</option>
+            <option value="archive">アーカイブ</option>
+          </select>
+        </div>
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="block text-xs font-bold text-slate-700">分類カテゴリ</label>
             <button type="button" onclick="openCategoryModal()" class="text-[11px] text-blue-600 hover:underline cursor-pointer">+ 新規</button>
           </div>
-          <select id="link-field-category" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
+          <select id="link-field-category" onchange="onLinkModalCategoryChange(this.value)" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
             <option value="ビジター情報">🤝 ビジター情報</option>
             <option value="メンバー情報">👥 メンバー情報</option>
             <option value="日常・1to1">👥 日常・1to1</option>
@@ -12239,18 +12247,20 @@ select.form-input, select.form-select {
             <option value="アーカイブ">🗄️ アーカイブ</option>
           </select>
         </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">表示順 (小さい順)</label>
           <input type="number" id="link-field-sort" value="0" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all">
         </div>
-      </div>
-
-      <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
-        <div class="flex items-center gap-2">
-          <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
-          <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-            <i class="fa-solid fa-link"></i>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">アイコン (FontAwesome クラス)</label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="link-field-icon" value="fa-solid fa-link" placeholder="fa-solid fa-link" class="w-full text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all" oninput="updateLinkIconPreview(this.value)">
+            <div id="link-icon-preview" class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <i class="fa-solid fa-link"></i>
+            </div>
           </div>
         </div>
       </div>
@@ -28692,42 +28702,54 @@ function setLinkScope(scope) {
   renderChapterLinks();
 }
 
-function getAvailableCategoriesForScope() {
-  const customCats = chapterCategoriesData.filter(c => {
-    if (currentLinkScope === 'all') return true;
-    return (c.scope || 'member') === currentLinkScope;
-  }).map(c => c.name);
+function getScopeForCategory(catName) {
+  if (!catName) return 'member';
+  const custom = chapterCategoriesData.find(c => c.name === catName);
+  if (custom && custom.scope) return custom.scope;
+  if (catName === '役員・チャプター運営') return 'admin';
+  if (catName === 'アーカイブ') return 'archive';
+  return 'member';
+}
 
-  let defaultCats = [];
-  if (currentLinkScope === 'all') {
-    defaultCats = ['ビジター情報', 'メンバー情報', '公式ポータル・学び', '役員・チャプター運営', 'アセット関連', 'アーカイブ'];
-  } else if (LINK_SCOPE_MAP[currentLinkScope]) {
-    defaultCats = LINK_SCOPE_MAP[currentLinkScope];
-  } else {
-    defaultCats = ['ビジター情報', 'メンバー情報', '公式ポータル・学び', 'アセット関連'];
-  }
-
-  // Combine unique in order
+function getAvailableCategoriesForScope(targetScope = currentLinkScope) {
   const combined = [];
-  // First check if categories table has defined order
-  if (chapterCategoriesData.length > 0) {
+
+  // 1. From chapterCategoriesData (custom / DB defined categories)
+  if (chapterCategoriesData && chapterCategoriesData.length > 0) {
     chapterCategoriesData.forEach(c => {
-      if ((currentLinkScope === 'all' || (c.scope || 'member') === currentLinkScope) && !combined.includes(c.name)) {
+      const scope = c.scope || 'member';
+      if ((targetScope === 'all' || scope === targetScope) && !combined.includes(c.name)) {
         combined.push(c.name);
       }
     });
   }
-  defaultCats.forEach(cat => {
-    if (!combined.includes(cat)) combined.push(cat);
-  });
-  customCats.forEach(cat => {
-    if (!combined.includes(cat)) combined.push(cat);
+
+  // 2. Default base categories if not yet registered in chapterCategoriesData
+  const defaultList = [
+    { name: 'ビジター情報', scope: 'member' },
+    { name: 'メンバー情報', scope: 'member' },
+    { name: '日常・1to1', scope: 'member' },
+    { name: 'ビジター・入会', scope: 'member' },
+    { name: '公式ポータル・学び', scope: 'member' },
+    { name: '役員・チャプター運営', scope: 'admin' },
+    { name: 'アセット関連', scope: 'member' },
+    { name: 'アーカイブ', scope: 'archive' }
+  ];
+
+  defaultList.forEach(def => {
+    const custom = chapterCategoriesData.find(c => c.name === def.name);
+    if (!custom) {
+      if (targetScope === 'all' || def.scope === targetScope) {
+        if (!combined.includes(def.name)) combined.push(def.name);
+      }
+    }
   });
 
-  // Also include any categories present in current links
+  // 3. Fallback: categories from existing links
   chapterLinksData.forEach(l => {
     if (l.category && !combined.includes(l.category)) {
-      if (currentLinkScope === 'all' || defaultCats.includes(l.category)) {
+      const scope = l.scope || getScopeForCategory(l.category);
+      if (targetScope === 'all' || scope === targetScope) {
         combined.push(l.category);
       }
     }
@@ -28745,11 +28767,11 @@ function renderCategoryPills() {
   // Count items for each category
   const getCatCount = (cat) => {
     return chapterLinksData.filter(item => {
-      if (cat === 'ALL') {
-        if (currentLinkScope === 'all') return true;
-        const validCats = LINK_SCOPE_MAP[currentLinkScope] || availableCats;
-        return validCats.includes(item.category);
+      const itemScope = item.scope || getScopeForCategory(item.category);
+      if (currentLinkScope !== 'all' && itemScope !== currentLinkScope) {
+        return false;
       }
+      if (cat === 'ALL') return true;
       return item.category === cat;
     }).length;
   };
@@ -28833,9 +28855,8 @@ function renderChapterLinks() {
   const filtered = chapterLinksData.filter(item => {
     // 1. Scope filter
     if (currentLinkScope !== 'all') {
-      const allowedCategories = LINK_SCOPE_MAP[currentLinkScope] || [];
-      const isCustomAllowed = chapterCategoriesData.some(c => c.name === item.category && (c.scope || 'member') === currentLinkScope);
-      if (!allowedCategories.includes(item.category) && !isCustomAllowed) {
+      const itemScope = item.scope || getScopeForCategory(item.category);
+      if (itemScope !== currentLinkScope) {
         return false;
       }
     }
@@ -29089,6 +29110,16 @@ function renderChapterLinks() {
             <span class="text-[11px] font-black px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200 tabular-nums shrink-0">
               ${items.length}件
             </span>
+            ${(() => {
+              const catScope = getScopeForCategory(catName);
+              const scopeBadgeMap = {
+                member: { label: 'メンバー', cls: 'bg-blue-50 text-blue-600 border-blue-200/60' },
+                admin: { label: '役員・運営', cls: 'bg-purple-50 text-purple-600 border-purple-200/60' },
+                archive: { label: 'アーカイブ', cls: 'bg-slate-100 text-slate-500 border-slate-200' }
+              };
+              const sBadge = scopeBadgeMap[catScope] || scopeBadgeMap.member;
+              return `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${sBadge.cls} shrink-0">${sBadge.label}</span>`;
+            })()}
             ${theme.desc ? `
               <span class="hidden md:inline text-xs text-slate-400 font-normal truncate">
                 ${theme.desc}
@@ -29603,12 +29634,15 @@ function deleteCategoryPrompt(catName) {
     });
 }
 
-function renderModalCategorySelect() {
+function renderModalCategorySelect(targetScope = null, selectedCategory = null) {
   const select = document.getElementById('link-field-category');
   if (!select) return;
 
-  const currentVal = select.value;
-  const categories = getAvailableCategoriesForScope();
+  const currentVal = selectedCategory || select.value;
+  const scopeEl = document.getElementById('link-field-scope');
+  const scope = targetScope || (scopeEl ? scopeEl.value : (currentLinkScope === 'all' ? 'member' : currentLinkScope));
+
+  const scopeCategories = getAvailableCategoriesForScope(scope === 'all' ? 'member' : scope);
 
   // Ensure default test required options are always available
   const baseOptions = [
@@ -29623,19 +29657,35 @@ function renderModalCategorySelect() {
   ];
 
   const allCats = [];
-  categories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
+  scopeCategories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
   baseOptions.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
 
   let html = '';
   allCats.forEach(cat => {
-    const theme = LINK_CATEGORY_THEMES[cat];
-    const icon = theme ? theme.icon : 'fa-solid fa-folder';
-    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+    const catScope = getScopeForCategory(cat);
+    const scopeBadge = catScope === 'admin' ? ' [役員・運営]' : (catScope === 'archive' ? ' [アーカイブ]' : '');
+    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}${scopeBadge}</option>`;
   });
 
   select.innerHTML = html;
   if (currentVal && allCats.includes(currentVal)) {
     select.value = currentVal;
+  } else if (scopeCategories.length > 0) {
+    select.value = scopeCategories[0];
+  }
+}
+
+function onLinkModalScopeChange(newScope) {
+  renderModalCategorySelect(newScope);
+}
+
+function onLinkModalCategoryChange(selectedCategory) {
+  const scopeEl = document.getElementById('link-field-scope');
+  if (scopeEl && selectedCategory) {
+    const inferredScope = getScopeForCategory(selectedCategory);
+    if (inferredScope) {
+      scopeEl.value = inferredScope;
+    }
   }
 }
 
@@ -29655,6 +29705,7 @@ function openLinkModal(linkId = null) {
   const container = document.getElementById('modal-link-container');
   const titleEl = document.getElementById('modal-link-title');
   const form = document.getElementById('form-link-crud');
+  const scopeEl = document.getElementById('link-field-scope');
 
   if (!modal || !container || !form) return;
 
@@ -29663,12 +29714,16 @@ function openLinkModal(linkId = null) {
   document.getElementById('link-field-sort').value = '0';
   document.getElementById('link-field-icon').value = 'fa-solid fa-link';
   updateLinkIconPreview('fa-solid fa-link');
-  renderModalCategorySelect();
 
   if (linkId) {
     const target = chapterLinksData.find(l => l.id === linkId);
     if (target) {
       if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>リンクを編集</span>`;
+      const itemScope = target.scope || getScopeForCategory(target.category);
+      if (scopeEl) scopeEl.value = itemScope;
+
+      renderModalCategorySelect(itemScope, target.category);
+
       document.getElementById('link-field-id').value = target.id;
       document.getElementById('link-field-title').value = target.title || '';
       document.getElementById('link-field-url').value = target.url || '';
@@ -29680,13 +29735,17 @@ function openLinkModal(linkId = null) {
     }
   } else {
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
+    const initialScope = currentLinkScope === 'admin' ? 'admin' : (currentLinkScope === 'archive' ? 'archive' : 'member');
+    if (scopeEl) scopeEl.value = initialScope;
+
+    let defaultCat = 'ビジター情報';
+    if (initialScope === 'admin') defaultCat = '役員・チャプター運営';
+    else if (initialScope === 'archive') defaultCat = 'アーカイブ';
+    else if (currentLinkCategory !== 'ALL') defaultCat = currentLinkCategory;
+
+    renderModalCategorySelect(initialScope, defaultCat);
     const catSelect = document.getElementById('link-field-category');
-    if (catSelect) {
-      if (currentLinkScope === 'admin') catSelect.value = '役員・チャプター運営';
-      else if (currentLinkScope === 'archive') catSelect.value = 'アーカイブ';
-      else if (currentLinkCategory !== 'ALL') catSelect.value = currentLinkCategory;
-      else catSelect.value = 'ビジター情報';
-    }
+    if (catSelect) catSelect.value = defaultCat;
   }
 
   modal.style.display = 'flex';
@@ -29713,7 +29772,9 @@ function handleLinkSubmit(event) {
   const id = document.getElementById('link-field-id').value.trim();
   const title = document.getElementById('link-field-title').value.trim();
   const url = document.getElementById('link-field-url').value.trim();
+  const scopeEl = document.getElementById('link-field-scope');
   const category = document.getElementById('link-field-category').value;
+  const scope = (scopeEl && scopeEl.value) || getScopeForCategory(category);
   const description = document.getElementById('link-field-description').value.trim();
   const icon = document.getElementById('link-field-icon').value.trim() || 'fa-solid fa-link';
   const sort_order = parseInt(document.getElementById('link-field-sort').value, 10) || 0;
@@ -29728,6 +29789,7 @@ function handleLinkSubmit(event) {
     title,
     url,
     category,
+    scope,
     description,
     icon,
     sort_order
