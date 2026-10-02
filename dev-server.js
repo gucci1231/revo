@@ -2132,13 +2132,14 @@ function handleApiRequest(req, res, urlObj) {
         const title = (body.title || '').replace(/'/g, "''");
         const url = (body.url || '').replace(/'/g, "''");
         const category = (body.category || 'メンバー情報').replace(/'/g, "''");
+        const scope = (body.scope || 'member').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");
         const icon = (body.icon || 'fa-solid fa-link').replace(/'/g, "''");
         const sortOrder = parseInt(body.sort_order || 0, 10);
         const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
 
-        runSqlExec(`INSERT OR REPLACE INTO chapter_links (id, title, url, category, description, icon, sort_order, created_at, updated_at)
-                    VALUES ('${id}', '${title}', '${url}', '${category}', '${description}', '${icon}', ${sortOrder}, COALESCE((SELECT created_at FROM chapter_links WHERE id = '${id}'), '${now}'), '${now}');`);
+        runSqlExec(`INSERT OR REPLACE INTO chapter_links (id, title, url, category, scope, description, icon, sort_order, created_at, updated_at)
+                    VALUES ('${id}', '${title}', '${url}', '${category}', '${scope}', '${description}', '${icon}', ${sortOrder}, COALESCE((SELECT created_at FROM chapter_links WHERE id = '${id}'), '${now}'), '${now}');`);
         const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);
         const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
         return res.end(JSON.stringify({ success: true, message: 'リンクを保存しました', links, categories }));

@@ -195,6 +195,24 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
     assert.strictEqual(viewLinksScript.includes('moveCategoryQuick('), true);
     assert.strictEqual(viewLinksScript.includes('handleCategoryCardDrop('), true);
   });
+
+  it('verifies empty categories display, category modal list, and per-category link registration', () => {
+    // 1. Category Modal list element exists
+    assert.strictEqual(indexHtml.includes('id="category-modal-list"'), true);
+    assert.strictEqual(indexHtml.includes('function renderModalCategoryList'), true);
+
+    // 2. Empty category placeholder & per-category add button
+    assert.strictEqual(indexHtml.includes('登録されているリンクはありません'), true);
+    assert.strictEqual(indexHtml.includes('このカテゴリーにリンクを追加'), true);
+
+    // 3. openLinkModal supports preselectedCategory argument
+    const viewLinksScript = fs.readFileSync(path.join(rootDir, 'src/scripts/ViewLinks.html'), 'utf8');
+    assert.strictEqual(viewLinksScript.includes('function openLinkModal(linkId = null, preselectedCategory = null)'), true);
+
+    // 4. Optgroup grouping in category select
+    assert.strictEqual(viewLinksScript.includes('<optgroup label='), true);
+  });
 });
+
 
 

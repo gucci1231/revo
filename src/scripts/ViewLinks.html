@@ -491,7 +491,28 @@ function renderChapterLinks() {
     countBadge.textContent = `${filtered.length}件`;
   }
 
-  if (filtered.length === 0) {
+  // Group filtered links by category
+  const grouped = {};
+  filtered.forEach(link => {
+    const cat = link.category || 'その他';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(link);
+  });
+
+  // Also include empty categories belonging to current scope (unless actively searching or filtering specific category)
+  const availableCats = getAvailableCategoriesForScope(currentLinkScope);
+  availableCats.forEach(catName => {
+    if (grouped[catName] === undefined) {
+      if (currentLinkCategory !== 'ALL' && currentLinkCategory !== catName) return;
+      if (currentLinkSearchQuery) {
+        if (!catName.toLowerCase().includes(currentLinkSearchQuery)) return;
+      }
+      grouped[catName] = [];
+    }
+  });
+
+  // If no links AND no categories to show
+  if (filtered.length === 0 && Object.keys(grouped).length === 0) {
     container.innerHTML = `
       <div class="py-16 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
         <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
@@ -509,14 +530,6 @@ function renderChapterLinks() {
     return;
   }
 
-  // Group filtered links by category
-  const grouped = {};
-  filtered.forEach(link => {
-    const cat = link.category || 'その他';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(link);
-  });
-
   // Determine category display order
   const categoriesInOrder = [];
   // 1. From chapterCategoriesData (ordered by sort_order)
@@ -525,20 +538,20 @@ function renderChapterLinks() {
       (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
     );
     sortedCats.forEach(c => {
-      if (grouped[c.name] && grouped[c.name].length > 0 && !categoriesInOrder.includes(c.name)) {
+      if (grouped[c.name] !== undefined && !categoriesInOrder.includes(c.name)) {
         categoriesInOrder.push(c.name);
       }
     });
   }
   // 2. From LINK_CATEGORY_ORDER
   LINK_CATEGORY_ORDER.forEach(cat => {
-    if (grouped[cat] && grouped[cat].length > 0 && !categoriesInOrder.includes(cat)) {
+    if (grouped[cat] !== undefined && !categoriesInOrder.includes(cat)) {
       categoriesInOrder.push(cat);
     }
   });
   // 3. Append remaining categories
   Object.keys(grouped).forEach(cat => {
-    if (!categoriesInOrder.includes(cat) && grouped[cat].length > 0) {
+    if (!categoriesInOrder.includes(cat)) {
       categoriesInOrder.push(cat);
     }
   });
@@ -569,107 +582,123 @@ function renderChapterLinks() {
     };
 
     let itemsHtml = '';
-    items.forEach((link, idx) => {
-      const escapedTitle = escapeHtml(link.title || '');
-      const escapedUrl = escapeHtml(link.url || '');
-      const escapedDesc = escapeHtml(link.description || '');
-      const iconClass = link.icon ? escapeHtml(link.icon) : 'fa-solid fa-link';
-      const linkId = escapeHtml(link.id || '');
-      const domainInfo = getLinkDomainInfo(link.url || '');
+    if (items.length === 0) {
+      itemsHtml = `
+        <div class="py-6 px-4 text-center bg-slate-50/40 rounded-xl m-2.5 border border-dashed border-slate-200">
+          <p class="text-xs text-slate-400 font-medium mb-2.5">登録されているリンクはありません</p>
+          <button 
+            type="button" 
+            onclick="openLinkModal(null, '${escapeHtml(catName)}')" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50/60 border border-blue-200 rounded-lg shadow-2xs transition-all cursor-pointer"
+          >
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span>このカテゴリーにリンクを追加</span>
+          </button>
+        </div>
+      `;
+    } else {
+      items.forEach((link, idx) => {
+        const escapedTitle = escapeHtml(link.title || '');
+        const escapedUrl = escapeHtml(link.url || '');
+        const escapedDesc = escapeHtml(link.description || '');
+        const iconClass = link.icon ? escapeHtml(link.icon) : 'fa-solid fa-link';
+        const linkId = escapeHtml(link.id || '');
+        const domainInfo = getLinkDomainInfo(link.url || '');
 
-      itemsHtml += `
-        <div 
-          id="link-row-${linkId}"
-          class="link-item-row px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/90 transition-colors group relative cursor-default"
-          draggable="true"
-          data-id="${linkId}"
-          data-category="${escapeHtml(catName)}"
-          data-index="${idx}"
-          ondragstart="handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')"
-          ondragover="handleLinkDragOver(event)"
-          ondragleave="handleLinkDragLeave(event)"
-          ondrop="handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')"
-          ondragend="handleLinkDragEnd(event)"
-        >
-          <!-- Left: Drag Handle + Icon + Title + Description -->
-          <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            <!-- Drag Handle -->
-            <div 
-              class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
-              title="ドラッグして並び順（優先順位）を変更"
-            >
-              <i class="fa-solid fa-grip-vertical text-xs"></i>
+        itemsHtml += `
+          <div 
+            id="link-row-${linkId}"
+            class="link-item-row px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/90 transition-colors group relative cursor-default"
+            draggable="true"
+            data-id="${linkId}"
+            data-category="${escapeHtml(catName)}"
+            data-index="${idx}"
+            ondragstart="handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondragover="handleLinkDragOver(event)"
+            ondragleave="handleLinkDragLeave(event)"
+            ondrop="handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondragend="handleLinkDragEnd(event)"
+          >
+            <!-- Left: Drag Handle + Icon + Title + Description -->
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <!-- Drag Handle -->
+              <div 
+                class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+                title="ドラッグして並び順（優先順位）を変更"
+              >
+                <i class="fa-solid fa-grip-vertical text-xs"></i>
+              </div>
+
+              <!-- Quick move buttons for mobile/quick clicks -->
+              <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                  <i class="fa-solid fa-chevron-up"></i>
+                </button>
+                <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                  <i class="fa-solid fa-chevron-down"></i>
+                </button>
+              </div>
+
+              <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
+                <i class="${iconClass}"></i>
+              </div>
+
+              <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2.5">
+                <a 
+                  href="${escapedUrl}" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="text-xs sm:text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors truncate"
+                >
+                  ${escapedTitle}
+                </a>
+                ${escapedDesc ? `
+                  <span class="text-[11px] text-slate-400 truncate max-w-xs sm:max-w-md font-normal">
+                    ${escapedDesc}
+                  </span>
+                ` : ''}
+              </div>
             </div>
 
-            <!-- Quick move buttons for mobile/quick clicks -->
-            <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-              <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                <i class="fa-solid fa-chevron-up"></i>
-              </button>
-              <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                <i class="fa-solid fa-chevron-down"></i>
-              </button>
-            </div>
+            <!-- Right: Domain badge + Open link button + Edit + Delete -->
+            <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${domainInfo.badge}">
+                <i class="${domainInfo.icon} text-[9px]"></i>
+                <span>${domainInfo.label}</span>
+              </span>
 
-            <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
-              <i class="${iconClass}"></i>
-            </div>
-
-            <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2.5">
               <a 
                 href="${escapedUrl}" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                class="text-xs sm:text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors truncate"
+                class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                title="リンクを開く"
               >
-                ${escapedTitle}
+                <span>開く</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
               </a>
-              ${escapedDesc ? `
-                <span class="text-[11px] text-slate-400 truncate max-w-xs sm:max-w-md font-normal">
-                  ${escapedDesc}
-                </span>
-              ` : ''}
+
+              <button 
+                type="button" 
+                onclick="openLinkModal('${linkId}')" 
+                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
+                title="編集"
+              >
+                <i class="fa-solid fa-pen text-[11px]"></i>
+              </button>
+              <button 
+                type="button" 
+                onclick="deleteChapterLink('${linkId}')" 
+                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
+                title="削除"
+              >
+                <i class="fa-solid fa-trash text-[11px]"></i>
+              </button>
             </div>
           </div>
-
-          <!-- Right: Domain badge + Open link button + Edit + Delete -->
-          <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <span class="hidden md:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${domainInfo.badge}">
-              <i class="${domainInfo.icon} text-[9px]"></i>
-              <span>${domainInfo.label}</span>
-            </span>
-
-            <a 
-              href="${escapedUrl}" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100/80 px-2.5 py-1.5 rounded-lg transition-colors"
-              title="リンクを開く"
-            >
-              <span>開く</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-            </a>
-
-            <button 
-              type="button" 
-              onclick="openLinkModal('${linkId}')" 
-              class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
-              title="編集"
-            >
-              <i class="fa-solid fa-pen text-[11px]"></i>
-            </button>
-            <button 
-              type="button" 
-              onclick="deleteChapterLink('${linkId}')" 
-              class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
-              title="削除"
-            >
-              <i class="fa-solid fa-trash text-[11px]"></i>
-            </button>
-          </div>
-        </div>
-      `;
-    });
+        `;
+      });
+    }
 
     html += `
       <div 
@@ -734,13 +763,24 @@ function renderChapterLinks() {
             ` : ''}
           </div>
           
-          <div class="flex items-center gap-2 shrink-0">
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <!-- Quick Add Link Button for this category -->
+            <button 
+              type="button" 
+              onclick="event.stopPropagation(); openLinkModal(null, '${escapeHtml(catName)}')" 
+              class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50 border border-blue-200/70 rounded-lg shadow-2xs transition-all cursor-pointer"
+              title="このカテゴリーにリンクを追加"
+            >
+              <i class="fa-solid fa-plus text-[9px]"></i>
+              <span>追加</span>
+            </button>
+
             <!-- Category Actions: Edit & Delete -->
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
               <button 
                 type="button" 
                 onclick="openCategoryModal('${escapeHtml(catName)}')" 
-                class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors"
+                class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
                 title="カテゴリーを編集"
               >
                 <i class="fa-solid fa-pen text-[10px]"></i>
@@ -748,7 +788,7 @@ function renderChapterLinks() {
               <button 
                 type="button" 
                 onclick="deleteCategoryPrompt('${escapeHtml(catName)}')" 
-                class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
                 title="カテゴリーを削除"
               >
                 <i class="fa-solid fa-trash text-[10px]"></i>
@@ -1131,6 +1171,7 @@ function openCategoryModal(catName = null) {
   document.getElementById('category-field-sort').value = '10';
   document.getElementById('category-field-icon').value = 'fa-solid fa-folder';
   updateCategoryIconPreview('fa-solid fa-folder');
+  renderModalCategoryList();
 
   if (catName) {
     const target = chapterCategoriesData.find(c => c.name === catName);
@@ -1163,6 +1204,53 @@ function closeCategoryModal() {
       modal.style.display = 'none';
     }, 150);
   }
+}
+
+function renderModalCategoryList() {
+  const listEl = document.getElementById('category-modal-list');
+  if (!listEl) return;
+
+  const sortedCats = [...chapterCategoriesData].sort((a, b) => 
+    (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
+  );
+
+  if (sortedCats.length === 0) {
+    listEl.innerHTML = `<p class="text-xs text-slate-400 py-2 text-center">登録されているカテゴリーはありません</p>`;
+    return;
+  }
+
+  const scopes = getActiveScopes();
+  let html = '';
+
+  sortedCats.forEach(c => {
+    const scopeObj = scopes.find(s => s.id === (c.scope || 'member'));
+    const scopeName = scopeObj ? scopeObj.name.replace(/\s*\(.*?\)/, '') : (c.scope || 'メンバー');
+    const linkCount = chapterLinksData.filter(l => l.category === c.name).length;
+    const icon = c.icon || 'fa-solid fa-folder';
+
+    html += `
+      <div class="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-slate-100/70 transition-colors text-xs">
+        <div class="flex items-center gap-2 min-w-0 cursor-pointer flex-1" onclick="openCategoryModal('${escapeHtml(c.name)}')">
+          <i class="${escapeHtml(icon)} text-blue-600 w-4 text-center shrink-0"></i>
+          <span class="font-bold text-slate-800 truncate">${escapeHtml(c.name)}</span>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200/60 shrink-0">${escapeHtml(scopeName)}</span>
+          <span class="text-[10px] font-black px-1.5 py-0.5 rounded-full ${linkCount === 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-white text-slate-500 border border-slate-200'} tabular-nums shrink-0">
+            ${linkCount}件
+          </span>
+        </div>
+        <div class="flex items-center gap-1 shrink-0 ml-2">
+          <button type="button" onclick="openCategoryModal('${escapeHtml(c.name)}')" class="p-1 text-slate-400 hover:text-blue-600 rounded cursor-pointer" title="編集">
+            <i class="fa-solid fa-pen text-[11px]"></i>
+          </button>
+          <button type="button" onclick="deleteCategoryPrompt('${escapeHtml(c.name)}')" class="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer" title="削除">
+            <i class="fa-solid fa-trash text-[11px]"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  listEl.innerHTML = html;
 }
 
 function handleCategorySubmit(event) {
@@ -1205,7 +1293,8 @@ function handleCategorySubmit(event) {
         if (res.links) chapterLinksData = res.links;
         renderCategoryPills();
         renderChapterLinks();
-        renderModalCategorySelect();
+        renderModalCategorySelect(name);
+        renderModalCategoryList();
       } else {
         showToast((res && res.message) || '保存に失敗しました', 'error');
       }
@@ -1221,7 +1310,12 @@ function handleCategorySubmit(event) {
 }
 
 function deleteCategoryPrompt(catName) {
-  if (!confirm(`カテゴリー「${catName}」を削除してもよろしいですか？\n※所属するリンクは「メンバー情報」に移動します。`)) {
+  const linkCount = chapterLinksData.filter(l => l.category === catName).length;
+  const confirmMsg = linkCount > 0 
+    ? `カテゴリー「${catName}」を削除してもよろしいですか？\n※所属する${linkCount}件のリンクは「メンバー情報」に移動します。`
+    : `カテゴリー「${catName}」を削除してもよろしいですか？`;
+
+  if (!confirm(confirmMsg)) {
     return;
   }
 
@@ -1234,6 +1328,7 @@ function deleteCategoryPrompt(catName) {
         renderCategoryPills();
         renderChapterLinks();
         renderModalCategorySelect();
+        renderModalCategoryList();
       } else {
         showToast((res && res.message) || '削除に失敗しました', 'error');
       }
@@ -1249,31 +1344,75 @@ function renderModalCategorySelect(selectedCategory = null) {
   if (!select) return;
 
   const currentVal = selectedCategory || select.value;
-  const categories = getAvailableCategoriesForScope();
+  const scopes = getActiveScopes();
 
-  // Ensure default test required options are always available
-  const baseOptions = [
-    'ビジター情報',
-    'メンバー情報',
-    '日常・1to1',
-    'ビジター・入会',
-    '公式ポータル・学び',
-    '役員・チャプター運営',
-    'アセット関連',
-    'アーカイブ'
+  // Group all categories by scope
+  const catsByScope = {};
+  scopes.forEach(s => { catsByScope[s.id] = []; });
+  if (!catsByScope['member']) catsByScope['member'] = [];
+  if (!catsByScope['admin']) catsByScope['admin'] = [];
+  if (!catsByScope['archive']) catsByScope['archive'] = [];
+
+  const addedNames = [];
+  if (chapterCategoriesData && chapterCategoriesData.length > 0) {
+    const sortedCats = [...chapterCategoriesData].sort((a, b) => 
+      (parseInt(a.sort_order || 0, 10) - parseInt(b.sort_order || 0, 10))
+    );
+    sortedCats.forEach(c => {
+      const scopeKey = c.scope || 'member';
+      if (!catsByScope[scopeKey]) catsByScope[scopeKey] = [];
+      catsByScope[scopeKey].push(c.name);
+      addedNames.push(c.name);
+    });
+  }
+
+  // Ensure default base categories if not present
+  const defaultList = [
+    { name: 'ビジター情報', scope: 'member' },
+    { name: 'メンバー情報', scope: 'member' },
+    { name: '日常・1to1', scope: 'member' },
+    { name: 'ビジター・入会', scope: 'member' },
+    { name: '公式ポータル・学び', scope: 'member' },
+    { name: '役員・チャプター運営', scope: 'admin' },
+    { name: 'アセット関連', scope: 'member' },
+    { name: 'アーカイブ', scope: 'archive' }
   ];
-
-  const allCats = [];
-  categories.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
-  baseOptions.forEach(c => { if (!allCats.includes(c)) allCats.push(c); });
+  defaultList.forEach(def => {
+    if (!addedNames.includes(def.name)) {
+      if (!catsByScope[def.scope]) catsByScope[def.scope] = [];
+      catsByScope[def.scope].push(def.name);
+      addedNames.push(def.name);
+    }
+  });
 
   let html = '';
-  allCats.forEach(cat => {
-    html += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+  scopes.forEach(s => {
+    const catList = catsByScope[s.id] || [];
+    if (catList.length > 0) {
+      html += `<optgroup label="${escapeHtml(s.name)}">`;
+      catList.forEach(catName => {
+        html += `<option value="${escapeHtml(catName)}">${escapeHtml(catName)}</option>`;
+      });
+      html += `</optgroup>`;
+    }
+  });
+
+  // Any remaining categories in scopes not in getActiveScopes()
+  Object.keys(catsByScope).forEach(scopeKey => {
+    if (!scopes.some(s => s.id === scopeKey)) {
+      const catList = catsByScope[scopeKey] || [];
+      if (catList.length > 0) {
+        html += `<optgroup label="その他">`;
+        catList.forEach(catName => {
+          html += `<option value="${escapeHtml(catName)}">${escapeHtml(catName)}</option>`;
+        });
+        html += `</optgroup>`;
+      }
+    }
   });
 
   select.innerHTML = html;
-  if (currentVal && allCats.includes(currentVal)) {
+  if (currentVal && addedNames.includes(currentVal)) {
     select.value = currentVal;
   }
 }
@@ -1289,7 +1428,7 @@ function updateLinkIconPreview(val) {
   }
 }
 
-function openLinkModal(linkId = null) {
+function openLinkModal(linkId = null, preselectedCategory = null) {
   const modal = document.getElementById('modal-link-crud');
   const container = document.getElementById('modal-link-container');
   const titleEl = document.getElementById('modal-link-title');
@@ -1302,7 +1441,6 @@ function openLinkModal(linkId = null) {
   document.getElementById('link-field-sort').value = '0';
   document.getElementById('link-field-icon').value = 'fa-solid fa-link';
   updateLinkIconPreview('fa-solid fa-link');
-  renderModalCategorySelect();
 
   if (linkId) {
     const target = chapterLinksData.find(l => l.id === linkId);
@@ -1321,14 +1459,31 @@ function openLinkModal(linkId = null) {
     }
   } else {
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-link text-blue-600"></i><span>リンクを追加</span>`;
-    let defaultCat = 'ビジター情報';
-    if (currentLinkScope === 'admin') defaultCat = '役員・チャプター運営';
-    else if (currentLinkScope === 'archive') defaultCat = 'アーカイブ';
-    else if (currentLinkCategory !== 'ALL') defaultCat = currentLinkCategory;
+    
+    // Determine target category
+    let targetCat = preselectedCategory;
+    if (!targetCat) {
+      if (currentLinkCategory !== 'ALL') {
+        targetCat = currentLinkCategory;
+      } else {
+        const availableInScope = getAvailableCategoriesForScope(currentLinkScope);
+        if (availableInScope.length > 0) {
+          targetCat = availableInScope[0];
+        } else if (currentLinkScope === 'admin') {
+          targetCat = '役員・チャプター運営';
+        } else if (currentLinkScope === 'archive') {
+          targetCat = 'アーカイブ';
+        } else {
+          targetCat = 'メンバー情報';
+        }
+      }
+    }
 
-    renderModalCategorySelect(defaultCat);
+    renderModalCategorySelect(targetCat);
     const catSelect = document.getElementById('link-field-category');
-    if (catSelect) catSelect.value = defaultCat;
+    if (catSelect && targetCat) {
+      catSelect.value = targetCat;
+    }
   }
 
   modal.style.display = 'flex';
@@ -1365,11 +1520,13 @@ function handleLinkSubmit(event) {
     return;
   }
 
+  const categoryScope = getScopeForCategory(category);
   const payload = {
     id: id || undefined,
     title,
     url,
     category,
+    scope: categoryScope,
     description,
     icon,
     sort_order
@@ -1388,9 +1545,18 @@ function handleLinkSubmit(event) {
         btn.innerHTML = `<i class="fa-solid fa-check"></i><span>保存する</span>`;
       }
       if (res && res.success) {
-        showToast('リンクを保存しました', 'success');
+        showToast(`「${category}」にリンクを保存しました`, 'success');
         closeLinkModal();
-        fetchChapterLinks();
+        if (res.links) chapterLinksData = res.links;
+        if (res.categories) chapterCategoriesData = res.categories;
+
+        // If active scope is different from saved link's category scope, switch to that scope
+        if (currentLinkScope !== 'all' && categoryScope && currentLinkScope !== categoryScope) {
+          setLinkScope(categoryScope);
+        } else {
+          renderChapterLinks();
+          renderCategoryPills();
+        }
       } else {
         showToast((res && res.message) || '保存に失敗しました', 'error');
       }

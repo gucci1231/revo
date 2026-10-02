@@ -262,9 +262,20 @@
         </div>
       </div>
 
+      <!-- Category List for quick management -->
+      <div class="pt-2 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold text-slate-600">登録済みカテゴリー一覧</label>
+          <span class="text-[11px] text-slate-400">クリックで編集 / 削除</span>
+        </div>
+        <div id="category-modal-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
         <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer">
-          キャンセル
+          閉じる
         </button>
         <button type="submit" id="btn-save-category" class="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer">
           <i class="fa-solid fa-check"></i>
