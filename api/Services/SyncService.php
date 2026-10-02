@@ -50,7 +50,7 @@ class SyncService {
                     if (!$vId) continue;
 
                     // 1. visitors テーブル: 既存レコードがあれば空項目で上書きしない
-                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks, phone, category FROM visitors WHERE id = ?", [$vId]);
+                    $existingVisitor = $this->db->fetchOne("SELECT id, remarks, phone, category, visitor_name FROM visitors WHERE id = ?", [$vId]);
                     if (!$existingVisitor) {
                         $this->db->upsert('visitors', [
                             'id' => $vId,
@@ -77,15 +77,20 @@ class SyncService {
                             'inviter' => $v['inviter'] ?? ''
                         ];
                     } else {
-                        $updateFields = [];
-                        if (empty($existingVisitor['phone']) && !empty($v['phone'])) {
-                            $updateFields['phone'] = $v['phone'];
-                        }
-                        if (!empty($v['category']) && ($existingVisitor['category'] ?? '') !== $v['category']) {
-                            $updateFields['category'] = $v['category'];
-                        }
-                        if (!empty($updateFields)) {
-                            $this->db->update('visitors', $updateFields, 'id = ?', [$vId]);
+                        // 同一人物（氏名一致または既存氏名が空）の場合のみ差分マージ（別人のデータ上書きを防止）
+                        $vName = $this->normalizeName($v['name'] ?? $v['visitor_name'] ?? '');
+                        $existName = $this->normalizeName($existingVisitor['visitor_name'] ?? '');
+                        if (!$existName || !$vName || $existName === $vName) {
+                            $updateFields = [];
+                            if (empty($existingVisitor['phone']) && !empty($v['phone'])) {
+                                $updateFields['phone'] = $v['phone'];
+                            }
+                            if (!empty($v['category']) && ($existingVisitor['category'] ?? '') !== $v['category']) {
+                                $updateFields['category'] = $v['category'];
+                            }
+                            if (!empty($updateFields)) {
+                                $this->db->update('visitors', $updateFields, 'id = ?', [$vId]);
+                            }
                         }
                     }
 
@@ -276,6 +281,22 @@ class SyncService {
         $visitors = [];
         $existingKeys = [];
         $maxId = 0;
+
+        // SQLiteデータベース側の既存ビジターから最大IDと重複チェック用キーをロード
+        try {
+            $dbMaxRow = $this->db->fetchOne("SELECT MAX(CAST(id AS INTEGER)) as max_id FROM visitors");
+            if (!empty($dbMaxRow['max_id'])) {
+                $maxId = max($maxId, (int)$dbMaxRow['max_id']);
+            }
+            $existingDbVisitors = $this->db->fetchAll("SELECT visitor_name, event_date, email FROM visitors");
+            foreach ($existingDbVisitors as $ev) {
+                $eName = $this->normalizeName($ev['visitor_name'] ?? '');
+                $eDate = $this->normalizeDate($ev['event_date'] ?? '');
+                $eEmail = $this->normalizeEmail($ev['email'] ?? '');
+                if ($eName && $eDate) $existingKeys["{$eName}_{$eDate}"] = true;
+                if ($eEmail && $eDate) $existingKeys["{$eEmail}_{$eDate}"] = true;
+            }
+        } catch (\Throwable $e) {}
 
         foreach ($visitorsRaw as $v) {
             $vId = (string)($v['id'] ?? '');
