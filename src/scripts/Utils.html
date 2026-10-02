@@ -995,11 +995,22 @@
     if (!input) return;
 
     const now = new Date();
-    if (type === 'today') {
+    if (type === 'undecided' || type === 'none') {
+      input.value = '';
+    } else if (type === 'today') {
       input.value = formatDateForInput(now.toISOString().split('T')[0]);
-    } else if (type === 'next-thu') {
+    } else if (type === 'next' || type === 'next-thu') {
       const day = now.getDay();
       const diff = (4 - day + 7) % 7 || 7;
+      const nextThu = new Date(now);
+      nextThu.setDate(now.getDate() + diff);
+      const yyyy = nextThu.getFullYear();
+      const mm = String(nextThu.getMonth() + 1).padStart(2, '0');
+      const dd = String(nextThu.getDate()).padStart(2, '0');
+      input.value = `${yyyy}-${mm}-${dd}`;
+    } else if (type === 'afterNext') {
+      const day = now.getDay();
+      const diff = ((4 - day + 7) % 7 || 7) + 7;
       const nextThu = new Date(now);
       nextThu.setDate(now.getDate() + diff);
       const yyyy = nextThu.getFullYear();

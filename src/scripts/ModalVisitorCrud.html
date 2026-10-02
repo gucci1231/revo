@@ -1,6 +1,6 @@
 <script>
   /* --- Visitor CRUD Modal Controls --- */
-  function openAddVisitorModal() {
+  function openAddVisitorModal(defaultUndecided = false) {
     const titleEl = document.getElementById('crud-modal-title') || document.getElementById('modal-v-title');
     if (titleEl) titleEl.innerText = '新規ビジター手動登録';
     document.getElementById('crud-v-id').value = '';
@@ -17,7 +17,11 @@
     if (document.getElementById('crud-v-category')) {
       document.getElementById('crud-v-category').value = (typeof currentVisitorCategory !== 'undefined' && currentVisitorCategory === 'ゲスト') ? 'ゲスト' : 'ビジター';
     }
-    setCrudQuickDate('today');
+    if (defaultUndecided) {
+      setCrudQuickDate('undecided');
+    } else {
+      setCrudQuickDate('today');
+    }
     document.getElementById('modal-visitor-crud').style.display = 'flex';
   }
 
@@ -53,7 +57,7 @@
   function submitCrudVisitorForm() {
     const id = document.getElementById('crud-v-id').value;
     const rawDate = document.getElementById('crud-v-event-date').value.trim();
-    const formattedDate = rawDate.replace(/-/g, '/');
+    const formattedDate = rawDate ? rawDate.replace(/-/g, '/') : '';
 
     const vData = {
       id: id,
@@ -70,8 +74,8 @@
       category: document.getElementById('crud-v-category') ? document.getElementById('crud-v-category').value : 'ビジター'
     };
 
-    if (!vData.name || !vData.eventDate) {
-      alert('氏名と参加日は必須入力です');
+    if (!vData.name) {
+      alert('氏名は必須入力です');
       return;
     }
 
@@ -88,7 +92,13 @@
         if (res.success) {
           showToast(`✅ ${msg}`);
           fetchDashboardData();
-          if (cachedAllVisitors.length > 0) fetchAllVisitorsData();
+          if (typeof fetchAllVisitorsData === 'function') {
+            fetchAllVisitorsData(true).then(() => {
+              if (typeof renderCoffeeMeetingView === 'function') {
+                renderCoffeeMeetingView();
+              }
+            });
+          }
         }
       })
       .catch(handleError);

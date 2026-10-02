@@ -1,9 +1,13 @@
 <script>
 /**
  * Coffee Meeting Management View Controller (Weekday 12:00-12:30 Focus)
+ * Adheres strictly to DESIGN.md (Apple-Grade Minimal, Radical Slate, Electric Blue #0071E3)
  */
 let coffeeCurrentViewMode = 'month'; // 'month' | 'week'
 let coffeeCurrentDate = new Date();
+let coffeeFilterScope = 'upcoming'; // 'upcoming' | 'all' | 'past'
+let coffeeSearchQuery = '';
+let coffeeDraggedVisitorId = null;
 
 function getTodayIsoDate() {
   const d = new Date();
@@ -49,10 +53,10 @@ function renderCoffeeMeetingView() {
 
   // Map visitors to dates & collect unassigned
   const visitorsMap = getCoffeeVisitorsDateMap();
-  const unassignedVisitors = getCoffeeUnassignedVisitors();
+  const allUnassigned = getCoffeeUnassignedVisitors('all');
 
   // Update KPI Cards
-  updateCoffeeKpiCards(visitorsMap, unassignedVisitors);
+  updateCoffeeKpiCards(visitorsMap, allUnassigned);
 
   // Render Calendar according to mode
   if (coffeeCurrentViewMode === 'month') {
@@ -61,8 +65,8 @@ function renderCoffeeMeetingView() {
     renderCoffeeWeekCalendar(visitorsMap);
   }
 
-  // Render Unassigned Visitors Pool
-  renderCoffeeUnassignedVisitorsPool(unassignedVisitors);
+  // Render Unassigned Visitors Pool (using current filter scope)
+  renderCoffeeUnassignedVisitorsPool();
 }
 
 /**
@@ -89,23 +93,44 @@ function getCoffeeVisitorsDateMap() {
 
 /**
  * Get active visitors who haven't completed coffee meeting and have no scheduled date
+ * Supports filterScope: 'all' (default for unit test invariant), 'upcoming', 'past'
  */
-function getCoffeeUnassignedVisitors() {
+function getCoffeeUnassignedVisitors(filterScope = 'all') {
   const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
     ? cachedAllVisitors
     : [];
+
+  const todayIso = getTodayIsoDate();
 
   return allVisitors.filter(v => {
     // Exclude resigned or closed/joined unless still pending
     if (v.status === 'resigned' || v.status === '退会') return false;
     const st = (typeof getVisitorFollowSteps === 'function') ? getVisitorFollowSteps(v) : null;
-    const isDone = st ? (st.s1 && (st.s1.status === '済' || st.s1.status === 'done')) : (v.step1Coffee === '済');
+    const isDone = st ? (st.s1 && (st.s1.status === '済' || st.s1.status === 'done')) : (v.step1Coffee === '済' || v.step1_coffee === '済');
     const hasDate = !!(v.step1CoffeeDate || v.step1_coffee_date);
-    return !isDone && !hasDate;
+    if (isDone || hasDate) return false;
+
+    if (filterScope === 'upcoming') {
+      const ev = (v.eventDate || '').replace(/\//g, '-').slice(0, 10);
+      // Empty date (prospective candidate) OR future/today date
+      return !ev || ev >= todayIso;
+    } else if (filterScope === 'past') {
+      const ev = (v.eventDate || '').replace(/\//g, '-').slice(0, 10);
+      return ev && ev < todayIso;
+    }
+    return true;
   }).sort((a, b) => {
-    // Sort by participation/event date ASC (imminent meetings first)
-    const dateA = a.eventDate || '9999-12-31';
-    const dateB = b.eventDate || '9999-12-31';
+    const rawA = (a.eventDate || '').replace(/\//g, '-').slice(0, 10);
+    const rawB = (b.eventDate || '').replace(/\//g, '-').slice(0, 10);
+
+    // In upcoming mode, prioritize prospective candidates without fixed eventDate
+    if (filterScope === 'upcoming') {
+      if (!rawA && rawB) return -1;
+      if (rawA && !rawB) return 1;
+    }
+
+    const dateA = rawA || '9999-12-31';
+    const dateB = rawB || '9999-12-31';
     return dateA.localeCompare(dateB);
   });
 }
@@ -174,23 +199,19 @@ function setCoffeeViewMode(mode) {
 
   if (mode === 'month') {
     if (monthBtn) {
-      monthBtn.className = 'px-3 py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
-      monthBtn.querySelector('i').className = 'fa-regular fa-calendar mr-1 text-slate-500';
+      monthBtn.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
     }
     if (weekBtn) {
-      weekBtn.className = 'px-3 py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900';
-      weekBtn.querySelector('i').className = 'fa-regular fa-calendar-days mr-1 text-slate-400';
+      weekBtn.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900';
     }
     if (monthContainer) monthContainer.classList.remove('hidden');
     if (weekContainer) weekContainer.classList.add('hidden');
   } else {
     if (weekBtn) {
-      weekBtn.className = 'px-3 py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
-      weekBtn.querySelector('i').className = 'fa-regular fa-calendar-days mr-1 text-slate-500';
+      weekBtn.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
     }
     if (monthBtn) {
-      monthBtn.className = 'px-3 py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900';
-      monthBtn.querySelector('i').className = 'fa-regular fa-calendar mr-1 text-slate-400';
+      monthBtn.className = 'px-3 py-1.5 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900';
     }
     if (monthContainer) monthContainer.classList.add('hidden');
     if (weekContainer) weekContainer.classList.remove('hidden');
@@ -221,6 +242,8 @@ function updateCoffeeKpiCards(visitorsMap, unassignedVisitors) {
 
   const nextDateEl = document.getElementById('kpi-coffee-next-date');
   const nextVisitorEl = document.getElementById('kpi-coffee-next-visitor');
+  const statusDotEl = document.getElementById('kpi-coffee-status-dot');
+
   if (nextDateEl) {
     if (nextDate) {
       const dObj = parseIsoDate(nextDate);
@@ -228,8 +251,10 @@ function updateCoffeeKpiCards(visitorsMap, unassignedVisitors) {
       const d = dObj.getDate();
       const days = ['日', '月', '火', '水', '木', '金', '土'];
       nextDateEl.textContent = `${m}/${d} (${days[dObj.getDay()]}) 12:00`;
+      if (statusDotEl) statusDotEl.className = 'w-2 h-2 rounded-full bg-blue-600';
     } else {
       nextDateEl.textContent = '予定なし';
+      if (statusDotEl) statusDotEl.className = 'w-2 h-2 rounded-full bg-slate-300';
     }
   }
   if (nextVisitorEl) {
@@ -237,7 +262,7 @@ function updateCoffeeKpiCards(visitorsMap, unassignedVisitors) {
       const inviterStr = nextVisitor.inviter ? ` (紹介: ${nextVisitor.inviter})` : '';
       nextVisitorEl.textContent = `${nextVisitor.name || '名称未定'} 様${inviterStr}`;
     } else {
-      nextVisitorEl.textContent = '空き枠を募集中です';
+      nextVisitorEl.textContent = '空き枠募集中';
     }
   }
 
@@ -258,7 +283,6 @@ function updateCoffeeKpiCards(visitorsMap, unassignedVisitors) {
   for (let day = 1; day <= daysInMonth; day++) {
     const testDate = new Date(currentYear, currentMonth - 1, day);
     const dayOfWeek = testDate.getDay();
-    // Only Weekdays (1=Mon ... 5=Fri)
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
       const iso = formatDateToIso(testDate);
       if (iso >= todayIso && (!visitorsMap[iso] || visitorsMap[iso].length === 0)) {
@@ -270,15 +294,17 @@ function updateCoffeeKpiCards(visitorsMap, unassignedVisitors) {
   if (emptyCountEl) emptyCountEl.textContent = monthEmptySlots;
 
   // 4. Unassigned visitors count
+  // Calculate upcoming candidates count for the badge/KPI
+  const upcomingCandidates = getCoffeeUnassignedVisitors('upcoming');
   const unassignedCountEl = document.getElementById('kpi-coffee-unassigned-count');
-  if (unassignedCountEl) unassignedCountEl.textContent = unassignedVisitors.length;
+  if (unassignedCountEl) unassignedCountEl.textContent = upcomingCandidates.length;
 
   const poolCountEl = document.getElementById('coffee-unassigned-pool-count');
-  if (poolCountEl) poolCountEl.textContent = `${unassignedVisitors.length}名`;
+  if (poolCountEl) poolCountEl.textContent = `${upcomingCandidates.length}名`;
 }
 
 /**
- * Render Month Calendar View
+ * Render Month Calendar View (Pure White Slate & Apple Minimal)
  */
 function renderCoffeeMonthCalendar(visitorsMap) {
   const container = document.getElementById('coffee-month-cells');
@@ -288,12 +314,9 @@ function renderCoffeeMonthCalendar(visitorsMap) {
   const month = coffeeCurrentDate.getMonth();
   const todayIso = getTodayIsoDate();
 
-  // First day of month
   const firstDay = new Date(year, month, 1);
   const totalDays = new Date(year, month + 1, 0).getDate();
 
-  // 0 = Sunday, 1 = Monday ... 6 = Saturday
-  // In our grid: Col 0: Mon, Col 1: Tue, Col 2: Wed, Col 3: Thu, Col 4: Fri, Col 5: Sat, Col 6: Sun
   let startOffset = firstDay.getDay() - 1;
   if (startOffset === -1) startOffset = 6; // Sunday is index 6
 
@@ -301,7 +324,7 @@ function renderCoffeeMonthCalendar(visitorsMap) {
 
   // Leading empty cells
   for (let i = 0; i < startOffset; i++) {
-    html += '<div class="min-h-[96px] sm:min-h-[110px] bg-slate-50/40 border border-slate-100/80 rounded-xl p-1 opacity-40"></div>';
+    html += '<div class="min-h-[96px] sm:min-h-[110px] bg-slate-50/40 border border-slate-100/60 rounded-xl p-1 opacity-30"></div>';
   }
 
   // Month days
@@ -318,26 +341,29 @@ function renderCoffeeMonthCalendar(visitorsMap) {
     const visitors = visitorsMap[iso] || [];
     const hasVisitor = visitors.length > 0;
 
-    // Outer cell classes
     let cellBg = 'bg-white';
-    let cellBorder = 'border-slate-200/80';
+    let cellBorder = 'border-slate-200';
     if (isToday) {
       cellBorder = 'border-blue-500 ring-2 ring-blue-500/20';
-      cellBg = 'bg-blue-50/10';
     } else if (isWeekend) {
-      cellBg = 'bg-slate-50/60 hidden sm:block';
+      cellBg = 'bg-slate-50/50 hidden sm:block';
       cellBorder = 'border-slate-100';
     }
 
+    // Drag and Drop target attributes for weekday slots
+    const dndAttrs = (isWeekday && !hasVisitor && !isPast)
+      ? `ondragover="onCoffeeSlotDragOver(event)" ondragleave="onCoffeeSlotDragLeave(event)" ondrop="onCoffeeSlotDrop(event, '${iso}')"`
+      : '';
+
     html += `
-      <div class="min-h-[100px] sm:min-h-[118px] ${cellBg} border ${cellBorder} rounded-xl p-1.5 sm:p-2 flex flex-col justify-between transition-all hover:border-slate-300">
+      <div id="coffee-cell-${iso}" class="min-h-[100px] sm:min-h-[116px] ${cellBg} border ${cellBorder} rounded-xl p-1.5 sm:p-2 flex flex-col justify-between transition-all hover:-translate-y-0.5" ${dndAttrs}>
         <!-- Day Number Header -->
         <div class="flex items-center justify-between mb-1">
           <div class="flex items-center gap-1">
-            <span class="text-xs font-black font-mono tabular-nums ${isToday ? 'w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xs shadow-xs' : (isWeekend ? 'text-slate-400' : 'text-slate-800')}">${day}</span>
-            ${isThursday ? '<span class="text-3xs font-extrabold px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">🏛️ 定例会</span>' : ''}
+            <span class="text-xs font-black font-mono tabular-nums ${isToday ? 'w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xs shadow-2xs' : (isWeekend ? 'text-slate-400' : 'text-slate-800')}">${day}</span>
+            ${isThursday ? '<span class="text-3xs font-extrabold px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">定例会</span>' : ''}
           </div>
-          ${isWeekday ? '<span class="text-3xs text-slate-400 font-mono">12:00</span>' : ''}
+          ${isWeekday ? '<span class="text-4xs text-slate-400 font-mono">12:00</span>' : ''}
         </div>
 
         <!-- Slot Content (12:00-12:30 Weekdays) -->
@@ -352,48 +378,38 @@ function renderCoffeeMonthCalendar(visitorsMap) {
         </div>
       `;
     } else if (hasVisitor) {
-      // Visitor Booked Slot
+      // Visitor Booked Slot (Pure White Slate & Apple Minimal)
       const v = visitors[0];
       const isDone = (v.step1Coffee === '済' || v.step1_coffee === '済');
-      const badgeBg = isDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+      const badgeBg = isDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200';
       const badgeText = isDone ? '済' : '予定';
 
       html += `
-        <div class="bg-amber-50/60 hover:bg-amber-100/70 border border-amber-200/90 rounded-lg p-1.5 transition-all text-left shadow-2xs group relative">
+        <div class="bg-white border border-slate-200 hover:border-slate-300 rounded-lg p-1.5 transition-all text-left shadow-2xs group relative">
           <div class="flex items-center justify-between gap-1 mb-0.5">
             <span class="text-3xs font-extrabold px-1.5 py-0.2 rounded border ${badgeBg}">
-              <i class="fa-solid fa-mug-hot text-3xs mr-0.5"></i>${badgeText}
+              ${badgeText}
             </span>
-            <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
-              <!-- Toggle Done Button -->
-              <button type="button" onclick="event.stopPropagation(); toggleCoffeeMeetingDone('${escapeHtml(v.id)}', '${isDone ? '未' : '済'}')" class="w-4 h-4 rounded text-3xs flex items-center justify-center cursor-pointer transition-colors ${isDone ? 'bg-emerald-600 text-white' : 'bg-white hover:bg-emerald-500 hover:text-white text-slate-400 border border-slate-200'}" title="${isDone ? '未完了に戻す' : '完了済みにする'}">
-                <i class="fa-solid fa-check text-4xs"></i>
-              </button>
-            </div>
+            <button type="button" onclick="event.stopPropagation(); toggleCoffeeMeetingDone('${escapeHtml(v.id)}', '${isDone ? '未' : '済'}')" class="w-4 h-4 rounded text-3xs flex items-center justify-center cursor-pointer transition-colors ${isDone ? 'bg-emerald-600 text-white' : 'bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-500'}" title="${isDone ? '未完了に戻す' : '完了済みにする'}">
+              <i class="fa-solid fa-check text-4xs"></i>
+            </button>
           </div>
           <div class="text-xs font-black text-slate-900 truncate cursor-pointer hover:text-blue-600" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
             ${escapeHtml(v.name || '名称未定')}
           </div>
-          ${v.inviter ? `<div class="text-3xs text-slate-500 truncate font-medium">紹介: ${escapeHtml(v.inviter)}</div>` : ''}
-          ${visitors.length > 1 ? `<div class="text-4xs text-amber-700 font-bold mt-0.5">+他${visitors.length - 1}件</div>` : ''}
+          ${v.inviter ? `<div class="text-4xs text-slate-500 truncate font-medium">紹介: ${escapeHtml(v.inviter)}</div>` : ''}
+          ${visitors.length > 1 ? `<div class="text-4xs text-blue-600 font-bold mt-0.5">+他${visitors.length - 1}件</div>` : ''}
         </div>
       `;
     } else if (!isPast) {
-      // Empty Available Slot (Future or Today Weekday): Primary conversion target!
+      // Empty Available Slot (Future or Today Weekday): Pure White Slate with subtle border
       html += `
-        <div class="border border-dashed border-amber-300 hover:border-amber-500 bg-amber-50/20 hover:bg-amber-50/50 rounded-lg p-1.5 transition-all text-center group cursor-pointer" onclick="openCoffeeAssignModal('${iso}')">
-          <div class="text-3xs font-black text-amber-700 flex items-center justify-center gap-1 mb-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>空き枠 (12:00)</span>
+        <div class="border border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/30 rounded-lg p-1.5 transition-all text-center group cursor-pointer" onclick="openCoffeeAssignModal('${iso}')" title="クリックして予約 / ビジターをドラッグ＆ドロップ">
+          <div class="text-3xs font-bold text-slate-600 group-hover:text-blue-600 flex items-center justify-center gap-1 mb-0.5">
+            <i class="fa-solid fa-plus text-4xs"></i>
+            <span>空き枠</span>
           </div>
-          <div class="flex items-center justify-center gap-1">
-            <button type="button" onclick="event.stopPropagation(); openCoffeeAssignModal('${iso}')" class="px-1.5 py-0.5 rounded text-3xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-2xs transition-colors flex items-center gap-0.5">
-              <i class="fa-solid fa-plus text-4xs"></i><span>割当</span>
-            </button>
-            <button type="button" onclick="event.stopPropagation(); copySingleCoffeeSlotInvitation('${iso}')" class="px-1.5 py-0.5 rounded text-3xs font-bold bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 shadow-2xs transition-colors" title="この日の案内文をコピー">
-              <i class="fa-regular fa-copy text-4xs"></i>
-            </button>
-          </div>
+          <div class="text-4xs text-slate-400 font-mono">12:00-12:30</div>
         </div>
       `;
     } else {
@@ -442,8 +458,12 @@ function renderCoffeeWeekCalendar(visitorsMap) {
     const visitors = visitorsMap[iso] || [];
     const hasVisitor = visitors.length > 0;
 
+    const dndAttrs = (!hasVisitor && !isPast)
+      ? `ondragover="onCoffeeSlotDragOver(event)" ondragleave="onCoffeeSlotDragLeave(event)" ondrop="onCoffeeSlotDrop(event, '${iso}')"`
+      : '';
+
     html += `
-      <div class="bg-white border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200/90'} rounded-2xl p-4 shadow-xs flex flex-col justify-between min-h-[300px]">
+      <div id="coffee-cell-${iso}" class="bg-white border ${isToday ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200'} rounded-2xl p-4 shadow-2xs flex flex-col justify-between min-h-[300px]" ${dndAttrs}>
         <!-- Card Header -->
         <div class="flex items-center justify-between pb-2.5 border-b border-slate-100">
           <div>
@@ -451,14 +471,13 @@ function renderCoffeeWeekCalendar(visitorsMap) {
               <span class="text-base font-black text-slate-900 font-mono">${monthNum}/${dayNum}</span>
               <span class="text-xs font-bold text-slate-500">(${dayLabel})</span>
               ${isToday ? '<span class="text-3xs font-extrabold px-1.5 py-0.2 rounded bg-blue-600 text-white shadow-2xs">今日</span>' : ''}
-              ${isThursday ? '<span class="text-3xs font-extrabold px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200">定例会</span>' : ''}
+              ${isThursday ? '<span class="text-3xs font-extrabold px-1.5 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 font-black">定例会</span>' : ''}
             </div>
-            <div class="text-3xs text-amber-700 font-bold mt-0.5 flex items-center gap-1">
-              <i class="fa-regular fa-clock text-3xs"></i>
+            <div class="text-3xs text-slate-500 font-bold mt-0.5">
               <span>12:00 〜 12:30 (Zoom)</span>
             </div>
           </div>
-          <button type="button" onclick="openCoffeeAssignModal('${iso}')" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-amber-500 hover:text-white text-slate-600 flex items-center justify-center transition-colors cursor-pointer" title="ビジターを予約">
+          <button type="button" onclick="openCoffeeAssignModal('${iso}')" class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-600 flex items-center justify-center transition-colors cursor-pointer" title="ビジターを予約">
             <i class="fa-solid fa-plus text-xs"></i>
           </button>
         </div>
@@ -471,13 +490,13 @@ function renderCoffeeWeekCalendar(visitorsMap) {
       visitors.forEach(v => {
         const isDone = (v.step1Coffee === '済' || v.step1_coffee === '済');
         html += `
-          <div class="bg-amber-50/70 border border-amber-200/90 rounded-xl p-3 space-y-2 mb-2">
+          <div class="bg-white border border-slate-200 rounded-xl p-3 space-y-2 mb-2 shadow-2xs">
             <div class="flex items-center justify-between">
-              <span class="text-3xs font-extrabold px-2 py-0.5 rounded-full border ${isDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-100 text-amber-800 border-amber-300'}">
-                ${isDone ? '✓ 実施済' : '⏳ 予約済'}
+              <span class="text-3xs font-extrabold px-2 py-0.5 rounded-full border ${isDone ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}">
+                ${isDone ? '✓ 実施済' : '予約済'}
               </span>
-              <button type="button" onclick="toggleCoffeeMeetingDone('${escapeHtml(v.id)}', '${isDone ? '未' : '済'}')" class="text-3xs px-2 py-0.5 rounded-lg border font-bold transition-colors ${isDone ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 hover:bg-emerald-500 hover:text-white'}">
-                ${isDone ? '完了取消' : '完了にする'}
+              <button type="button" onclick="toggleCoffeeMeetingDone('${escapeHtml(v.id)}', '${isDone ? '未' : '済'}')" class="text-3xs px-2 py-0.5 rounded-lg border font-bold transition-colors ${isDone ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-emerald-600 hover:text-white'}">
+                ${isDone ? '取消' : '完了にする'}
               </button>
             </div>
             <div class="text-sm font-black text-slate-900 cursor-pointer hover:text-blue-600" onclick="openVisitorDetailView('${escapeHtml(v.id)}')">
@@ -486,11 +505,11 @@ function renderCoffeeWeekCalendar(visitorsMap) {
             <div class="text-xs text-slate-600 space-y-0.5 font-medium">
               <div>紹介: <b class="text-slate-800">${escapeHtml(v.inviter || '-')}</b></div>
               <div>会社: <span class="text-slate-700">${escapeHtml(v.company || '-')}</span></div>
-              <div>定例会: <span class="text-slate-700">${escapeHtml(formatShortDate(v.eventDate) || '未定')}</span></div>
+              <div>定例会: <span class="text-slate-700">${escapeHtml(formatShortDate(v.eventDate) || '申込前・未定')}</span></div>
             </div>
-            <div class="pt-1.5 border-t border-amber-200/60 flex items-center justify-between gap-1">
+            <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between gap-1">
               <button type="button" onclick="openVisitorDetailView('${escapeHtml(v.id)}')" class="text-3xs font-bold text-blue-600 hover:underline">
-                詳細カルテ →
+                カルテ →
               </button>
               <button type="button" onclick="cancelCoffeeMeetingSlot('${escapeHtml(v.id)}')" class="text-3xs text-rose-500 hover:text-rose-700 hover:underline">
                 予約解除
@@ -500,22 +519,13 @@ function renderCoffeeWeekCalendar(visitorsMap) {
         `;
       });
     } else if (!isPast) {
-      // Empty slot in week mode
       html += `
-        <div class="border-2 border-dashed border-amber-300/80 bg-amber-50/20 hover:bg-amber-50/50 rounded-xl p-4 text-center space-y-2 transition-all cursor-pointer" onclick="openCoffeeAssignModal('${iso}')">
-          <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-sm">
-            <i class="fa-solid fa-mug-hot"></i>
-          </div>
-          <div>
-            <div class="text-xs font-black text-amber-800">空き枠 (12:00-12:30)</div>
-            <div class="text-3xs text-slate-500 mt-0.5 font-medium">ビジターの事前ヒアリング予約を受付中</div>
-          </div>
+        <div class="border border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/30 rounded-xl p-4 text-center space-y-2 transition-all cursor-pointer" onclick="openCoffeeAssignModal('${iso}')">
+          <div class="text-xs font-black text-slate-800 group-hover:text-blue-600">空き枠 (12:00)</div>
+          <div class="text-3xs text-slate-400 font-medium">クリックまたはドラッグして予約</div>
           <div class="pt-1 flex flex-col gap-1.5">
-            <button type="button" onclick="event.stopPropagation(); openCoffeeAssignModal('${iso}')" class="w-full py-1.5 px-3 rounded-lg text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-colors flex items-center justify-center gap-1">
-              <i class="fa-solid fa-plus text-3xs"></i><span>ビジターを予約する</span>
-            </button>
-            <button type="button" onclick="event.stopPropagation(); copySingleCoffeeSlotInvitation('${iso}')" class="w-full py-1 px-3 rounded-lg text-3xs font-bold bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 shadow-2xs transition-colors flex items-center justify-center gap-1">
-              <i class="fa-regular fa-copy"></i><span>この日の招待文コピー</span>
+            <button type="button" onclick="event.stopPropagation(); openCoffeeAssignModal('${iso}')" class="w-full py-1.5 px-3 rounded-lg text-xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors flex items-center justify-center gap-1">
+              <i class="fa-solid fa-plus text-3xs"></i><span>予約を登録</span>
             </button>
           </div>
         </div>
@@ -523,7 +533,7 @@ function renderCoffeeWeekCalendar(visitorsMap) {
     } else {
       html += `
         <div class="text-center py-8 text-xs text-slate-300 font-medium">
-          過去枠 (開催なし)
+          未実施
         </div>
       `;
     }
@@ -538,47 +548,119 @@ function renderCoffeeWeekCalendar(visitorsMap) {
 }
 
 /**
- * Render Right Column Unassigned Visitors Pool
+ * Filter scope switch: 'upcoming' | 'all' | 'past'
  */
-function renderCoffeeUnassignedVisitorsPool(unassignedVisitors) {
+function setCoffeeFilterScope(scope) {
+  coffeeFilterScope = scope;
+  const btnUpcoming = document.getElementById('btn-coffee-filter-upcoming');
+  const btnAll = document.getElementById('btn-coffee-filter-all');
+  const btnPast = document.getElementById('btn-coffee-filter-past');
+
+  [btnUpcoming, btnAll, btnPast].forEach(btn => {
+    if (btn) {
+      btn.className = 'py-1 rounded-lg transition-all cursor-pointer text-slate-600 hover:text-slate-900';
+    }
+  });
+
+  if (scope === 'upcoming' && btnUpcoming) {
+    btnUpcoming.className = 'py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
+  } else if (scope === 'all' && btnAll) {
+    btnAll.className = 'py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
+  } else if (scope === 'past' && btnPast) {
+    btnPast.className = 'py-1 rounded-lg transition-all cursor-pointer bg-white text-slate-900 shadow-2xs';
+  }
+
+  renderCoffeeUnassignedVisitorsPool();
+}
+
+/**
+ * Incremental Search Handler
+ */
+function onCoffeeVisitorSearchInput(val) {
+  coffeeSearchQuery = (val || '').trim().toLowerCase();
+  renderCoffeeUnassignedVisitorsPool();
+}
+
+/**
+ * Open Modal to Add Prospective/Unregistered Visitor
+ */
+function openCoffeeAddVisitorModal() {
+  if (typeof openAddVisitorModal === 'function') {
+    // Open with defaultUndecided = true
+    openAddVisitorModal(true);
+  }
+}
+
+/**
+ * Render Right Column Unassigned Visitors Pool (Pure White Slate & Apple Minimal)
+ */
+function renderCoffeeUnassignedVisitorsPool(unassignedList = null) {
   const container = document.getElementById('coffee-unassigned-visitors-pool');
   if (!container) return;
 
-  if (unassignedVisitors.length === 0) {
+  // Use passed list or calculate based on current filter scope
+  let list = unassignedList || getCoffeeUnassignedVisitors(coffeeFilterScope);
+
+  // Apply search filter if query exists
+  if (coffeeSearchQuery) {
+    list = list.filter(v => {
+      const name = (v.name || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      return name.includes(coffeeSearchQuery) ||
+             inviter.includes(coffeeSearchQuery) ||
+             company.includes(coffeeSearchQuery) ||
+             profession.includes(coffeeSearchQuery);
+    });
+  }
+
+  // Update Pool Count Badge
+  const poolCountEl = document.getElementById('coffee-unassigned-pool-count');
+  if (poolCountEl) {
+    poolCountEl.textContent = `${list.length}名`;
+  }
+
+  if (list.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-8 text-slate-400 space-y-1.5">
-        <i class="fa-solid fa-circle-check text-2xl text-emerald-500"></i>
-        <p class="text-xs font-bold text-slate-700">未予約のビジターはいません</p>
-        <p class="text-3xs text-slate-400">すべての対象者にコーヒーMTGが設定されています</p>
+      <div class="text-center py-10 text-slate-400 space-y-2">
+        <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto text-sm">
+          ✓
+        </div>
+        <p class="text-xs font-bold text-slate-700">対象のビジターはいません</p>
+        <p class="text-3xs text-slate-400">「候補登録」から新規ビジターを追加できます</p>
       </div>
     `;
     return;
   }
 
   let html = '';
-  unassignedVisitors.forEach(v => {
+  list.forEach(v => {
+    const isUndecided = !v.eventDate;
+    const eventBadge = isUndecided
+      ? '<span class="text-3xs px-1.5 py-0.2 rounded font-extrabold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">申込前・未定</span>'
+      : `<span class="text-3xs px-1.5 py-0.2 rounded font-bold bg-slate-100 text-slate-700 border border-slate-200 shrink-0">定例会 ${escapeHtml(formatShortDate(v.eventDate))}</span>`;
+
     html += `
-      <div class="bg-slate-50 hover:bg-amber-50/50 border border-slate-200/80 hover:border-amber-300/80 rounded-xl p-2.5 transition-all text-left shadow-2xs group">
+      <div draggable="true" ondragstart="onCoffeeVisitorDragStart(event, '${escapeHtml(v.id)}')" class="bg-white hover:border-blue-400 border border-slate-200 rounded-xl p-3 transition-all text-left shadow-2xs group cursor-grab active:cursor-grabbing hover:-translate-y-0.5">
         <div class="flex items-center justify-between gap-1 mb-1">
           <div class="text-xs font-black text-slate-900 truncate">
             ${escapeHtml(v.name || '名称未定')}
           </div>
-          <span class="text-3xs px-1.5 py-0.2 rounded font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
-            定例会 ${escapeHtml(formatShortDate(v.eventDate) || '未定')}
-          </span>
+          ${eventBadge}
         </div>
         <div class="text-3xs text-slate-500 font-medium flex items-center justify-between mb-2">
           <span>紹介: <b class="text-slate-700">${escapeHtml(v.inviter || '-')}</b></span>
-          <span class="text-slate-400 truncate max-w-[100px]">${escapeHtml(v.company || '')}</span>
+          <span class="text-slate-400 truncate max-w-[100px]">${escapeHtml(v.company || v.profession || '')}</span>
         </div>
-        <div class="flex items-center gap-1.5 pt-1 border-t border-slate-200/60">
-          <button type="button" onclick="assignVisitorToNextAvailableSlot('${escapeHtml(v.id)}')" class="flex-1 py-1 px-2 rounded-lg text-3xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
-            <i class="fa-solid fa-calendar-plus text-4xs"></i><span>直近空き枠へ割当</span>
+        <div class="flex items-center gap-1.5 pt-1.5 border-t border-slate-100">
+          <button type="button" onclick="assignVisitorToNextAvailableSlot('${escapeHtml(v.id)}')" class="flex-1 py-1 px-2 rounded-lg text-3xs font-black bg-blue-600 hover:bg-blue-700 text-white shadow-2xs transition-colors flex items-center justify-center gap-1 cursor-pointer">
+            <i class="fa-solid fa-calendar-plus text-4xs"></i><span>予約</span>
           </button>
-          <button type="button" onclick="copyCoffeeMeetingInvitation('${escapeHtml(v.id)}')" class="py-1 px-2 rounded-lg text-3xs font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs transition-colors cursor-pointer" title="招待文コピー">
+          <button type="button" onclick="copyCoffeeMeetingInvitation('${escapeHtml(v.id)}')" class="py-1 px-2 rounded-lg text-3xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors cursor-pointer" title="案内文コピー">
             <i class="fa-regular fa-copy"></i>
           </button>
-          <button type="button" onclick="openVisitorDetailView('${escapeHtml(v.id)}')" class="py-1 px-2 rounded-lg text-3xs font-bold bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 shadow-2xs transition-colors cursor-pointer" title="カルテ">
+          <button type="button" onclick="openVisitorDetailView('${escapeHtml(v.id)}')" class="py-1 px-2 rounded-lg text-3xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition-colors cursor-pointer" title="カルテ">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </button>
         </div>
@@ -587,6 +669,50 @@ function renderCoffeeUnassignedVisitorsPool(unassignedVisitors) {
   });
 
   container.innerHTML = html;
+}
+
+/**
+ * Drag and Drop Handlers for Assigning Visitor to Date Cell
+ */
+function onCoffeeVisitorDragStart(e, visitorId) {
+  coffeeDraggedVisitorId = visitorId;
+  if (e.dataTransfer) {
+    e.dataTransfer.setData('text/plain', visitorId);
+    e.dataTransfer.effectAllowed = 'copyMove';
+  }
+}
+
+function onCoffeeSlotDragOver(e) {
+  e.preventDefault();
+  if (e.dataTransfer) {
+    e.dataTransfer.dropEffect = 'copy';
+  }
+  const target = e.currentTarget;
+  if (target) {
+    target.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+  }
+}
+
+function onCoffeeSlotDragLeave(e) {
+  const target = e.currentTarget;
+  if (target) {
+    target.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+  }
+}
+
+function onCoffeeSlotDrop(e, targetDate) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  if (target) {
+    target.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+  }
+
+  const vId = (e.dataTransfer ? e.dataTransfer.getData('text/plain') : null) || coffeeDraggedVisitorId;
+  coffeeDraggedVisitorId = null;
+
+  if (vId && targetDate) {
+    openCoffeeAssignModal(targetDate, vId);
+  }
 }
 
 /**
@@ -629,7 +755,7 @@ function copyAvailableCoffeeSlotsText() {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
       if (typeof showToast === 'function') {
-        showToast('📋 空き日程リストの案内文をコピーしました！LINEやチャットで共有できます', 'success');
+        showToast('📋 空き日程リストの案内文をコピーしました！', 'success');
       } else {
         alert('空き日程の案内文をコピーしました');
       }
@@ -648,25 +774,64 @@ function copyAvailableCoffeeSlotsText() {
 function copySingleCoffeeSlotInvitation(dateStr) {
   try {
     const d = parseIsoDate(dateStr);
+    if (!d) return;
     const days = ['日', '月', '火', '水', '木', '金', '土'];
     const m = d.getMonth() + 1;
     const day = d.getDate();
     const dayName = days[d.getDay()];
 
-    const text = `【事前コーヒーミーティング日程のご案内】\n` +
-      `日時: ${m}月${day}日(${dayName}) 12:00〜12:30 (30分間)\n` +
-      `形式: Zoomオンラインミーティング\n\n` +
-      `定例会ご参加前に、どのようなビジネスを展開されているか、また当日どのような人脈と繋がりたいかをお伺いするカジュアルなヒアリングです。\n` +
-      `こちらの日程でご都合いかがでしょうか？`;
+    let text = `【事前コーヒーミーティング日程のご案内】\n`;
+    text += `日時：${m}月${day}日(${dayName}) 12:00〜12:30\n`;
+    text += `形式：オンライン (Zoom)\n\n`;
+    text += `定例会ご参加前に、事業の課題や求めている人脈についてお伺いする30分間の事前ヒアリングです。\n`;
+    text += `こちらの枠で調整可能でしたら、お返事いただけますと幸いです！`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(() => {
         if (typeof showToast === 'function') {
-          showToast(`📋 ${m}/${day}(${dayName}) 12:00枠の案内文をコピーしました`, 'success');
+          showToast(`📋 ${m}/${day} の案内文をコピーしました`, 'success');
+        } else {
+          alert('案内文をコピーしました');
         }
       });
     } else {
-      prompt('案内文をコピーしてください:', text);
+      prompt('以下のテキストをコピーしてください:', text);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/**
+ * Copy personal invitation for a specific visitor
+ */
+function copyCoffeeMeetingInvitation(visitorId) {
+  const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+    ? cachedAllVisitors
+    : [];
+  const v = allVisitors.find(item => String(item.id) === String(visitorId));
+  if (!v) return;
+
+  try {
+    const name = v.name || '様';
+    const inviter = v.inviter ? `（紹介者: ${v.inviter}さん）` : '';
+    let text = `${name}様\n\n`;
+    text += `BNI定例会へのご関心、誠にありがとうございます！${inviter}\n`;
+    text += `定例会（毎週木曜朝）をより実りある時間にしていただくために、平日12:00〜12:30にて30分間の「事前コーヒーミーティング（Zoom）」を実施しております。\n\n`;
+    text += `どのような事業をされているか、どんな人脈や協業先と繋がりたいかを事前にお伺いし、定例会当日に最適なメンバーとお引き合わせできるように準備させていただきます。\n\n`;
+    text += `平日12:00〜12:30でご都合のよろしいお日にちをいくつかお知らせいただけますでしょうか？\n`;
+    text += `どうぞよろしくお願いいたします！`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        if (typeof showToast === 'function') {
+          showToast(`📋 ${name}様 宛の招待文をコピーしました`, 'success');
+        } else {
+          alert('招待文をコピーしました');
+        }
+      });
+    } else {
+      prompt('以下のテキストをコピーしてください:', text);
     }
   } catch (e) {
     console.error(e);
@@ -706,7 +871,7 @@ function assignVisitorToNextAvailableSlot(visitorId) {
  * Auto assign next unassigned visitor to the earliest available slot
  */
 function autoAssignNextUnassignedVisitor() {
-  const unassigned = getCoffeeUnassignedVisitors();
+  const unassigned = getCoffeeUnassignedVisitors('upcoming');
   if (unassigned.length === 0) {
     if (typeof showToast === 'function') {
       showToast('未予約のビジターはいません', 'info');
@@ -737,21 +902,23 @@ async function toggleCoffeeMeetingDone(visitorId, newStatus) {
     }
 
     if (typeof showToast === 'function') {
-      showToast(newStatus === '済' ? '☕ コーヒーミーティングを完了にしました' : '未完了に戻しました', 'success');
+      showToast(newStatus === '済' ? '☕ ミーティングを完了にしました' : '未完了に戻しました', 'success');
     }
 
     renderCoffeeMeetingView();
-  } catch (e) {
-    console.error('Error toggling coffee status:', e);
-    alert('ステータス更新に失敗しました: ' + (e.message || '通信エラー'));
+  } catch (error) {
+    console.error('Failed to toggle coffee meeting status:', error);
+    alert('ステータス更新に失敗しました: ' + (error.message || '通信エラー'));
   }
 }
 
 /**
- * Cancel / Reset slot reservation for a visitor
+ * Cancel / Unassign coffee meeting slot for a visitor
  */
 async function cancelCoffeeMeetingSlot(visitorId) {
-  if (!confirm('この予約を解除して空き枠に戻しますか？')) return;
+  if (!confirm('このビジターのコーヒーミーティング予約を解除しますか？')) {
+    return;
+  }
 
   try {
     if (typeof updateVisitorStatusApi === 'function' || typeof ApiService !== 'undefined') {
@@ -770,13 +937,13 @@ async function cancelCoffeeMeetingSlot(visitorId) {
     }
 
     if (typeof showToast === 'function') {
-      showToast('予約を解除し、空き枠に戻しました', 'info');
+      showToast('予約を解除し、候補プールに戻しました', 'info');
     }
 
     renderCoffeeMeetingView();
-  } catch (e) {
-    console.error('Error cancelling coffee slot:', e);
-    alert('解除に失敗しました: ' + (e.message || '通信エラー'));
+  } catch (error) {
+    console.error('Failed to cancel coffee slot:', error);
+    alert('予約解除に失敗しました');
   }
 }
 </script>

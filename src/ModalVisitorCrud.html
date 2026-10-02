@@ -18,9 +18,10 @@
           <input type="text" id="crud-v-furigana" class="form-input" placeholder="やまだ たろう">
         </div>
         <div class="form-group">
-          <label class="form-label">参加日 (定例会) <span style="color:red;">*</span></label>
-          <input type="date" id="crud-v-event-date" class="form-input" required style="font-weight:700;">
+          <label class="form-label">参加日 (定例会) <span class="text-xs text-slate-400 font-normal">（申込前・未定も可）</span></label>
+          <input type="date" id="crud-v-event-date" class="form-input" style="font-weight:700;">
           <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('undecided')">⚡ 未定 (申込前)</button>
             <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('next')">⚡ 次回定例会</button>
             <button type="button" class="btn-action-secondary" style="font-size: 11px; padding: 3px 8px;" onclick="setCrudQuickDate('afterNext')">⚡ 次々回定例会</button>
           </div>

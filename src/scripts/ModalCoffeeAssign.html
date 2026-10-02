@@ -70,15 +70,24 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
     }
   });
 
-  // Group 1: 未設定・候補ビジター (優先)
+  // Sort unassigned: undecided (prospective) first, then upcoming by eventDate ASC
+  unassigned.sort((a, b) => {
+    const rawA = (a.eventDate || '').replace(/\//g, '-').slice(0, 10);
+    const rawB = (b.eventDate || '').replace(/\//g, '-').slice(0, 10);
+    if (!rawA && rawB) return -1;
+    if (rawA && !rawB) return 1;
+    return (rawA || '9999-12-31').localeCompare(rawB || '9999-12-31');
+  });
+
+  // Group 1: 候補ビジター (優先)
   if (unassigned.length > 0) {
     const optGroup1 = document.createElement('optgroup');
-    optGroup1.label = `☕ 未設定・候補ビジター (${unassigned.length}名)`;
+    optGroup1.label = `候補ビジター (${unassigned.length}名)`;
     unassigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
       const inviterStr = v.inviter ? ` (紹介: ${v.inviter})` : '';
-      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : '';
+      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : ' [申込前・未定]';
       opt.textContent = `${v.name || '名称未定'}${inviterStr}${eventStr}`;
       if (preselectedVisitorId && String(v.id) === String(preselectedVisitorId)) {
         opt.selected = true;
@@ -91,7 +100,7 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
   // Group 2: その他・日程変更ビジター
   if (assigned.length > 0) {
     const optGroup2 = document.createElement('optgroup');
-    optGroup2.label = `📅 設定済みビジター (日程変更)`;
+    optGroup2.label = `設定済み (日程変更)`;
     assigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
@@ -140,17 +149,17 @@ function onCoffeeAssignVisitorChanged() {
   if (nameEl) nameEl.textContent = v.name || '-';
   if (furiganaEl) furiganaEl.textContent = v.furigana ? `(${v.furigana})` : '';
   if (inviterEl) inviterEl.textContent = v.inviter || '-';
-  if (eventDateEl) eventDateEl.textContent = v.eventDate ? formatShortDate(v.eventDate) : '未定';
+  if (eventDateEl) eventDateEl.textContent = v.eventDate ? formatShortDate(v.eventDate) : '申込前（未定）';
   if (companyEl) companyEl.textContent = v.company || '-';
 
   if (badgeEl) {
     const curDate = v.step1CoffeeDate || v.step1_coffee_date;
     if (curDate) {
-      badgeEl.className = 'text-3xs px-2 py-0.5 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200';
+      badgeEl.className = 'text-3xs px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-700 border border-slate-200';
       badgeEl.textContent = `現予定: ${formatShortDate(curDate)}`;
     } else {
       badgeEl.className = 'text-3xs px-2 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 border border-blue-200';
-      badgeEl.textContent = '未設定';
+      badgeEl.textContent = '未予約';
     }
   }
 

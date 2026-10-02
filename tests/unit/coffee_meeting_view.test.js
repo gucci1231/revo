@@ -123,4 +123,31 @@ describe('☕ Coffee Meeting Management & Slot Filling Calendar Unit Tests', () 
     assert.ok(lastCopiedText.includes('12:00〜12:30 【空き枠】'), 'Text should list empty slots');
     assert.ok(lastCopiedText.includes('Zoom'), 'Text should mention Zoom');
   });
+
+  it('correctly prioritizes prospective candidates (undecided) in upcoming filterScope', () => {
+    const today = sandbox.getTodayIsoDate();
+    const parts = today.split('-');
+    const nextWeek = `${parts[0]}-${parts[1]}-${String(Math.min(28, parseInt(parts[2], 10) + 7)).padStart(2, '0')}`;
+
+    sandbox.cachedAllVisitors = [
+      { id: '1', name: '過去ビジター', step1Coffee: '未', step1CoffeeDate: '', eventDate: '2024-01-01' },
+      { id: '2', name: '来週ビジター', step1Coffee: '未', step1CoffeeDate: '', eventDate: nextWeek },
+      { id: '3', name: '申込前候補者', step1Coffee: '未', step1CoffeeDate: '', eventDate: '' }
+    ];
+
+    const upcoming = sandbox.getCoffeeUnassignedVisitors('upcoming');
+    assert.strictEqual(upcoming.length, 2, 'Should only contain prospective and future visitors');
+    assert.strictEqual(upcoming[0].id, '3', 'Prospective (undecided) candidate must appear first');
+    assert.strictEqual(upcoming[1].id, '2', 'Upcoming scheduled visitor must appear second');
+
+    const past = sandbox.getCoffeeUnassignedVisitors('past');
+    assert.strictEqual(past.length, 1, 'Should contain past visitor');
+    assert.strictEqual(past[0].id, '1');
+  });
+
+  it('verifies search and filter elements exist in compiled index.html', () => {
+    assert.ok(compiledIndexHtml.includes('id="coffee-visitor-search"'), 'Search input should exist');
+    assert.ok(compiledIndexHtml.includes('id="btn-coffee-filter-upcoming"'), 'Filter button upcoming should exist');
+    assert.ok(compiledIndexHtml.includes('openCoffeeAddVisitorModal'), 'Function openCoffeeAddVisitorModal should be referenced');
+  });
 });
