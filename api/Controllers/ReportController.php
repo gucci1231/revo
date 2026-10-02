@@ -2,6 +2,7 @@
 namespace Api\Controllers;
 
 use Api\Core\Controller;
+use Api\Core\Response;
 use Api\Repositories\ReportTemplateRepository;
 use Api\Services\MailService;
 
@@ -38,34 +39,34 @@ class ReportController extends Controller {
                 $this->sendMail();
                 break;
             default:
-                $this->error("Invalid action: {$action}", 400);
+                Response::error("Invalid action: {$action}", 400);
         }
     }
 
     private function resetTemplate(): void {
         $id = $this->getParam('id');
         if (empty($id)) {
-            $this->error('Template ID is required', 400);
+            Response::error('Template ID is required', 400);
             return;
         }
 
         $template = $this->templateRepo->resetToDefault($id);
         if ($template) {
-            $this->json(['success' => true, 'template' => $template]);
+            Response::success(['template' => $template]);
         } else {
-            $this->error('Template not found or cannot be reset', 404);
+            Response::error('Template not found or cannot be reset', 404);
         }
     }
 
     private function listTemplates(): void {
         $templates = $this->templateRepo->getAll();
-        $this->json(['templates' => $templates]);
+        Response::success(['templates' => $templates]);
     }
 
     private function updateTemplate(): void {
         $id = $this->getParam('id');
         if (empty($id)) {
-            $this->error('Template ID is required', 400);
+            Response::error('Template ID is required', 400);
             return;
         }
 
@@ -83,9 +84,9 @@ class ReportController extends Controller {
         $success = $this->templateRepo->update($id, $data);
         if ($success) {
             $updated = $this->templateRepo->getById($id);
-            $this->json(['success' => true, 'template' => $updated]);
+            Response::success(['template' => $updated]);
         } else {
-            $this->error('Failed to update template', 500);
+            Response::error('Failed to update template', 500);
         }
     }
 
@@ -94,12 +95,12 @@ class ReportController extends Controller {
         $isEnabled = intval($this->getParam('is_enabled', 1));
 
         if (empty($id)) {
-            $this->error('Template ID is required', 400);
+            Response::error('Template ID is required', 400);
             return;
         }
 
         $success = $this->templateRepo->toggleEnabled($id, $isEnabled);
-        $this->json(['success' => $success, 'id' => $id, 'is_enabled' => $isEnabled]);
+        Response::success(['id' => $id, 'is_enabled' => $isEnabled]);
     }
 
     private function sendMail(): void {
@@ -108,20 +109,20 @@ class ReportController extends Controller {
         $htmlBody = $this->getParam('body', '');
 
         if (empty($to)) {
-            $this->error('送信先アドレス（to）を指定してください', 400);
+            Response::error('送信先アドレス（to）を指定してください', 400);
             return;
         }
 
         if (empty($subject) || empty($htmlBody)) {
-            $this->error('件名と本文を指定してください', 400);
+            Response::error('件名と本文を指定してください', 400);
             return;
         }
 
         $result = $this->mailService->sendHtmlEmail($to, $subject, $htmlBody);
         if ($result['success']) {
-            $this->json(['success' => true, 'message' => $result['message']]);
+            Response::success(['message' => $result['message']]);
         } else {
-            $this->error($result['message'], 500);
+            Response::error($result['message'], 500);
         }
     }
 }
