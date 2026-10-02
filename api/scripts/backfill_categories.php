@@ -12,7 +12,7 @@ $db = Database::getInstance();
 
 $spreadsheetId = '1wMXXurT9uWpythSDKSggjJESldIrqc0_5PL22LXDSGQ';
 
-function fetchCsv(string $url): array {
+function fetchCsv($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -48,11 +48,12 @@ function fetchCsv(string $url): array {
     return $rows;
 }
 
-function cleanName(string $name): string {
-    return trim(preg_replace('/[\s　]+/u', '', $name));
+function cleanName($name) {
+    return trim(preg_replace('/[\s　]+/u', '', (string)$name));
 }
 
-function normalizeDate(string $d): string {
+function normalizeDate($d) {
+    $d = (string)$d;
     if (!$d) return '';
     if (preg_match('/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/', $d, $m)) {
         return sprintf('%04d/%02d/%02d', (int)$m[1], (int)$m[2], (int)$m[3]);
@@ -63,20 +64,24 @@ function normalizeDate(string $d): string {
     return trim($d);
 }
 
-function normalizeEmail(string $e): string {
-    return strtolower(trim(str_replace('＠', '@', $e)));
+function normalizeEmail($e) {
+    return strtolower(trim(str_replace('＠', '@', (string)$e)));
 }
 
-function isGuestRecord(string $type, string $chapter, string $attendance, string $prof, string $comp, string $rem, string $name = ''): bool {
-    if (str_contains($type, 'ゲスト') || str_contains($type, '他チャプター')) return true;
-    if (str_contains($type, '代理人')) return true;
-    $trimChap = trim($chapter);
-    if ($trimChap !== '' && $trimChap !== '-' && !str_contains($trimChap, 'なし') && !str_contains($trimChap, 'REvo') && !str_contains($trimChap, 'レボ') && !str_contains($trimChap, '未定')) {
+function hasText($haystack, $needle) {
+    return mb_strpos((string)$haystack, (string)$needle) !== false;
+}
+
+function isGuestRecord($type, $chapter, $attendance, $prof, $comp, $rem, $name = '') {
+    if (hasText($type, 'ゲスト') || hasText($type, '他チャプター')) return true;
+    if (hasText($type, '代理人')) return true;
+    $trimChap = trim((string)$chapter);
+    if ($trimChap !== '' && $trimChap !== '-' && !hasText($trimChap, 'なし') && !hasText($trimChap, 'REvo') && !hasText($trimChap, 'レボ') && !hasText($trimChap, '未定')) {
         return true;
     }
-    if (str_contains($attendance, 'ゲスト') || str_contains($attendance, '他チャプター')) return true;
-    if (str_contains($prof, 'ゲスト') || str_contains($comp, 'ゲスト') || str_contains($rem, 'ゲスト') || str_contains($rem, '予約: ゲスト')) return true;
-    if (str_contains($rem, 'ユニコーン') || str_contains($rem, 'チャプター') || str_contains($prof, 'ユニコーン') || str_starts_with($name, 'メンバー')) return true;
+    if (hasText($attendance, 'ゲスト') || hasText($attendance, '他チャプター')) return true;
+    if (hasText($prof, 'ゲスト') || hasText($comp, 'ゲスト') || hasText($rem, 'ゲスト') || hasText($rem, '予約: ゲスト')) return true;
+    if (hasText($rem, 'ユニコーン') || hasText($rem, 'チャプター') || hasText($prof, 'ユニコーン') || mb_strpos((string)$name, 'メンバー') === 0) return true;
     return false;
 }
 
