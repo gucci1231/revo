@@ -172,6 +172,7 @@ class EventController extends Controller {
             'location_url' => (string)$this->getParam('location_url', ''),
             'is_online' => (int)$this->getParam('is_online', 0),
             'organizer' => (string)$this->getParam('organizer', ''),
+            'participants' => (string)$this->getParam('participants', ''),
             'description' => (string)$this->getParam('description', ''),
             'recurrence_rule' => (string)$this->getParam('recurrence_rule', $this->getParam('repeat_type', 'none')),
             'recurrence_until' => (string)$this->getParam('recurrence_until', $this->getParam('repeat_until', '')),
@@ -323,6 +324,7 @@ class EventController extends Controller {
             'start_datetime' => (string)$this->getParam('start_datetime', $meetingDate . ' 06:45:00'),
             'end_datetime' => (string)$this->getParam('end_datetime', $meetingDate . ' 08:30:00'),
             'organizer' => (string)$this->getParam('organizer', 'REvoチャプター プレジデント & 運営チーム'),
+            'participants' => (string)$this->getParam('participants', ''),
             'description' => (string)$this->getParam('description', '')
         ];
 

@@ -195,6 +195,7 @@ class EventRepository {
             'location_url' => trim($data['location_url'] ?? ''),
             'is_online' => !empty($data['is_online']) ? 1 : 0,
             'organizer' => trim($data['organizer'] ?? ''),
+            'participants' => trim($data['participants'] ?? ''),
             'description' => trim($data['description'] ?? ''),
             'recurrence_rule' => $repeatRule,
             'flyer_url' => trim($data['flyer_url'] ?? ''),
@@ -405,6 +406,7 @@ class EventRepository {
                     'location_url' => $custom ? ($custom['location_url'] ?? '') : '',
                     'is_online' => $custom ? (int)$custom['is_online'] : 1, // 定例会は基本Zoomのみ
                     'organizer' => $custom ? ($custom['organizer'] ?: 'REvoチャプター プレジデント & 運営チーム') : 'REvoチャプター プレジデント & 運営チーム',
+                    'participants' => $custom ? ($custom['participants'] ?? '') : '',
                     'description' => $custom ? ($custom['description'] ?: "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\nメンバー 6:00 / ビジター 6:40 受付開始 / 7:00 開会 / 8:30 閉会") : "毎週木曜日のビジネスミーティング。ビジター参加・見学歓迎！\nメンバー 6:00 / ビジター 6:40 受付開始 / 7:00 開会 / 8:30 閉会",
                     'visitor_count' => $cnt,
                     'visitors' => $dayVisitors,
@@ -437,6 +439,7 @@ class EventRepository {
             'start_datetime' => trim($data['start_datetime'] ?? ($meetingDate . ' 06:00:00')),
             'end_datetime' => trim($data['end_datetime'] ?? ($meetingDate . ' 08:30:00')),
             'organizer' => trim($data['organizer'] ?? 'REvoチャプター プレジデント & 運営チーム'),
+            'participants' => trim($data['participants'] ?? ''),
             'description' => trim($data['description'] ?? ''),
             'updated_at' => $now
         ];

@@ -14731,6 +14731,20 @@ select.form-input, select.form-select {
         <div id="ch-detail-organizer" class="font-bold text-slate-800">--</div>
       </div>
 
+      <!-- Participants / Target Members -->
+      <div id="ch-detail-participants-wrap" class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+        <div class="text-3xs font-bold text-slate-400 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-users text-blue-600 text-xs"></i>
+            <span>参加者 / 対象メンバー</span>
+          </span>
+          <span id="ch-detail-participants-count" class="text-3xs font-mono font-bold text-slate-500">0名</span>
+        </div>
+        <div id="ch-detail-participants-list" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
       <!-- Flyer Preview -->
       <div id="ch-detail-flyer-wrap" class="hidden p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
         <div class="text-3xs font-bold text-slate-400 flex items-center justify-between">
@@ -14909,6 +14923,66 @@ select.form-input, select.form-select {
             <datalist id="datalist-member-names">
               <!-- Dynamically populated via JS -->
             </datalist>
+          </div>
+
+          <!-- Participants / Target Members -->
+          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5" id="ch-ev-participants-section">
+            <div class="flex items-center justify-between">
+              <label class="block font-bold text-slate-700 flex items-center gap-1.5">
+                <i class="fa-solid fa-users text-blue-600 text-xs"></i>
+                <span>参加者 / 対象メンバー</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <span id="ch-ev-participants-count" class="text-3xs font-mono font-bold text-slate-500">選択中: 0名</span>
+                <button type="button" onclick="clearEventParticipants()" class="text-3xs text-rose-500 hover:underline font-bold cursor-pointer">全解除</button>
+              </div>
+            </div>
+
+            <!-- Role Quick Selection Bar -->
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold mb-1 flex items-center gap-1">
+                <i class="fa-solid fa-tags text-[9px] text-slate-400"></i>
+                <span>役職で一括選択 / 解除:</span>
+              </div>
+              <div class="flex items-center gap-1 flex-wrap" id="ch-ev-role-presets">
+                <button type="button" onclick="toggleRoleParticipants('all')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">全員</button>
+                <button type="button" onclick="toggleRoleParticipants('3yaku')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">三役</button>
+                <button type="button" onclick="toggleRoleParticipants('45yaku')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">四役・五役</button>
+                <button type="button" onclick="toggleRoleParticipants('vh')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">ビジターホスト</button>
+                <button type="button" onclick="toggleRoleParticipants('ms')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">メンバーシップ委員</button>
+                <button type="button" onclick="toggleRoleParticipants('event')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">イベント委員</button>
+                <button type="button" onclick="toggleRoleParticipants('bod')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">BOD</button>
+                <button type="button" onclick="toggleRoleParticipants('1to1')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">1to1</button>
+              </div>
+            </div>
+
+            <!-- Selected Participants Chips Area -->
+            <div id="ch-ev-participants-chips-box" class="p-2 bg-white rounded-xl border border-slate-200 min-h-[38px] max-h-28 overflow-y-auto">
+              <div id="ch-ev-participants-chips" class="flex flex-wrap gap-1">
+                <span class="text-3xs text-slate-400 italic">未選択（全員対象または個別指定なし）</span>
+              </div>
+            </div>
+
+            <!-- Individual Member Selector (Accordion / Palette) -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+                <span>メンバー個別選択 (タップで追加/解除):</span>
+                <input type="text" id="ch-ev-member-search" placeholder="名前・役職で検索..." oninput="filterEventMemberPalette(this.value)" class="w-36 px-2 py-0.5 rounded-lg border border-slate-200 bg-white text-[10px] text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+              </div>
+              <div id="ch-ev-member-grid" class="max-h-32 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1 p-1 bg-white rounded-xl border border-slate-200/80">
+                <!-- Populated via JS with member toggle buttons -->
+              </div>
+            </div>
+
+            <!-- Custom Participant Name Input (e.g. Guest) -->
+            <div class="flex items-center gap-1.5 pt-1 border-t border-slate-200/60">
+              <input type="text" id="ch-ev-custom-participant" placeholder="外部ゲストや特定名を手動追加..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomEventParticipant();}" class="flex-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-3xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+              <button type="button" onclick="addCustomEventParticipant()" class="px-2.5 py-1 rounded-lg text-3xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors cursor-pointer shrink-0">
+                追加
+              </button>
+            </div>
+
+            <input type="hidden" id="ch-ev-participants" value="">
           </div>
 
           <!-- Flyer / Leaflet Attachment -->
@@ -15303,6 +15377,20 @@ select.form-input, select.form-select {
         <div id="modal-meeting-desc" class="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed"></div>
       </div>
 
+      <!-- Meeting Target / Participant Members -->
+      <div id="modal-meeting-participants-wrap" class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-2 hidden">
+        <div class="text-3xs font-bold text-slate-400 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <i class="fa-solid fa-user-check text-blue-600 text-xs"></i>
+            <span>担当・参加対象メンバー</span>
+          </span>
+          <span id="modal-meeting-participants-count" class="text-3xs font-mono font-bold text-slate-500">0名</span>
+        </div>
+        <div id="modal-meeting-participants-list" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
       <div>
         <div class="text-xs font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
           <i class="fa-solid fa-users text-blue-600"></i>
@@ -15420,6 +15508,57 @@ select.form-input, select.form-select {
         <div>
           <label class="block font-bold text-slate-700 mb-1">主催者 / 担当チーム</label>
           <input type="text" id="mt-edit-organizer" value="REvoチャプター プレジデント & 運営チーム" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-hidden focus:border-blue-500">
+        </div>
+
+        <!-- Participants / Target Members -->
+        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5" id="mt-edit-participants-section">
+          <div class="flex items-center justify-between">
+            <label class="block font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="fa-solid fa-users text-blue-600 text-xs"></i>
+              <span>担当・参加対象メンバー</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <span id="mt-edit-participants-count" class="text-3xs font-mono font-bold text-slate-500">選択中: 0名</span>
+              <button type="button" onclick="clearMeetingParticipants()" class="text-3xs text-rose-500 hover:underline font-bold cursor-pointer">全解除</button>
+            </div>
+          </div>
+
+          <!-- Role Quick Selection Bar -->
+          <div>
+            <div class="text-[10px] text-slate-500 font-bold mb-1 flex items-center gap-1">
+              <i class="fa-solid fa-tags text-[9px] text-slate-400"></i>
+              <span>役職で一括選択 / 解除:</span>
+            </div>
+            <div class="flex items-center gap-1 flex-wrap" id="mt-edit-role-presets">
+              <button type="button" onclick="toggleMeetingRoleParticipants('all')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">全員</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('3yaku')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">三役</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('45yaku')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">四役・五役</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('vh')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">ビジターホスト</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('ms')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">メンバーシップ委員</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('event')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">イベント委員</button>
+              <button type="button" onclick="toggleMeetingRoleParticipants('bod')" class="px-2 py-0.5 rounded text-3xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-blue-400 hover:text-blue-600 transition-colors cursor-pointer shadow-2xs">BOD</button>
+            </div>
+          </div>
+
+          <!-- Selected Participants Chips Area -->
+          <div id="mt-edit-participants-chips-box" class="p-2 bg-white rounded-xl border border-slate-200 min-h-[38px] max-h-24 overflow-y-auto">
+            <div id="mt-edit-participants-chips" class="flex flex-wrap gap-1">
+              <span class="text-3xs text-slate-400 italic">未選択（全員対象または個別指定なし）</span>
+            </div>
+          </div>
+
+          <!-- Individual Member Selector (Accordion / Palette) -->
+          <div class="space-y-1.5 pt-1">
+            <div class="flex items-center justify-between text-[10px] text-slate-500 font-bold">
+              <span>メンバー個別選択 (タップで追加/解除):</span>
+              <input type="text" id="mt-edit-member-search" placeholder="名前・役職で検索..." oninput="filterMeetingMemberPalette(this.value)" class="w-36 px-2 py-0.5 rounded-lg border border-slate-200 bg-white text-[10px] text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500">
+            </div>
+            <div id="mt-edit-member-grid" class="max-h-28 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-1 p-1 bg-white rounded-xl border border-slate-200/80">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <input type="hidden" id="mt-edit-participants" value="">
         </div>
 
         <!-- Description -->
@@ -41350,6 +41489,40 @@ function openChapterEventDetailModal(ev) {
     if (orgWrap) orgWrap.classList.add('hidden');
   }
 
+  // Participants / Target Members
+  const partWrap = document.getElementById('ch-detail-participants-wrap');
+  const partCountEl = document.getElementById('ch-detail-participants-count');
+  const partListEl = document.getElementById('ch-detail-participants-list');
+  const participants = parseParticipantsList(ev.participants);
+
+  if (partWrap && partListEl) {
+    if (participants.length > 0) {
+      if (partCountEl) partCountEl.innerText = `${participants.length}名`;
+      const allMembers = getActiveChapterMembers();
+      const memberMap = new Map();
+      allMembers.forEach(m => memberMap.set(m.name, m));
+
+      partListEl.innerHTML = participants.map(name => {
+        const m = memberMap.get(name);
+        const roleBadge = m && m.role
+          ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200/80">${escapeHtml(m.role)}</span>`
+          : '';
+        return `
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200/80 text-xs font-bold text-slate-800 shadow-2xs">
+            <i class="fa-regular fa-user text-blue-500 text-3xs"></i>
+            <span>${escapeHtml(name)}</span>
+            ${roleBadge}
+          </div>
+        `;
+      }).join('');
+      partWrap.classList.remove('hidden');
+    } else {
+      if (partCountEl) partCountEl.innerText = '全員 / 指定なし';
+      partListEl.innerHTML = `<span class="text-3xs text-slate-400 italic">全メンバー対象（個別参加者の指定なし）</span>`;
+      partWrap.classList.remove('hidden');
+    }
+  }
+
   const flyerWrap = document.getElementById('ch-detail-flyer-wrap');
   const flyerImg = document.getElementById('ch-detail-flyer-img');
   const flyerName = document.getElementById('ch-detail-flyer-name');
@@ -41533,6 +41706,385 @@ function addEventOnSelectedDate() {
   openChapterEventModalOnDate(date);
 }
 
+// ==========================================
+// 👥 EVENT & MEETING PARTICIPANTS MANAGEMENT
+// ==========================================
+let eventSelectedParticipants = [];
+let meetingSelectedParticipants = [];
+
+/**
+ * BNI REvo メンバー役職マッピング定義
+ * 役職文字列から所属グループのキーリストを返す
+ */
+function getMemberRoleKeys(roleStr = '') {
+  if (!roleStr) return [];
+  const r = roleStr.toLowerCase();
+  const keys = [];
+  // 3役 (プレジデント、バイスプレジデント、書記/会計)
+  if (r.includes('プレジデント') || r.includes('書記') || r.includes('会計') || r.includes('３役') || r.includes('三役')) {
+    keys.push('3yaku');
+  }
+  // 4役・5役 (3役に加えエデュケーションコーディネーター、メンターコーディネーター)
+  if (keys.includes('3yaku') || r.includes('エデュケーション') || r.includes('メンター') || r.includes('４役') || r.includes('四役') || r.includes('５役') || r.includes('五役')) {
+    keys.push('45yaku');
+  }
+  // ビジターホスト
+  if (r.includes('ビジターホスト') || r.includes('ホスト')) {
+    keys.push('vh');
+  }
+  // メンバーシップ
+  if (r.includes('メンバーシップ')) {
+    keys.push('ms');
+  }
+  // イベント委員
+  if (r.includes('イベント')) {
+    keys.push('event');
+  }
+  // BOD
+  if (r.includes('bod')) {
+    keys.push('bod');
+  }
+  // 1to1
+  if (r.includes('1to1')) {
+    keys.push('1to1');
+  }
+  return keys;
+}
+
+/**
+ * チャプター在籍メンバー一覧（退会除外）の取得
+ */
+function getActiveChapterMembers() {
+  if (window.cachedMembersList && Array.isArray(window.cachedMembersList) && window.cachedMembersList.length > 0) {
+    return window.cachedMembersList.filter(m => (m.status || '在籍') !== '退会');
+  }
+  // Config.js REVO_MEMBERS から抽出
+  if (typeof REVO_MEMBERS !== 'undefined' && Array.isArray(REVO_MEMBERS)) {
+    const list = [];
+    REVO_MEMBERS.forEach(cat => {
+      if (cat.members && Array.isArray(cat.members)) {
+        cat.members.forEach(m => {
+          list.push({
+            name: m.name,
+            role: m.role || '',
+            profession: m.profession || '',
+            category: cat.category || '',
+            status: '在籍'
+          });
+        });
+      }
+    });
+    return list;
+  }
+  return [];
+}
+
+/**
+ * 役職キーごとのメンバー一覧を取得
+ */
+function getMembersByRoleKey(roleKey) {
+  const allMembers = getActiveChapterMembers();
+  if (roleKey === 'all') {
+    return allMembers;
+  }
+  return allMembers.filter(m => {
+    const keys = getMemberRoleKeys(m.role || '');
+    return keys.includes(roleKey);
+  });
+}
+
+/**
+ * カンマ区切りまたは配列から参加者リストを正規化
+ */
+function parseParticipantsList(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.map(s => String(s).trim()).filter(Boolean);
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean);
+    } catch(e) {}
+    return val.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+// ------------------------------------------
+// Chapter Event Participants Handling
+// ------------------------------------------
+function initChapterEventParticipants(initialVal = '') {
+  eventSelectedParticipants = parseParticipantsList(initialVal);
+  renderEventParticipantsChips();
+  renderEventMemberPalette();
+}
+
+function renderEventParticipantsChips() {
+  const container = document.getElementById('ch-ev-participants-chips');
+  const countEl = document.getElementById('ch-ev-participants-count');
+  const hiddenInput = document.getElementById('ch-ev-participants');
+  if (!container) return;
+
+  const count = eventSelectedParticipants.length;
+  if (countEl) countEl.innerText = `選択中: ${count}名`;
+  if (hiddenInput) hiddenInput.value = eventSelectedParticipants.join(', ');
+
+  if (count === 0) {
+    container.innerHTML = `<span class="text-3xs text-slate-400 italic">未選択（全員対象または個別指定なし）</span>`;
+    return;
+  }
+
+  const allMembers = getActiveChapterMembers();
+  const memberMap = new Map();
+  allMembers.forEach(m => memberMap.set(m.name, m));
+
+  container.innerHTML = eventSelectedParticipants.map(name => {
+    const m = memberMap.get(name);
+    const roleTag = m && m.role ? `<span class="text-[9px] opacity-75 ml-0.5 truncate max-w-[80px]">(${escapeHtml(m.role)})</span>` : '';
+    return `
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-3xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+        <span class="truncate max-w-[120px]">${escapeHtml(name)}</span>${roleTag}
+        <button type="button" onclick="removeEventParticipant('${escapeHtml(name)}')" class="text-blue-400 hover:text-rose-600 transition-colors ml-0.5 cursor-pointer" title="削除">
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+        </button>
+      </span>
+    `;
+  }).join('');
+}
+
+function renderEventMemberPalette(filterText = '') {
+  const grid = document.getElementById('ch-ev-member-grid');
+  if (!grid) return;
+
+  const allMembers = getActiveChapterMembers();
+  const q = (filterText || '').toLowerCase().trim();
+
+  const filtered = allMembers.filter(m => {
+    if (!q) return true;
+    return (m.name || '').toLowerCase().includes(q) ||
+           (m.role || '').toLowerCase().includes(q) ||
+           (m.profession || '').toLowerCase().includes(q);
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="col-span-full py-2 text-center text-3xs text-slate-400">該当するメンバーが見つかりません</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(m => {
+    const isSelected = eventSelectedParticipants.includes(m.name);
+    const activeClass = isSelected
+      ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+      : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50/30';
+    const checkIcon = isSelected ? '<i class="fa-solid fa-check text-[10px] mr-1"></i>' : '';
+    const roleSub = m.role ? `<div class="text-[9px] truncate opacity-75">${escapeHtml(m.role)}</div>` : '';
+
+    return `
+      <button type="button" onclick="toggleEventParticipantMember('${escapeHtml(m.name)}')" class="px-2 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-center min-w-0 ${activeClass}">
+        <div class="text-3xs font-bold truncate flex items-center">
+          ${checkIcon}<span>${escapeHtml(m.name)}</span>
+        </div>
+        ${roleSub}
+      </button>
+    `;
+  }).join('');
+}
+
+function toggleEventParticipantMember(name) {
+  if (!name) return;
+  const idx = eventSelectedParticipants.indexOf(name);
+  if (idx >= 0) {
+    eventSelectedParticipants.splice(idx, 1);
+  } else {
+    eventSelectedParticipants.push(name);
+  }
+  renderEventParticipantsChips();
+  renderEventMemberPalette(document.getElementById('ch-ev-member-search')?.value || '');
+}
+
+function toggleRoleParticipants(roleKey) {
+  const targetMembers = getMembersByRoleKey(roleKey);
+  if (!targetMembers || targetMembers.length === 0) {
+    showToast('該当する役職のメンバーが見つかりません', 'info');
+    return;
+  }
+  const targetNames = targetMembers.map(m => m.name);
+  const allIncluded = targetNames.every(name => eventSelectedParticipants.includes(name));
+
+  if (allIncluded) {
+    eventSelectedParticipants = eventSelectedParticipants.filter(name => !targetNames.includes(name));
+  } else {
+    targetNames.forEach(name => {
+      if (!eventSelectedParticipants.includes(name)) {
+        eventSelectedParticipants.push(name);
+      }
+    });
+  }
+
+  renderEventParticipantsChips();
+  renderEventMemberPalette(document.getElementById('ch-ev-member-search')?.value || '');
+}
+
+function addCustomEventParticipant() {
+  const input = document.getElementById('ch-ev-custom-participant');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) return;
+
+  if (!eventSelectedParticipants.includes(name)) {
+    eventSelectedParticipants.push(name);
+    renderEventParticipantsChips();
+    renderEventMemberPalette(document.getElementById('ch-ev-member-search')?.value || '');
+  }
+  input.value = '';
+}
+
+function removeEventParticipant(name) {
+  eventSelectedParticipants = eventSelectedParticipants.filter(n => n !== name);
+  renderEventParticipantsChips();
+  renderEventMemberPalette(document.getElementById('ch-ev-member-search')?.value || '');
+}
+
+function clearEventParticipants() {
+  eventSelectedParticipants = [];
+  renderEventParticipantsChips();
+  renderEventMemberPalette(document.getElementById('ch-ev-member-search')?.value || '');
+}
+
+function filterEventMemberPalette(query) {
+  renderEventMemberPalette(query);
+}
+
+// ------------------------------------------
+// Meeting Customization Participants Handling
+// ------------------------------------------
+function initMeetingParticipants(initialVal = '') {
+  meetingSelectedParticipants = parseParticipantsList(initialVal);
+  renderMeetingParticipantsChips();
+  renderMeetingMemberPalette();
+}
+
+function renderMeetingParticipantsChips() {
+  const container = document.getElementById('mt-edit-participants-chips');
+  const countEl = document.getElementById('mt-edit-participants-count');
+  const hiddenInput = document.getElementById('mt-edit-participants');
+  if (!container) return;
+
+  const count = meetingSelectedParticipants.length;
+  if (countEl) countEl.innerText = `選択中: ${count}名`;
+  if (hiddenInput) hiddenInput.value = meetingSelectedParticipants.join(', ');
+
+  if (count === 0) {
+    container.innerHTML = `<span class="text-3xs text-slate-400 italic">未選択（全員対象または個別指定なし）</span>`;
+    return;
+  }
+
+  const allMembers = getActiveChapterMembers();
+  const memberMap = new Map();
+  allMembers.forEach(m => memberMap.set(m.name, m));
+
+  container.innerHTML = meetingSelectedParticipants.map(name => {
+    const m = memberMap.get(name);
+    const roleTag = m && m.role ? `<span class="text-[9px] opacity-75 ml-0.5 truncate max-w-[80px]">(${escapeHtml(m.role)})</span>` : '';
+    return `
+      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-3xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+        <span class="truncate max-w-[120px]">${escapeHtml(name)}</span>${roleTag}
+        <button type="button" onclick="removeMeetingParticipant('${escapeHtml(name)}')" class="text-blue-400 hover:text-rose-600 transition-colors ml-0.5 cursor-pointer" title="削除">
+          <i class="fa-solid fa-xmark text-[10px]"></i>
+        </button>
+      </span>
+    `;
+  }).join('');
+}
+
+function renderMeetingMemberPalette(filterText = '') {
+  const grid = document.getElementById('mt-edit-member-grid');
+  if (!grid) return;
+
+  const allMembers = getActiveChapterMembers();
+  const q = (filterText || '').toLowerCase().trim();
+
+  const filtered = allMembers.filter(m => {
+    if (!q) return true;
+    return (m.name || '').toLowerCase().includes(q) ||
+           (m.role || '').toLowerCase().includes(q) ||
+           (m.profession || '').toLowerCase().includes(q);
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="col-span-full py-2 text-center text-3xs text-slate-400">該当するメンバーが見つかりません</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(m => {
+    const isSelected = meetingSelectedParticipants.includes(m.name);
+    const activeClass = isSelected
+      ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+      : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50/30';
+    const checkIcon = isSelected ? '<i class="fa-solid fa-check text-[10px] mr-1"></i>' : '';
+    const roleSub = m.role ? `<div class="text-[9px] truncate opacity-75">${escapeHtml(m.role)}</div>` : '';
+
+    return `
+      <button type="button" onclick="toggleMeetingParticipantMember('${escapeHtml(m.name)}')" class="px-2 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-center min-w-0 ${activeClass}">
+        <div class="text-3xs font-bold truncate flex items-center">
+          ${checkIcon}<span>${escapeHtml(m.name)}</span>
+        </div>
+        ${roleSub}
+      </button>
+    `;
+  }).join('');
+}
+
+function toggleMeetingParticipantMember(name) {
+  if (!name) return;
+  const idx = meetingSelectedParticipants.indexOf(name);
+  if (idx >= 0) {
+    meetingSelectedParticipants.splice(idx, 1);
+  } else {
+    meetingSelectedParticipants.push(name);
+  }
+  renderMeetingParticipantsChips();
+  renderMeetingMemberPalette(document.getElementById('mt-edit-member-search')?.value || '');
+}
+
+function toggleMeetingRoleParticipants(roleKey) {
+  const targetMembers = getMembersByRoleKey(roleKey);
+  if (!targetMembers || targetMembers.length === 0) {
+    showToast('該当する役職のメンバーが見つかりません', 'info');
+    return;
+  }
+  const targetNames = targetMembers.map(m => m.name);
+  const allIncluded = targetNames.every(name => meetingSelectedParticipants.includes(name));
+
+  if (allIncluded) {
+    meetingSelectedParticipants = meetingSelectedParticipants.filter(name => !targetNames.includes(name));
+  } else {
+    targetNames.forEach(name => {
+      if (!meetingSelectedParticipants.includes(name)) {
+        meetingSelectedParticipants.push(name);
+      }
+    });
+  }
+
+  renderMeetingParticipantsChips();
+  renderMeetingMemberPalette(document.getElementById('mt-edit-member-search')?.value || '');
+}
+
+function removeMeetingParticipant(name) {
+  meetingSelectedParticipants = meetingSelectedParticipants.filter(n => n !== name);
+  renderMeetingParticipantsChips();
+  renderMeetingMemberPalette(document.getElementById('mt-edit-member-search')?.value || '');
+}
+
+function clearMeetingParticipants() {
+  meetingSelectedParticipants = [];
+  renderMeetingParticipantsChips();
+  renderMeetingMemberPalette(document.getElementById('mt-edit-member-search')?.value || '');
+}
+
+function filterMeetingMemberPalette(query) {
+  renderMeetingMemberPalette(query);
+}
+
 /**
  * Chapter Event Modal Management
  */
@@ -41578,6 +42130,9 @@ function openChapterEventModal(eventObj = null) {
     document.getElementById('ch-ev-organizer').value = eventObj.organizer || '';
     document.getElementById('ch-ev-desc').value = eventObj.description || '';
 
+    // Initialize Participants
+    initChapterEventParticipants(eventObj.participants || '');
+
     // Flyer attachment if exists
     if (eventObj.flyer_url) {
       setFlyerPreview(eventObj.flyer_url, `${eventObj.title || 'イベント'}のチラシ`);
@@ -41610,6 +42165,9 @@ function openChapterEventModal(eventObj = null) {
     document.getElementById('ch-ev-date').value = todayStr;
     document.getElementById('ch-ev-start-time').value = '19:00';
     document.getElementById('ch-ev-end-time').value = '21:00';
+
+    // Initialize Participants (empty for new)
+    initChapterEventParticipants('');
 
     resetFlyerState();
 
@@ -42048,6 +42606,7 @@ async function handleChapterEventSubmit(evt) {
   const locationName = document.getElementById('ch-ev-location').value.trim();
   const locationUrl = document.getElementById('ch-ev-url').value.trim();
   const organizer = document.getElementById('ch-ev-organizer').value.trim();
+  const participants = document.getElementById('ch-ev-participants')?.value.trim() || '';
   const desc = document.getElementById('ch-ev-desc').value.trim();
 
   const repeatType = document.getElementById('ch-ev-repeat-type')?.value || 'none';
@@ -42069,6 +42628,7 @@ async function handleChapterEventSubmit(evt) {
       location_name: locationName,
       location_url: locationUrl,
       organizer,
+      participants,
       description: desc,
       recurrence_rule: repeatType,
       recurrence_until: repeatUntil,
@@ -42543,6 +43103,38 @@ function openMeetingDetailModal(meeting) {
     }
   }
 
+  // Render meeting target participants
+  const mtPartWrap = document.getElementById('modal-meeting-participants-wrap');
+  const mtPartCount = document.getElementById('modal-meeting-participants-count');
+  const mtPartList = document.getElementById('modal-meeting-participants-list');
+  const mtParticipants = parseParticipantsList(meeting.participants);
+
+  if (mtPartWrap && mtPartList) {
+    if (mtParticipants.length > 0) {
+      if (mtPartCount) mtPartCount.innerText = `${mtParticipants.length}名`;
+      const allMembers = getActiveChapterMembers();
+      const memberMap = new Map();
+      allMembers.forEach(m => memberMap.set(m.name, m));
+
+      mtPartList.innerHTML = mtParticipants.map(name => {
+        const m = memberMap.get(name);
+        const roleBadge = m && m.role
+          ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200/80">${escapeHtml(m.role)}</span>`
+          : '';
+        return `
+          <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-white border border-slate-200/80 text-3xs font-bold text-slate-800 shadow-2xs">
+            <i class="fa-regular fa-user text-blue-500 text-[10px]"></i>
+            <span>${escapeHtml(name)}</span>
+            ${roleBadge}
+          </div>
+        `;
+      }).join('');
+      mtPartWrap.classList.remove('hidden');
+    } else {
+      mtPartWrap.classList.add('hidden');
+    }
+  }
+
   // Render meeting visitors
   renderMeetingModalVisitors(meeting);
 
@@ -42718,6 +43310,9 @@ function openMeetingEditModal(meeting) {
   document.getElementById('mt-edit-organizer').value = meeting.organizer || 'REvoチャプター プレジデント & 運営チーム';
   document.getElementById('mt-edit-desc').value = meeting.description || '';
 
+  // Initialize Meeting Participants
+  initMeetingParticipants(meeting.participants || '');
+
   modal.classList.remove('hidden');
 }
 
@@ -42762,6 +43357,7 @@ async function handleMeetingEditSubmit(evt) {
   const startTime = document.getElementById('mt-edit-start-time').value || '06:00';
   const endTime = document.getElementById('mt-edit-end-time').value || '08:30';
   const organizer = document.getElementById('mt-edit-organizer').value.trim();
+  const participants = document.getElementById('mt-edit-participants')?.value.trim() || '';
   const desc = document.getElementById('mt-edit-desc').value.trim();
 
   const startDatetime = `${meetingDate} ${startTime}:00`;
@@ -42778,6 +43374,7 @@ async function handleMeetingEditSubmit(evt) {
       start_datetime: startDatetime,
       end_datetime: endDatetime,
       organizer,
+      participants,
       description: desc
     });
 
@@ -43208,6 +43805,12 @@ function buildEventShareText(ev) {
   if (ev.location_url) text += `■ 参加/案内URL: ${ev.location_url}\n`;
   if (ev.cost_member) text += `■ 費用: ${ev.cost_member}\n`;
   if (ev.organizer) text += `■ 主催・担当: ${ev.organizer}\n`;
+  if (ev.participants) {
+    const pList = parseParticipantsList(ev.participants);
+    if (pList.length > 0) {
+      text += `■ 参加対象: ${pList.join('、')} (${pList.length}名)\n`;
+    }
+  }
   if (ev.flyer_url) text += `■ チラシ・告知画像: ${ev.flyer_url}\n`;
 
   if (ev.description) {

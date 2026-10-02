@@ -232,6 +232,7 @@ class Database {
                 location_url TEXT DEFAULT '',
                 is_online INTEGER DEFAULT 0,
                 organizer TEXT DEFAULT '',
+                participants TEXT DEFAULT '',
                 description TEXT DEFAULT '',
                 recurrence_group_id TEXT DEFAULT '',
                 recurrence_rule TEXT DEFAULT '',
@@ -250,6 +251,7 @@ class Database {
                 start_datetime TEXT DEFAULT '',
                 end_datetime TEXT DEFAULT '',
                 organizer TEXT DEFAULT '',
+                participants TEXT DEFAULT '',
                 description TEXT DEFAULT '',
                 created_at TEXT,
                 updated_at TEXT
@@ -342,6 +344,12 @@ class Database {
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN flyer_url TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE chapter_events ADD COLUMN participants TEXT DEFAULT ''");
+        } catch (\PDOException $e) {}
+        try {
+            $this->pdo->exec("ALTER TABLE meeting_customizations ADD COLUMN participants TEXT DEFAULT ''");
         } catch (\PDOException $e) {}
         try {
             $this->pdo->exec("CREATE INDEX IF NOT EXISTS idx_chapter_events_group ON chapter_events(recurrence_group_id);");

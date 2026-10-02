@@ -45,6 +45,7 @@ function initDatabase() {
       location_url TEXT DEFAULT '',
       is_online INTEGER DEFAULT 0,
       organizer TEXT DEFAULT '',
+      participants TEXT DEFAULT '',
       description TEXT DEFAULT '',
       recurrence_group_id TEXT DEFAULT '',
       recurrence_rule TEXT DEFAULT '',
@@ -61,6 +62,7 @@ function initDatabase() {
       start_datetime TEXT DEFAULT '',
       end_datetime TEXT DEFAULT '',
       organizer TEXT DEFAULT '',
+      participants TEXT DEFAULT '',
       description TEXT DEFAULT '',
       created_at TEXT,
       updated_at TEXT
@@ -94,6 +96,8 @@ function initDatabase() {
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_group_id TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN recurrence_rule TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN flyer_url TEXT DEFAULT '';`); } catch(e){}
+  try { runSqlExec(`ALTER TABLE chapter_events ADD COLUMN participants TEXT DEFAULT '';`); } catch(e){}
+  try { runSqlExec(`ALTER TABLE meeting_customizations ADD COLUMN participants TEXT DEFAULT '';`); } catch(e){}
   try { runSqlExec(`ALTER TABLE members ADD COLUMN role TEXT DEFAULT '';`); } catch(e){}
 
   // Seed default meeting customizations if not present
@@ -1661,6 +1665,7 @@ function handleApiRequest(req, res, urlObj) {
             location_url TEXT DEFAULT '',
             is_online INTEGER DEFAULT 0,
             organizer TEXT DEFAULT '',
+            participants TEXT DEFAULT '',
             description TEXT DEFAULT '',
             recurrence_group_id TEXT DEFAULT '',
             recurrence_rule TEXT DEFAULT '',
@@ -1888,6 +1893,7 @@ function handleApiRequest(req, res, urlObj) {
         const locationUrl = (body.location_url || '').replace(/'/g, "''");
         const isOnline = body.is_online ? 1 : 0;
         const organizer = (body.organizer || '').replace(/'/g, "''");
+        const participants = (body.participants || '').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");
         const recurrenceRule = (body.recurrence_rule || body.repeat_type || 'none').replace(/'/g, "''");
         const recurrenceUntil = (body.recurrence_until || body.repeat_until || '').replace(/'/g, "''");
@@ -1932,8 +1938,8 @@ function handleApiRequest(req, res, urlObj) {
               const curId = 'ch_' + Date.now() + '_' + createdCount;
               if (createdCount === 0) firstId = curId;
 
-              runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
-                       VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${groupId}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
+              runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, participants, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
+                       VALUES ('${curId}', '${title}', '${category}', '${curStart}', '${curEnd}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${participants}', '${description}', '${groupId}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
 
               createdCount++;
 
@@ -1964,8 +1970,8 @@ function handleApiRequest(req, res, urlObj) {
           }
 
           const flyerUrl = (body.flyer_url || '').replace(/'/g, "''");
-          runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
-                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
+          runSqlExec(`INSERT OR REPLACE INTO chapter_events (id, title, category, start_datetime, end_datetime, location_name, location_url, is_online, organizer, participants, description, recurrence_group_id, recurrence_rule, flyer_url, created_at, updated_at)
+                   VALUES ('${id}', '${title}', '${category}', '${startDatetime}', '${endDatetime}', '${locationName}', '${locationUrl}', ${isOnline}, '${organizer}', '${participants}', '${description}', '${body.recurrence_group_id || ''}', '${recurrenceRule}', '${flyerUrl}', '${now}', '${now}');`);
           return res.end(JSON.stringify({ success: true, message: 'チャプター予定を保存しました', id, count: 1 }));
         } catch(e) {
           return res.end(JSON.stringify({ success: false, message: e.message }));
@@ -2058,12 +2064,13 @@ function handleApiRequest(req, res, urlObj) {
         const startDatetime = (body.start_datetime || (meetingDate + ' 06:00:00')).replace(/'/g, "''");
         const endDatetime = (body.end_datetime || (meetingDate + ' 08:30:00')).replace(/'/g, "''");
         const organizer = (body.organizer || 'REvoチャプター プレジデント & 運営チーム').replace(/'/g, "''");
+        const participants = (body.participants || '').replace(/'/g, "''");
         const description = (body.description || '').replace(/'/g, "''");
         const now = new Date().toISOString().substring(0, 19).replace('T', ' ');
 
         try {
-          runSqlExec(`INSERT OR REPLACE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, description, created_at, updated_at)
-                     VALUES ('${meetingDate}', '${title}', '${category}', ${isOnline}, '${locationName}', '${locationUrl}', '${startDatetime}', '${endDatetime}', '${organizer}', '${description}', '${now}', '${now}');`);
+          runSqlExec(`INSERT OR REPLACE INTO meeting_customizations (meeting_date, title, category, is_online, location_name, location_url, start_datetime, end_datetime, organizer, participants, description, created_at, updated_at)
+                     VALUES ('${meetingDate}', '${title}', '${category}', ${isOnline}, '${locationName}', '${locationUrl}', '${startDatetime}', '${endDatetime}', '${organizer}', '${participants}', '${description}', '${now}', '${now}');`);
           return res.end(JSON.stringify({ success: true, message: `${meetingDate} の定例会情報を更新しました` }));
         } catch(e) {
           return res.end(JSON.stringify({ success: false, message: e.message }));
