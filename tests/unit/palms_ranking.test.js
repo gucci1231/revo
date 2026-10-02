@@ -215,8 +215,11 @@ describe('PALMS Ranking Feature Tests (Step 2-2)', () => {
     assert.strictEqual(indexHtml.includes('id="palms-kpi-avg-ppw"'), true);
     assert.strictEqual(indexHtml.includes('id="palms-kpi-avg-rpw"'), true);
 
-    // PPW Chart
+    // PPW Chart & Reference Lines (1.0 and 2.0)
     assert.strictEqual(indexHtml.includes('id="chart-palms-ppw-bar"'), true);
+    assert.strictEqual(indexHtml.includes('ppwThresholdLines'), true);
+    assert.strictEqual(indexHtml.includes('2.0 目標ライン'), true);
+    assert.strictEqual(indexHtml.includes('1.0 基準ライン'), true);
 
     // Metric filter buttons for PPW and RPW
     assert.strictEqual(indexHtml.includes('data-metric="ppw"'), true);

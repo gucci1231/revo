@@ -1541,7 +1541,55 @@ function renderPalmsCharts() {
             }
           }
         }
-      }
+      },
+      plugins: [{
+        id: 'ppwThresholdLines',
+        afterDatasetsDraw: function(chart) {
+          const { ctx, chartArea, scales } = chart;
+          if (!scales.y || !chartArea) return;
+
+          const lines = [
+            {
+              value: 2.0,
+              color: '#0f172a',
+              lineWidth: 1.5,
+              dash: [6, 4],
+              label: '2.0 目標ライン',
+              textColor: '#0f172a'
+            },
+            {
+              value: 1.0,
+              color: '#94a3b8',
+              lineWidth: 1.5,
+              dash: [4, 4],
+              label: '1.0 基準ライン',
+              textColor: '#64748b'
+            }
+          ];
+
+          lines.forEach(line => {
+            const y = scales.y.getPixelForValue(line.value);
+            if (y >= chartArea.top && y <= chartArea.bottom) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.moveTo(chartArea.left, y);
+              ctx.lineTo(chartArea.right, y);
+              ctx.lineWidth = line.lineWidth;
+              ctx.strokeStyle = line.color;
+              ctx.setLineDash(line.dash);
+              ctx.stroke();
+
+              // 右端に基準線ラベルを描画
+              ctx.fillStyle = line.textColor;
+              ctx.font = 'bold 9px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+              ctx.textAlign = 'right';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(line.label, chartArea.right, y - 2);
+              ctx.restore();
+            }
+          });
+        }
+      }]
     });
   }
 
