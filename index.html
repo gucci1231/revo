@@ -28924,28 +28924,22 @@ function getAvailableCategoriesForScope(targetScope = currentLinkScope) {
         combined.push(c.name);
       }
     });
-  }
+  } else {
+    // 2. Default base categories ONLY if chapterCategoriesData is completely empty
+    const defaultList = [
+      { name: 'ビジター情報', scope: 'member' },
+      { name: 'メンバー情報', scope: 'member' },
+      { name: '役員・チャプター運営', scope: 'admin' },
+      { name: 'アセット関連', scope: 'member' },
+      { name: 'アーカイブ', scope: 'archive' }
+    ];
 
-  // 2. Default base categories if not yet registered in chapterCategoriesData
-  const defaultList = [
-    { name: 'ビジター情報', scope: 'member' },
-    { name: 'メンバー情報', scope: 'member' },
-    { name: '日常・1to1', scope: 'member' },
-    { name: 'ビジター・入会', scope: 'member' },
-    { name: '公式ポータル・学び', scope: 'member' },
-    { name: '役員・チャプター運営', scope: 'admin' },
-    { name: 'アセット関連', scope: 'member' },
-    { name: 'アーカイブ', scope: 'archive' }
-  ];
-
-  defaultList.forEach(def => {
-    const custom = chapterCategoriesData.find(c => c.name === def.name);
-    if (!custom) {
+    defaultList.forEach(def => {
       if (targetScope === 'all' || def.scope === targetScope) {
         if (!combined.includes(def.name)) combined.push(def.name);
       }
-    }
-  });
+    });
+  }
 
   // 3. Fallback: categories from existing links
   chapterLinksData.forEach(l => {
@@ -29377,20 +29371,24 @@ function renderChapterLinks() {
             <div class="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
               <button 
                 type="button" 
-                onclick="openCategoryModal('${escapeHtml(catName)}')" 
+                onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" 
+                data-cat-name="${escapeHtml(catName)}"
                 class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
                 title="カテゴリーを編集"
               >
                 <i class="fa-solid fa-pen text-[10px]"></i>
               </button>
-              <button 
-                type="button" 
-                onclick="deleteCategoryPrompt('${escapeHtml(catName)}')" 
-                class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                title="カテゴリーを削除"
-              >
-                <i class="fa-solid fa-trash text-[10px]"></i>
-              </button>
+              ${catName === 'メンバー情報' ? '' : `
+                <button 
+                  type="button" 
+                  onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" 
+                  data-cat-name="${escapeHtml(catName)}"
+                  class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                  title="カテゴリーを削除"
+                >
+                  <i class="fa-solid fa-trash text-[10px]"></i>
+                </button>
+              `}
             </div>
 
             <i id="genre-icon-${catSlug}" class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
@@ -29837,12 +29835,14 @@ function renderModalCategoryList() {
           </span>
         </div>
         <div class="flex items-center gap-1 shrink-0 ml-2">
-          <button type="button" onclick="openCategoryModal('${escapeHtml(c.name)}')" class="p-1 text-slate-400 hover:text-blue-600 rounded cursor-pointer" title="編集">
+          <button type="button" onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" data-cat-name="${escapeHtml(c.name)}" class="p-1 text-slate-400 hover:text-blue-600 rounded cursor-pointer" title="編集">
             <i class="fa-solid fa-pen text-[11px]"></i>
           </button>
-          <button type="button" onclick="deleteCategoryPrompt('${escapeHtml(c.name)}')" class="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer" title="削除">
-            <i class="fa-solid fa-trash text-[11px]"></i>
-          </button>
+          ${c.name === 'メンバー情報' || c.id === 'CAT_MEMBER' ? '' : `
+            <button type="button" onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" data-cat-name="${escapeHtml(c.name)}" class="p-1 text-slate-400 hover:text-red-600 rounded cursor-pointer" title="削除">
+              <i class="fa-solid fa-trash text-[11px]"></i>
+            </button>
+          `}
         </div>
       </div>
     `;
@@ -29908,21 +29908,40 @@ function handleCategorySubmit(event) {
 }
 
 function deleteCategoryPrompt(catName) {
-  const linkCount = chapterLinksData.filter(l => l.category === catName).length;
+  if (!catName) return;
+
+  if (catName === 'メンバー情報' || catName === 'CAT_MEMBER') {
+    showToast('「メンバー情報」はデフォルトカテゴリーのため削除できません', 'warning');
+    return;
+  }
+
+  const targetCatObj = (chapterCategoriesData || []).find(c => c.name === catName || c.id === catName);
+  const identifier = targetCatObj ? targetCatObj.id : catName;
+  const displayName = targetCatObj ? targetCatObj.name : catName;
+
+  const linkCount = chapterLinksData.filter(l => l.category === displayName).length;
   const confirmMsg = linkCount > 0 
-    ? `カテゴリー「${catName}」を削除してもよろしいですか？\n※所属する${linkCount}件のリンクは「メンバー情報」に移動します。`
-    : `カテゴリー「${catName}」を削除してもよろしいですか？`;
+    ? `カテゴリー「${displayName}」を削除してもよろしいですか？\n※所属する${linkCount}件のリンクは「メンバー情報」に移動します。`
+    : `カテゴリー「${displayName}」を削除してもよろしいですか？`;
 
   if (!confirm(confirmMsg)) {
     return;
   }
 
-  ApiService.call('deleteChapterCategoryApi', catName)
+  ApiService.call('deleteChapterCategoryApi', identifier)
     .then(res => {
       if (res && res.success) {
         showToast('カテゴリーを削除しました', 'success');
-        if (res.categories) chapterCategoriesData = res.categories;
-        if (res.links) chapterLinksData = res.links;
+        if (res.categories) {
+          chapterCategoriesData = res.categories;
+        } else {
+          chapterCategoriesData = (chapterCategoriesData || []).filter(c => c.name !== displayName && c.id !== identifier);
+        }
+        if (res.links) {
+          chapterLinksData = res.links;
+        } else {
+          chapterLinksData = (chapterLinksData || []).map(l => l.category === displayName ? { ...l, category: 'メンバー情報' } : l);
+        }
         renderCategoryPills();
         renderChapterLinks();
         renderModalCategorySelect();
@@ -29933,7 +29952,7 @@ function deleteCategoryPrompt(catName) {
     })
     .catch(err => {
       console.error('Delete category error:', err);
-      showToast('通信エラーが発生しました', 'error');
+      showToast((err && err.message) || '削除に失敗しました', 'error');
     });
 }
 
@@ -29962,24 +29981,31 @@ function renderModalCategorySelect(selectedCategory = null) {
       catsByScope[scopeKey].push(c.name);
       addedNames.push(c.name);
     });
+  } else {
+    // Fallback only if no categories in DB
+    const defaultList = [
+      { name: 'ビジター情報', scope: 'member' },
+      { name: 'メンバー情報', scope: 'member' },
+      { name: '役員・チャプター運営', scope: 'admin' },
+      { name: 'アセット関連', scope: 'member' },
+      { name: 'アーカイブ', scope: 'archive' }
+    ];
+    defaultList.forEach(def => {
+      if (!addedNames.includes(def.name)) {
+        if (!catsByScope[def.scope]) catsByScope[def.scope] = [];
+        catsByScope[def.scope].push(def.name);
+        addedNames.push(def.name);
+      }
+    });
   }
 
-  // Ensure default base categories if not present
-  const defaultList = [
-    { name: 'ビジター情報', scope: 'member' },
-    { name: 'メンバー情報', scope: 'member' },
-    { name: '日常・1to1', scope: 'member' },
-    { name: 'ビジター・入会', scope: 'member' },
-    { name: '公式ポータル・学び', scope: 'member' },
-    { name: '役員・チャプター運営', scope: 'admin' },
-    { name: 'アセット関連', scope: 'member' },
-    { name: 'アーカイブ', scope: 'archive' }
-  ];
-  defaultList.forEach(def => {
-    if (!addedNames.includes(def.name)) {
-      if (!catsByScope[def.scope]) catsByScope[def.scope] = [];
-      catsByScope[def.scope].push(def.name);
-      addedNames.push(def.name);
+  // Include any extra categories present in existing links
+  chapterLinksData.forEach(l => {
+    if (l.category && !addedNames.includes(l.category)) {
+      const scopeKey = l.scope || getScopeForCategory(l.category) || 'member';
+      if (!catsByScope[scopeKey]) catsByScope[scopeKey] = [];
+      catsByScope[scopeKey].push(l.category);
+      addedNames.push(l.category);
     }
   });
 

@@ -211,6 +211,10 @@ describe('Chapter Links & REvo OS Navigation Feature Tests', () => {
 
     // 4. Optgroup grouping in category select
     assert.strictEqual(viewLinksScript.includes('<optgroup label='), true);
+
+    // 5. Category deletion protection for メンバー情報 and data-cat-name safety
+    assert.strictEqual(viewLinksScript.includes('catName === \'メンバー情報\' || catName === \'CAT_MEMBER\''), true);
+    assert.strictEqual(viewLinksScript.includes('data-cat-name='), true);
   });
 });
 

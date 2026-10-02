@@ -2215,8 +2215,11 @@ function handleApiRequest(req, res, urlObj) {
       if (action === 'delete_category') {
         const body = input || {};
         const id = (body.id || body.name || '').replace(/'/g, "''");
+        if (id === 'メンバー情報' || id === 'CAT_MEMBER') {
+          return res.end(JSON.stringify({ success: false, message: '「メンバー情報」はデフォルトカテゴリーのため削除できません' }));
+        }
         // Reassign affected links
-        runSqlExec(`UPDATE chapter_links SET category = 'メンバー情報' WHERE category = (SELECT name FROM chapter_link_categories WHERE id = '${id}' OR name = '${id}');`);
+        runSqlExec(`UPDATE chapter_links SET category = 'メンバー情報' WHERE category = '${id}' OR category = (SELECT name FROM chapter_link_categories WHERE id = '${id}' OR name = '${id}');`);
         runSqlExec(`DELETE FROM chapter_link_categories WHERE id = '${id}' OR name = '${id}';`);
         const categories = runSqlJson(`SELECT * FROM chapter_link_categories ORDER BY sort_order ASC, name ASC;`);
         const links = runSqlJson(`SELECT * FROM chapter_links ORDER BY sort_order ASC, created_at ASC;`);

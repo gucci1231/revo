@@ -220,6 +220,11 @@ class LinkController extends Controller {
             return;
         }
 
+        if ($id === 'メンバー情報' || $id === 'CAT_MEMBER') {
+            Response::error('「メンバー情報」はデフォルトカテゴリーのため削除できません');
+            return;
+        }
+
         $ok = $this->linkRepo->deleteCategory($id);
         if ($ok) {
             Response::success([

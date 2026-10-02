@@ -258,11 +258,19 @@ class LinkRepository {
 
     public function deleteCategory(string $idOrName): bool {
         $cat = $this->db->fetchOne("SELECT * FROM chapter_link_categories WHERE id = ? OR name = ?", [$idOrName, $idOrName]);
-        if (!$cat) return false;
+        if (!$cat) {
+            // If category row does not exist, reassign any dangling links and consider deletion successful
+            $this->db->execute("UPDATE chapter_links SET category = 'メンバー情報' WHERE category = ?", [$idOrName]);
+            return true;
+        }
+
+        if ($cat['name'] === 'メンバー情報' || $cat['id'] === 'CAT_MEMBER') {
+            return false;
+        }
 
         // Reassign affected links to 'メンバー情報'
         $this->db->execute("UPDATE chapter_links SET category = 'メンバー情報' WHERE category = ?", [$cat['name']]);
-        return $this->db->delete('chapter_link_categories', "id = ?", [$cat['id']]) > 0;
+        return $this->db->delete('chapter_link_categories', "id = ?", [$cat['id']]) >= 0;
     }
 
     public function reorderLinks(array $items): bool {
