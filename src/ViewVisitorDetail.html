@@ -36,6 +36,9 @@
           </button>
         </div>
         <div class="vd-header-buttons">
+          <button type="button" class="vd-icon-btn text-amber-600 hover:text-amber-700 hover:bg-amber-50" onclick="openCoffeeAssignModal(null, currentVdVisitorId)" title="事前コーヒーミーティング予約">
+            <i class="fa-solid fa-mug-hot"></i>
+          </button>
           <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
           </button>
@@ -243,9 +246,12 @@
               </div>
 
               <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
-              <div class="vd-ap-trigger-wrap mb-4">
-                <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
-                  <i class="fa-solid fa-plus-circle text-base"></i> アクション登録
+              <div class="vd-ap-trigger-wrap mb-4 grid grid-cols-2 gap-2">
+                <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-1.5 shadow-sm text-xs font-bold rounded-xl cursor-pointer" onclick="openActionPlanModal()">
+                  <i class="fa-solid fa-plus-circle text-sm"></i> アクション登録
+                </button>
+                <button type="button" class="btn-action-secondary w-full py-2.5 flex items-center justify-center gap-1.5 shadow-sm text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer" onclick="openCoffeeAssignModal(null, currentVdVisitorId)">
+                  <i class="fa-solid fa-mug-hot text-amber-600"></i> ミーティング予約
                 </button>
               </div>
 

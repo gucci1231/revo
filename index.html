@@ -9087,21 +9087,44 @@ select.form-input, select.form-select {
 
     <!-- Modal Body -->
     <div class="p-5 space-y-4">
-      <!-- Target Date Info Card -->
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center font-mono leading-none shadow-2xs">
-            <span id="cfa-date-month" class="text-3xs font-extrabold uppercase">--月</span>
-            <span id="cfa-date-day" class="text-base font-black">--</span>
-          </div>
-          <div>
-            <div id="cfa-date-full" class="text-sm font-black text-slate-900">----年--月--日 (--)</div>
-            <div class="text-xs font-bold text-slate-600 flex items-center gap-1.5 mt-0.5">
-              <span>12:00 〜 12:30 (Zoom)</span>
-            </div>
+      <!-- Target Date Info & Selection Card -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-blue-600"></i>
+            <span>ミーティング予定日</span>
+            <span class="text-blue-600">*</span>
+          </label>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="setQuickCoffeeDate('today')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">今日</button>
+            <button type="button" onclick="setQuickCoffeeDate('tomorrow')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">明日</button>
+            <button type="button" onclick="setQuickCoffeeDate('next_weekday')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">直近平日</button>
           </div>
         </div>
-        <input type="hidden" id="cfa-target-date" value="">
+
+        <div class="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center font-mono leading-none shadow-2xs shrink-0">
+              <span id="cfa-date-month" class="text-3xs font-extrabold uppercase">--月</span>
+              <span id="cfa-date-day" class="text-base font-black">--</span>
+            </div>
+            <div class="min-w-0">
+              <div id="cfa-date-full" class="text-sm font-black text-slate-900 truncate">----年--月--日 (--)</div>
+              <div class="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <i class="fa-solid fa-video text-blue-500 text-3xs"></i>
+                <span>12:00 〜 12:30 (Zoom)</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative shrink-0">
+            <input 
+              type="date" 
+              id="cfa-target-date" 
+              onchange="onCoffeeAssignDateChanged(this.value)" 
+              class="text-xs font-bold text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all cursor-pointer"
+            >
+          </div>
+        </div>
       </div>
 
       <!-- Visitor Selection Form -->
@@ -9115,28 +9138,36 @@ select.form-input, select.form-select {
             <i class="fa-solid fa-plus text-4xs"></i><span>申込前ビジターを新規登録</span>
           </button>
         </div>
-        <!-- Search filter input -->
+        <!-- Search filter input with autocomplete -->
         <div class="relative mb-2">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input 
             type="text" 
             id="cfa-visitor-search" 
-            placeholder="ビジター名・紹介者・会社名で検索..." 
-            oninput="filterCoffeeAssignVisitors(this.value)"
-            class="w-full text-xs pl-8 pr-7 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400"
+            autocomplete="off"
+            placeholder="ビジター名・紹介者・会社名で検索 (最新順)..." 
+            oninput="handleCoffeeVisitorSearchInput(this.value)"
+            onfocus="showCoffeeAutocompleteDropdown()"
+            class="w-full text-xs pl-8 pr-7 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400 font-medium"
           >
           <button 
             type="button" 
             id="btn-cfa-clear-search" 
             onclick="clearCoffeeAssignSearch()" 
-            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+            title="クリア"
           >
             <i class="fa-solid fa-xmark"></i>
           </button>
+
+          <!-- Autocomplete Dropdown List -->
+          <div id="cfa-autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 divide-y divide-slate-100">
+            <!-- Rendered by JS -->
+          </div>
         </div>
         <div class="relative">
-          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
-            <option value="">-- ビジターを選択してください --</option>
+          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
+            <option value="">-- ビジターを選択 (最新順) --</option>
           </select>
         </div>
       </div>
@@ -10798,6 +10829,9 @@ select.form-input, select.form-select {
           </button>
         </div>
         <div class="vd-header-buttons">
+          <button type="button" class="vd-icon-btn text-amber-600 hover:text-amber-700 hover:bg-amber-50" onclick="openCoffeeAssignModal(null, currentVdVisitorId)" title="事前コーヒーミーティング予約">
+            <i class="fa-solid fa-mug-hot"></i>
+          </button>
           <button type="button" class="vd-icon-btn" onclick="copyCurrentPageUrl()" title="共有URLをコピー">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
           </button>
@@ -11005,9 +11039,12 @@ select.form-input, select.form-select {
               </div>
 
               <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
-              <div class="vd-ap-trigger-wrap mb-4">
-                <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
-                  <i class="fa-solid fa-plus-circle text-base"></i> アクション登録
+              <div class="vd-ap-trigger-wrap mb-4 grid grid-cols-2 gap-2">
+                <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-1.5 shadow-sm text-xs font-bold rounded-xl cursor-pointer" onclick="openActionPlanModal()">
+                  <i class="fa-solid fa-plus-circle text-sm"></i> アクション登録
+                </button>
+                <button type="button" class="btn-action-secondary w-full py-2.5 flex items-center justify-center gap-1.5 shadow-sm text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 cursor-pointer" onclick="openCoffeeAssignModal(null, currentVdVisitorId)">
+                  <i class="fa-solid fa-mug-hot text-amber-600"></i> ミーティング予約
                 </button>
               </div>
 
@@ -29678,21 +29715,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
 
   /**
    * クイックコーヒーミーティング登録モーダルを開く
+   * 共通の事前ミーティング予約モーダル (#modal-coffee-assign) を起動
    */
   function openQuickCoffeeMeetingModal(visitorId) {
-    openActionPlanModal();
-    setApTypeSelected('コーヒーミーティング');
-    
-    // 平日12:00の翌営業日を自動セット
-    const nextDate = getNextWeekdayDate();
-    const dateInput = document.getElementById('vd-ap-due-date');
-    if (dateInput) {
-      dateInput.value = nextDate;
-      if (typeof updateApDateBadge === 'function') updateApDateBadge();
-    }
-    const textInput = document.getElementById('vd-ap-action-text');
-    if (textInput && (!textInput.value || textInput.value === '1to1')) {
-      textInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+    const vid = visitorId || currentVdVisitorId;
+    if (typeof openCoffeeAssignModal === 'function') {
+      openCoffeeAssignModal(null, vid);
+    } else {
+      openActionPlanModal();
+      setApTypeSelected('コーヒーミーティング');
+      
+      const nextDate = getNextWeekdayDate();
+      const dateInput = document.getElementById('vd-ap-due-date');
+      if (dateInput) {
+        dateInput.value = nextDate;
+        if (typeof updateApDateBadge === 'function') updateApDateBadge();
+      }
+      const textInput = document.getElementById('vd-ap-action-text');
+      if (textInput && (!textInput.value || textInput.value === '1to1')) {
+        textInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+      }
     }
   }
   window.openQuickCoffeeMeetingModal = openQuickCoffeeMeetingModal;
@@ -47233,22 +47275,27 @@ async function cancelCoffeeMeetingSlot(visitorId) {
  * Coffee Meeting Slot Assignment Modal Controller
  */
 let currentCoffeeAssignDate = null;
+let coffeeAssignSearchQuery = '';
 
-function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
-  if (!dateStr || typeof dateStr !== 'string') {
-    dateStr = (typeof getTodayIsoDate === 'function') ? getTodayIsoDate() : new Date().toISOString().slice(0, 10);
+function getNextWeekdayIsoDate() {
+  const d = new Date();
+  // 翌日を基準（今日が土日なら月曜日へ）
+  d.setDate(d.getDate() + 1);
+  while (d.getDay() === 0 || d.getDay() === 6) {
+    d.setDate(d.getDate() + 1);
   }
+  return d.toISOString().slice(0, 10);
+}
+
+function updateCoffeeAssignDateDisplay(dateStr) {
+  if (!dateStr) return;
   currentCoffeeAssignDate = dateStr;
-  const modal = document.getElementById('modal-coffee-assign');
-  if (!modal) {
-    console.error('Modal #modal-coffee-assign not found');
-    return;
-  }
 
   const targetDateInput = document.getElementById('cfa-target-date');
-  if (targetDateInput) targetDateInput.value = dateStr;
+  if (targetDateInput && targetDateInput.value !== dateStr) {
+    targetDateInput.value = dateStr;
+  }
 
-  // Format date parts
   try {
     const d = new Date(dateStr.replace(/-/g, '/'));
     const days = ['日', '月', '火', '水', '木', '金', '土'];
@@ -47266,12 +47313,75 @@ function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
   } catch (e) {
     console.error('Error formatting date for coffee assign modal', e);
   }
+}
 
-  // Populate visitor select
+function onCoffeeAssignDateChanged(newDateStr) {
+  if (!newDateStr) return;
+  updateCoffeeAssignDateDisplay(newDateStr);
+}
+
+function setQuickCoffeeDate(type) {
+  const today = (typeof getTodayIsoDate === 'function') ? getTodayIsoDate() : new Date().toISOString().slice(0, 10);
+  let targetIso = today;
+
+  if (type === 'today') {
+    targetIso = today;
+  } else if (type === 'tomorrow') {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    targetIso = d.toISOString().slice(0, 10);
+  } else if (type === 'next_weekday') {
+    targetIso = getNextWeekdayIsoDate();
+  }
+
+  updateCoffeeAssignDateDisplay(targetIso);
+}
+
+function openCoffeeAssignModal(dateStr, preselectedVisitorId = null) {
+  // If visitor is provided but dateStr is not, try to use visitor's existing coffee date or next weekday
+  if (!dateStr || typeof dateStr !== 'string') {
+    if (preselectedVisitorId && typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) {
+      const v = cachedAllVisitors.find(item => String(item.id) === String(preselectedVisitorId));
+      if (v && (v.step1CoffeeDate || v.step1_coffee_date)) {
+        dateStr = (v.step1CoffeeDate || v.step1_coffee_date).replace(/\//g, '-').slice(0, 10);
+      }
+    }
+  }
+
+  if (!dateStr || typeof dateStr !== 'string') {
+    dateStr = getNextWeekdayIsoDate();
+  }
+
+  const modal = document.getElementById('modal-coffee-assign');
+  if (!modal) {
+    console.error('Modal #modal-coffee-assign not found');
+    return;
+  }
+
+  // Update date displays
+  updateCoffeeAssignDateDisplay(dateStr);
+
+  // Clear search and dropdown
+  coffeeAssignSearchQuery = '';
+  const searchInput = document.getElementById('cfa-visitor-search');
+  if (searchInput) searchInput.value = '';
+  hideCoffeeAutocompleteDropdown();
+
+  // Populate visitor select (Newest First)
   try {
     populateCoffeeAssignVisitorSelect(preselectedVisitorId);
   } catch (e) {
     console.error('Error populating coffee assign visitor select', e);
+  }
+
+  // If preselected, fill search input with visitor name
+  if (preselectedVisitorId && typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors)) {
+    const selV = cachedAllVisitors.find(item => String(item.id) === String(preselectedVisitorId));
+    if (selV && searchInput) {
+      searchInput.value = selV.name || '';
+      const clearBtn = document.getElementById('btn-cfa-clear-search');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+    }
   }
 
   modal.style.display = 'flex';
@@ -47284,10 +47394,14 @@ function closeCoffeeAssignModal() {
     modal.style.display = 'none';
     modal.classList.add('hidden');
   }
+  hideCoffeeAutocompleteDropdown();
   currentCoffeeAssignDate = null;
 }
 
-let coffeeAssignSearchQuery = '';
+function handleCoffeeVisitorSearchInput(query) {
+  filterCoffeeAssignVisitors(query);
+  showCoffeeAutocompleteDropdown();
+}
 
 function filterCoffeeAssignVisitors(query) {
   coffeeAssignSearchQuery = (query || '').trim().toLowerCase();
@@ -47302,29 +47416,61 @@ function filterCoffeeAssignVisitors(query) {
   const select = document.getElementById('cfa-visitor-select');
   const currentSelectedId = select ? select.value : null;
   populateCoffeeAssignVisitorSelect(currentSelectedId);
+  renderCoffeeAutocompleteDropdown();
 }
 
 function clearCoffeeAssignSearch() {
   const searchInput = document.getElementById('cfa-visitor-search');
   if (searchInput) searchInput.value = '';
   filterCoffeeAssignVisitors('');
+  hideCoffeeAutocompleteDropdown();
+  const select = document.getElementById('cfa-visitor-select');
+  if (select) {
+    select.value = '';
+    onCoffeeAssignVisitorChanged();
+  }
 }
 
-function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
-  const select = document.getElementById('cfa-visitor-select');
-  if (!select) return;
+function showCoffeeAutocompleteDropdown() {
+  const dropdown = document.getElementById('cfa-autocomplete-dropdown');
+  if (!dropdown) return;
+  renderCoffeeAutocompleteDropdown();
+  dropdown.classList.remove('hidden');
+}
 
+function hideCoffeeAutocompleteDropdown() {
+  const dropdown = document.getElementById('cfa-autocomplete-dropdown');
+  if (dropdown) dropdown.classList.add('hidden');
+}
+
+function selectCoffeeAssignVisitor(vId) {
+  const select = document.getElementById('cfa-visitor-select');
+  if (select) {
+    select.value = vId;
+  }
+  const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
+    ? cachedAllVisitors
+    : [];
+  const v = allVisitors.find(item => String(item.id) === String(vId));
+  if (v) {
+    const searchInput = document.getElementById('cfa-visitor-search');
+    if (searchInput) {
+      searchInput.value = v.name || '';
+    }
+    const clearBtn = document.getElementById('btn-cfa-clear-search');
+    if (clearBtn) clearBtn.classList.remove('hidden');
+  }
+  hideCoffeeAutocompleteDropdown();
+  onCoffeeAssignVisitorChanged();
+}
+
+function getSortedCoffeeCandidates(query = '') {
   const allVisitors = (typeof cachedAllVisitors !== 'undefined' && Array.isArray(cachedAllVisitors))
     ? cachedAllVisitors
     : [];
 
-  select.innerHTML = '<option value="">-- ビジターを選択してください --</option>';
-
-  // Sort visitors: Unassigned / 未着手 first, then by oldest (eventDate or ID ASC)
   const unassigned = [];
   const assigned = [];
-
-  const query = coffeeAssignSearchQuery;
 
   allVisitors.forEach(v => {
     // Search query filter (name, furigana, inviter, company, profession)
@@ -47350,27 +47496,129 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
     }
   });
 
-  // Sort function: 古い順 (日付がある場合は日付ASC、ない場合はID昇順)
-  const sortOldestFirst = (a, b) => {
+  // Sort function: 最新順 (日付がある場合は日付DESC、ない場合はID降順)
+  const sortNewestFirst = (a, b) => {
     const rawA = (a.eventDate || a.createdAt || '').replace(/\//g, '-').slice(0, 10);
     const rawB = (b.eventDate || b.createdAt || '').replace(/\//g, '-').slice(0, 10);
     if (rawA && rawB && rawA !== rawB) {
-      return rawA.localeCompare(rawB); // 古い順 (ASC)
+      return rawB.localeCompare(rawA); // 最新順 (DESC)
     }
     if (rawA && !rawB) return -1;
     if (!rawA && rawB) return 1;
     const idA = parseInt(a.id || 0, 10);
     const idB = parseInt(b.id || 0, 10);
-    return idA - idB;
+    return idB - idA; // 最新ID順 (DESC)
   };
 
-  unassigned.sort(sortOldestFirst);
-  assigned.sort(sortOldestFirst);
+  unassigned.sort(sortNewestFirst);
+  assigned.sort(sortNewestFirst);
 
-  // Group 1: 候補ビジター (優先)
+  return { unassigned, assigned };
+}
+
+function renderCoffeeAutocompleteDropdown() {
+  const dropdown = document.getElementById('cfa-autocomplete-dropdown');
+  if (!dropdown) return;
+
+  const { unassigned, assigned } = getSortedCoffeeCandidates(coffeeAssignSearchQuery);
+  const total = unassigned.length + assigned.length;
+
+  if (total === 0) {
+    dropdown.innerHTML = `
+      <div class="p-3 text-center text-xs text-slate-400 font-medium">
+        一致するビジターが見つかりません
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+
+  // 1. 未予約ビジター (優先)
+  if (unassigned.length > 0) {
+    html += `
+      <div class="px-3 py-1.5 bg-slate-50 text-[11px] font-black text-slate-600 flex items-center justify-between border-b border-slate-100">
+        <span>✨ 候補ビジター (${unassigned.length}名 - 最新順)</span>
+      </div>
+    `;
+    unassigned.slice(0, 15).forEach(v => {
+      const inviter = v.inviter ? `紹介: ${escapeHtml(v.inviter)}` : '';
+      const eventStr = v.eventDate ? `定例会: ${formatShortDate(v.eventDate)}` : '申込前（未定）';
+      const company = v.company ? `${escapeHtml(v.company)}` : '';
+      const sub = [inviter, eventStr, company].filter(Boolean).join(' • ');
+
+      html += `
+        <div 
+          onclick="selectCoffeeAssignVisitor('${v.id}')" 
+          class="p-2.5 hover:bg-blue-50/70 transition-colors cursor-pointer flex items-center justify-between gap-2"
+        >
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-slate-900 truncate">
+              ${escapeHtml(v.name || '名称未定')}
+              ${v.furigana ? `<span class="text-3xs text-slate-400 font-normal ml-1">(${escapeHtml(v.furigana)})</span>` : ''}
+            </div>
+            <div class="text-3xs text-slate-500 font-medium truncate mt-0.5">
+              ${sub}
+            </div>
+          </div>
+          <span class="shrink-0 text-3xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200">
+            未予約
+          </span>
+        </div>
+      `;
+    });
+  }
+
+  // 2. 設定済み・変更ビジター
+  if (assigned.length > 0) {
+    html += `
+      <div class="px-3 py-1.5 bg-slate-50 text-[11px] font-black text-slate-600 flex items-center justify-between border-b border-slate-100">
+        <span>🔄 設定済み・日程変更 (${assigned.length}名 - 最新順)</span>
+      </div>
+    `;
+    assigned.slice(0, 10).forEach(v => {
+      const curDate = v.step1CoffeeDate || v.step1_coffee_date || '';
+      const curStr = curDate ? `現予定: ${formatShortDate(curDate)}` : '済';
+      const inviter = v.inviter ? `紹介: ${escapeHtml(v.inviter)}` : '';
+      const sub = [inviter, curStr].filter(Boolean).join(' • ');
+
+      html += `
+        <div 
+          onclick="selectCoffeeAssignVisitor('${v.id}')" 
+          class="p-2.5 hover:bg-slate-100/70 transition-colors cursor-pointer flex items-center justify-between gap-2"
+        >
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-slate-700 truncate">
+              ${escapeHtml(v.name || '名称未定')}
+              ${v.furigana ? `<span class="text-3xs text-slate-400 font-normal ml-1">(${escapeHtml(v.furigana)})</span>` : ''}
+            </div>
+            <div class="text-3xs text-slate-500 font-medium truncate mt-0.5">
+              ${sub}
+            </div>
+          </div>
+          <span class="shrink-0 text-3xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+            ${curStr}
+          </span>
+        </div>
+      `;
+    });
+  }
+
+  dropdown.innerHTML = html;
+}
+
+function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
+  const select = document.getElementById('cfa-visitor-select');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">-- ビジターを選択 (最新順) --</option>';
+
+  const { unassigned, assigned } = getSortedCoffeeCandidates(coffeeAssignSearchQuery);
+
+  // Group 1: 候補ビジター (優先・最新順)
   if (unassigned.length > 0) {
     const optGroup1 = document.createElement('optgroup');
-    optGroup1.label = `候補ビジター (${unassigned.length}名)`;
+    optGroup1.label = `候補ビジター (${unassigned.length}名 - 最新順)`;
     unassigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
@@ -47385,10 +47633,10 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
     select.appendChild(optGroup1);
   }
 
-  // Group 2: その他・日程変更ビジター
+  // Group 2: その他・日程変更ビジター (最新順)
   if (assigned.length > 0) {
     const optGroup2 = document.createElement('optgroup');
-    optGroup2.label = `設定済み・変更 (${assigned.length}名)`;
+    optGroup2.label = `設定済み・変更 (${assigned.length}名 - 最新順)`;
     assigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
@@ -47478,7 +47726,7 @@ async function submitCoffeeAssign() {
   }
 
   try {
-    // 1. Update visitor status: step1_coffee_date
+    // 1. Update visitor status: step1_coffee_date & step1_coffee
     if (typeof updateVisitorStatusApi === 'function' || typeof ApiService !== 'undefined') {
       await ApiService.call('updateVisitorStatusApi', visitorId, 'step1_coffee_date', targetDate);
       await ApiService.call('updateVisitorStatusApi', visitorId, 'step1_coffee', '予定');
@@ -47521,24 +47769,50 @@ async function submitCoffeeAssign() {
     if (typeof renderCoffeeMeetingView === 'function') {
       renderCoffeeMeetingView();
     }
+
+    // 4. If currently viewing Visitor Detail View, immediately refresh it
+    if (typeof currentVdVisitorId !== 'undefined' && currentVdVisitorId && String(currentVdVisitorId) === String(visitorId)) {
+      if (typeof openVisitorDetailView === 'function') {
+        openVisitorDetailView(visitorId, false, false);
+      }
+    }
   } catch (error) {
     console.error('Failed to assign coffee meeting slot:', error);
     alert('予約登録に失敗しました: ' + (error.message || '通信エラー'));
   } finally {
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> この日程で予約を確定する';
+      submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> 予約を確定する';
     }
   }
+}
+
+// Global click listener to close autocomplete dropdown
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('click', function(e) {
+    const container = document.getElementById('modal-coffee-assign');
+    if (!container || container.style.display === 'none') return;
+    const dropdown = document.getElementById('cfa-autocomplete-dropdown');
+    const searchInput = document.getElementById('cfa-visitor-search');
+    if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
+      dropdown.classList.add('hidden');
+    }
+  });
 }
 
 // Global Exports
 window.openCoffeeAssignModal = openCoffeeAssignModal;
 window.closeCoffeeAssignModal = closeCoffeeAssignModal;
 window.filterCoffeeAssignVisitors = filterCoffeeAssignVisitors;
+window.handleCoffeeVisitorSearchInput = handleCoffeeVisitorSearchInput;
+window.showCoffeeAutocompleteDropdown = showCoffeeAutocompleteDropdown;
+window.hideCoffeeAutocompleteDropdown = hideCoffeeAutocompleteDropdown;
+window.selectCoffeeAssignVisitor = selectCoffeeAssignVisitor;
 window.clearCoffeeAssignSearch = clearCoffeeAssignSearch;
 window.populateCoffeeAssignVisitorSelect = populateCoffeeAssignVisitorSelect;
 window.onCoffeeAssignVisitorChanged = onCoffeeAssignVisitorChanged;
+window.onCoffeeAssignDateChanged = onCoffeeAssignDateChanged;
+window.setQuickCoffeeDate = setQuickCoffeeDate;
 window.submitCoffeeAssign = submitCoffeeAssign;
 </script>
 

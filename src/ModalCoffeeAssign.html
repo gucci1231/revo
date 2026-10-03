@@ -20,21 +20,44 @@
 
     <!-- Modal Body -->
     <div class="p-5 space-y-4">
-      <!-- Target Date Info Card -->
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center font-mono leading-none shadow-2xs">
-            <span id="cfa-date-month" class="text-3xs font-extrabold uppercase">--月</span>
-            <span id="cfa-date-day" class="text-base font-black">--</span>
-          </div>
-          <div>
-            <div id="cfa-date-full" class="text-sm font-black text-slate-900">----年--月--日 (--)</div>
-            <div class="text-xs font-bold text-slate-600 flex items-center gap-1.5 mt-0.5">
-              <span>12:00 〜 12:30 (Zoom)</span>
-            </div>
+      <!-- Target Date Info & Selection Card -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-black text-slate-700 flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-blue-600"></i>
+            <span>ミーティング予定日</span>
+            <span class="text-blue-600">*</span>
+          </label>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="setQuickCoffeeDate('today')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">今日</button>
+            <button type="button" onclick="setQuickCoffeeDate('tomorrow')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">明日</button>
+            <button type="button" onclick="setQuickCoffeeDate('next_weekday')" class="px-2 py-0.5 rounded-lg text-3xs font-bold bg-white hover:bg-blue-50 text-slate-600 hover:text-blue-600 border border-slate-200 transition-colors cursor-pointer">直近平日</button>
           </div>
         </div>
-        <input type="hidden" id="cfa-target-date" value="">
+
+        <div class="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-2xs">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center font-mono leading-none shadow-2xs shrink-0">
+              <span id="cfa-date-month" class="text-3xs font-extrabold uppercase">--月</span>
+              <span id="cfa-date-day" class="text-base font-black">--</span>
+            </div>
+            <div class="min-w-0">
+              <div id="cfa-date-full" class="text-sm font-black text-slate-900 truncate">----年--月--日 (--)</div>
+              <div class="text-xs font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <i class="fa-solid fa-video text-blue-500 text-3xs"></i>
+                <span>12:00 〜 12:30 (Zoom)</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative shrink-0">
+            <input 
+              type="date" 
+              id="cfa-target-date" 
+              onchange="onCoffeeAssignDateChanged(this.value)" 
+              class="text-xs font-bold text-slate-800 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all cursor-pointer"
+            >
+          </div>
+        </div>
       </div>
 
       <!-- Visitor Selection Form -->
@@ -48,28 +71,36 @@
             <i class="fa-solid fa-plus text-4xs"></i><span>申込前ビジターを新規登録</span>
           </button>
         </div>
-        <!-- Search filter input -->
+        <!-- Search filter input with autocomplete -->
         <div class="relative mb-2">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input 
             type="text" 
             id="cfa-visitor-search" 
-            placeholder="ビジター名・紹介者・会社名で検索..." 
-            oninput="filterCoffeeAssignVisitors(this.value)"
-            class="w-full text-xs pl-8 pr-7 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400"
+            autocomplete="off"
+            placeholder="ビジター名・紹介者・会社名で検索 (最新順)..." 
+            oninput="handleCoffeeVisitorSearchInput(this.value)"
+            onfocus="showCoffeeAutocompleteDropdown()"
+            class="w-full text-xs pl-8 pr-7 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400 font-medium"
           >
           <button 
             type="button" 
             id="btn-cfa-clear-search" 
             onclick="clearCoffeeAssignSearch()" 
-            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+            title="クリア"
           >
             <i class="fa-solid fa-xmark"></i>
           </button>
+
+          <!-- Autocomplete Dropdown List -->
+          <div id="cfa-autocomplete-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto z-50 divide-y divide-slate-100">
+            <!-- Rendered by JS -->
+          </div>
         </div>
         <div class="relative">
-          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
-            <option value="">-- ビジターを選択してください --</option>
+          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-xs font-semibold border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
+            <option value="">-- ビジターを選択 (最新順) --</option>
           </select>
         </div>
       </div>

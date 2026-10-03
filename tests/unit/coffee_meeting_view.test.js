@@ -175,4 +175,42 @@ describe('☕ Coffee Meeting Management & Slot Filling Calendar Unit Tests', () 
 
     sandbox.document.getElementById = origGetElementById;
   });
+
+  it('verifies date picker, quick date buttons, and autocomplete elements exist in compiled index.html', () => {
+    assert.ok(compiledIndexHtml.includes('id="cfa-target-date"'), 'Date picker input #cfa-target-date should exist');
+    assert.ok(compiledIndexHtml.includes('setQuickCoffeeDate(\'today\')'), 'Quick date button today should exist');
+    assert.ok(compiledIndexHtml.includes('setQuickCoffeeDate(\'tomorrow\')'), 'Quick date button tomorrow should exist');
+    assert.ok(compiledIndexHtml.includes('setQuickCoffeeDate(\'next_weekday\')'), 'Quick date button next_weekday should exist');
+    assert.ok(compiledIndexHtml.includes('id="cfa-autocomplete-dropdown"'), 'Autocomplete dropdown #cfa-autocomplete-dropdown should exist');
+    assert.ok(compiledIndexHtml.includes('handleCoffeeVisitorSearchInput'), 'Function handleCoffeeVisitorSearchInput should be referenced');
+  });
+
+  it('correctly sorts candidate visitors newest first (by eventDate DESC or ID DESC)', () => {
+    sandbox.cachedAllVisitors = [
+      { id: '1', name: '大昔ビジター', eventDate: '2025-01-10', step1Coffee: '未', step1CoffeeDate: '' },
+      { id: '2', name: '先週ビジター', eventDate: '2026-09-20', step1Coffee: '未', step1CoffeeDate: '' },
+      { id: '3', name: '最新来週ビジター', eventDate: '2026-10-15', step1Coffee: '未', step1CoffeeDate: '' },
+      { id: '4', name: '申込前最新ビジター', eventDate: '', step1Coffee: '未', step1CoffeeDate: '' }
+    ];
+
+    const result = sandbox.getSortedCoffeeCandidates('');
+    assert.ok(result.unassigned.length === 4, 'All 4 should be unassigned');
+    // Newest eventDate first (2026-10-15 should be first)
+    assert.strictEqual(result.unassigned[0].name, '最新来週ビジター', 'Newest eventDate should be ranked first');
+    assert.strictEqual(result.unassigned[1].name, '先週ビジター', 'Second newest eventDate should be ranked second');
+    assert.strictEqual(result.unassigned[2].name, '大昔ビジター', 'Oldest eventDate should be ranked third');
+    assert.strictEqual(result.unassigned[3].name, '申込前最新ビジター', 'Undated candidate should be ranked last among unassigned');
+  });
+
+  it('verifies visitor detail view links to openCoffeeAssignModal', () => {
+    const vdFile = path.join(__dirname, '../../src/ViewVisitorDetail.html');
+    const vdScriptFile = path.join(__dirname, '../../src/scripts/ViewVisitorDetail.html');
+    const vdHtml = fs.readFileSync(vdFile, 'utf8');
+    const vdScript = fs.readFileSync(vdScriptFile, 'utf8');
+
+    // Header and action buttons contain coffee assign modal triggers
+    assert.ok(vdHtml.includes('openCoffeeAssignModal(null, currentVdVisitorId)'), 'Visitor detail header/actions should link to openCoffeeAssignModal');
+    // openQuickCoffeeMeetingModal delegates to openCoffeeAssignModal
+    assert.ok(vdScript.includes('openCoffeeAssignModal(null, vid)'), 'openQuickCoffeeMeetingModal should delegate to openCoffeeAssignModal');
+  });
 });

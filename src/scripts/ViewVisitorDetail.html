@@ -1884,21 +1884,26 @@
 
   /**
    * クイックコーヒーミーティング登録モーダルを開く
+   * 共通の事前ミーティング予約モーダル (#modal-coffee-assign) を起動
    */
   function openQuickCoffeeMeetingModal(visitorId) {
-    openActionPlanModal();
-    setApTypeSelected('コーヒーミーティング');
-    
-    // 平日12:00の翌営業日を自動セット
-    const nextDate = getNextWeekdayDate();
-    const dateInput = document.getElementById('vd-ap-due-date');
-    if (dateInput) {
-      dateInput.value = nextDate;
-      if (typeof updateApDateBadge === 'function') updateApDateBadge();
-    }
-    const textInput = document.getElementById('vd-ap-action-text');
-    if (textInput && (!textInput.value || textInput.value === '1to1')) {
-      textInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+    const vid = visitorId || currentVdVisitorId;
+    if (typeof openCoffeeAssignModal === 'function') {
+      openCoffeeAssignModal(null, vid);
+    } else {
+      openActionPlanModal();
+      setApTypeSelected('コーヒーミーティング');
+      
+      const nextDate = getNextWeekdayDate();
+      const dateInput = document.getElementById('vd-ap-due-date');
+      if (dateInput) {
+        dateInput.value = nextDate;
+        if (typeof updateApDateBadge === 'function') updateApDateBadge();
+      }
+      const textInput = document.getElementById('vd-ap-action-text');
+      if (textInput && (!textInput.value || textInput.value === '1to1')) {
+        textInput.value = '事前コーヒーミーティング (平日12:00-12:30)';
+      }
     }
   }
   window.openQuickCoffeeMeetingModal = openQuickCoffeeMeetingModal;
