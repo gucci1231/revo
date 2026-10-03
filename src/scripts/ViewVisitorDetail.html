@@ -1594,10 +1594,10 @@
         tagText = s.status;
         subText = 'スキップ/終了';
       } else {
-        if (s.num === 1) subText = '平日12:00-12:30';
+        if (s.num === 1) subText = '平日12:00';
         else if (s.num === 2) subText = s.date ? `${formatShortDate(s.date)} 参加` : '定例会参加';
-        else if (s.num === 3) subText = '関係深化・意向確認';
-        else if (s.num === 4) subText = '申込・審査・入会';
+        else if (s.num === 3) subText = '関係深化';
+        else if (s.num === 4) subText = '申込・審査';
       }
 
       node.classList.add(statusCls);
@@ -1641,13 +1641,13 @@
             </div>
             <div class="vd-guidance-actions">
               <button type="button" class="btn-guidance-action primary" onclick="copyCoffeeMeetingInvitation('${vid}')" title="LINEやメールに貼る招待文をコピー">
-                <i class="fa-solid fa-copy"></i> ☕ 案内文をコピー (平日12:00-12:30)
+                <i class="fa-solid fa-copy"></i> 案内文をコピー
               </button>
               <button type="button" class="btn-guidance-action secondary" onclick="openQuickCoffeeMeetingModal('${vid}')" title="カレンダー・アクションに予定を登録">
-                <i class="fa-regular fa-calendar-plus"></i> MTG予定を登録
+                <i class="fa-regular fa-calendar-plus"></i> 日程登録
               </button>
               <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 1, '済')" title="ミーティング完了">
-                <i class="fa-solid fa-check"></i> 実施済みにする
+                <i class="fa-solid fa-check"></i> 完了
               </button>
             </div>
           </div>
@@ -1655,6 +1655,20 @@
       `;
     } else if (steps.currentStepNum === 2) {
       // Step 2: 定例会参加待ち
+      const isAtt = (steps.s2 && steps.s2.rawAttended) || (v && v.isAttended) || (currentVdStatus && currentVdStatus.isAttended) || '未';
+      let attBtnCls = 'primary';
+      let attBtnIcon = 'fa-regular fa-circle-check';
+      let attBtnLabel = '出席にする';
+      if (isAtt === '参加' || isAtt === '済' || isAtt === '出席') {
+        attBtnCls = 'success';
+        attBtnIcon = 'fa-solid fa-check';
+        attBtnLabel = '出席済 (変更)';
+      } else if (isAtt === '不参加' || isAtt === '欠席') {
+        attBtnCls = 'muted';
+        attBtnIcon = 'fa-solid fa-ban';
+        attBtnLabel = '欠席 (変更)';
+      }
+
       html = `
         <div class="vd-guidance-card step-2">
           <div class="vd-guidance-icon-col">
@@ -1670,14 +1684,8 @@
               コーヒーMTGでヒアリングした内容をもとに、定例会当日のオープンネットワーキングで紹介するパワーチームメンバーに事前共有し、放置をゼロにしましょう。
             </div>
             <div class="vd-guidance-actions">
-              <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 2, '参加')" title="定例会に出席完了">
-                <i class="fa-solid fa-check-double"></i> 定例会 出席済みにする
-              </button>
-              <button type="button" class="btn-guidance-action secondary" onclick="openActionPlanModal()" title="次回案内やリマインダー連絡のタスクを登録">
-                <i class="fa-regular fa-calendar-check"></i> 定例会案内アクション登録
-              </button>
-              <button type="button" class="btn-guidance-action muted" onclick="updateFollowStepStatus('${vid}', 2, '不参加')" title="定例会を欠席された場合">
-                <i class="fa-solid fa-ban"></i> 欠席・不参加
+              <button type="button" class="btn-guidance-action ${attBtnCls}" onclick="cycleFollowStep2Attendance('${vid}')" title="タップで出欠を切替 (出席 ⇋ 欠席 ⇋ 未定)">
+                <i class="${attBtnIcon}"></i> ${attBtnLabel}
               </button>
             </div>
           </div>
@@ -1701,13 +1709,13 @@
             </div>
             <div class="vd-guidance-actions">
               <button type="button" class="btn-guidance-action primary" onclick="openQuickClosingActionModal('${vid}')" title="食事会・対面クロージングのアクション登録">
-                <i class="fa-solid fa-utensils"></i> 🍽️ 食事会・クロージングを登録
+                <i class="fa-solid fa-utensils"></i> 日程登録
               </button>
               <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 3, '済')" title="食事会またはクロージング完了">
-                <i class="fa-solid fa-check"></i> 実施済みにする
+                <i class="fa-solid fa-check"></i> 完了
               </button>
               <button type="button" class="btn-guidance-action secondary" onclick="changeVisitorStatus('${vid}', 'isJoined', '申込書提出')" title="申込書を受け取った場合">
-                <i class="fa-solid fa-file-signature"></i> 申込書提出へ進む
+                <i class="fa-solid fa-file-signature"></i> 申込書受領
               </button>
             </div>
           </div>
@@ -1741,7 +1749,7 @@
                 <i class="fa-solid fa-user-check"></i> 審査
               </button>
               <button type="button" class="btn-guidance-action success font-bold" onclick="changeVisitorStatus('${vid}', 'isJoined', '入会済')">
-                <i class="fa-solid fa-crown text-amber-300"></i> 🎉 入会完了！
+                <i class="fa-solid fa-check-double"></i> 入会完了
               </button>
             </div>
           </div>
@@ -1814,7 +1822,7 @@
       updateFollowStepStatus(currentVdVisitorId, 1, nextVal);
     } else if (stepNum === 2) {
       const cur = steps.s2.status;
-      const nextVal = cur === '済' ? '未' : '参加';
+      const nextVal = (cur === '済' || cur === '参加') ? '不参加' : (cur === '不参加' ? '未' : '参加');
       updateFollowStepStatus(currentVdVisitorId, 2, nextVal);
     } else if (stepNum === 3) {
       const cur = steps.s3.status;
@@ -1828,6 +1836,23 @@
     }
   }
   window.toggleFollowStepStatus = toggleFollowStepStatus;
+
+  /**
+   * Step 2 出欠トグル (未 ⇋ 参加 ⇋ 不参加)
+   */
+  function cycleFollowStep2Attendance(visitorId) {
+    const cur = (currentVdStatus && currentVdStatus.isAttended) || (currentVisitorDetail && currentVisitorDetail.isAttended) || '未';
+    let nextVal = '参加';
+    if (cur === '参加' || cur === '済' || cur === '出席') {
+      nextVal = '不参加';
+    } else if (cur === '不参加' || cur === '欠席') {
+      nextVal = '未';
+    } else {
+      nextVal = '参加';
+    }
+    updateFollowStepStatus(visitorId, 2, nextVal);
+  }
+  window.cycleFollowStep2Attendance = cycleFollowStep2Attendance;
 
   /**
    * ステップステータスの更新

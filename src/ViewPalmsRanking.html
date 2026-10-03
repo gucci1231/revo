@@ -1,52 +1,57 @@
 <!-- PALMS & Member Management View (Apple Radical Minimalism) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Apple-Style Unified Navigation & Period Action Bar -->
-  <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 mb-6 pb-4 border-b border-slate-200/80">
-    <div class="flex items-center gap-3.5 flex-wrap">
-      <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight shrink-0">
-        成長ダッシュボード
-      </h2>
-      <p id="palms-view-subtitle" class="hidden" aria-hidden="true"></p>
+  <div class="mb-6 pb-4 border-b border-slate-200/80">
+    <!-- Top Row: View Title & Action Controls -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 mb-3.5">
+      <div class="flex items-center gap-3">
+        <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight shrink-0">
+          成長ダッシュボード
+        </h2>
+        <p id="palms-view-subtitle" class="hidden" aria-hidden="true"></p>
+      </div>
 
-      <!-- 4 Core Subview Segmented Pills (Apple HIG Capsule Style) -->
-      <div class="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60 shadow-2xs text-xs font-bold">
-        <button type="button" id="palms-subtab-growth-dashboard" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black">
-          ダッシュボード
+      <!-- Actions: Period Selector & Sync Button -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- 退会メンバーを含むチェックボックス -->
+        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
+          <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
+          <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
+        </label>
+
+        <!-- GA4-Style Period Trigger Button -->
+        <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200/90 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
+          <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
+          <span id="palms-period-display-label">期間を選択中...</span>
+          <i class="fa-solid fa-chevron-down text-3xs text-slate-400 ml-0.5"></i>
         </button>
-        <button type="button" id="palms-subtab-ppw-rpw" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          PPW / RPW
-        </button>
-        <button type="button" id="palms-subtab-traffic-lights" onclick="switchPalmsSubTab('traffic-lights')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          トラフィックライト
-        </button>
-        <button type="button" id="palms-subtab-palms-ranking" onclick="switchPalmsSubTab('palms-ranking')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          ランキング
-        </button>
-        <button type="button" id="palms-subtab-chapter-traffic" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          チャプタートラフィック
+
+        <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
+          <i class="fa-solid fa-arrows-rotate text-blue-600 text-xs"></i>
+          <span class="btn-text hidden sm:inline">Connect同期</span>
         </button>
       </div>
     </div>
 
-    <!-- Actions: Period Selector & Sync Button -->
-    <div class="flex items-center gap-2 flex-wrap">
-      <!-- 退会メンバーを含むチェックボックス -->
-      <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
-        <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
-        <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
-      </label>
-
-      <!-- GA4-Style Period Trigger Button -->
-      <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200/90 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
-        <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
-        <span id="palms-period-display-label">期間を選択中...</span>
-        <i class="fa-solid fa-chevron-down text-3xs text-slate-400 ml-0.5"></i>
-      </button>
-
-      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
-        <i class="fa-solid fa-arrows-rotate text-blue-600 text-xs"></i>
-        <span class="btn-text hidden sm:inline">Connect同期</span>
-      </button>
+    <!-- Navigation Scroll Track: 画面横幅100%固定 & ナビゲーションだけ横スクロール -->
+    <div class="flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none pt-0.5">
+      <div class="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60 shadow-2xs text-xs font-bold shrink-0">
+        <button type="button" id="palms-subtab-growth-dashboard" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black whitespace-nowrap shrink-0">
+          ダッシュボード
+        </button>
+        <button type="button" id="palms-subtab-ppw-rpw" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          PPW / RPW
+        </button>
+        <button type="button" id="palms-subtab-traffic-lights" onclick="switchPalmsSubTab('traffic-lights')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          トラフィックライト
+        </button>
+        <button type="button" id="palms-subtab-palms-ranking" onclick="switchPalmsSubTab('palms-ranking')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          ランキング
+        </button>
+        <button type="button" id="palms-subtab-chapter-traffic" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          チャプタートラフィック
+        </button>
+      </div>
     </div>
   </div>
 

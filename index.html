@@ -1714,30 +1714,36 @@ select.form-input, select.form-select {
   border-radius: 20px;
 }
 
-/* 4ステップ横プログレスステッパー */
+/* 4ステップ横プログレスステッパー (Apple Clean Slate - 3行構成) */
 .vd-follow-stepper-grid {
   display: grid;
   grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
-  align-items: center;
-  gap: 8px;
+  align-items: stretch;
+  gap: 6px;
   margin-bottom: 14px;
 }
 .vd-stepper-divider {
   color: #cbd5e1;
-  font-size: 12px;
-  text-align: center;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1px;
 }
 .vd-stepper-node {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 7px 8px 6px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
+  min-width: 0;
+  overflow: hidden;
 }
 .vd-stepper-node:hover {
   transform: translateY(-1px);
@@ -1775,60 +1781,52 @@ select.form-input, select.form-select {
 .vd-stepper-node.is-skipped {
   opacity: 0.6;
 }
-.vd-stepper-num-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.vd-stepper-step-num {
-  font-size: 9px;
-  font-weight: 900;
-  color: #94a3b8;
-  line-height: 1;
-}
-.vd-stepper-icon-circle {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-.vd-stepper-text-col {
-  flex: 1;
-  min-width: 0;
-}
-.vd-stepper-title-row {
+.vd-stepper-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   gap: 4px;
 }
-.vd-stepper-title {
-  font-size: 12px;
-  font-weight: 800;
-  color: #1e293b;
-  white-space: nowrap;
+.vd-stepper-icon-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 .vd-stepper-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 4px;
   background: #f1f5f9;
   color: #64748b;
   white-space: nowrap;
+  line-height: 1.2;
 }
-.vd-stepper-sub {
-  font-size: 10px;
-  color: #64748b;
-  margin-top: 2px;
+.vd-stepper-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
+  line-height: 1.25;
+}
+.vd-stepper-sub {
+  font-size: 9.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  line-height: 1.2;
 }
 
 /* 3. Next Action Guidance（今やるべき導き）エリア */
@@ -1978,8 +1976,8 @@ select.form-input, select.form-select {
   }
   .vd-follow-stepper-grid {
     grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
-    align-items: center;
-    gap: 4px;
+    align-items: stretch;
+    gap: 3px;
     margin-bottom: 12px;
   }
   .vd-stepper-divider {
@@ -1988,29 +1986,41 @@ select.form-input, select.form-select {
     justify-content: center;
     font-size: 10px;
     color: #94a3b8;
-    padding: 0 1px;
+    padding: 0;
   }
   .vd-stepper-node {
-    padding: 8px 4px;
-    justify-content: center;
-    border-radius: 12px;
-    min-height: 48px;
-  }
-  .vd-stepper-num-col {
+    padding: 6px 3px;
     align-items: center;
-    justify-content: center;
-    gap: 0;
+    text-align: center;
+    border-radius: 10px;
+    min-height: 48px;
+    gap: 2px;
   }
-  .vd-stepper-step-num {
-    display: none;
+  .vd-stepper-top-row {
+    justify-content: center;
+    position: relative;
+    width: auto;
   }
   .vd-stepper-icon-circle {
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-    border-radius: 9px;
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+    border-radius: 8px;
   }
-  .vd-stepper-text-col {
+  .vd-stepper-tag {
+    position: absolute;
+    top: -3px;
+    right: -7px;
+    font-size: 7.5px;
+    padding: 0 3px;
+    transform: scale(0.9);
+  }
+  .vd-stepper-title {
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .vd-stepper-sub {
     display: none;
   }
   .vd-guidance-card {
@@ -10936,21 +10946,16 @@ select.form-input, select.form-select {
                   </div>
                 </div>
 
-                <!-- 4ステップ横プログレスステッパー -->
+                <!-- 4ステップ横プログレスステッパー (3行構成: アイコン+バッジ / タイトル / 予定) -->
                 <div class="vd-follow-stepper-grid">
                   <!-- Step 1: コーヒーミーティング -->
                   <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
-                    <div class="vd-stepper-num-col">
-                      <span class="vd-stepper-step-num">1</span>
+                    <div class="vd-stepper-top-row">
                       <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
+                      <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
                     </div>
-                    <div class="vd-stepper-text-col">
-                      <div class="vd-stepper-title-row">
-                        <span class="vd-stepper-title">コーヒーMTG</span>
-                        <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
-                      </div>
-                      <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
-                    </div>
+                    <span class="vd-stepper-title">コーヒーMTG</span>
+                    <span class="vd-stepper-sub" id="vd-step-sub-1">平日12:00</span>
                   </div>
 
                   <!-- 矢印 -->
@@ -10958,17 +10963,12 @@ select.form-input, select.form-select {
 
                   <!-- Step 2: 定例会参加 -->
                   <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
-                    <div class="vd-stepper-num-col">
-                      <span class="vd-stepper-step-num">2</span>
+                    <div class="vd-stepper-top-row">
                       <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
+                      <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
                     </div>
-                    <div class="vd-stepper-text-col">
-                      <div class="vd-stepper-title-row">
-                        <span class="vd-stepper-title">定例会</span>
-                        <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
-                      </div>
-                      <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
-                    </div>
+                    <span class="vd-stepper-title">定例会</span>
+                    <span class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</span>
                   </div>
 
                   <!-- 矢印 -->
@@ -10976,17 +10976,12 @@ select.form-input, select.form-select {
 
                   <!-- Step 3: 食事会 or 対面クロージング -->
                   <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
-                    <div class="vd-stepper-num-col">
-                      <span class="vd-stepper-step-num">3</span>
+                    <div class="vd-stepper-top-row">
                       <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
+                      <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
                     </div>
-                    <div class="vd-stepper-text-col">
-                      <div class="vd-stepper-title-row">
-                        <span class="vd-stepper-title">食事会/対面</span>
-                        <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
-                      </div>
-                      <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
-                    </div>
+                    <span class="vd-stepper-title">食事会/対面</span>
+                    <span class="vd-stepper-sub" id="vd-step-sub-3">関係深化</span>
                   </div>
 
                   <!-- 矢印 -->
@@ -10994,17 +10989,12 @@ select.form-input, select.form-select {
 
                   <!-- Step 4: 入会 -->
                   <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
-                    <div class="vd-stepper-num-col">
-                      <span class="vd-stepper-step-num">4</span>
+                    <div class="vd-stepper-top-row">
                       <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
+                      <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
                     </div>
-                    <div class="vd-stepper-text-col">
-                      <div class="vd-stepper-title-row">
-                        <span class="vd-stepper-title">入会</span>
-                        <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
-                      </div>
-                      <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
-                    </div>
+                    <span class="vd-stepper-title">入会</span>
+                    <span class="vd-stepper-sub" id="vd-step-sub-4">申込・審査</span>
                   </div>
                 </div>
 
@@ -13223,52 +13213,57 @@ select.form-input, select.form-select {
     <!-- PALMS & Member Management View (Apple Radical Minimalism) -->
 <div id="view-palms-ranking" class="view-content">
   <!-- Apple-Style Unified Navigation & Period Action Bar -->
-  <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 mb-6 pb-4 border-b border-slate-200/80">
-    <div class="flex items-center gap-3.5 flex-wrap">
-      <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight shrink-0">
-        成長ダッシュボード
-      </h2>
-      <p id="palms-view-subtitle" class="hidden" aria-hidden="true"></p>
+  <div class="mb-6 pb-4 border-b border-slate-200/80">
+    <!-- Top Row: View Title & Action Controls -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 mb-3.5">
+      <div class="flex items-center gap-3">
+        <h2 id="palms-view-title" class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight shrink-0">
+          成長ダッシュボード
+        </h2>
+        <p id="palms-view-subtitle" class="hidden" aria-hidden="true"></p>
+      </div>
 
-      <!-- 4 Core Subview Segmented Pills (Apple HIG Capsule Style) -->
-      <div class="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60 shadow-2xs text-xs font-bold">
-        <button type="button" id="palms-subtab-growth-dashboard" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black">
-          ダッシュボード
+      <!-- Actions: Period Selector & Sync Button -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- 退会メンバーを含むチェックボックス -->
+        <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
+          <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
+          <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
+        </label>
+
+        <!-- GA4-Style Period Trigger Button -->
+        <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200/90 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
+          <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
+          <span id="palms-period-display-label">期間を選択中...</span>
+          <i class="fa-solid fa-chevron-down text-3xs text-slate-400 ml-0.5"></i>
         </button>
-        <button type="button" id="palms-subtab-ppw-rpw" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          PPW / RPW
-        </button>
-        <button type="button" id="palms-subtab-traffic-lights" onclick="switchPalmsSubTab('traffic-lights')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          トラフィックライト
-        </button>
-        <button type="button" id="palms-subtab-palms-ranking" onclick="switchPalmsSubTab('palms-ranking')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          ランキング
-        </button>
-        <button type="button" id="palms-subtab-chapter-traffic" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60">
-          チャプタートラフィック
+
+        <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
+          <i class="fa-solid fa-arrows-rotate text-blue-600 text-xs"></i>
+          <span class="btn-text hidden sm:inline">Connect同期</span>
         </button>
       </div>
     </div>
 
-    <!-- Actions: Period Selector & Sync Button -->
-    <div class="flex items-center gap-2 flex-wrap">
-      <!-- 退会メンバーを含むチェックボックス -->
-      <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-xl shadow-2xs text-xs font-bold text-slate-700 transition-all cursor-pointer select-none" title="退会したメンバーもランキング・指標に含める">
-        <input type="checkbox" id="palms-include-resigned" onchange="toggleIncludeResignedMembers(this.checked)" class="w-3.5 h-3.5 rounded text-blue-600 border-slate-300 focus:ring-blue-500 cursor-pointer">
-        <span class="text-[11px] sm:text-xs">退会メンバーを含む</span>
-      </label>
-
-      <!-- GA4-Style Period Trigger Button -->
-      <button id="btn-open-palms-date-modal" type="button" onclick="openPalmsDateModal()" class="px-3.5 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-800 hover:text-blue-600 border border-slate-200/90 hover:border-blue-400 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer" title="集計期間を変更">
-        <i class="fa-regular fa-calendar text-blue-600 text-xs"></i>
-        <span id="palms-period-display-label">期間を選択中...</span>
-        <i class="fa-solid fa-chevron-down text-3xs text-slate-400 ml-0.5"></i>
-      </button>
-
-      <button id="btn-sync-palms" onclick="syncPalmsFromBniConnect()" class="px-3 py-1.5 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-blue-600 border border-slate-200/90 hover:border-blue-300 rounded-xl shadow-2xs text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer" title="BNI Connectから最新PALMSを取得">
-        <i class="fa-solid fa-arrows-rotate text-blue-600 text-xs"></i>
-        <span class="btn-text hidden sm:inline">Connect同期</span>
-      </button>
+    <!-- Navigation Scroll Track: 画面横幅100%固定 & ナビゲーションだけ横スクロール -->
+    <div class="flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none pt-0.5">
+      <div class="inline-flex items-center p-1 bg-slate-100/90 rounded-2xl border border-slate-200/60 shadow-2xs text-xs font-bold shrink-0">
+        <button type="button" id="palms-subtab-growth-dashboard" onclick="switchPalmsSubTab('growth-dashboard')" class="palms-seg-btn active px-3.5 py-1.5 rounded-xl transition-all cursor-pointer bg-white text-slate-900 shadow-2xs font-black whitespace-nowrap shrink-0">
+          ダッシュボード
+        </button>
+        <button type="button" id="palms-subtab-ppw-rpw" onclick="switchPalmsSubTab('ppw-rpw')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          PPW / RPW
+        </button>
+        <button type="button" id="palms-subtab-traffic-lights" onclick="switchPalmsSubTab('traffic-lights')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          トラフィックライト
+        </button>
+        <button type="button" id="palms-subtab-palms-ranking" onclick="switchPalmsSubTab('palms-ranking')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          ランキング
+        </button>
+        <button type="button" id="palms-subtab-chapter-traffic" onclick="switchPalmsSubTab('chapter-traffic')" class="palms-seg-btn px-3.5 py-1.5 rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60 whitespace-nowrap shrink-0">
+          チャプタートラフィック
+        </button>
+      </div>
     </div>
   </div>
 
@@ -29393,10 +29388,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
         tagText = s.status;
         subText = 'スキップ/終了';
       } else {
-        if (s.num === 1) subText = '平日12:00-12:30';
+        if (s.num === 1) subText = '平日12:00';
         else if (s.num === 2) subText = s.date ? `${formatShortDate(s.date)} 参加` : '定例会参加';
-        else if (s.num === 3) subText = '関係深化・意向確認';
-        else if (s.num === 4) subText = '申込・審査・入会';
+        else if (s.num === 3) subText = '関係深化';
+        else if (s.num === 4) subText = '申込・審査';
       }
 
       node.classList.add(statusCls);
@@ -29440,13 +29435,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
             </div>
             <div class="vd-guidance-actions">
               <button type="button" class="btn-guidance-action primary" onclick="copyCoffeeMeetingInvitation('${vid}')" title="LINEやメールに貼る招待文をコピー">
-                <i class="fa-solid fa-copy"></i> ☕ 案内文をコピー (平日12:00-12:30)
+                <i class="fa-solid fa-copy"></i> 案内文をコピー
               </button>
               <button type="button" class="btn-guidance-action secondary" onclick="openQuickCoffeeMeetingModal('${vid}')" title="カレンダー・アクションに予定を登録">
-                <i class="fa-regular fa-calendar-plus"></i> MTG予定を登録
+                <i class="fa-regular fa-calendar-plus"></i> 日程登録
               </button>
               <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 1, '済')" title="ミーティング完了">
-                <i class="fa-solid fa-check"></i> 実施済みにする
+                <i class="fa-solid fa-check"></i> 完了
               </button>
             </div>
           </div>
@@ -29454,6 +29449,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       `;
     } else if (steps.currentStepNum === 2) {
       // Step 2: 定例会参加待ち
+      const isAtt = (steps.s2 && steps.s2.rawAttended) || (v && v.isAttended) || (currentVdStatus && currentVdStatus.isAttended) || '未';
+      let attBtnCls = 'primary';
+      let attBtnIcon = 'fa-regular fa-circle-check';
+      let attBtnLabel = '出席にする';
+      if (isAtt === '参加' || isAtt === '済' || isAtt === '出席') {
+        attBtnCls = 'success';
+        attBtnIcon = 'fa-solid fa-check';
+        attBtnLabel = '出席済 (変更)';
+      } else if (isAtt === '不参加' || isAtt === '欠席') {
+        attBtnCls = 'muted';
+        attBtnIcon = 'fa-solid fa-ban';
+        attBtnLabel = '欠席 (変更)';
+      }
+
       html = `
         <div class="vd-guidance-card step-2">
           <div class="vd-guidance-icon-col">
@@ -29469,14 +29478,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
               コーヒーMTGでヒアリングした内容をもとに、定例会当日のオープンネットワーキングで紹介するパワーチームメンバーに事前共有し、放置をゼロにしましょう。
             </div>
             <div class="vd-guidance-actions">
-              <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 2, '参加')" title="定例会に出席完了">
-                <i class="fa-solid fa-check-double"></i> 定例会 出席済みにする
-              </button>
-              <button type="button" class="btn-guidance-action secondary" onclick="openActionPlanModal()" title="次回案内やリマインダー連絡のタスクを登録">
-                <i class="fa-regular fa-calendar-check"></i> 定例会案内アクション登録
-              </button>
-              <button type="button" class="btn-guidance-action muted" onclick="updateFollowStepStatus('${vid}', 2, '不参加')" title="定例会を欠席された場合">
-                <i class="fa-solid fa-ban"></i> 欠席・不参加
+              <button type="button" class="btn-guidance-action ${attBtnCls}" onclick="cycleFollowStep2Attendance('${vid}')" title="タップで出欠を切替 (出席 ⇋ 欠席 ⇋ 未定)">
+                <i class="${attBtnIcon}"></i> ${attBtnLabel}
               </button>
             </div>
           </div>
@@ -29500,13 +29503,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
             </div>
             <div class="vd-guidance-actions">
               <button type="button" class="btn-guidance-action primary" onclick="openQuickClosingActionModal('${vid}')" title="食事会・対面クロージングのアクション登録">
-                <i class="fa-solid fa-utensils"></i> 🍽️ 食事会・クロージングを登録
+                <i class="fa-solid fa-utensils"></i> 日程登録
               </button>
               <button type="button" class="btn-guidance-action success" onclick="updateFollowStepStatus('${vid}', 3, '済')" title="食事会またはクロージング完了">
-                <i class="fa-solid fa-check"></i> 実施済みにする
+                <i class="fa-solid fa-check"></i> 完了
               </button>
               <button type="button" class="btn-guidance-action secondary" onclick="changeVisitorStatus('${vid}', 'isJoined', '申込書提出')" title="申込書を受け取った場合">
-                <i class="fa-solid fa-file-signature"></i> 申込書提出へ進む
+                <i class="fa-solid fa-file-signature"></i> 申込書受領
               </button>
             </div>
           </div>
@@ -29540,7 +29543,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
                 <i class="fa-solid fa-user-check"></i> 審査
               </button>
               <button type="button" class="btn-guidance-action success font-bold" onclick="changeVisitorStatus('${vid}', 'isJoined', '入会済')">
-                <i class="fa-solid fa-crown text-amber-300"></i> 🎉 入会完了！
+                <i class="fa-solid fa-check-double"></i> 入会完了
               </button>
             </div>
           </div>
@@ -29613,7 +29616,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
       updateFollowStepStatus(currentVdVisitorId, 1, nextVal);
     } else if (stepNum === 2) {
       const cur = steps.s2.status;
-      const nextVal = cur === '済' ? '未' : '参加';
+      const nextVal = (cur === '済' || cur === '参加') ? '不参加' : (cur === '不参加' ? '未' : '参加');
       updateFollowStepStatus(currentVdVisitorId, 2, nextVal);
     } else if (stepNum === 3) {
       const cur = steps.s3.status;
@@ -29627,6 +29630,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helv
     }
   }
   window.toggleFollowStepStatus = toggleFollowStepStatus;
+
+  /**
+   * Step 2 出欠トグル (未 ⇋ 参加 ⇋ 不参加)
+   */
+  function cycleFollowStep2Attendance(visitorId) {
+    const cur = (currentVdStatus && currentVdStatus.isAttended) || (currentVisitorDetail && currentVisitorDetail.isAttended) || '未';
+    let nextVal = '参加';
+    if (cur === '参加' || cur === '済' || cur === '出席') {
+      nextVal = '不参加';
+    } else if (cur === '不参加' || cur === '欠席') {
+      nextVal = '未';
+    } else {
+      nextVal = '参加';
+    }
+    updateFollowStepStatus(visitorId, 2, nextVal);
+  }
+  window.cycleFollowStep2Attendance = cycleFollowStep2Attendance;
 
   /**
    * ステップステータスの更新
@@ -43083,89 +43103,6 @@ function renderWeekView() {
     `;
   });
 
-  // Mobile Single Day Agenda Card List
-  let mobileDayAgendaListHtml = '';
-  if (selectedDayEvents.length === 0) {
-    mobileDayAgendaListHtml = `
-      <div class="py-2.5 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 px-3">
-        <span class="text-xs font-bold text-slate-500">この日の予定はありません</span>
-        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="ml-2 px-2.5 py-1 rounded-lg text-3xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
-          <i class="fa-solid fa-plus text-4xs"></i> 追加
-        </button>
-      </div>
-    `;
-  } else {
-    mobileDayAgendaListHtml = `
-      <div class="space-y-1.5 max-h-28 overflow-y-auto pr-0.5">
-        ${selectedDayEvents.map(ev => {
-          const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
-          const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
-          const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
-
-          let borderBar = 'border-l-blue-600';
-          if (ev.source_type === 'member') {
-            borderBar = 'border-l-orange-500';
-          } else if (ev.source_type === 'action') {
-            borderBar = ev.is_completed ? 'border-l-slate-300' : 'border-l-amber-500';
-          } else if (isDeadline) {
-            borderBar = 'border-l-rose-500';
-          } else if (ev.source_type === 'chapter') {
-            borderBar = 'border-l-purple-600';
-          } else if (ev.source_type === 'training') {
-            borderBar = 'border-l-emerald-600';
-          }
-
-          let actionIcon = '';
-          if (ev.source_type === 'action') {
-            actionIcon = ev.is_completed
-              ? `<i class="fa-solid fa-check text-slate-400 text-xs shrink-0" title="完了"></i>`
-              : `<i class="fa-regular fa-clock text-amber-500 text-xs shrink-0" title="アクション"></i>`;
-          } else if (isDeadline) {
-            actionIcon = `<i class="fa-solid fa-flag text-rose-500 text-xs shrink-0" title="締切"></i>`;
-          }
-
-          const formatIcon = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
-            ? `<i class="fa-solid fa-video text-blue-500 text-xs shrink-0" title="Zoom"></i>`
-            : `<i class="fa-solid fa-location-dot text-emerald-500 text-xs shrink-0" title="対面"></i>`);
-
-          const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
-            ? `<span class="inline-flex items-center gap-0.5 text-blue-600 font-bold text-3xs shrink-0" title="ビジター ${ev.visitor_count}名"><i class="fa-solid fa-users text-3xs"></i>${ev.visitor_count}</span>`
-            : '';
-
-          const flyerIcon = ev.flyer_url
-            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-0.5 cursor-pointer shrink-0" title="チラシを表示">
-                <i class="fa-solid fa-image"></i>
-              </button>`
-            : '';
-
-          return `
-            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 rounded-lg border border-slate-200 bg-white border-l-[3px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-[0.99]">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-mono font-bold text-xs text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
-                  ${actionIcon}
-                  ${formatIcon}
-                  ${visitorTag}
-                  <span class="font-bold text-xs text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</span>
-                </div>
-                ${ev.location_name ? `
-                  <div class="text-3xs text-slate-400 truncate mt-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-3xs"></i>
-                    <span>${escapeHtml(ev.location_name)}</span>
-                  </div>
-                ` : ''}
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                ${flyerIcon}
-                <i class="fa-solid fa-chevron-right text-slate-300 text-3xs"></i>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
   // Mobile Single Day Timeline Placed Events
   const mobilePlacedEventsHtml = buildTimelineEventsHtml(selectedDayEvents);
   let mobileCurrentTimeIndicatorHtml = '';
@@ -43199,17 +43136,16 @@ function renderWeekView() {
         ${mobileWeekStripHtml}
       </div>
 
-      <!-- 2. Selected Day Header & Quick Agenda -->
-      <div class="p-2 sm:p-2.5 bg-slate-50/30 border-b border-slate-100">
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
-            ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
-            <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
-          </div>
+      <!-- 2. Selected Day Status Bar (Compact single line, no pinned agenda clutter) -->
+      <div class="px-3 py-1.5 bg-slate-50/70 border-b border-slate-200/80 flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-black text-slate-800 tracking-tight">${formattedDayTitle}</span>
+          ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
+          <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
         </div>
-
-        ${mobileDayAgendaListHtml}
+        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="px-2 py-0.5 rounded-lg text-3xs font-bold text-blue-600 bg-white border border-slate-200 hover:bg-blue-50 inline-flex items-center gap-1 cursor-pointer shadow-2xs">
+          <i class="fa-solid fa-plus text-4xs"></i> 予定追加
+        </button>
       </div>
 
       <!-- 3. Full-width Day Timeline for Mobile (No horizontal overflow!) -->

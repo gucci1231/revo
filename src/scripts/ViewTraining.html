@@ -936,89 +936,6 @@ function renderWeekView() {
     `;
   });
 
-  // Mobile Single Day Agenda Card List
-  let mobileDayAgendaListHtml = '';
-  if (selectedDayEvents.length === 0) {
-    mobileDayAgendaListHtml = `
-      <div class="py-2.5 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 px-3">
-        <span class="text-xs font-bold text-slate-500">この日の予定はありません</span>
-        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="ml-2 px-2.5 py-1 rounded-lg text-3xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
-          <i class="fa-solid fa-plus text-4xs"></i> 追加
-        </button>
-      </div>
-    `;
-  } else {
-    mobileDayAgendaListHtml = `
-      <div class="space-y-1.5 max-h-28 overflow-y-auto pr-0.5">
-        ${selectedDayEvents.map(ev => {
-          const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
-          const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
-          const isDeadline = (ev.category === '締切・期限' || ev.category === '締切' || (ev.title || '').includes('締切'));
-
-          let borderBar = 'border-l-blue-600';
-          if (ev.source_type === 'member') {
-            borderBar = 'border-l-orange-500';
-          } else if (ev.source_type === 'action') {
-            borderBar = ev.is_completed ? 'border-l-slate-300' : 'border-l-amber-500';
-          } else if (isDeadline) {
-            borderBar = 'border-l-rose-500';
-          } else if (ev.source_type === 'chapter') {
-            borderBar = 'border-l-purple-600';
-          } else if (ev.source_type === 'training') {
-            borderBar = 'border-l-emerald-600';
-          }
-
-          let actionIcon = '';
-          if (ev.source_type === 'action') {
-            actionIcon = ev.is_completed
-              ? `<i class="fa-solid fa-check text-slate-400 text-xs shrink-0" title="完了"></i>`
-              : `<i class="fa-regular fa-clock text-amber-500 text-xs shrink-0" title="アクション"></i>`;
-          } else if (isDeadline) {
-            actionIcon = `<i class="fa-solid fa-flag text-rose-500 text-xs shrink-0" title="締切"></i>`;
-          }
-
-          const formatIcon = ev.source_type === 'action' || isDeadline ? '' : (ev.is_online
-            ? `<i class="fa-solid fa-video text-blue-500 text-xs shrink-0" title="Zoom"></i>`
-            : `<i class="fa-solid fa-location-dot text-emerald-500 text-xs shrink-0" title="対面"></i>`);
-
-          const visitorTag = (ev.visitor_count !== undefined && ev.visitor_count > 0)
-            ? `<span class="inline-flex items-center gap-0.5 text-blue-600 font-bold text-3xs shrink-0" title="ビジター ${ev.visitor_count}名"><i class="fa-solid fa-users text-3xs"></i>${ev.visitor_count}</span>`
-            : '';
-
-          const flyerIcon = ev.flyer_url
-            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-0.5 cursor-pointer shrink-0" title="チラシを表示">
-                <i class="fa-solid fa-image"></i>
-              </button>`
-            : '';
-
-          return `
-            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 rounded-lg border border-slate-200 bg-white border-l-[3px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-[0.99]">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-mono font-bold text-xs text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
-                  ${actionIcon}
-                  ${formatIcon}
-                  ${visitorTag}
-                  <span class="font-bold text-xs text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</span>
-                </div>
-                ${ev.location_name ? `
-                  <div class="text-3xs text-slate-400 truncate mt-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-3xs"></i>
-                    <span>${escapeHtml(ev.location_name)}</span>
-                  </div>
-                ` : ''}
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                ${flyerIcon}
-                <i class="fa-solid fa-chevron-right text-slate-300 text-3xs"></i>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
   // Mobile Single Day Timeline Placed Events
   const mobilePlacedEventsHtml = buildTimelineEventsHtml(selectedDayEvents);
   let mobileCurrentTimeIndicatorHtml = '';
@@ -1052,17 +969,16 @@ function renderWeekView() {
         ${mobileWeekStripHtml}
       </div>
 
-      <!-- 2. Selected Day Header & Quick Agenda -->
-      <div class="p-2 sm:p-2.5 bg-slate-50/30 border-b border-slate-100">
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
-            ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
-            <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
-          </div>
+      <!-- 2. Selected Day Status Bar (Compact single line, no pinned agenda clutter) -->
+      <div class="px-3 py-1.5 bg-slate-50/70 border-b border-slate-200/80 flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-black text-slate-800 tracking-tight">${formattedDayTitle}</span>
+          ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
+          <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
         </div>
-
-        ${mobileDayAgendaListHtml}
+        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="px-2 py-0.5 rounded-lg text-3xs font-bold text-blue-600 bg-white border border-slate-200 hover:bg-blue-50 inline-flex items-center gap-1 cursor-pointer shadow-2xs">
+          <i class="fa-solid fa-plus text-4xs"></i> 予定追加
+        </button>
       </div>
 
       <!-- 3. Full-width Day Timeline for Mobile (No horizontal overflow!) -->
