@@ -47,97 +47,8 @@
 
       <div class="vd-profile-card">
         <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (互換マーカー) -->
+        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (互換マーカー) -->
         <div id="vd-pipeline-timeline-container" style="display:none;"><div id="vd-pipeline-track-fill"></div></div>
-
-        <!-- ☕ 4ステップ・ビジターフォロー体制パイプライン (Apple Style & Interactive) -->
-        <div class="vd-follow-pipeline-card mb-4" id="vd-follow-pipeline-card">
-          <div class="vd-follow-pipeline-header">
-            <div class="vd-follow-pipeline-title">
-              <span class="vd-follow-pipeline-kicker">戦略的ステップ</span>
-              <span class="vd-follow-pipeline-heading">ビジターフォロー体制</span>
-            </div>
-            <div class="vd-follow-pipeline-badge" id="vd-follow-progress-badge">
-              <span id="vd-follow-completed-count" class="font-mono font-bold text-blue-600">0</span> / 4 完了
-            </div>
-          </div>
-
-          <!-- 4ステップ横プログレスステッパー -->
-          <div class="vd-follow-stepper-grid">
-            <!-- Step 1: コーヒーミーティング -->
-            <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">1</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">コーヒーMTG</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 2: 定例会参加 -->
-            <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">2</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">定例会</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 3: 食事会 or 対面クロージング -->
-            <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">3</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">食事会/対面</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 4: 入会 -->
-            <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">4</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">入会</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 🧭 次の導き（Next Action Guidance）バー -->
-          <div class="vd-next-action-guidance" id="vd-next-guidance-box">
-            <!-- JSで動的レンダリング -->
-          </div>
-        </div>
 
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">
@@ -259,43 +170,98 @@
         <div class="vd-desktop-2col">
           <!-- 左カラム: アクションプラン & 共有メモ -->
           <div class="vd-col-left">
-            <!-- 事前ヒアリング WIIFM & パワーチーム事前マッチング -->
-            <div class="vd-box mb-4" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:16px;">
-              <div class="vd-box-header py-1 pb-2 border-b border-slate-100 mb-2 flex items-center justify-between">
-                <h3 class="vd-box-title text-slate-800 text-sm font-bold flex items-center gap-1.5">
-                  <i class="fa-solid fa-handshake text-blue-600"></i> 事前WIIFM ＆ パワーチーム
-                </h3>
-                <button type="button" id="vd-wiifm-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorWiifmEdit(true)">
-                  <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
-                </button>
-              </div>
-
-              <!-- 閲覧モード -->
-              <div id="vd-wiifm-view-mode">
-                <div class="text-[11px] text-slate-500 font-bold mb-1">■ 来訪前の課題・協業希望 (WIIFM):</div>
-                <div id="vd-wiifm-display" class="vd-hearing-a memo-yellow mb-3 text-xs" style="min-height: 40px;">-</div>
-
-                <div class="text-[11px] text-slate-500 font-bold mb-1.5 flex items-center gap-1">
-                  <span>■ 推奨パワーチーム:</span>
-                  <span id="vd-matched-pt-name" class="font-bold text-blue-700">-</span>
-                </div>
-                <div id="vd-matched-pt-members" class="flex flex-wrap gap-1.5"></div>
-              </div>
-
-              <!-- 編集モード -->
-              <div id="vd-wiifm-edit-mode" style="display: none;">
-                <textarea id="vd-wiifm-textarea" class="form-textarea vd-memo-textarea auto-resize-textarea text-xs" placeholder="コーヒーミーティング等で伺った事業課題、求めている協業先、紹介希望など"></textarea>
-                <div class="vd-form-actions mt-2 flex justify-end gap-2">
-                  <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorWiifmEdit(false)">キャンセル</button>
-                  <button type="button" class="btn-save text-xs" onclick="saveVisitorWiifm()">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> 保存
-                  </button>
-                </div>
-              </div>
-            </div>
-
             <!-- Tab Content 0: アクションプラン -->
             <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
+              <!-- ☕ 4ステップ・ビジターフォロー体制パイプライン (Radical Minimalism & Apple Clean Slate) -->
+              <div class="vd-follow-pipeline-card mb-4" id="vd-follow-pipeline-card">
+                <div class="vd-follow-pipeline-header">
+                  <div class="vd-follow-pipeline-title">
+                    <span class="vd-follow-pipeline-kicker">戦略的ステップ</span>
+                    <span class="vd-follow-pipeline-heading">ビジターフォロー体制</span>
+                  </div>
+                  <div class="vd-follow-pipeline-badge" id="vd-follow-progress-badge">
+                    <span id="vd-follow-completed-count" class="font-mono font-bold text-blue-600">0</span> / 4 完了
+                  </div>
+                </div>
+
+                <!-- 4ステップ横プログレスステッパー -->
+                <div class="vd-follow-stepper-grid">
+                  <!-- Step 1: コーヒーミーティング -->
+                  <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">1</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">コーヒーMTG</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 2: 定例会参加 -->
+                  <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">2</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">定例会</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 3: 食事会 or 対面クロージング -->
+                  <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">3</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">食事会/対面</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 4: 入会 -->
+                  <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">4</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">入会</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 🧭 次の導き（Next Action Guidance）バー -->
+                <div class="vd-next-action-guidance" id="vd-next-guidance-box">
+                  <!-- JSで動的レンダリング -->
+                </div>
+              </div>
+
               <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
               <div class="vd-ap-trigger-wrap mb-4">
                 <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
@@ -645,6 +611,18 @@
               <div class="vd-box">
                 <h3 class="vd-box-title mb-3"><i class="fa-solid fa-envelope text-blue-500 mr-1.5"></i> メール送信履歴</h3>
                 <div id="vd-mail-history-list" class="vd-mail-list"></div>
+              </div>
+            </div>
+            <!-- Hidden compatibility elements for WIIFM & Power Team -->
+            <div id="vd-wiifm-hidden-container" style="display: none;" class="hidden" aria-hidden="true">
+              <span id="vd-matched-pt-name"></span>
+              <div id="vd-matched-pt-members"></div>
+              <div id="vd-wiifm-view-mode">
+                <span id="vd-wiifm-display"></span>
+                <button type="button" id="vd-wiifm-btn-edit"></button>
+              </div>
+              <div id="vd-wiifm-edit-mode">
+                <textarea id="vd-wiifm-textarea"></textarea>
               </div>
             </div>
           </div>

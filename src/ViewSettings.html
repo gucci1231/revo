@@ -1,7 +1,7 @@
 <!-- VIEW 5: セッティング・メンバーマスター管理ビュー -->
 <div id="view-settings" class="view-content">
   <!-- Settings Header & Sub-Tabs Navigation -->
-  <div class="settings-nav-header">
+  <div class="settings-nav-header w-full max-w-full overflow-hidden">
     <div>
       <h1 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2 m-0">
         <i class="fa-solid fa-gear text-blue-600"></i> 各種設定・チャプター管理
@@ -10,7 +10,7 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="settings-subtabs-nav" role="tablist">
+    <div class="settings-subtabs-nav max-w-full overflow-x-auto whitespace-nowrap scrollbar-none" role="tablist">
       <button type="button" class="settings-subtab-btn active" id="settings-subtab-btn-period" onclick="switchSettingsSubTab('period')">
         <i class="fa-solid fa-sliders"></i> <span>集計期間 (期)</span>
       </button>

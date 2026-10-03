@@ -351,6 +351,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  max-width: 100%;
 }
 
 .settings-subtabs-nav {
@@ -360,8 +361,13 @@
   padding: 5px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.settings-subtabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .settings-subtab-btn {

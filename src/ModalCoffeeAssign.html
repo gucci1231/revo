@@ -48,8 +48,27 @@
             <i class="fa-solid fa-plus text-4xs"></i><span>申込前ビジターを新規登録</span>
           </button>
         </div>
+        <!-- Search filter input -->
+        <div class="relative mb-2">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input 
+            type="text" 
+            id="cfa-visitor-search" 
+            placeholder="ビジター名・紹介者・会社名で検索..." 
+            oninput="filterCoffeeAssignVisitors(this.value)"
+            class="w-full text-xs pl-8 pr-7 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400"
+          >
+          <button 
+            type="button" 
+            id="btn-cfa-clear-search" 
+            onclick="clearCoffeeAssignSearch()" 
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
         <div class="relative">
-          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
             <option value="">-- ビジターを選択してください --</option>
           </select>
         </div>

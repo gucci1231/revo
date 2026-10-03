@@ -143,25 +143,19 @@ function updateCalendarMonthHeader() {
     sat.setDate(sat.getDate() + 6);
 
     const sunM = sun.getMonth() + 1;
-    const sunD = sun.getDate();
     const satM = sat.getMonth() + 1;
-    const satD = sat.getDate();
 
-    if (sun.getFullYear() === sat.getFullYear()) {
-      if (sunM === satM) {
-        label.innerText = `${sun.getFullYear()}年 ${sunM}月 ${sunD}日 - ${satD}日`;
-      } else {
-        label.innerText = `${sun.getFullYear()}年 ${sunM}月${sunD}日 - ${satM}月${satD}日`;
-      }
+    if (sunM === satM) {
+      label.innerText = `${sunM}月`;
     } else {
-      label.innerText = `${sun.getFullYear()}年${sunM}月${sunD}日 - ${sat.getFullYear()}年${satM}月${satD}日`;
+      label.innerText = `${sunM}月 - ${satM}月`;
     }
   } else {
     if (!currentCalendarMonth) {
       currentCalendarMonth = new Date().toISOString().substring(0, 7);
     }
     const parts = currentCalendarMonth.split('-');
-    label.innerText = `${parts[0]}年 ${parseInt(parts[1], 10)}月`;
+    label.innerText = `${parseInt(parts[1], 10)}月`;
   }
 }
 
@@ -946,17 +940,16 @@ function renderWeekView() {
   let mobileDayAgendaListHtml = '';
   if (selectedDayEvents.length === 0) {
     mobileDayAgendaListHtml = `
-      <div class="py-6 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 p-4">
-        <i class="fa-regular fa-calendar-xmark text-2xl mb-1 text-slate-300"></i>
-        <div class="text-xs font-bold text-slate-600">この日の予定はありません</div>
-        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
-          <i class="fa-solid fa-plus text-3xs"></i> 予定を追加
+      <div class="py-2.5 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 px-3">
+        <span class="text-xs font-bold text-slate-500">この日の予定はありません</span>
+        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="ml-2 px-2.5 py-1 rounded-lg text-3xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-plus text-4xs"></i> 追加
         </button>
       </div>
     `;
   } else {
     mobileDayAgendaListHtml = `
-      <div class="space-y-2 mb-3">
+      <div class="space-y-1.5 max-h-28 overflow-y-auto pr-0.5">
         ${selectedDayEvents.map(ev => {
           const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
           const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
@@ -993,31 +986,31 @@ function renderWeekView() {
             : '';
 
           const flyerIcon = ev.flyer_url
-            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-1 cursor-pointer shrink-0" title="チラシを表示">
+            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-0.5 cursor-pointer shrink-0" title="チラシを表示">
                 <i class="fa-solid fa-image"></i>
               </button>`
             : '';
 
           return `
-            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-3 rounded-xl border border-slate-200 bg-white border-l-[4px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]">
+            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 rounded-lg border border-slate-200 bg-white border-l-[3px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-[0.99]">
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono font-bold text-xs text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
                   ${actionIcon}
                   ${formatIcon}
                   ${visitorTag}
+                  <span class="font-bold text-xs text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</span>
                 </div>
-                <div class="font-bold text-sm text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</div>
                 ${ev.location_name ? `
-                  <div class="text-3xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-slate-400 text-3xs"></i>
+                  <div class="text-3xs text-slate-400 truncate mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-3xs"></i>
                     <span>${escapeHtml(ev.location_name)}</span>
                   </div>
                 ` : ''}
               </div>
-              <div class="flex items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1 shrink-0">
                 ${flyerIcon}
-                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-3xs"></i>
               </div>
             </div>
           `;
@@ -1060,10 +1053,10 @@ function renderWeekView() {
       </div>
 
       <!-- 2. Selected Day Header & Quick Agenda -->
-      <div class="p-3 bg-slate-50/20 border-b border-slate-100">
-        <div class="flex items-center justify-between mb-2">
+      <div class="p-2 sm:p-2.5 bg-slate-50/30 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
-            <span class="text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
+            <span class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
             ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
             <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
           </div>

@@ -57,6 +57,29 @@ function closeCoffeeAssignModal() {
   currentCoffeeAssignDate = null;
 }
 
+let coffeeAssignSearchQuery = '';
+
+function filterCoffeeAssignVisitors(query) {
+  coffeeAssignSearchQuery = (query || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('btn-cfa-clear-search');
+  if (clearBtn) {
+    if (coffeeAssignSearchQuery) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  const select = document.getElementById('cfa-visitor-select');
+  const currentSelectedId = select ? select.value : null;
+  populateCoffeeAssignVisitorSelect(currentSelectedId);
+}
+
+function clearCoffeeAssignSearch() {
+  const searchInput = document.getElementById('cfa-visitor-search');
+  if (searchInput) searchInput.value = '';
+  filterCoffeeAssignVisitors('');
+}
+
 function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
   const select = document.getElementById('cfa-visitor-select');
   if (!select) return;
@@ -67,12 +90,25 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
 
   select.innerHTML = '<option value="">-- ビジターを選択してください --</option>';
 
-  // Sort visitors: Unassigned / 未着手 first, then by eventDate DESC
+  // Sort visitors: Unassigned / 未着手 first, then by oldest (eventDate or ID ASC)
   const unassigned = [];
   const assigned = [];
 
+  const query = coffeeAssignSearchQuery;
+
   allVisitors.forEach(v => {
-    // Only active visitors (exclude resigned/joined if appropriate, but allow all non-closed)
+    // Search query filter (name, furigana, inviter, company, profession)
+    if (query) {
+      const name = (v.name || '').toLowerCase();
+      const furigana = (v.furigana || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      if (!name.includes(query) && !furigana.includes(query) && !inviter.includes(query) && !company.includes(query) && !profession.includes(query)) {
+        return;
+      }
+    }
+
     const st = (typeof getVisitorFollowSteps === 'function') ? getVisitorFollowSteps(v) : null;
     const isCoffeeDone = st ? (st.s1 && (st.s1.status === '済' || st.s1.status === 'done')) : (v.step1Coffee === '済');
     const hasCoffeeDate = !!(v.step1CoffeeDate || v.step1_coffee_date);
@@ -84,14 +120,22 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
     }
   });
 
-  // Sort unassigned: undecided (prospective) first, then upcoming by eventDate ASC
-  unassigned.sort((a, b) => {
-    const rawA = (a.eventDate || '').replace(/\//g, '-').slice(0, 10);
-    const rawB = (b.eventDate || '').replace(/\//g, '-').slice(0, 10);
-    if (!rawA && rawB) return -1;
-    if (rawA && !rawB) return 1;
-    return (rawA || '9999-12-31').localeCompare(rawB || '9999-12-31');
-  });
+  // Sort function: 古い順 (日付がある場合は日付ASC、ない場合はID昇順)
+  const sortOldestFirst = (a, b) => {
+    const rawA = (a.eventDate || a.createdAt || '').replace(/\//g, '-').slice(0, 10);
+    const rawB = (b.eventDate || b.createdAt || '').replace(/\//g, '-').slice(0, 10);
+    if (rawA && rawB && rawA !== rawB) {
+      return rawA.localeCompare(rawB); // 古い順 (ASC)
+    }
+    if (rawA && !rawB) return -1;
+    if (!rawA && rawB) return 1;
+    const idA = parseInt(a.id || 0, 10);
+    const idB = parseInt(b.id || 0, 10);
+    return idA - idB;
+  };
+
+  unassigned.sort(sortOldestFirst);
+  assigned.sort(sortOldestFirst);
 
   // Group 1: 候補ビジター (優先)
   if (unassigned.length > 0) {
@@ -101,7 +145,7 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
       const opt = document.createElement('option');
       opt.value = v.id;
       const inviterStr = v.inviter ? ` (紹介: ${v.inviter})` : '';
-      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : ' [申込前・未定]';
+      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : ' [未定]';
       opt.textContent = `${v.name || '名称未定'}${inviterStr}${eventStr}`;
       if (preselectedVisitorId && String(v.id) === String(preselectedVisitorId)) {
         opt.selected = true;
@@ -114,7 +158,7 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
   // Group 2: その他・日程変更ビジター
   if (assigned.length > 0) {
     const optGroup2 = document.createElement('optgroup');
-    optGroup2.label = `設定済み (日程変更)`;
+    optGroup2.label = `設定済み・変更 (${assigned.length}名)`;
     assigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
@@ -261,6 +305,8 @@ async function submitCoffeeAssign() {
 // Global Exports
 window.openCoffeeAssignModal = openCoffeeAssignModal;
 window.closeCoffeeAssignModal = closeCoffeeAssignModal;
+window.filterCoffeeAssignVisitors = filterCoffeeAssignVisitors;
+window.clearCoffeeAssignSearch = clearCoffeeAssignSearch;
 window.populateCoffeeAssignVisitorSelect = populateCoffeeAssignVisitorSelect;
 window.onCoffeeAssignVisitorChanged = onCoffeeAssignVisitorChanged;
 window.submitCoffeeAssign = submitCoffeeAssign;

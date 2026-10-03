@@ -1761,63 +1761,54 @@ select.form-input, select.form-select {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
   border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
-.vd-guidance-card.step-1 {
-  background: #fffbeb;
-  border-color: #fde68a;
-}
-.vd-guidance-card.step-2 {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-.vd-guidance-card.step-3 {
-  background: #fff1f2;
-  border-color: #fecdd3;
-}
-.vd-guidance-card.step-4 {
-  background: #f5f3ff;
-  border-color: #ddd6fe;
-}
+.vd-guidance-card.step-1,
+.vd-guidance-card.step-2,
+.vd-guidance-card.step-3,
+.vd-guidance-card.step-4,
 .vd-guidance-card.step-5 {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: #ffffff;
+  border-color: #e2e8f0;
 }
 .vd-guidance-icon-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  shrink-0: 0;
+  flex-shrink: 0;
 }
 .vd-guidance-badge {
-  font-size: 9px;
-  font-weight: 900;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: #d97706;
-  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
   text-transform: uppercase;
 }
 .vd-guidance-badge.success {
-  background: #10b981;
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
 }
 .vd-guidance-badge.muted {
-  background: #94a3b8;
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
 }
 .vd-guidance-icon {
-  font-size: 20px;
-  color: #d97706;
+  font-size: 18px;
+  color: #0071e3;
 }
-.vd-guidance-card.step-2 .vd-guidance-badge { background: #2563eb; }
-.vd-guidance-card.step-2 .vd-guidance-icon { color: #2563eb; }
-.vd-guidance-card.step-3 .vd-guidance-badge { background: #e11d48; }
-.vd-guidance-card.step-3 .vd-guidance-icon { color: #e11d48; }
-.vd-guidance-card.step-4 .vd-guidance-badge { background: #7c3aed; }
-.vd-guidance-card.step-4 .vd-guidance-icon { color: #7c3aed; }
+.vd-guidance-card.step-2 .vd-guidance-icon { color: #0071e3; }
+.vd-guidance-card.step-3 .vd-guidance-icon { color: #0071e3; }
+.vd-guidance-card.step-4 .vd-guidance-icon { color: #059669; }
 .vd-guidance-main {
   flex: 1;
   min-width: 0;
@@ -1839,30 +1830,32 @@ select.form-input, select.form-select {
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.8);
+  background: #f8fafc;
   color: #475569;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
 .vd-guidance-desc {
-  font-size: 11px;
-  color: #475569;
-  line-height: 1.4;
-  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 .vd-guidance-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .btn-guidance-action {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 5px 12px;
-  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  min-height: 38px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
@@ -2326,6 +2319,7 @@ select.form-input, select.form-select {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  max-width: 100%;
 }
 
 .settings-subtabs-nav {
@@ -2335,8 +2329,13 @@ select.form-input, select.form-select {
   padding: 5px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.settings-subtabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .settings-subtab-btn {

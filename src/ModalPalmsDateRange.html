@@ -19,8 +19,8 @@
     <!-- Modal Body (Scrollable, Flex Row) -->
     <div class="flex-1 min-h-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-y-auto">
       <!-- Preset Sidebar (1-Month Unit & Terms) -->
-      <div class="w-full md:w-52 bg-slate-50/70 p-3 sm:p-4 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto shrink-0 text-xs font-semibold" id="palms-modal-sidebar">
-        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider hidden md:block">月別（1ヶ月単位）</div>
+      <div class="w-full md:w-56 bg-slate-50/70 p-3 sm:p-4 flex flex-col gap-1 overflow-y-auto max-h-52 md:max-h-none shrink-0 text-xs font-semibold border-b md:border-b-0 md:border-r border-slate-200/80" id="palms-modal-sidebar">
+        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider">月別（1ヶ月単位）</div>
         <button type="button" onclick="selectPalmsDatePreset('1month')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="1month">
           <span>先月 (9月)</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -46,8 +46,8 @@
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
         </button>
 
-        <div class="hidden md:block my-1.5 border-t border-slate-200/70"></div>
-        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider hidden md:block">期別・通算</div>
+        <div class="my-1.5 border-t border-slate-200/70"></div>
+        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider">期別・通算</div>
         <button type="button" onclick="selectPalmsDatePreset('term_2months')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="term_2months">
           <span>2ヶ月</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -65,7 +65,7 @@
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
         </button>
 
-        <div class="hidden md:block my-1.5 border-t border-slate-200/70"></div>
+        <div class="my-1.5 border-t border-slate-200/70"></div>
         <button type="button" onclick="selectPalmsDatePreset('custom', false)" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="custom">
           <span>カスタム範囲</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>

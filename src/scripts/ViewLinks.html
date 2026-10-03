@@ -10,6 +10,26 @@ let chapterScopesData = [];
 let currentLinkScope = 'member'; // 'member' | 'admin' | 'archive' | 'all'
 let currentLinkCategory = 'ALL';
 let currentLinkSearchQuery = '';
+let isLinkEditMode = false;
+
+function toggleLinkEditMode() {
+  isLinkEditMode = !isLinkEditMode;
+  const btn = document.getElementById('btn-toggle-link-edit-mode');
+  const label = document.getElementById('label-link-edit-mode');
+  const icon = document.getElementById('icon-link-edit-mode');
+  if (btn && label && icon) {
+    if (isLinkEditMode) {
+      btn.className = 'px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs';
+      label.textContent = '完了';
+      icon.className = 'fa-solid fa-check text-[11px]';
+    } else {
+      btn.className = 'px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0';
+      label.textContent = '編集';
+      icon.className = 'fa-solid fa-pen text-[11px]';
+    }
+  }
+  renderChapterLinks();
+}
 
 const DEFAULT_SCOPES = [
   { id: 'member', name: 'メンバー用 (日常・学び)', icon: 'fa-solid fa-users', sort_order: 10, is_system: 1 },
@@ -603,35 +623,37 @@ function renderChapterLinks() {
           <div 
             id="link-row-${linkId}"
             class="link-item-row px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/90 transition-colors group relative cursor-default"
-            draggable="true"
+            draggable="${isLinkEditMode ? 'true' : 'false'}"
             data-id="${linkId}"
             data-category="${escapeHtml(catName)}"
             data-index="${idx}"
-            ondragstart="handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondragstart="${isLinkEditMode ? `handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')` : 'return false;'}"
             ondragover="handleLinkDragOver(event)"
             ondragleave="handleLinkDragLeave(event)"
-            ondrop="handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondrop="${isLinkEditMode ? `handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')` : 'return false;'}"
             ondragend="handleLinkDragEnd(event)"
           >
             <!-- Left: Drag Handle + Icon + Title + Description -->
             <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <!-- Drag Handle -->
-              <div 
-                class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
-                title="ドラッグして並び順（優先順位）を変更"
-              >
-                <i class="fa-solid fa-grip-vertical text-xs"></i>
-              </div>
+              ${isLinkEditMode ? `
+                <!-- Drag Handle -->
+                <div 
+                  class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+                  title="ドラッグして並び順（優先順位）を変更"
+                >
+                  <i class="fa-solid fa-grip-vertical text-xs"></i>
+                </div>
 
-              <!-- Quick move buttons for mobile/quick clicks -->
-              <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                  <i class="fa-solid fa-chevron-up"></i>
-                </button>
-                <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                  <i class="fa-solid fa-chevron-down"></i>
-                </button>
-              </div>
+                <!-- Quick move buttons for mobile/quick clicks -->
+                <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                    <i class="fa-solid fa-chevron-up"></i>
+                  </button>
+                  <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                </div>
+              ` : ''}
 
               <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
                 <i class="${iconClass}"></i>
@@ -672,22 +694,24 @@ function renderChapterLinks() {
                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
               </a>
 
-              <button 
-                type="button" 
-                onclick="openLinkModal('${linkId}')" 
-                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
-                title="編集"
-              >
-                <i class="fa-solid fa-pen text-[11px]"></i>
-              </button>
-              <button 
-                type="button" 
-                onclick="deleteChapterLink('${linkId}')" 
-                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
-                title="削除"
-              >
-                <i class="fa-solid fa-trash text-[11px]"></i>
-              </button>
+              ${isLinkEditMode ? `
+                <button 
+                  type="button" 
+                  onclick="openLinkModal('${linkId}')" 
+                  class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
+                  title="編集"
+                >
+                  <i class="fa-solid fa-pen text-[11px]"></i>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="deleteChapterLink('${linkId}')" 
+                  class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
+                  title="削除"
+                >
+                  <i class="fa-solid fa-trash text-[11px]"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
         `;
@@ -701,7 +725,7 @@ function renderChapterLinks() {
         data-category="${escapeHtml(catName)}"
         ondragover="handleCategoryCardDragOver(event)"
         ondragleave="handleCategoryCardDragLeave(event)"
-        ondrop="handleCategoryCardDrop(event, '${escapeHtml(catName)}')"
+        ondrop="${isLinkEditMode ? `handleCategoryCardDrop(event, '${escapeHtml(catName)}')` : 'return false;'}"
       >
         <!-- Genre Header (Click to toggle) -->
         <div 
@@ -709,27 +733,29 @@ function renderChapterLinks() {
           class="px-4 py-3 bg-slate-50/70 hover:bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between cursor-pointer select-none transition-colors group"
         >
           <div class="flex items-center gap-2 min-w-0">
-            <!-- Category Drag Handle -->
-            <div 
-              class="category-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
-              title="ドラッグしてカテゴリーの表示順序を変更"
-              onclick="event.stopPropagation()"
-              draggable="true"
-              ondragstart="handleCategoryDragStart(event, '${escapeHtml(catName)}')"
-              ondragend="handleCategoryDragEnd(event)"
-            >
-              <i class="fa-solid fa-grip-vertical text-xs"></i>
-            </div>
+            ${isLinkEditMode ? `
+              <!-- Category Drag Handle -->
+              <div 
+                class="category-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+                title="ドラッグしてカテゴリーの表示順序を変更"
+                onclick="event.stopPropagation()"
+                draggable="true"
+                ondragstart="handleCategoryDragStart(event, '${escapeHtml(catName)}')"
+                ondragend="handleCategoryDragEnd(event)"
+              >
+                <i class="fa-solid fa-grip-vertical text-xs"></i>
+              </div>
 
-            <!-- Quick category order buttons -->
-            <div class="flex items-center gap-0.5 text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onclick="event.stopPropagation()">
-              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', -1)" title="カテゴリーを上へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
-                <i class="fa-solid fa-arrow-up"></i>
-              </button>
-              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', 1)" title="カテゴリーを下へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
-                <i class="fa-solid fa-arrow-down"></i>
-              </button>
-            </div>
+              <!-- Quick category order buttons -->
+              <div class="flex items-center gap-0.5 text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onclick="event.stopPropagation()">
+                <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', -1)" title="カテゴリーを上へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                  <i class="fa-solid fa-arrow-up"></i>
+                </button>
+                <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', 1)" title="カテゴリーを下へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                  <i class="fa-solid fa-arrow-down"></i>
+                </button>
+              </div>
+            ` : ''}
 
             <span class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center text-xs shrink-0 border ${theme.iconBorder}">
               <i class="${theme.icon}"></i>
@@ -758,40 +784,42 @@ function renderChapterLinks() {
           </div>
           
           <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <!-- Quick Add Link Button for this category -->
-            <button 
-              type="button" 
-              onclick="event.stopPropagation(); openLinkModal(null, '${escapeHtml(catName)}')" 
-              class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50 border border-blue-200/70 rounded-lg shadow-2xs transition-all cursor-pointer"
-              title="このカテゴリーにリンクを追加"
-            >
-              <i class="fa-solid fa-plus text-[9px]"></i>
-              <span>追加</span>
-            </button>
-
-            <!-- Category Actions: Edit & Delete -->
-            <div class="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+            ${isLinkEditMode ? `
+              <!-- Quick Add Link Button for this category -->
               <button 
                 type="button" 
-                onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" 
-                data-cat-name="${escapeHtml(catName)}"
-                class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
-                title="カテゴリーを編集"
+                onclick="event.stopPropagation(); openLinkModal(null, '${escapeHtml(catName)}')" 
+                class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50 border border-blue-200/70 rounded-lg shadow-2xs transition-all cursor-pointer"
+                title="このカテゴリーにリンクを追加"
               >
-                <i class="fa-solid fa-pen text-[10px]"></i>
+                <i class="fa-solid fa-plus text-[9px]"></i>
+                <span>追加</span>
               </button>
-              ${catName === 'メンバー情報' ? '' : `
+
+              <!-- Category Actions: Edit & Delete -->
+              <div class="flex items-center gap-1" onclick="event.stopPropagation()">
                 <button 
                   type="button" 
-                  onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" 
+                  onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" 
                   data-cat-name="${escapeHtml(catName)}"
-                  class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                  title="カテゴリーを削除"
+                  class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
+                  title="カテゴリーを編集"
                 >
-                  <i class="fa-solid fa-trash text-[10px]"></i>
+                  <i class="fa-solid fa-pen text-[10px]"></i>
                 </button>
-              `}
-            </div>
+                ${catName === 'メンバー情報' ? '' : `
+                  <button 
+                    type="button" 
+                    onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" 
+                    data-cat-name="${escapeHtml(catName)}"
+                    class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                    title="カテゴリーを削除"
+                  >
+                    <i class="fa-solid fa-trash text-[10px]"></i>
+                  </button>
+                `}
+              </div>
+            ` : ''}
 
             <i id="genre-icon-${catSlug}" class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
           </div>
@@ -1815,4 +1843,5 @@ function deleteScopePrompt(scopeId, scopeName) {
       showToast('通信エラーが発生しました', 'error');
     });
 }
+window.toggleLinkEditMode = toggleLinkEditMode;
 </script>

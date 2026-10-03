@@ -1840,63 +1840,54 @@ select.form-input, select.form-select {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
   border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
-.vd-guidance-card.step-1 {
-  background: #fffbeb;
-  border-color: #fde68a;
-}
-.vd-guidance-card.step-2 {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-}
-.vd-guidance-card.step-3 {
-  background: #fff1f2;
-  border-color: #fecdd3;
-}
-.vd-guidance-card.step-4 {
-  background: #f5f3ff;
-  border-color: #ddd6fe;
-}
+.vd-guidance-card.step-1,
+.vd-guidance-card.step-2,
+.vd-guidance-card.step-3,
+.vd-guidance-card.step-4,
 .vd-guidance-card.step-5 {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: #ffffff;
+  border-color: #e2e8f0;
 }
 .vd-guidance-icon-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  shrink-0: 0;
+  flex-shrink: 0;
 }
 .vd-guidance-badge {
-  font-size: 9px;
-  font-weight: 900;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: #d97706;
-  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
   text-transform: uppercase;
 }
 .vd-guidance-badge.success {
-  background: #10b981;
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
 }
 .vd-guidance-badge.muted {
-  background: #94a3b8;
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
 }
 .vd-guidance-icon {
-  font-size: 20px;
-  color: #d97706;
+  font-size: 18px;
+  color: #0071e3;
 }
-.vd-guidance-card.step-2 .vd-guidance-badge { background: #2563eb; }
-.vd-guidance-card.step-2 .vd-guidance-icon { color: #2563eb; }
-.vd-guidance-card.step-3 .vd-guidance-badge { background: #e11d48; }
-.vd-guidance-card.step-3 .vd-guidance-icon { color: #e11d48; }
-.vd-guidance-card.step-4 .vd-guidance-badge { background: #7c3aed; }
-.vd-guidance-card.step-4 .vd-guidance-icon { color: #7c3aed; }
+.vd-guidance-card.step-2 .vd-guidance-icon { color: #0071e3; }
+.vd-guidance-card.step-3 .vd-guidance-icon { color: #0071e3; }
+.vd-guidance-card.step-4 .vd-guidance-icon { color: #059669; }
 .vd-guidance-main {
   flex: 1;
   min-width: 0;
@@ -1918,30 +1909,32 @@ select.form-input, select.form-select {
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.8);
+  background: #f8fafc;
   color: #475569;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
 }
 .vd-guidance-desc {
-  font-size: 11px;
-  color: #475569;
-  line-height: 1.4;
-  margin-bottom: 10px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
 .vd-guidance-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .btn-guidance-action {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 5px 12px;
-  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  min-height: 38px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
@@ -2405,6 +2398,7 @@ select.form-input, select.form-select {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  max-width: 100%;
 }
 
 .settings-subtabs-nav {
@@ -2414,8 +2408,13 @@ select.form-input, select.form-select {
   padding: 5px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.settings-subtabs-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .settings-subtab-btn {
@@ -8787,8 +8786,8 @@ select.form-input, select.form-select {
     <!-- Modal Body (Scrollable, Flex Row) -->
     <div class="flex-1 min-h-0 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-y-auto">
       <!-- Preset Sidebar (1-Month Unit & Terms) -->
-      <div class="w-full md:w-52 bg-slate-50/70 p-3 sm:p-4 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto shrink-0 text-xs font-semibold" id="palms-modal-sidebar">
-        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider hidden md:block">月別（1ヶ月単位）</div>
+      <div class="w-full md:w-56 bg-slate-50/70 p-3 sm:p-4 flex flex-col gap-1 overflow-y-auto max-h-52 md:max-h-none shrink-0 text-xs font-semibold border-b md:border-b-0 md:border-r border-slate-200/80" id="palms-modal-sidebar">
+        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider">月別（1ヶ月単位）</div>
         <button type="button" onclick="selectPalmsDatePreset('1month')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="1month">
           <span>先月 (9月)</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -8814,8 +8813,8 @@ select.form-input, select.form-select {
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
         </button>
 
-        <div class="hidden md:block my-1.5 border-t border-slate-200/70"></div>
-        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider hidden md:block">期別・通算</div>
+        <div class="my-1.5 border-t border-slate-200/70"></div>
+        <div class="text-3xs font-bold text-slate-400 px-3 py-1 uppercase tracking-wider">期別・通算</div>
         <button type="button" onclick="selectPalmsDatePreset('term_2months')" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="term_2months">
           <span>2ヶ月</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -8833,7 +8832,7 @@ select.form-input, select.form-select {
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
         </button>
 
-        <div class="hidden md:block my-1.5 border-t border-slate-200/70"></div>
+        <div class="my-1.5 border-t border-slate-200/70"></div>
         <button type="button" onclick="selectPalmsDatePreset('custom', false)" class="palms-preset-item w-full text-left px-3 py-2 rounded-xl text-slate-700 hover:bg-slate-200/60 transition-all flex items-center justify-between cursor-pointer" data-preset-key="custom">
           <span>カスタム範囲</span>
           <i class="fa-solid fa-check text-blue-600 text-2xs hidden check-icon"></i>
@@ -9106,8 +9105,27 @@ select.form-input, select.form-select {
             <i class="fa-solid fa-plus text-4xs"></i><span>申込前ビジターを新規登録</span>
           </button>
         </div>
+        <!-- Search filter input -->
+        <div class="relative mb-2">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input 
+            type="text" 
+            id="cfa-visitor-search" 
+            placeholder="ビジター名・紹介者・会社名で検索..." 
+            oninput="filterCoffeeAssignVisitors(this.value)"
+            class="w-full text-xs pl-8 pr-7 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400"
+          >
+          <button 
+            type="button" 
+            id="btn-cfa-clear-search" 
+            onclick="clearCoffeeAssignSearch()" 
+            class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 p-1 text-[11px] hidden transition-colors cursor-pointer"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
         <div class="relative">
-          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+          <select id="cfa-visitor-select" onchange="onCoffeeAssignVisitorChanged()" class="w-full text-sm font-medium border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer">
             <option value="">-- ビジターを選択してください --</option>
           </select>
         </div>
@@ -10781,97 +10799,8 @@ select.form-input, select.form-select {
 
       <div class="vd-profile-card">
         <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (互換マーカー) -->
+        <!-- 🚀 入会進捗 グラフィカル・横タイムラインステッパー (互換マーカー) -->
         <div id="vd-pipeline-timeline-container" style="display:none;"><div id="vd-pipeline-track-fill"></div></div>
-
-        <!-- ☕ 4ステップ・ビジターフォロー体制パイプライン (Apple Style & Interactive) -->
-        <div class="vd-follow-pipeline-card mb-4" id="vd-follow-pipeline-card">
-          <div class="vd-follow-pipeline-header">
-            <div class="vd-follow-pipeline-title">
-              <span class="vd-follow-pipeline-kicker">戦略的ステップ</span>
-              <span class="vd-follow-pipeline-heading">ビジターフォロー体制</span>
-            </div>
-            <div class="vd-follow-pipeline-badge" id="vd-follow-progress-badge">
-              <span id="vd-follow-completed-count" class="font-mono font-bold text-blue-600">0</span> / 4 完了
-            </div>
-          </div>
-
-          <!-- 4ステップ横プログレスステッパー -->
-          <div class="vd-follow-stepper-grid">
-            <!-- Step 1: コーヒーミーティング -->
-            <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">1</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">コーヒーMTG</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 2: 定例会参加 -->
-            <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">2</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">定例会</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 3: 食事会 or 対面クロージング -->
-            <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">3</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">食事会/対面</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
-              </div>
-            </div>
-
-            <!-- 矢印 -->
-            <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
-
-            <!-- Step 4: 入会 -->
-            <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
-              <div class="vd-stepper-num-col">
-                <span class="vd-stepper-step-num">4</span>
-                <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
-              </div>
-              <div class="vd-stepper-text-col">
-                <div class="vd-stepper-title-row">
-                  <span class="vd-stepper-title">入会</span>
-                  <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
-                </div>
-                <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 🧭 次の導き（Next Action Guidance）バー -->
-          <div class="vd-next-action-guidance" id="vd-next-guidance-box">
-            <!-- JSで動的レンダリング -->
-          </div>
-        </div>
 
         <div class="vd-profile-header">
           <div class="flex items-center gap-3.5">
@@ -10993,43 +10922,98 @@ select.form-input, select.form-select {
         <div class="vd-desktop-2col">
           <!-- 左カラム: アクションプラン & 共有メモ -->
           <div class="vd-col-left">
-            <!-- 事前ヒアリング WIIFM & パワーチーム事前マッチング -->
-            <div class="vd-box mb-4" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:16px;">
-              <div class="vd-box-header py-1 pb-2 border-b border-slate-100 mb-2 flex items-center justify-between">
-                <h3 class="vd-box-title text-slate-800 text-sm font-bold flex items-center gap-1.5">
-                  <i class="fa-solid fa-handshake text-blue-600"></i> 事前WIIFM ＆ パワーチーム
-                </h3>
-                <button type="button" id="vd-wiifm-btn-edit" class="btn-action-secondary text-xs" onclick="toggleVisitorWiifmEdit(true)">
-                  <i class="fa-solid fa-pen-to-square mr-1"></i> 編集
-                </button>
-              </div>
-
-              <!-- 閲覧モード -->
-              <div id="vd-wiifm-view-mode">
-                <div class="text-[11px] text-slate-500 font-bold mb-1">■ 来訪前の課題・協業希望 (WIIFM):</div>
-                <div id="vd-wiifm-display" class="vd-hearing-a memo-yellow mb-3 text-xs" style="min-height: 40px;">-</div>
-
-                <div class="text-[11px] text-slate-500 font-bold mb-1.5 flex items-center gap-1">
-                  <span>■ 推奨パワーチーム:</span>
-                  <span id="vd-matched-pt-name" class="font-bold text-blue-700">-</span>
-                </div>
-                <div id="vd-matched-pt-members" class="flex flex-wrap gap-1.5"></div>
-              </div>
-
-              <!-- 編集モード -->
-              <div id="vd-wiifm-edit-mode" style="display: none;">
-                <textarea id="vd-wiifm-textarea" class="form-textarea vd-memo-textarea auto-resize-textarea text-xs" placeholder="コーヒーミーティング等で伺った事業課題、求めている協業先、紹介希望など"></textarea>
-                <div class="vd-form-actions mt-2 flex justify-end gap-2">
-                  <button type="button" class="btn-cancel text-xs" onclick="toggleVisitorWiifmEdit(false)">キャンセル</button>
-                  <button type="button" class="btn-save text-xs" onclick="saveVisitorWiifm()">
-                    <i class="fa-solid fa-floppy-disk mr-1"></i> 保存
-                  </button>
-                </div>
-              </div>
-            </div>
-
             <!-- Tab Content 0: アクションプラン -->
             <div id="vd-tab-content-action-plan" class="vd-tab-pane active">
+              <!-- ☕ 4ステップ・ビジターフォロー体制パイプライン (Radical Minimalism & Apple Clean Slate) -->
+              <div class="vd-follow-pipeline-card mb-4" id="vd-follow-pipeline-card">
+                <div class="vd-follow-pipeline-header">
+                  <div class="vd-follow-pipeline-title">
+                    <span class="vd-follow-pipeline-kicker">戦略的ステップ</span>
+                    <span class="vd-follow-pipeline-heading">ビジターフォロー体制</span>
+                  </div>
+                  <div class="vd-follow-pipeline-badge" id="vd-follow-progress-badge">
+                    <span id="vd-follow-completed-count" class="font-mono font-bold text-blue-600">0</span> / 4 完了
+                  </div>
+                </div>
+
+                <!-- 4ステップ横プログレスステッパー -->
+                <div class="vd-follow-stepper-grid">
+                  <!-- Step 1: コーヒーミーティング -->
+                  <div class="vd-stepper-node" id="vd-step-node-1" onclick="toggleFollowStepStatus(1)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">1</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-1"><i class="fa-solid fa-mug-hot"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">コーヒーMTG</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-1">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-1">平日12:00-12:30</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 2: 定例会参加 -->
+                  <div class="vd-stepper-node" id="vd-step-node-2" onclick="toggleFollowStepStatus(2)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">2</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-2"><i class="fa-solid fa-landmark"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">定例会</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-2">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-2">来訪・マッチング</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 3: 食事会 or 対面クロージング -->
+                  <div class="vd-stepper-node" id="vd-step-node-3" onclick="toggleFollowStepStatus(3)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">3</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-3"><i class="fa-solid fa-utensils"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">食事会/対面</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-3">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-3">関係深化・クロージング</div>
+                    </div>
+                  </div>
+
+                  <!-- 矢印 -->
+                  <div class="vd-stepper-divider"><i class="fa-solid fa-chevron-right"></i></div>
+
+                  <!-- Step 4: 入会 -->
+                  <div class="vd-stepper-node" id="vd-step-node-4" onclick="toggleFollowStepStatus(4)" title="クリックしてステータスを切替">
+                    <div class="vd-stepper-num-col">
+                      <span class="vd-stepper-step-num">4</span>
+                      <div class="vd-stepper-icon-circle" id="vd-step-icon-4"><i class="fa-solid fa-award"></i></div>
+                    </div>
+                    <div class="vd-stepper-text-col">
+                      <div class="vd-stepper-title-row">
+                        <span class="vd-stepper-title">入会</span>
+                        <span class="vd-stepper-tag" id="vd-step-tag-4">未</span>
+                      </div>
+                      <div class="vd-stepper-sub" id="vd-step-sub-4">申込・審査・入会</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 🧭 次の導き（Next Action Guidance）バー -->
+                <div class="vd-next-action-guidance" id="vd-next-guidance-box">
+                  <!-- JSで動的レンダリング -->
+                </div>
+              </div>
+
               <!-- アクション登録トリガーボタン (PC / スマホ共通) -->
               <div class="vd-ap-trigger-wrap mb-4">
                 <button type="button" class="btn-action-primary w-full py-2.5 flex items-center justify-center gap-2 shadow-sm text-sm font-bold rounded-xl" onclick="openActionPlanModal()">
@@ -11381,6 +11365,18 @@ select.form-input, select.form-select {
                 <div id="vd-mail-history-list" class="vd-mail-list"></div>
               </div>
             </div>
+            <!-- Hidden compatibility elements for WIIFM & Power Team -->
+            <div id="vd-wiifm-hidden-container" style="display: none;" class="hidden" aria-hidden="true">
+              <span id="vd-matched-pt-name"></span>
+              <div id="vd-matched-pt-members"></div>
+              <div id="vd-wiifm-view-mode">
+                <span id="vd-wiifm-display"></span>
+                <button type="button" id="vd-wiifm-btn-edit"></button>
+              </div>
+              <div id="vd-wiifm-edit-mode">
+                <textarea id="vd-wiifm-textarea"></textarea>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -11392,7 +11388,7 @@ select.form-input, select.form-select {
     <!-- VIEW 5: セッティング・メンバーマスター管理ビュー -->
 <div id="view-settings" class="view-content">
   <!-- Settings Header & Sub-Tabs Navigation -->
-  <div class="settings-nav-header">
+  <div class="settings-nav-header w-full max-w-full overflow-hidden">
     <div>
       <h1 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2 m-0">
         <i class="fa-solid fa-gear text-blue-600"></i> 各種設定・チャプター管理
@@ -11401,7 +11397,7 @@ select.form-input, select.form-select {
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="settings-subtabs-nav" role="tablist">
+    <div class="settings-subtabs-nav max-w-full overflow-x-auto whitespace-nowrap scrollbar-none" role="tablist">
       <button type="button" class="settings-subtab-btn active" id="settings-subtab-btn-period" onclick="switchSettingsSubTab('period')">
         <i class="fa-solid fa-sliders"></i> <span>集計期間 (期)</span>
       </button>
@@ -12900,6 +12896,18 @@ select.form-input, select.form-select {
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
+
+      <!-- Edit Mode Toggle Button -->
+      <button 
+        type="button"
+        id="btn-toggle-link-edit-mode"
+        onclick="toggleLinkEditMode()" 
+        class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+        title="並べ替え・編集・削除モードを切替"
+      >
+        <i class="fa-solid fa-pen text-[11px]" id="icon-link-edit-mode"></i>
+        <span id="label-link-edit-mode">編集</span>
+      </button>
 
       <!-- Add Category Button -->
       <button 
@@ -31030,6 +31038,26 @@ let chapterScopesData = [];
 let currentLinkScope = 'member'; // 'member' | 'admin' | 'archive' | 'all'
 let currentLinkCategory = 'ALL';
 let currentLinkSearchQuery = '';
+let isLinkEditMode = false;
+
+function toggleLinkEditMode() {
+  isLinkEditMode = !isLinkEditMode;
+  const btn = document.getElementById('btn-toggle-link-edit-mode');
+  const label = document.getElementById('label-link-edit-mode');
+  const icon = document.getElementById('icon-link-edit-mode');
+  if (btn && label && icon) {
+    if (isLinkEditMode) {
+      btn.className = 'px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow-xs';
+      label.textContent = '完了';
+      icon.className = 'fa-solid fa-check text-[11px]';
+    } else {
+      btn.className = 'px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shrink-0';
+      label.textContent = '編集';
+      icon.className = 'fa-solid fa-pen text-[11px]';
+    }
+  }
+  renderChapterLinks();
+}
 
 const DEFAULT_SCOPES = [
   { id: 'member', name: 'メンバー用 (日常・学び)', icon: 'fa-solid fa-users', sort_order: 10, is_system: 1 },
@@ -31623,35 +31651,37 @@ function renderChapterLinks() {
           <div 
             id="link-row-${linkId}"
             class="link-item-row px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2.5 hover:bg-slate-50/90 transition-colors group relative cursor-default"
-            draggable="true"
+            draggable="${isLinkEditMode ? 'true' : 'false'}"
             data-id="${linkId}"
             data-category="${escapeHtml(catName)}"
             data-index="${idx}"
-            ondragstart="handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondragstart="${isLinkEditMode ? `handleLinkDragStart(event, '${linkId}', '${escapeHtml(catName)}')` : 'return false;'}"
             ondragover="handleLinkDragOver(event)"
             ondragleave="handleLinkDragLeave(event)"
-            ondrop="handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')"
+            ondrop="${isLinkEditMode ? `handleLinkDrop(event, '${linkId}', '${escapeHtml(catName)}')` : 'return false;'}"
             ondragend="handleLinkDragEnd(event)"
           >
             <!-- Left: Drag Handle + Icon + Title + Description -->
             <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <!-- Drag Handle -->
-              <div 
-                class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
-                title="ドラッグして並び順（優先順位）を変更"
-              >
-                <i class="fa-solid fa-grip-vertical text-xs"></i>
-              </div>
+              ${isLinkEditMode ? `
+                <!-- Drag Handle -->
+                <div 
+                  class="link-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+                  title="ドラッグして並び順（優先順位）を変更"
+                >
+                  <i class="fa-solid fa-grip-vertical text-xs"></i>
+                </div>
 
-              <!-- Quick move buttons for mobile/quick clicks -->
-              <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                  <i class="fa-solid fa-chevron-up"></i>
-                </button>
-                <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
-                  <i class="fa-solid fa-chevron-down"></i>
-                </button>
-              </div>
+                <!-- Quick move buttons for mobile/quick clicks -->
+                <div class="flex flex-col text-[9px] text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  <button type="button" onclick="moveLinkQuick('${linkId}', -1)" title="上へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                    <i class="fa-solid fa-chevron-up"></i>
+                  </button>
+                  <button type="button" onclick="moveLinkQuick('${linkId}', 1)" title="下へ移動" class="hover:text-blue-600 p-0.5 leading-none cursor-pointer">
+                    <i class="fa-solid fa-chevron-down"></i>
+                  </button>
+                </div>
+              ` : ''}
 
               <div class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center shrink-0 text-xs border ${theme.iconBorder}">
                 <i class="${iconClass}"></i>
@@ -31692,22 +31722,24 @@ function renderChapterLinks() {
                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
               </a>
 
-              <button 
-                type="button" 
-                onclick="openLinkModal('${linkId}')" 
-                class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
-                title="編集"
-              >
-                <i class="fa-solid fa-pen text-[11px]"></i>
-              </button>
-              <button 
-                type="button" 
-                onclick="deleteChapterLink('${linkId}')" 
-                class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
-                title="削除"
-              >
-                <i class="fa-solid fa-trash text-[11px]"></i>
-              </button>
+              ${isLinkEditMode ? `
+                <button 
+                  type="button" 
+                  onclick="openLinkModal('${linkId}')" 
+                  class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" 
+                  title="編集"
+                >
+                  <i class="fa-solid fa-pen text-[11px]"></i>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="deleteChapterLink('${linkId}')" 
+                  class="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" 
+                  title="削除"
+                >
+                  <i class="fa-solid fa-trash text-[11px]"></i>
+                </button>
+              ` : ''}
             </div>
           </div>
         `;
@@ -31721,7 +31753,7 @@ function renderChapterLinks() {
         data-category="${escapeHtml(catName)}"
         ondragover="handleCategoryCardDragOver(event)"
         ondragleave="handleCategoryCardDragLeave(event)"
-        ondrop="handleCategoryCardDrop(event, '${escapeHtml(catName)}')"
+        ondrop="${isLinkEditMode ? `handleCategoryCardDrop(event, '${escapeHtml(catName)}')` : 'return false;'}"
       >
         <!-- Genre Header (Click to toggle) -->
         <div 
@@ -31729,27 +31761,29 @@ function renderChapterLinks() {
           class="px-4 py-3 bg-slate-50/70 hover:bg-slate-100/60 border-b border-slate-200/70 flex items-center justify-between cursor-pointer select-none transition-colors group"
         >
           <div class="flex items-center gap-2 min-w-0">
-            <!-- Category Drag Handle -->
-            <div 
-              class="category-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
-              title="ドラッグしてカテゴリーの表示順序を変更"
-              onclick="event.stopPropagation()"
-              draggable="true"
-              ondragstart="handleCategoryDragStart(event, '${escapeHtml(catName)}')"
-              ondragend="handleCategoryDragEnd(event)"
-            >
-              <i class="fa-solid fa-grip-vertical text-xs"></i>
-            </div>
+            ${isLinkEditMode ? `
+              <!-- Category Drag Handle -->
+              <div 
+                class="category-drag-handle p-1 text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing transition-colors shrink-0" 
+                title="ドラッグしてカテゴリーの表示順序を変更"
+                onclick="event.stopPropagation()"
+                draggable="true"
+                ondragstart="handleCategoryDragStart(event, '${escapeHtml(catName)}')"
+                ondragend="handleCategoryDragEnd(event)"
+              >
+                <i class="fa-solid fa-grip-vertical text-xs"></i>
+              </div>
 
-            <!-- Quick category order buttons -->
-            <div class="flex items-center gap-0.5 text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onclick="event.stopPropagation()">
-              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', -1)" title="カテゴリーを上へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
-                <i class="fa-solid fa-arrow-up"></i>
-              </button>
-              <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', 1)" title="カテゴリーを下へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
-                <i class="fa-solid fa-arrow-down"></i>
-              </button>
-            </div>
+              <!-- Quick category order buttons -->
+              <div class="flex items-center gap-0.5 text-slate-300 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onclick="event.stopPropagation()">
+                <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', -1)" title="カテゴリーを上へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                  <i class="fa-solid fa-arrow-up"></i>
+                </button>
+                <button type="button" onclick="moveCategoryQuick('${escapeHtml(catName)}', 1)" title="カテゴリーを下へ" class="p-1 hover:text-blue-600 text-[10px] cursor-pointer">
+                  <i class="fa-solid fa-arrow-down"></i>
+                </button>
+              </div>
+            ` : ''}
 
             <span class="w-7 h-7 rounded-lg ${theme.iconBg} ${theme.iconText} flex items-center justify-center text-xs shrink-0 border ${theme.iconBorder}">
               <i class="${theme.icon}"></i>
@@ -31778,40 +31812,42 @@ function renderChapterLinks() {
           </div>
           
           <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <!-- Quick Add Link Button for this category -->
-            <button 
-              type="button" 
-              onclick="event.stopPropagation(); openLinkModal(null, '${escapeHtml(catName)}')" 
-              class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50 border border-blue-200/70 rounded-lg shadow-2xs transition-all cursor-pointer"
-              title="このカテゴリーにリンクを追加"
-            >
-              <i class="fa-solid fa-plus text-[9px]"></i>
-              <span>追加</span>
-            </button>
-
-            <!-- Category Actions: Edit & Delete -->
-            <div class="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+            ${isLinkEditMode ? `
+              <!-- Quick Add Link Button for this category -->
               <button 
                 type="button" 
-                onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" 
-                data-cat-name="${escapeHtml(catName)}"
-                class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
-                title="カテゴリーを編集"
+                onclick="event.stopPropagation(); openLinkModal(null, '${escapeHtml(catName)}')" 
+                class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-white hover:bg-blue-50 border border-blue-200/70 rounded-lg shadow-2xs transition-all cursor-pointer"
+                title="このカテゴリーにリンクを追加"
               >
-                <i class="fa-solid fa-pen text-[10px]"></i>
+                <i class="fa-solid fa-plus text-[9px]"></i>
+                <span>追加</span>
               </button>
-              ${catName === 'メンバー情報' ? '' : `
+
+              <!-- Category Actions: Edit & Delete -->
+              <div class="flex items-center gap-1" onclick="event.stopPropagation()">
                 <button 
                   type="button" 
-                  onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" 
+                  onclick="event.stopPropagation(); openCategoryModal(this.dataset.catName)" 
                   data-cat-name="${escapeHtml(catName)}"
-                  class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
-                  title="カテゴリーを削除"
+                  class="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded transition-colors cursor-pointer"
+                  title="カテゴリーを編集"
                 >
-                  <i class="fa-solid fa-trash text-[10px]"></i>
+                  <i class="fa-solid fa-pen text-[10px]"></i>
                 </button>
-              `}
-            </div>
+                ${catName === 'メンバー情報' ? '' : `
+                  <button 
+                    type="button" 
+                    onclick="event.stopPropagation(); deleteCategoryPrompt(this.dataset.catName)" 
+                    data-cat-name="${escapeHtml(catName)}"
+                    class="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                    title="カテゴリーを削除"
+                  >
+                    <i class="fa-solid fa-trash text-[10px]"></i>
+                  </button>
+                `}
+              </div>
+            ` : ''}
 
             <i id="genre-icon-${catSlug}" class="fa-solid ${isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'} text-slate-400 text-xs"></i>
           </div>
@@ -32835,6 +32871,7 @@ function deleteScopePrompt(scopeId, scopeName) {
       showToast('通信エラーが発生しました', 'error');
     });
 }
+window.toggleLinkEditMode = toggleLinkEditMode;
 </script>
 
 <script>
@@ -34674,11 +34711,11 @@ function renderChapterTrendLineChart() {
     });
 
     trendVisitors = weeklyList.map(w => {
-      const mCount = Math.max(1, Number(w.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
-      return Number(((Number(w.total_visitors) || 0) / mCount).toFixed(2));
+      // ユーザー要望: メンバー平均ではなくチャプター全体の週ビジター数
+      return Number(w.total_visitors) || 0;
     });
   } else if (isMonthly) {
-    // 月刻み（メンバー1人あたりの週換算平均 = 月合計 ÷ 月の週数 ÷ 在籍人数）
+    // 月刻み（チャプターの週換算平均 = 月合計 ÷ 月の週数）
     const mList = monthlyList || [];
     labels = mList.map((m, idx) => {
       const parts = (m.month || '').split('-');
@@ -34706,12 +34743,11 @@ function renderChapterTrendLineChart() {
     });
 
     trendVisitors = mList.map(m => {
-      const mCount = Math.max(1, Number(m.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
       const wCount = Math.max(1, Number(m.week_count) || 4);
-      return Number(((Number(m.total_visitors) || 0) / (mCount * wCount)).toFixed(2));
+      return Number(((Number(m.total_visitors) || 0) / wCount).toFixed(1));
     });
   } else {
-    // 2年間期別（メンバー1人あたりの週平均 = 期累計 ÷ 期の週数 ÷ 在籍人数）
+    // 2年間期別（チャプターの週平均 = 期累計 ÷ 期の週数）
     labels = termList.map(t => {
       const s = t.start_date || '';
       if (s.startsWith('2025-04')) return '25年前期(4-9月)';
@@ -34736,10 +34772,9 @@ function renderChapterTrendLineChart() {
     });
 
     trendVisitors = termList.map(t => {
-      const mCount = Math.max(1, Number(t.member_count) || (currentPalmsRecords && currentPalmsRecords.length) || 15);
       const days = Math.max(1, Math.round((new Date(t.end_date) - new Date(t.start_date)) / (1000 * 60 * 60 * 24)));
       const weeks = Math.max(1, Math.round(days / 7));
-      return Number(((Number(t.total_visitors) || 0) / (mCount * weeks)).toFixed(2));
+      return Number(((Number(t.total_visitors) || 0) / weeks).toFixed(1));
     });
   }
 
@@ -34776,7 +34811,7 @@ function renderChapterTrendLineChart() {
           pointHitRadius: 20
         },
         {
-          label: 'ビジター (名/人/週)',
+          label: 'ビジター (チャプター週平均)',
           data: trendVisitors,
           borderColor: '#10b981',
           borderWidth: 2,
@@ -34875,6 +34910,19 @@ function renderChapterTrendLineChart() {
               } else if (context.datasetIndex === 2) {
                 total = item.total_visitors || 0;
                 unit = '名';
+              }
+
+              if (context.datasetIndex === 2) {
+                if (isWeekly) {
+                  return ` ${context.dataset.label}: ${val} 名 (週チャプター合計: ${Number(total).toLocaleString()}名)`;
+                } else if (isMonthly) {
+                  const wCount = Math.max(1, Number(item.week_count) || 4);
+                  return ` ${context.dataset.label}: ${val.toFixed(1)} 名 (月合計: ${Number(total).toLocaleString()}名 / ${wCount}週)`;
+                } else {
+                  const days = Math.max(1, Math.round((new Date(item.end_date) - new Date(item.start_date)) / (1000 * 60 * 60 * 24)));
+                  const weeks = Math.max(1, Math.round(days / 7));
+                  return ` ${context.dataset.label}: ${val.toFixed(1)} 名 (期累計: ${Number(total).toLocaleString()}名 / ${weeks}週)`;
+                }
               }
 
               if (isWeekly) {
@@ -42242,25 +42290,19 @@ function updateCalendarMonthHeader() {
     sat.setDate(sat.getDate() + 6);
 
     const sunM = sun.getMonth() + 1;
-    const sunD = sun.getDate();
     const satM = sat.getMonth() + 1;
-    const satD = sat.getDate();
 
-    if (sun.getFullYear() === sat.getFullYear()) {
-      if (sunM === satM) {
-        label.innerText = `${sun.getFullYear()}年 ${sunM}月 ${sunD}日 - ${satD}日`;
-      } else {
-        label.innerText = `${sun.getFullYear()}年 ${sunM}月${sunD}日 - ${satM}月${satD}日`;
-      }
+    if (sunM === satM) {
+      label.innerText = `${sunM}月`;
     } else {
-      label.innerText = `${sun.getFullYear()}年${sunM}月${sunD}日 - ${sat.getFullYear()}年${satM}月${satD}日`;
+      label.innerText = `${sunM}月 - ${satM}月`;
     }
   } else {
     if (!currentCalendarMonth) {
       currentCalendarMonth = new Date().toISOString().substring(0, 7);
     }
     const parts = currentCalendarMonth.split('-');
-    label.innerText = `${parts[0]}年 ${parseInt(parts[1], 10)}月`;
+    label.innerText = `${parseInt(parts[1], 10)}月`;
   }
 }
 
@@ -43045,17 +43087,16 @@ function renderWeekView() {
   let mobileDayAgendaListHtml = '';
   if (selectedDayEvents.length === 0) {
     mobileDayAgendaListHtml = `
-      <div class="py-6 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 p-4">
-        <i class="fa-regular fa-calendar-xmark text-2xl mb-1 text-slate-300"></i>
-        <div class="text-xs font-bold text-slate-600">この日の予定はありません</div>
-        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="mt-2 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
-          <i class="fa-solid fa-plus text-3xs"></i> 予定を追加
+      <div class="py-2.5 text-center text-slate-400 bg-white rounded-xl border border-slate-200/80 px-3">
+        <span class="text-xs font-bold text-slate-500">この日の予定はありません</span>
+        <button type="button" onclick="openChapterEventModalOnDate('${selectedDayMeta.dateKey}', event)" class="ml-2 px-2.5 py-1 rounded-lg text-3xs font-bold text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 inline-flex items-center gap-1 cursor-pointer">
+          <i class="fa-solid fa-plus text-4xs"></i> 追加
         </button>
       </div>
     `;
   } else {
     mobileDayAgendaListHtml = `
-      <div class="space-y-2 mb-3">
+      <div class="space-y-1.5 max-h-28 overflow-y-auto pr-0.5">
         ${selectedDayEvents.map(ev => {
           const timeStr = ev.start_datetime ? ev.start_datetime.substring(11, 16) : '';
           const endTimeStr = ev.end_datetime ? ` - ${ev.end_datetime.substring(11, 16)}` : '';
@@ -43092,31 +43133,31 @@ function renderWeekView() {
             : '';
 
           const flyerIcon = ev.flyer_url
-            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-1 cursor-pointer shrink-0" title="チラシを表示">
+            ? `<button type="button" onclick="openFlyerLightbox('${escapeHtml(ev.flyer_url)}', '${escapeHtml(ev.title)}', event)" class="text-orange-500 hover:text-orange-600 text-xs p-0.5 cursor-pointer shrink-0" title="チラシを表示">
                 <i class="fa-solid fa-image"></i>
               </button>`
             : '';
 
           return `
-            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-3 rounded-xl border border-slate-200 bg-white border-l-[4px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]">
+            <div onclick="handleCalendarEventClick('${ev.id}', event)" class="p-2 rounded-lg border border-slate-200 bg-white border-l-[3px] ${borderBar} shadow-2xs hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-2 active:scale-[0.99]">
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
                   <span class="font-mono font-bold text-xs text-slate-700 tabular-nums">${timeStr}${endTimeStr}</span>
                   ${actionIcon}
                   ${formatIcon}
                   ${visitorTag}
+                  <span class="font-bold text-xs text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</span>
                 </div>
-                <div class="font-bold text-sm text-slate-900 leading-snug truncate">${escapeHtml(ev.title)}</div>
                 ${ev.location_name ? `
-                  <div class="text-3xs text-slate-500 truncate mt-0.5 flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-slate-400 text-3xs"></i>
+                  <div class="text-3xs text-slate-400 truncate mt-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-3xs"></i>
                     <span>${escapeHtml(ev.location_name)}</span>
                   </div>
                 ` : ''}
               </div>
-              <div class="flex items-center gap-2 shrink-0">
+              <div class="flex items-center gap-1 shrink-0">
                 ${flyerIcon}
-                <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+                <i class="fa-solid fa-chevron-right text-slate-300 text-3xs"></i>
               </div>
             </div>
           `;
@@ -43159,10 +43200,10 @@ function renderWeekView() {
       </div>
 
       <!-- 2. Selected Day Header & Quick Agenda -->
-      <div class="p-3 bg-slate-50/20 border-b border-slate-100">
-        <div class="flex items-center justify-between mb-2">
+      <div class="p-2 sm:p-2.5 bg-slate-50/30 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
-            <span class="text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
+            <span class="text-xs sm:text-sm font-black text-slate-900 tracking-tight">${formattedDayTitle}</span>
             ${selectedDayMeta.isToday ? '<span class="px-1.5 py-0.2 rounded-full text-3xs font-extrabold bg-blue-600 text-white">今日</span>' : ''}
             <span class="text-3xs text-slate-400 font-bold">${selectedDayEvents.length}件</span>
           </div>
@@ -47310,6 +47351,29 @@ function closeCoffeeAssignModal() {
   currentCoffeeAssignDate = null;
 }
 
+let coffeeAssignSearchQuery = '';
+
+function filterCoffeeAssignVisitors(query) {
+  coffeeAssignSearchQuery = (query || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('btn-cfa-clear-search');
+  if (clearBtn) {
+    if (coffeeAssignSearchQuery) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  const select = document.getElementById('cfa-visitor-select');
+  const currentSelectedId = select ? select.value : null;
+  populateCoffeeAssignVisitorSelect(currentSelectedId);
+}
+
+function clearCoffeeAssignSearch() {
+  const searchInput = document.getElementById('cfa-visitor-search');
+  if (searchInput) searchInput.value = '';
+  filterCoffeeAssignVisitors('');
+}
+
 function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
   const select = document.getElementById('cfa-visitor-select');
   if (!select) return;
@@ -47320,12 +47384,25 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
 
   select.innerHTML = '<option value="">-- ビジターを選択してください --</option>';
 
-  // Sort visitors: Unassigned / 未着手 first, then by eventDate DESC
+  // Sort visitors: Unassigned / 未着手 first, then by oldest (eventDate or ID ASC)
   const unassigned = [];
   const assigned = [];
 
+  const query = coffeeAssignSearchQuery;
+
   allVisitors.forEach(v => {
-    // Only active visitors (exclude resigned/joined if appropriate, but allow all non-closed)
+    // Search query filter (name, furigana, inviter, company, profession)
+    if (query) {
+      const name = (v.name || '').toLowerCase();
+      const furigana = (v.furigana || '').toLowerCase();
+      const inviter = (v.inviter || '').toLowerCase();
+      const company = (v.company || '').toLowerCase();
+      const profession = (v.profession || '').toLowerCase();
+      if (!name.includes(query) && !furigana.includes(query) && !inviter.includes(query) && !company.includes(query) && !profession.includes(query)) {
+        return;
+      }
+    }
+
     const st = (typeof getVisitorFollowSteps === 'function') ? getVisitorFollowSteps(v) : null;
     const isCoffeeDone = st ? (st.s1 && (st.s1.status === '済' || st.s1.status === 'done')) : (v.step1Coffee === '済');
     const hasCoffeeDate = !!(v.step1CoffeeDate || v.step1_coffee_date);
@@ -47337,14 +47414,22 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
     }
   });
 
-  // Sort unassigned: undecided (prospective) first, then upcoming by eventDate ASC
-  unassigned.sort((a, b) => {
-    const rawA = (a.eventDate || '').replace(/\//g, '-').slice(0, 10);
-    const rawB = (b.eventDate || '').replace(/\//g, '-').slice(0, 10);
-    if (!rawA && rawB) return -1;
-    if (rawA && !rawB) return 1;
-    return (rawA || '9999-12-31').localeCompare(rawB || '9999-12-31');
-  });
+  // Sort function: 古い順 (日付がある場合は日付ASC、ない場合はID昇順)
+  const sortOldestFirst = (a, b) => {
+    const rawA = (a.eventDate || a.createdAt || '').replace(/\//g, '-').slice(0, 10);
+    const rawB = (b.eventDate || b.createdAt || '').replace(/\//g, '-').slice(0, 10);
+    if (rawA && rawB && rawA !== rawB) {
+      return rawA.localeCompare(rawB); // 古い順 (ASC)
+    }
+    if (rawA && !rawB) return -1;
+    if (!rawA && rawB) return 1;
+    const idA = parseInt(a.id || 0, 10);
+    const idB = parseInt(b.id || 0, 10);
+    return idA - idB;
+  };
+
+  unassigned.sort(sortOldestFirst);
+  assigned.sort(sortOldestFirst);
 
   // Group 1: 候補ビジター (優先)
   if (unassigned.length > 0) {
@@ -47354,7 +47439,7 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
       const opt = document.createElement('option');
       opt.value = v.id;
       const inviterStr = v.inviter ? ` (紹介: ${v.inviter})` : '';
-      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : ' [申込前・未定]';
+      const eventStr = v.eventDate ? ` [定例会: ${formatShortDate(v.eventDate)}]` : ' [未定]';
       opt.textContent = `${v.name || '名称未定'}${inviterStr}${eventStr}`;
       if (preselectedVisitorId && String(v.id) === String(preselectedVisitorId)) {
         opt.selected = true;
@@ -47367,7 +47452,7 @@ function populateCoffeeAssignVisitorSelect(preselectedVisitorId = null) {
   // Group 2: その他・日程変更ビジター
   if (assigned.length > 0) {
     const optGroup2 = document.createElement('optgroup');
-    optGroup2.label = `設定済み (日程変更)`;
+    optGroup2.label = `設定済み・変更 (${assigned.length}名)`;
     assigned.forEach(v => {
       const opt = document.createElement('option');
       opt.value = v.id;
@@ -47514,6 +47599,8 @@ async function submitCoffeeAssign() {
 // Global Exports
 window.openCoffeeAssignModal = openCoffeeAssignModal;
 window.closeCoffeeAssignModal = closeCoffeeAssignModal;
+window.filterCoffeeAssignVisitors = filterCoffeeAssignVisitors;
+window.clearCoffeeAssignSearch = clearCoffeeAssignSearch;
 window.populateCoffeeAssignVisitorSelect = populateCoffeeAssignVisitorSelect;
 window.onCoffeeAssignVisitorChanged = onCoffeeAssignVisitorChanged;
 window.submitCoffeeAssign = submitCoffeeAssign;
